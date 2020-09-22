@@ -24,7 +24,8 @@ namespace switcher {
 namespace gst {
 PixelFormatConverter::PixelFormatConverter(const std::string& shmpath_to_convert,
                                                  const std::string& shmpath_converted,
-                                                 const std::string& format_name)
+                                                 const std::string& format_name,
+                                                 const std::string& extra_caps_properties)
     : gst_pipeline_(std::make_unique<Pipeliner>(nullptr, nullptr)) {
   if (shmpath_converted.empty() || shmpath_to_convert.empty()) {
     return;
@@ -50,6 +51,8 @@ PixelFormatConverter::PixelFormatConverter(const std::string& shmpath_to_convert
                shmpath_converted.c_str(),
                "sync",
                false,
+               "extra-caps-properties",
+               extra_caps_properties.c_str(),
                nullptr);
   gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                    shmsrc_.get_raw(),

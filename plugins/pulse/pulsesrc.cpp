@@ -59,6 +59,9 @@ PulseSrc::PulseSrc(quiddity::Config&& conf)
   shmpath_ = make_shmpath("audio");
   g_object_set(G_OBJECT(pulsesrc_.get_raw()), "client-name", get_name().c_str(), nullptr);
   g_object_set(G_OBJECT(shmsink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
+
+  auto extra_caps = get_quiddity_caps();
+  g_object_set(G_OBJECT(shmsink_.get_raw()), "extra-caps-properties", extra_caps.c_str(), nullptr);
   std::unique_lock<std::mutex> lock(devices_mutex_);
   gst::utils::g_idle_add_full_with_context(mainloop_->get_main_context(),
                                            G_PRIORITY_DEFAULT_IDLE,
@@ -121,7 +124,7 @@ gboolean PulseSrc::quit_pulse(void* user_data) {
 
 bool PulseSrc::remake_elements() {
   if (!gst::UGstElem::renew(pulsesrc_, {"client-name", "volume", "mute", "device"}) ||
-      !gst::UGstElem::renew(shmsink_, {"socket-path"}))
+      !gst::UGstElem::renew(shmsink_, {"socket-path", "extra-caps-properties"}))
     return false;
   return true;
 }

@@ -88,6 +88,8 @@ bool SoapCtrlServer::set_port(int port) {
     return false;
   }
   port_ = port;
+  auto switcher = get_switcher();
+  switcher->set_control_port(port_);
   if (!start()) {
     return false;
   }

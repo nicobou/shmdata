@@ -161,6 +161,8 @@ bool LADSPA::create_gst_pipeline() {
   std::string description =
       std::string("shmdatasrc name=shmsrc ! audioconvert ! audio/x-raw,format=") + target_format;
 
+  auto extra_caps = get_quiddity_caps();
+
   if (target_channels > 1) {
     if (channels_number_ != target_channels) {
       warning("LADSPA element % only accepts % channels, we cannot fit % channels in it.",
@@ -176,9 +178,9 @@ bool LADSPA::create_gst_pipeline() {
         description += property.first + "=" + property.second + " ";
       }
     }
-    description += "! queue ! shmdatasink name=shmsink sync=false";
+    description += "! queue ! shmdatasink name=shmsink sync=false extra-caps-properties='" + extra_caps + "'";
   } else {
-    description += " ! deinterleave name=d interleave name=i ! shmdatasink name=shmsink sync=false";
+    description += " ! deinterleave name=d interleave name=i ! shmdatasink name=shmsink sync=false extra-caps-properties='" + extra_caps + "'";
 
     for (int channel = 0; channel < channels_number_; ++channel) {
       auto channel_str = std::to_string(channel);
@@ -364,10 +366,11 @@ void LADSPA::create_and_play_gst_pipeline() {
   shmsink_sub_ = std::make_unique<shmdata::GstTreeUpdater>(
       this, shmdatasink_, shmpath_transformed_, shmdata::GstTreeUpdater::Direction::writer);
 
+  auto extra_caps = get_quiddity_caps();
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
   g_object_set(G_OBJECT(ladspa_bin_), "async-handling", TRUE, nullptr);
   g_object_set(G_OBJECT(shmdatasrc_), "socket-path", shmpath_.c_str(), nullptr);
-  g_object_set(G_OBJECT(shmdatasink_), "socket-path", shmpath_transformed_.c_str(), nullptr);
+  g_object_set(G_OBJECT(shmdatasink_), "socket-path", shmpath_transformed_.c_str(), "extra-caps-properties", extra_caps.c_str(), nullptr);
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), ladspa_bin_);
 
   gst_pipeline_->play(true);

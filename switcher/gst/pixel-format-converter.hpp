@@ -32,7 +32,8 @@ class PixelFormatConverter : public SafeBoolIdiom {
   using uptr = std::unique_ptr<PixelFormatConverter>;
   PixelFormatConverter(const std::string& shmpath_to_convert,
                           const std::string& shmpath_converted,
-                          const std::string& format_name);
+                          const std::string& format_name,
+                          const std::string& extra_caps_properties);
   PixelFormatConverter() = delete;
   ~PixelFormatConverter() = default;
   PixelFormatConverter(const PixelFormatConverter&) = delete;

@@ -14,7 +14,7 @@ In switcher, you may find not compliant code, but newly introduced code must fol
 
 It is possible to let git ensure that you are conforming to the standards by using pre-commit hooks and clang-format and autopep8:
 ```
-sudo apt-get install clang-format python-autopep8
+sudo apt-get install clang-format python3-autopep8
 
 #Then in switcher's .git folder:
 rm -rf hooks && ln -s ../.hooks hooks

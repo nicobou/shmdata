@@ -134,6 +134,7 @@ class Quiddity : public log::Logged, public SafeBoolIdiom {
   // use a consistent naming for shmdatas
   virtual std::string make_shmpath(const std::string& suffix) const;
   std::string get_manager_name();
+  std::string get_quiddity_caps();
   std::string get_quiddity_name_from_file_name(const std::string& shmdata_path) const;
   std::string get_shmdata_name_from_file_name(const std::string& path) const;
   static std::string get_shmpath_prefix();

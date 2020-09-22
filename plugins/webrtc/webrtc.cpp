@@ -1147,6 +1147,8 @@ void Webrtc::decodebin_pad_added(GstPad* pad, bundle_t* data) {
   }
 
   g_object_set(G_OBJECT(sink.get_raw()), "socket-path", make_shmpath(suffix).c_str(), nullptr);
+  auto extra_caps = get_quiddity_caps();
+  g_object_set(G_OBJECT(sink.get_raw()), "extra-caps-properties", extra_caps.c_str(), nullptr);
 
   gst_bin_add_many(GST_BIN(tee_parent.get()), pqueue, converter, sink.get_raw(), nullptr);
 

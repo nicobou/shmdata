@@ -167,7 +167,7 @@ bool Cropper::on_shmdata_disconnect() {
 bool Cropper::remake_elements() {
   if (!gst::UGstElem::renew(shmsrc_) || !gst::UGstElem::renew(queue_element_) ||
       !gst::UGstElem::renew(cropper_element_) || !gst::UGstElem::renew(scaler_element_) ||
-      !gst::UGstElem::renew(shmsink_)) {
+      !gst::UGstElem::renew(shmsink_, {"socket-path", "sync", "extra-caps-properties"})) {
     error("cropper could not renew GStreamer elements");
     return false;
   }
@@ -193,11 +193,14 @@ bool Cropper::create_pipeline() {
                "bottom",
                bottom_,
                nullptr);
+  auto extra_caps = get_quiddity_caps();
   g_object_set(G_OBJECT(shmsink_.get_raw()),
                "socket-path",
                shmpath_cropped_.c_str(),
                "sync",
                false,
+               "extra-caps-properties",
+               extra_caps.c_str(),
                nullptr);
   gst_bin_add_many(GST_BIN(gst_pipeline_->get_pipeline()),
                    shmsrc_.get_raw(),

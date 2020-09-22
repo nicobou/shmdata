@@ -111,9 +111,10 @@ bool AVPlayer::start() {
                                   playpath_ + "/" + file,
                                   "shmsink_" + file);
 
+    auto extra_caps = get_quiddity_caps();
     description += std::string("filesrc") + (i == 0 ? " do-timestamp=true " : " ") + "location=" +
                    to_play->filepath_ + " ! decodebin ! shmdatasink name=" + to_play->sink_name_ +
-                   " socket-path=" + to_play->shmpath_ + " ";
+                   " socket-path=" + to_play->shmpath_ + " extra-caps-properties='" + extra_caps + "' ";
     files_list_.push_back(std::move(to_play));
     ++i;
   }

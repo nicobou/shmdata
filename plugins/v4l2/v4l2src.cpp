@@ -51,6 +51,8 @@ void V4L2Src::set_shm_suffix() {
     register_writer_suffix(enc_suffix_);
   }
   g_object_set(G_OBJECT(shmsink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
+  auto extra_caps = get_quiddity_caps();
+  g_object_set(G_OBJECT(shmsink_.get_raw()), "extra-caps-properties", extra_caps.c_str(), nullptr);
 }
 
 V4L2Src::V4L2Src(quiddity::Config&& conf)
@@ -598,7 +600,7 @@ bool V4L2Src::remake_elements() {
       !gst::UGstElem::renew(videoconvert_, {}) ||
       !gst::UGstElem::renew(deinterlace_, {"mode", "method"}) ||
       !gst::UGstElem::renew(videorate_) || !gst::UGstElem::renew(capsfilter_, {"caps"}) ||
-      !gst::UGstElem::renew(shmsink_, {"socket-path"})) {
+      !gst::UGstElem::renew(shmsink_, {"socket-path", "extra-caps-properties"})) {
     error("could not renew elements for video capture");
     return false;
   }

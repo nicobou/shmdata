@@ -9,7 +9,9 @@ Build and install **switcher** from the command line:
 
 ```bash
 # Install all dependencies
-sudo apt install cmake bison build-essential flex libtool libglib2.0-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev libjson-glib-dev libcgsi-gsoap-dev gstreamer1.0-libav gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly liblo-dev linux-libc-dev libpulse-dev libportmidi-dev libjack-jackd2-dev jackd libvncserver-dev uuid-dev libssl-dev swh-plugins  libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev mesa-common-dev libltc-dev libcurl4-gnutls-dev gsoap wah-plugins libxrandr-dev libxinerama-dev libxcursor-dev libsamplerate0-dev libsoup2.4-dev python3-dev libxxf86vm-dev
+sudo apt install bison build-essential cmake flex freeglut3-dev gsoap gstreamer1.0-libav gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly gstreamer1.0-tools jackd libcgsi-gsoap-dev libcurl4-gnutls-dev libgl1-mesa-dev libglib2.0-dev libglu1-mesa-dev libgstreamer-plugins-bad1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer1.0-dev libjack-jackd2-dev libjson-glib-dev liblo-dev libltc-dev libportmidi-dev libpulse-dev libsamplerate0-dev libsoup2.4-dev libssl-dev libtool libvncserver-dev libxcursor-dev libxinerama-dev libxrandr-dev linux-libc-dev mesa-common-dev python3-dev python3-pip swh-plugins uuid-dev wah-plugins xorg-dev
+
+pip3 install pyOpenSSL websockets
 
 # Clone all code from master branch
 git clone https://gitlab.com/sat-metalab/switcher.git

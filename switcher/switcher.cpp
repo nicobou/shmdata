@@ -34,6 +34,19 @@ std::string Switcher::get_name() const { return name_; }
 
 std::string Switcher::get_switcher_version() const { return SWITCHER_VERSION_STRING; }
 
+void Switcher::set_control_port(const int port) { control_port_ = port; }
+
+int Switcher::get_control_port() const { return control_port_; }
+
+std::string Switcher::get_switcher_caps() const {
+  auto caps_str = "switcher-name=(string)" + get_name();
+  if (get_control_port() > 0) {
+    caps_str += ",control-port=(int)" + std::to_string(get_control_port());
+  }
+  
+  return caps_str;
+}
+
 void Switcher::reset_state(bool remove_created_quiddities) {
   if (remove_created_quiddities) {
     for (auto& quid : qcontainer_->get_names()) {
