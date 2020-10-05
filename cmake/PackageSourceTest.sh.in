@@ -13,8 +13,10 @@ tar -zxvf @PACKAGE_NAME@-@PACKAGE_VERSION@-Source.tar.gz
 cd @PACKAGE_NAME@-@PACKAGE_VERSION@-Source
 mkdir build
 cd build
-cmake -DCMAKE_C_COMPILER="gcc-8" -DCMAKE_CXX_COMPILER="g++-8" ..
-make
+cmake -DCMAKE_C_COMPILER="gcc-8" -DCMAKE_CXX_COMPILER="g++-8" -DENABLE_GPL=ON ..
+make -j${nproc}
+make install
+ldconfig
 make test
 
 # Cleanup after

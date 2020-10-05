@@ -5,90 +5,101 @@ services:
 
 variables:
   BUILD_DIR: /opt/switcher
-  DOCKERFILE_PATH: dockerfiles/Dockerfile
 
 stages:
-  - configure
+  - deps
   - test
-  - test-package
-  - deploy
   - coverage
+  - deploy
 
-Build and Deploy CI image:
-  stage: configure
-  image: docker:18
+#
+# Build depencies images
+#
+Build and Deploy dependency images:
+  stage: deps
+  image: docker:18-git
   variables:
-    CONTAINER_TAG: $CI_REGISTRY/sat-metalab/switcher:ci
-    BUILD_TYPE: Debug
+    CONTAINER_TAG_PREFIX: $CI_REGISTRY/sat-metalab/switcher:deps
   script:
-    - docker build -t $CONTAINER_TAG --build-arg BUILD_TYPE=$BUILD_TYPE -f $DOCKERFILE_PATH --target build .
+    - git clone --single-branch --branch develop https://gitlab.com/sat-metalab/switcher.git switcher-dev
+    - mkdir -p switcher-dev/deps
+    - "if [ 0 -eq $(diff switcher-dev/deps/ deps/ | wc -l) ]; then echo new image build not required; exit 0; fi"
+    - docker build -t $CONTAINER_TAG_PREFIX-ubuntu1804 -f dockerfiles/Dockerfile-deps-Ubuntu-18.04 --target build .
     - echo $CI_DEPLOY_PASSWORD | docker login -u $CI_DEPLOY_USER --password-stdin $CI_REGISTRY
-    - docker push $CONTAINER_TAG
+    - docker push $CONTAINER_TAG_PREFIX-ubuntu1804
+    - docker build -t $CONTAINER_TAG_PREFIX-ubuntu2004 -f dockerfiles/Dockerfile-deps-Ubuntu-20.04 --target build .
+    - docker push $CONTAINER_TAG_PREFIX-ubuntu2004
   except:
     - develop
     - master
+    - test-switcher-image
 
-Test:
+#
+# Test distributions
+#
+Test Ubuntu 18.04:
   stage: test
-  image: $CI_REGISTRY/sat-metalab/switcher:ci
+  image: $CI_REGISTRY/sat-metalab/switcher:deps-ubuntu1804
   variables:
     CTEST_OUTPUT_ON_FAILURE: 1
   script:
-    - cd $BUILD_DIR/build
+    - mkdir -p build && cd build 
+    - CC="gcc-8" CXX="g++-8" cmake -DENABLE_GPL="ON" -DCMAKE_BUILD_TYPE="Release" ..
+    - make -j"$(nproc)" && make install && ldconfig
     - DEBIAN_FRONTEND=noninteractive apt install -y xvfb
     - xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' make test
   except:
     - develop
     - master
+    - test-switcher-image
 
-Test package:
-  stage: test-package
-  image: $CI_REGISTRY/sat-metalab/switcher:ci
+Test Ubuntu 20.04:
+  stage: test
+  image: $CI_REGISTRY/sat-metalab/switcher:deps-ubuntu2004
   variables:
     CTEST_OUTPUT_ON_FAILURE: 1
   script:
-    - cd $BUILD_DIR/build
+    - mkdir -p build && cd build 
+    - cmake -DENABLE_GPL="ON" -DCMAKE_BUILD_TYPE="Release" ..
+    - make -j"$(nproc)" && make install && ldconfig
     - DEBIAN_FRONTEND=noninteractive apt install -y xvfb
+    - xvfb-run  --auto-servernum --server-args='-screen 0 1024x768x24'  pulseaudio &
+    - xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' make test
+  except:
+    - develop
+    - master
+    - test-switcher-image
+
+#
+# Test package
+#
+Test package:
+  stage: test
+  image: $CI_REGISTRY/sat-metalab/switcher:deps-ubuntu2004
+  variables:
+    CTEST_OUTPUT_ON_FAILURE: 1
+  script:
+    - mkdir -p build && cd build 
+    - cmake -DENABLE_GPL="ON" -DCMAKE_BUILD_TYPE="Release" ..
+    - DEBIAN_FRONTEND=noninteractive apt install -y xvfb
+    - xvfb-run  --auto-servernum --server-args='-screen 0 1024x768x24'  pulseaudio &
     - xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' make package_source_test
   only:
     - develop
-    - master
-
-Build and Deploy clean image:
-  stage: deploy
-  variables:
-    SHMDATA_TAG: $CI_COMMIT_REF_NAME
-    CONTAINER_TAG: $CI_REGISTRY/sat-metalab/switcher:$CI_COMMIT_REF_NAME
-  script:
-    - docker build -t $CONTAINER_TAG -f $DOCKERFILE_PATH .
-    - echo $CI_DEPLOY_PASSWORD | docker login -u $CI_DEPLOY_USER --password-stdin $CI_REGISTRY
-    - docker push $CONTAINER_TAG
-  only:
-    - develop
-    - master
 
 #
 # Test coverage
 #
 coverage:
   stage: coverage
-  image: ubuntu:20.04
+  image: $CI_REGISTRY/sat-metalab/switcher:deps-ubuntu2004
   script:
-    - apt update
-    - DEBIAN_FRONTEND=noninteractive apt install -y cmake bison build-essential flex libtool git libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev python3-dev
-    - git clone https://gitlab.com/sat-metalab/shmdata.git
-    - cd shmdata && mkdir build && cd build
-    - git checkout develop
-    - cmake -DCMAKE_BUILD_TYPE=Release ..
-    - make -j$(nproc) && make install && ldconfig && cd ../..
-    - DEBIAN_FRONTEND=noninteractive apt install -y lcov zip
-    - DEBIAN_FRONTEND=noninteractive apt install -y cmake bison build-essential flex libtool libglib2.0-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev libjson-glib-dev libcgsi-gsoap-dev gstreamer1.0-libav gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly liblo-dev linux-libc-dev libpulse-dev libportmidi-dev libjack-jackd2-dev jackd libvncserver-dev uuid-dev libssl-dev swh-plugins  libgl1-mesa-dev libglu1-mesa-dev xorg-dev freeglut3-dev mesa-common-dev libltc-dev libcurl4-gnutls-dev gsoap wah-plugins libxrandr-dev libxinerama-dev libxcursor-dev libsamplerate0-dev libsoup2.4-dev python3-dev python3-pip gstreamer1.0-tools
-    - pip3 install websockets pyOpenSSL
+    - DEBIAN_FRONTEND=noninteractive apt install -y lcov zip xvfb
     - git submodule update --init
     - rm -rf build && mkdir build && cd build
     - cmake -DTEST_COVERAGE=ON -DENABLE_GPL=ON ..
     - make -j$(nproc) && make install && ldconfig
-    - DEBIAN_FRONTEND=noninteractive apt install -y xvfb
+    - xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24'  pulseaudio &
     - xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' make check_coverage
     - zip -r coverage.zip coverage
     - mv coverage.zip ../
@@ -96,5 +107,22 @@ coverage:
     name: "switcher_coverage_${CI_BUILD_REF_NAME}"
     paths:
     - "coverage.zip"
-  except:
+  only:
+    - develop
+
+#
+# Docker image for Scenic CI
+#
+Build and Deploy Ubuntu for Scenic:
+  stage: deploy
+  image: docker:18
+  variables:
+    CONTAINER_TAG: $CI_REGISTRY/sat-metalab/switcher:$CI_COMMIT_REF_NAME
+  script:
+    - docker build -t $CONTAINER_TAG --build-arg SWITCHER_TAG=$CI_COMMIT_REF_NAME -f dockerfiles/Dockerfile-Ubuntu-18.04 --target build .
+    - echo $CI_DEPLOY_PASSWORD | docker login -u $CI_DEPLOY_USER --password-stdin $CI_REGISTRY
+    - docker push $CONTAINER_TAG
+  only:
+    - develop
     - master
+    - test-switcher-image

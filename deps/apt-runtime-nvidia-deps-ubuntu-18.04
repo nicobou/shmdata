@@ -1,0 +1,6 @@
+nvidia-cuda-toolkit
+nvidia-dkms-450
+nvidia-driver-450
+nvidia-kernel-common-450
+libnvidia-encode-450
+
