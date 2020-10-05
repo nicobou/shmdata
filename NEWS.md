@@ -2,6 +2,12 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 2.1.22 (2020-10-05)
+---------------------------
+This is an official release in the 2.1 stable series.
+
+* 💚 fix test-package (CI stage)
+
 switcher 2.1.20 (2020-09-22)
 ---------------------------
 This is an official release in the 2.1 stable series.

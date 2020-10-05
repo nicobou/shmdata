@@ -70,6 +70,7 @@ RUN apt update -y \
             libpython3.7-stdlib \
             libpython3.7 \
             python3-dev \
+            python3-pip \
             libc6-dev \
             nvidia-driver-390 \
             nvidia-dkms-390 \
@@ -86,7 +87,8 @@ RUN apt update -y \
     && apt-get clean \
     && apt-get autoclean \
     && apt-get autoremove -y \
-    && rm -rf /var/lib/{apt,dpkg,cache,log}/
+    && rm -rf /var/lib/{apt,dpkg,cache,log}/ \
+    && pip3 install websockets pyOpenSSL dataclasses
 
 FROM dependencies AS build
 LABEL MAINTAINER="Metalab <metalab-dev@sat.qc.ca>"
