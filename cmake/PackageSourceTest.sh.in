@@ -14,8 +14,9 @@ cd @PACKAGE_NAME@-@PACKAGE_VERSION@-Source
 mkdir build
 cd build
 cmake ..
-make
-make DESTDIR=/tmp install
+make -j$(nproc)
+make install
+ldconfig
 make test
 
 # Cleanup after
