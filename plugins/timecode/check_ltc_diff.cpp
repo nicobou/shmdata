@@ -58,9 +58,7 @@ int main() {
     using namespace switcher;
     Switcher::ptr manager = Switcher::make_switcher("ltcdifftest");
 
-    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
 
-    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("../jack");
 
     // creating a jack server
     InfoTree::ptr server_config = InfoTree::make();

@@ -29,7 +29,6 @@ int main() {
     using namespace quiddity;
 
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
-    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
 
     // check can_sink_caps
     auto eqrox = manager->quids<MPtr(&quiddity::Container::create)>("executor", "exec", nullptr);

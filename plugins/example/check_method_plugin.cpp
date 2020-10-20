@@ -31,7 +31,6 @@ int main() {
     using namespace quiddity;
 
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
-    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
     assert(quiddity::test::full(manager, "method"));
     auto qrox = manager->quids<MPtr(&quiddity::Container::create)>("method", "test", nullptr);
     auto mquid = qrox.get();

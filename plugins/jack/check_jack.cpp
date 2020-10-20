@@ -31,7 +31,6 @@ int main() {
     auto test_name = std::string("check_jack");
     Switcher::ptr manager = Switcher::make_switcher(test_name);
 
-    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
 
     // creating a jack server
     InfoTree::ptr server_config = InfoTree::make();

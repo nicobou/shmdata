@@ -28,7 +28,6 @@ int main() {
   using namespace quiddity;
   // generic switcher testing
   Switcher::ptr sw = Switcher::make_switcher("test-manager");
-  sw->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
   assert(quiddity::test::full(sw, "resample"));
 
   // now testing a audio resampling pipeline

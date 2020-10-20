@@ -27,9 +27,7 @@ int main() {
     using namespace quiddity;
     Switcher::ptr switcher = Switcher::make_switcher("test_switcher");
 
-    switcher->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
 
-    switcher->factory<MPtr(&quiddity::Factory::scan_dir)>("../jack");
 
     // creating a jack server
     InfoTree::ptr server_config = InfoTree::make();
