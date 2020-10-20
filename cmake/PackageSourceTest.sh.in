@@ -15,9 +15,7 @@ mkdir build
 cd build
 cmake ..
 make -j$(nproc)
-make install
-ldconfig
-make test
+PATH=$PATH:$(pwd)/utils/ PYTHONPATH=$PYTHONPATH:$(pwd)/wrappers/python/ make test
 
 # Cleanup after
 cd ../..
