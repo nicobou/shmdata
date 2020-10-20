@@ -2,6 +2,13 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.3.32 (2020-10-20)
+---------------------------
+This is an official release in the 1.3 stable series.
+
+* ✅ update package_source_test, removed the need for shmdata being installed
+* 👷 remove docker-in-docker from CI
+
 shmdata 1.3.30 (2020-09-21)
 ---------------------------
 This is an official release in the 1.3 stable series.

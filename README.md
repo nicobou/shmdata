@@ -71,7 +71,7 @@ sdfps /tmp/video_shmdata
 # Installation
 Here is how to build and install it on Debian GNU/Linux or Ubuntu::
 
-    $ sudo apt install cmake bison build-essential flex libtool git
+    $ sudo apt install cmake build-essential git
     $ # this is only for building gstreamer plugins:
     $ sudo apt install libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
     $ # this is for building python wrappers 

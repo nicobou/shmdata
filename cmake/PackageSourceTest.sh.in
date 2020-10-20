@@ -14,9 +14,8 @@ cd @PACKAGE_NAME@-@PACKAGE_VERSION@-Source
 mkdir build
 cd build
 cmake ..
-make
-make DESTDIR=/tmp install
-make test
+make -j$(nproc)
+PATH=$PATH:$(pwd)/utils/ PYTHONPATH=$PYTHONPATH:$(pwd)/wrappers/python/ make test
 
 # Cleanup after
 cd ../..
