@@ -20,24 +20,25 @@ For instance, the camera (v4l2src) Quiddity provides the video stream from a cam
 
 For more details about the various Quiddities, see [here](doc/quiddity_types.txt).
 
-See instructions about:
-- [Switcher installation](doc/INSTALL.md)
-- [Switcher and scenic in docker](doc/run-switcher-in-docker.md)
+See instructions about the use of switcher:
 - [Python3 scripting](doc/python-scripting.md)
-- [Switcher configuration file](doc/configuration.md)
+- [Using the Executor quiddity](plugins/executor/README.md)
 - [Mapping OSC or HTTP messages to quiddity properties](doc/protocol-mapper.md)
 - [Using the GStreamer plugin for NVidia H264 GPU decoder (nvdec)](doc/using-nvdec-gstreamer-plugins.md)
-- [Using the Executor quiddity](plugins/executor/README.md)
 - [Shell scripting Switcher and scenic](doc/shell-scripting.md)
 - [Shell scripting a SIP call](doc/sip-call.md)
 - [Shell scripting OSC quiddities](doc/using-osc-quiddities.md)
+
+About building switcher:
+- [Switcher installation](doc/INSTALL.md)
 - [Contributing code](doc/contributing.md)
 - [Code structure](doc/code-structure.md)
-- [Writing custom quiddity bundles](doc/writing-bundles.md)
+- [Switcher and scenic in docker](doc/run-switcher-in-docker.md)
 
-Command line
--------
-Switcher can be started with the ```switcher``` command and can be controlled remotely with the ```switcher-ctrl``` command. Help can be obtained with the ```-h``` option.
+About switcher configuration:
+- [Switcher configuration file](doc/configuration.md)
+- [Writing custom quiddity bundles](doc/writing-bundles.md)
+- [Loading quiddity plugins from custom path](doc/custom-quiddity-path.md)
 
 License
 -------

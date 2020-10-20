@@ -20,9 +20,12 @@
 #ifndef __SWITCHER_SWITCHER_H__
 #define __SWITCHER_SWITCHER_H__
 
+#include <cstdlib>  // for getenv
+#include <filesystem>
 #include <regex>
 #include <string>
 #include <vector>
+
 #include "./configuration/configuration.hpp"
 #include "./gst/initialized.hpp"
 #include "./infotree/information-tree.hpp"
@@ -31,6 +34,7 @@
 #include "./quiddity/container.hpp"
 #include "./quiddity/factory.hpp"
 #include "./utils/make-consultable.hpp"
+#include "./utils/string-utils.hpp"
 
 namespace switcher {
 namespace quiddity {
@@ -98,6 +102,19 @@ class Switcher : public gst::Initialized {
         qcontainer_(quiddity::Container::make_container(this, &qfactory_, log_.get())),
         name_(std::regex_replace(name, std::regex("[^[:alnum:]| ]"), "-")) {
     remove_shm_zombies();
+
+    // loading plugin located in the SWITCHER_PLUGIN_PATH environment variable
+    auto path = std::getenv("SWITCHER_PLUGIN_PATH");
+    if (path) {
+      for (const auto& it : stringutils::split_string(path, ":")) {
+        // scanning directory
+        qfactory_.scan_dir(it);
+        // scanning sub-directories
+        for (const auto& dir_entry : std::filesystem::recursive_directory_iterator(it)) {
+          if (dir_entry.is_directory()) qfactory_.scan_dir(dir_entry.path());
+        }
+      }
+    }
   }
   void apply_gst_configuration();
   void register_bundle_from_configuration();

@@ -15,9 +15,7 @@ mkdir build
 cd build
 cmake -DCMAKE_C_COMPILER="gcc-8" -DCMAKE_CXX_COMPILER="g++-8" -DENABLE_GPL=ON ..
 make -j${nproc}
-make install
-ldconfig
-make test
+SWITCHER_PLUGIN_PATH=$(pwd)/plugins/ PATH=$PATH:$(pwd)/../tools/:$(pwd)/src/ PYTHONPATH=$PYTHONPATH:$(pwd)/wrappers/python/ make test
 
 # Cleanup after
 cd ../..
