@@ -19,8 +19,11 @@
 
 #include "avplayer.hpp"
 
-#include <sys/stat.h>
+#include <filesystem>
+
 #include "switcher/utils/scope-exit.hpp"
+
+namespace fs = std::filesystem;
 
 namespace switcher {
 namespace quiddities {
@@ -46,14 +49,11 @@ AVPlayer::AVPlayer(quiddity::Config&& conf)
       [this](const std::string& val) {
         if (val.empty()) {
           warning("Empty folder provided for shmdata recorder.");
-          message("ERROR: Empty folder provided for shmdata recorder.");
           return false;
         }
 
-        struct stat st;
-        if (stat(val.c_str(), &st) != 0 || !S_ISDIR(st.st_mode)) {
+        if (!fs::is_directory(fs::status(val))) {
           warning("The specified folder does not exist (avplayer).");
-          message("ERROR: The specified folder does not exist (avplayer).");
           return false;
         }
 
@@ -76,16 +76,23 @@ AVPlayer::AVPlayer(quiddity::Config&& conf)
                                             "Toggle paused status of the stream",
                                             pause_);
 
-  struct stat st;
-  if (stat(AVPlayer::kShmDestPath.c_str(), &st) != 0 || !S_ISDIR(st.st_mode)) {
-    if (-1 == mkdir(AVPlayer::kShmDestPath.c_str(), S_IRWXU | S_IRUSR | S_IWUSR)) {
-      warning("The shmdata destination folder does not exist and could not be created (avplayer).");
-      message(
-          "ERROR: The shmdata destination folder does not exist and could not be created "
-          "(avplayer).");
-      is_valid_ = false;
-      return;
-    }
+  std::error_code ec;
+  fs::create_directory(AVPlayer::kShmDestPath, ec);
+  if (ec) {
+    error(
+        "The shmdata destination folder for avplayer does not exist and could not be created (%).",
+        ec.message());
+    is_valid_ = false;
+    return;
+  }
+
+  ec.clear();
+  fs::permissions(AVPlayer::kShmDestPath, fs::perms::owner_all, ec);
+  if (ec) {
+    error("Could not set permission for the avplayer shmdata destination folder (%).",
+          ec.message());
+    is_valid_ = false;
+    return;
   }
 }
 
@@ -94,12 +101,11 @@ bool AVPlayer::start() {
       [this](GstMessage* msg) { return this->bus_async(msg); },
       /*[this](GstMessage* msg) { return this->bus_sync(msg); }*/ nullptr);
   std::vector<std::string> playlist;
-  DIR* dirp = opendir(playpath_.c_str());
-  struct dirent* dp;
-  while ((dp = readdir(dirp)) != NULL) {
-    playlist.push_back(std::string(dp->d_name));
+  if (!playpath_.empty()) {
+    for (auto& dir : fs::directory_iterator(playpath_)) {
+      playlist.push_back(dir.path());
+    }
   }
-  closedir(dirp);
 
   // Create a pipeline to read all the files and write in a shmdatasink.
   std::string description;
