@@ -115,6 +115,9 @@ class Switcher : public gst::Initialized {
         }
       }
     }
+
+    // loading plugin from the default plugin directory
+    qfactory_.scan_dir(qfactory_.get_default_plugin_dir());
   }
   void apply_gst_configuration();
   void register_bundle_from_configuration();

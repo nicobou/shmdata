@@ -51,7 +51,6 @@ int main() {
   using namespace quiddity;
   using namespace property;
   Switcher::ptr switcher = Switcher::make_switcher("vsnap");
-  switcher->factory<MPtr(&Factory::scan_dir)>("./");
 
   // performing default tests
   assert(test::full(switcher, "videosnapshot"));

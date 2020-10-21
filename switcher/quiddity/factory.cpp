@@ -139,28 +139,22 @@ bool quiddity::Factory::exists(const std::string& class_name) const {
 }
 
 bool quiddity::Factory::load_plugin(const std::string& filename) {
-  PluginLoader::ptr plugin = std::make_shared<PluginLoader>();
-  auto loaded = plugin->load(filename);
-  if (!loaded) {
-    warning("%", loaded.msg());
+  auto plugin = std::make_unique<PluginLoader>(filename);
+  if (!*plugin.get()) {
+    warning("%", plugin->msg());
     return false;
   }
   std::string class_name = plugin->get_class_name();
-  // close the old one if exists
-  auto it = plugins_.find(class_name);
-  if (plugins_.end() != it) {
-    debug("closing old plugin for reloading (class: %)", class_name);
-    close_plugin(class_name);
+  // ignore already loaded plugin
+  if (plugins_.end() != plugins_.find(class_name)) {
+    debug("ignoring already loaded plugin (% from file %)", class_name, filename);
+    return false;
   }
+
   abstract_factory_.register_class_with_custom_factory(
       class_name, plugin->create_, plugin->destroy_);
-  plugins_[class_name] = plugin;
+  plugins_.emplace(class_name, std::move(plugin));
   return true;
-}
-
-void quiddity::Factory::close_plugin(const std::string& class_name) {
-  abstract_factory_.unregister_class(class_name);
-  plugins_.erase(class_name);
 }
 
 Quiddity::ptr quiddity::Factory::create(const std::string& class_name, quiddity::Config&& config) {

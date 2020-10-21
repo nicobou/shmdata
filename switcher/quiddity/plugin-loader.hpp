@@ -20,7 +20,6 @@
 #ifndef __SWITCHER_PLUGIN_H__
 #define __SWITCHER_PLUGIN_H__
 
-#include <gmodule.h>
 #include <memory>
 #include <string>
 
@@ -32,20 +31,16 @@ namespace quiddity {
 class Quiddity;
 
 // the types of the class factories for quiddity plugins
-typedef Quiddity* create_t(quiddity::Config&&);
-typedef void destroy_t(Quiddity*);
-typedef const char* get_type_t();
+using create_t = Quiddity*(quiddity::Config&&);
+using destroy_t = void(Quiddity*);
+using get_type_t = const char*();
 
-class PluginLoader {
+class PluginLoader : public BoolLog {
  public:
-  typedef std::shared_ptr<PluginLoader> ptr;
-  PluginLoader();
+  typedef std::unique_ptr<PluginLoader> uptr;
+  PluginLoader(const std::string& filename);
   ~PluginLoader();
-  PluginLoader(const PluginLoader&) = delete;
-  PluginLoader& operator=(const PluginLoader&) = delete;
 
-  BoolLog load(const std::string& filename);
-  BoolLog close();
   std::string get_class_name() const;
 
   create_t* create_{nullptr};
@@ -53,7 +48,7 @@ class PluginLoader {
   get_type_t* get_type_{nullptr};
 
  private:
-  GModule* module_{nullptr};
+  void* module_{nullptr};
   std::string class_name_{};
 };
 }  // namespace quiddity

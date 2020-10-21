@@ -31,7 +31,7 @@ class BoolLog {
   operator bool() const;
   std::string msg() const;
 
- private:
+ protected:
   bool is_valid_;
   std::string msg_;
 };

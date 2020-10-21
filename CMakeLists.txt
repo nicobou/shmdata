@@ -110,6 +110,7 @@ link_directories(
 
 link_libraries(
     ${COMMON_LIBRARIES}
+    dl
     pthread
     stdc++fs
 )

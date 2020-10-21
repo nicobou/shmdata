@@ -18,71 +18,53 @@
  */
 
 #include "./plugin-loader.hpp"
+
+#include <dlfcn.h>
+
 #include "./documentation-registry.hpp"
 
 namespace switcher {
 namespace quiddity {
-PluginLoader::PluginLoader() {}
 
 PluginLoader::~PluginLoader() {
-  if (module_ != nullptr) g_module_close(module_);
+  if (module_ == nullptr) return;
+  dlclose(module_);
 }
 
-BoolLog PluginLoader::load(const std::string& filename) {
-  if (!g_module_supported()) {
-    return BoolLog(false, std::string("g_module not supported !, cannot load ") + filename);
-  }
-  close();
-
-  module_ = g_module_open(filename.c_str(), G_MODULE_BIND_LAZY);
-
+PluginLoader::PluginLoader(const std::string& filename)
+    : BoolLog(true), module_(dlopen(filename.c_str(), RTLD_LAZY | RTLD_GLOBAL)) {
   if (!module_) {
-    return BoolLog(false, std::string("loading ") + filename + ": " + g_module_error());
+    is_valid_ = false;
+    msg_ = std::string("loading ") + filename + ": " + dlerror();
+    return;
   }
 
-  if (!g_module_symbol(module_, "create", (gpointer*)&create_)) {
-    close();
-    return BoolLog(false, std::string("loading ") + filename + ": " + g_module_error());
+  dlerror();  // clear any existing error
+
+  *(void**)(&create_) = dlsym(module_, "create");
+  if (!create_) {
+    is_valid_ = false;
+    msg_ = std::string("loading ") + filename + ": " + ": create symbol not found";
+    return;
   }
 
-  if (create_ == nullptr) {
-    close();
-    return BoolLog(false, std::string("create is null for ") + filename + ": " + g_module_error());
+  *(void**)(&destroy_) = dlsym(module_, "destroy");
+  if (!destroy_) {
+    is_valid_ = false;
+    msg_ = std::string("loading ") + filename + ": " + ": destroy symbol not found";
+    return;
   }
 
-  if (!g_module_symbol(module_, "destroy", (gpointer*)&destroy_)) {
-    close();
-    return BoolLog(false, std::string("loading ") + filename + ": " + g_module_error());
+  *(void**)(&get_type_) = dlsym(module_, "get_quiddity_type");
+  if (!get_type_) {
+    is_valid_ = false;
+    msg_ = std::string("loading ") + filename + ": " + ": get_quiddity_type symbol not found";
+    return;
   }
 
-  if (destroy_ == nullptr) {
-    close();
-    return BoolLog(false, std::string("destroy is null for ") + filename + ": " + g_module_error());
-  }
-
-  if (!g_module_symbol(module_, "get_quiddity_type", (gpointer*)&get_type_)) {
-    close();
-    return BoolLog(false, std::string("loading ") + filename + ": " + g_module_error());
-  }
-
-  if (get_type_ == nullptr) {
-    close();
-    return BoolLog(false,
-                   std::string("get_type is null for ") + filename + ": " + g_module_error());
-  }
+  dlerror();  // clear any existing error
 
   class_name_ = get_type_();
-  return BoolLog(true);
-}
-
-BoolLog PluginLoader::close() {
-  if (module_ == nullptr) return BoolLog(false, "trying to close a a null module");
-
-  if (!g_module_close(module_)) {
-    return BoolLog(false, std::string("error when closing module: ") + g_module_error());
-  }
-  module_ = nullptr;
-  return BoolLog(true);
 }
 
 std::string PluginLoader::get_class_name() const {
