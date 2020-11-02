@@ -47,7 +47,7 @@ Test Ubuntu 18.04:
     - CC="gcc-8" CXX="g++-8" cmake -DENABLE_GPL="ON" -DCMAKE_BUILD_TYPE="Release" ..
     - make -j"$(nproc)" && make install && ldconfig
     - DEBIAN_FRONTEND=noninteractive apt install -y xvfb
-    - xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' make test
+    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make test
   except:
     - develop
     - master
@@ -63,8 +63,8 @@ Test Ubuntu 20.04:
     - cmake -DENABLE_GPL="ON" -DCMAKE_BUILD_TYPE="Release" ..
     - make -j"$(nproc)" && make install && ldconfig
     - DEBIAN_FRONTEND=noninteractive apt install -y xvfb
-    - xvfb-run  --auto-servernum --server-args='-screen 0 1024x768x24'  pulseaudio &
-    - xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' make test
+    - xvfb-run  --auto-servernum --server-args='-screen 0 1920x1080x24'  pulseaudio &
+    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make test
   except:
     - develop
     - master
@@ -82,8 +82,8 @@ Test package:
     - mkdir -p build && cd build 
     - cmake -DENABLE_GPL="ON" -DCMAKE_BUILD_TYPE="Release" ..
     - DEBIAN_FRONTEND=noninteractive apt install -y xvfb
-    - xvfb-run  --auto-servernum --server-args='-screen 0 1024x768x24'  pulseaudio &
-    - xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' make package_source_test
+    - xvfb-run  --auto-servernum --server-args='-screen 0 1920x1080x24'  pulseaudio &
+    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make package_source_test
   only:
     - develop
 
@@ -99,8 +99,8 @@ coverage:
     - rm -rf build && mkdir build && cd build
     - cmake -DTEST_COVERAGE=ON -DENABLE_GPL=ON ..
     - make -j$(nproc) && make install && ldconfig
-    - xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24'  pulseaudio &
-    - xvfb-run --auto-servernum --server-args='-screen 0 1024x768x24' make check_coverage
+    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24'  pulseaudio &
+    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make check_coverage
     - zip -r coverage.zip coverage
     - mv coverage.zip ../
   artifacts:
