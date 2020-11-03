@@ -31,9 +31,7 @@ int main() {
 
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
 
-    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
 
-    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("../jack");
 
     // creating a jack server
     InfoTree::ptr server_config = InfoTree::make();

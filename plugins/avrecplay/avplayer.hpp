@@ -20,8 +20,8 @@
 #ifndef SWITCHER_AVPLAYER_HPP
 #define SWITCHER_AVPLAYER_HPP
 
-#include <switcher/quiddity/startable.hpp>
 #include "switcher/gst/pipeliner.hpp"
+#include "switcher/quiddity/startable.hpp"
 #include "switcher/shmdata/connector.hpp"
 #include "switcher/shmdata/follower.hpp"
 #include "switcher/shmdata/gst-tree-updater.hpp"

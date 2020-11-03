@@ -67,7 +67,6 @@ int main() {
 
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
 
-    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
 
     // testing if two nvenc can be created simultaneously
     std::vector<std::string> nvencs;
@@ -147,7 +146,6 @@ int main() {
     success = false;
     // starting a new test: nvenc data can be decoded
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
-    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
     manager->conf<MPtr(&Configuration::from_file)>("./check_decode.json");
 
     auto nvdec_created =

@@ -30,7 +30,6 @@ int main() {
     using namespace switcher;
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
 
-    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
 
     struct stat st;
     if (stat("/dev/snd", &st) == -1) {

@@ -2,6 +2,22 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 2.1.24 (2020-11-03)
+---------------------------
+This is an official release in the 2.1 stable series.
+
+New feature:
+* ✨ add support for SWITCHER_PLUGIN_PATH environment variable
+
+Improvement:
+* ⬇️  use dlopen instead of g_module for loading quiddity plugins
+
+Bug fixes:
+* 🐛 fix package_source_test when switcher is not already installed
+* 🐛 fix segfault in avplayer when started with empty folder
+* 👷 use dependency files for CI and install instructions
+* 💚 fix glfw test frequent segfault in CI
+
 switcher 2.1.22 (2020-10-05)
 ---------------------------
 This is an official release in the 2.1 stable series.

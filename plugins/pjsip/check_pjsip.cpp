@@ -30,8 +30,6 @@ int main() {
 
     Switcher::ptr manager = Switcher::make_switcher("siptest");
 
-    manager->factory<MPtr(&Factory::scan_dir)>("./");
-
     assert(quiddity::test::full(manager, "sip"));
 
     for (auto& it : manager->quids<MPtr(&quiddity::Container::get_names)>()) {

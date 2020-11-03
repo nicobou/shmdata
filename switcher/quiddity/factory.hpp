@@ -55,7 +55,7 @@ class Factory : public log::Logged {
 
   std::vector<std::string> plugin_dirs_{};
   AbstractFactory<Quiddity, std::string, quiddity::Config&&> abstract_factory_{};
-  std::unordered_map<std::string, PluginLoader::ptr> plugins_{};
+  std::unordered_map<std::string, PluginLoader::uptr> plugins_{};
 };
 
 }  // namespace quiddity

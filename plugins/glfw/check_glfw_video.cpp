@@ -33,7 +33,6 @@ int main() {
 
     Switcher::ptr manager = Switcher::make_switcher("glfwtest");
 
-    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
 
     // creating a video source quiddity
     auto vqrox = manager->quids<MPtr(&quiddity::Container::create)>("videotestsrc", "vid", nullptr);

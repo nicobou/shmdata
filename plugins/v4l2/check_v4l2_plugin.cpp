@@ -28,7 +28,6 @@ int main() {
     using namespace switcher;
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
 
-    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
 
     assert(quiddity::test::full(manager, "v4l2src"));
     if (!manager->quids<MPtr(&quiddity::Container::create)>("v4l2src", "test", nullptr))

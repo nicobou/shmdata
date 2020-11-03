@@ -44,7 +44,6 @@ libpjsip_plugin_la_includedir = \
 
 libpjsip_plugin_la_LDFLAGS = \
     $(GLIB_LIBS) \
-    $(GMODULE_LIBS) \
     $(GST_LIBS) \
     $(JSONGLIB_LIBS) \
     $(SHMDATA_LIBS) \
@@ -61,7 +60,6 @@ libpjsip_plugin_la_LIBADD = \
 
 libpjsip_plugin_la_CXXFLAGS = \
     $(GLIB_CFLAGS) \
-    $(GMODULE_CFLAGS) \
     $(GST_CFLAGS) \
     $(JSONGLIB_CFLAGS) \
     `pkg-config --cflags pjproject-2.5.1/install_dir/lib/pkgconfig/libpjproject.pc` \

@@ -8,16 +8,19 @@ INSTALL
 Build and install **switcher** from the command line:
 
 ```bash
-# Install all dependencies
-sudo apt install bison build-essential cmake flex freeglut3-dev gsoap gstreamer1.0-libav gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly gstreamer1.0-tools jackd libcgsi-gsoap-dev libcurl4-gnutls-dev libgl1-mesa-dev libglib2.0-dev libglu1-mesa-dev libgstreamer-plugins-bad1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer1.0-dev libjack-jackd2-dev libjson-glib-dev liblo-dev libltc-dev libportmidi-dev libpulse-dev libsamplerate0-dev libsoup2.4-dev libssl-dev libtool libvncserver-dev libxcursor-dev libxinerama-dev libxrandr-dev linux-libc-dev mesa-common-dev python3-dev python3-pip swh-plugins uuid-dev wah-plugins xorg-dev
-
-pip3 install pyOpenSSL websockets
-
 # Clone all code from master branch
+sudo apt install git
 git clone https://gitlab.com/sat-metalab/switcher.git
 
-# Configure build folder
 cd switcher
+# Install all dependencies
+sudo apt install $(cat ./deps/apt-build-ubuntu-20.04) $(cat ./deps/apt-runtime-ubuntu-20.04)
+# uncomment next line if you want to build video encoding with the nvidia graphics card
+# sudo apt install $(cat ./deps/apt-build-nvidia-deps-ubuntu-20.04) $(cat ./deps/apt-runtime-nvidia-deps-ubuntu-20.04)
+# install python dependencies
+pip3 install -r ./deps/pip3-ubuntu20.04
+
+# Configure build folder
 git submodule update --init --recursive
 mkdir build && cd build
 
@@ -34,14 +37,19 @@ sudo make install && sudo ldconfig
 Build and install **switcher** from the command line:
 
 ```bash
-# Install all dependencies
-sudo apt install cmake bison build-essential flex libtool libglib2.0-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libgstreamer-plugins-bad1.0-dev libjson-glib-dev libcgsi-gsoap-dev gstreamer1.0-libav gstreamer1.0-plugins-bad gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-ugly liblo-dev linux-libc-dev libpulse-dev libportmidi-dev libjack-jackd2-dev jackd libvncserver-dev uuid-dev libssl-dev swh-plugins  libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev mesa-common-dev libltc-dev libcurl4-gnutls-dev gsoap wah-plugins libxrandr-dev libxinerama-dev libxcursor-dev libsamplerate0-dev  libsoup2.4-dev python3-dev gcc-8 g++-8 libxxf86vm-dev
-
 # Clone all code from master branch
+sudo apt install git
 git clone https://gitlab.com/sat-metalab/switcher.git
 
-# Configure build folder
 cd switcher
+# Install all dependencies
+sudo apt install $(cat ./deps/apt-build-ubuntu-18.04) $(cat ./deps/apt-runtime-ubuntu-18.04)
+# uncomment next line if you have you want to build video encoding with the nvidia graphics card
+# sudo apt install $(cat ./deps/apt-build-nvidia-deps-ubuntu-18.04) $(cat ./deps/apt-runtime-nvidia-deps-ubuntu-18.04)
+# install python dependencies
+pip3 install -r ./deps/pip3-ubuntu18.04
+
+# Configure build folder
 git submodule update --init --recursive
 mkdir build && cd build
 
@@ -76,44 +84,28 @@ When running non-interactive cmake you have to set the ENABLE\_GPL option if you
 $ cmake .. -DENABLE_GPL=ON
 ```
 
-## Build Nvidia Video Encoding plugin
+## Build against a custom NVIDIA driver (for GPU video encoding)
 
-1. Check that you are running Nvidia drivers:
-
-```
-    $ nvidia-settings
-```
-
-2. Install Nvidia drivers (min. version `396`) and CUDA toolkit:
-
-    > **Note**: You may need to first add the PPA `graphics-drivers/ppa`:  
-    > `$ sudo add-apt-repository --yes ppa:graphics-drivers/ppa`
-
-```
-    $ sudo apt install nvidia-driver-<driver-ver-number> nvidia-dkms-<driver-ver-number> nvidia-kernel-common-<driver-ver-number> nvidia-kernel-source-<driver-ver-number>
-    $ sudo apt install nvidia-cuda-toolkit nvidia-cuda-dev  # CUDA
-```
-
-3. In case running `$ cmake ..` does not automatically detect the right driver, in the **switcher** build directory, configure **switcher** as follows:
+During the build process, if `$ cmake ..` does not automatically detect the right driver, in the **switcher** build directory, configure **switcher** as follows:
 
 ```
     $ cmake .. -DNVIDIA_PATH=/usr/lib/nvidia-<driver-ver-number>
 ```
 
-    For example, replacing `<driver-ver-number>` with the installed Nvidia driver version:
+    For example, replacing `<driver-ver-number>` with the installed Nvidia driver version (here 396):
 
 ```
     $ cmake .. -DNVIDIA_PATH=/usr/lib/nvidia-396
 ```
 
-4. Lastly, compile and install as usual:
+Then, compile and install as usual:
 
 ```
     $ make -j"$(nproc)"
     $ sudo make install
 ```
 
-If you wish to use GPU-accelerated video decoding, you will also need to build the Gstreamer nvdec plugin. Instructions for doing so are [here](doc/using-nvdec-gstreamer-plugins.md).
+Note: if you wish to use GPU-accelerated video decoding, you will also need to build the GStreamer nvdec plugin. Instructions for doing so are [here](doc/using-nvdec-gstreamer-plugins.md).
 
 ## Other build options
 
@@ -141,41 +133,3 @@ If you wish to use GPU-accelerated video decoding, you will also need to build t
     $ make package_source_test
 ```
 
-# Mac OS X Installation (experimental)
-
-* Install xcode
-
-Then install command line tools. From the terminal:
-```
-xcode-select --install
-```
-
-* Install **[Homebrew](https://github.com/Homebrew/brew)**:
-
-```
-    $ /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-```
-
-* Install dependencies:
-
-```
-    $ brew install cmake pkg-config gsoap glib json-glib gstreamer gst-libav gst-plugins-base gst-plugins-good gst-plugins-bad gst-plugins-ugly liblo portmidi python3 libltc curl ossp-uuid jack qjackctl libltc curl 
-```
-
-* Build and install:
-
-```
-    $ mkdir build
-    $ cd build
-    $ cmake ..
-    $ make
-    $ sudo make install
-```
-
-## Notes
-
-* If you are encountering `-lintl` errors when using **Homebrew** to install dependencies, run the following command:
-
-```
-    $ brew link gettext
-```

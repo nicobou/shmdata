@@ -29,7 +29,6 @@ int main() {
     using namespace switcher;
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
 
-    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
 
     if (!quiddity::test::full(manager, "pulsesrc")) success = false;
     if (!quiddity::test::full(manager, "pulsesink")) success = false;

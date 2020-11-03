@@ -42,3 +42,13 @@ git pull origin develop
 ```
 git rebase -i develop
 ```
+
+Updating python and apt dependencies
+------------------------------------
+
+Lists of names for apt packages and python3 modules are maintained into separate files into the `deps` directory. When updating switcher dependencies, you must update these files along with the merge request that requires this update. Following this process ensures the update is propagated to:
+
+* Install instructions in doc/INSTALL.md
+* Continuous integration stages in gitlab
+
+For apt there are several files, build and runtime dependencies, one for each supported distribution. Build dependencies are required for building switcher while runtime dependencies are required when running switcher. For instance, `libportmidi-dev` goes into the build file while `libportmidi0` goes into the runtime file. This separation is required for switcher packaging, like docker image building for instance.

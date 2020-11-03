@@ -58,9 +58,6 @@ int pySwitch::Switcher_init(pySwitchObject* self, PyObject* args, PyObject* kwds
     return -1;
   }
 
-  self->switcher->factory<MPtr(&quiddity::Factory::scan_dir)>(
-      self->switcher->factory<MPtr(&quiddity::Factory::get_default_plugin_dir)>());
-
   if (configFile) {
     if (!self->switcher->conf<MPtr(&Configuration::from_file)>(PyUnicode_AsUTF8(configFile)))
       return -1;

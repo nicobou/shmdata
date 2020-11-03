@@ -143,10 +143,6 @@ int main(int argc, char* argv[]) {
     return 0;
   }
 
-  // loading plugins from default location // FIXME add an option
-  manager->factory<MPtr(&quiddity::Factory::scan_dir)>(
-      manager->factory<MPtr(&quiddity::Factory::get_default_plugin_dir)>());
-
   if (extraplugindir != nullptr)
     manager->factory<MPtr(&quiddity::Factory::scan_dir)>(extraplugindir);
 

@@ -4,9 +4,6 @@ if(CAN_CAST_FUNCTION_TYPE)
   add_definitions(-Wno-error=cast-function-type)
 endif()
 
-
-pkg_check_modules(GMODULE REQUIRED gmodule-2.0)
-
 add_library(${SWITCHER_LIBRARY} SHARED
   configuration/configuration.cpp
   gst/audio-codec.cpp
@@ -105,16 +102,14 @@ endif()
 
 set_target_properties(${SWITCHER_LIBRARY} PROPERTIES VERSION ${SWITCHER_VERSION_STRING} SOVERSION ${SWITCHER_VERSION_MAJOR})
 target_compile_options(${SWITCHER_LIBRARY} PUBLIC -DSWITCHER_DEFAULT_PLUGIN_DIR="${CMAKE_INSTALL_PREFIX}/${SWITCHER_LIBRARY}/plugins" -DSWITCHER_VERSION_STRING="${SWITCHER_VERSION_STRING}" )
-target_compile_options(${SWITCHER_LIBRARY} PUBLIC ${GMODULE_CFLAGS})
 
 target_link_libraries(${SWITCHER_LIBRARY}
     PRIVATE ${COMMON_LIBRARIES}
-    PUBLIC ${GMODULE_LIBRARIES}
+    PUBLIC -Wl,--export-dynamic
     )
 
 target_include_directories(${SWITCHER_LIBRARY}
     PRIVATE ${COMMON_INCLUDE_DIRS}
-    PUBLIC ${GMODULE_INCLUDE_DIRS}
     )
 
 

@@ -27,7 +27,6 @@ int main() {
     using namespace switcher;
 
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
-    manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
     // Currently no more than this because a stream key is needed to fully stream and committing it
     // is unsecure. Functional testing will be manual.
     assert(quiddity::test::full(manager, "rtmp"));

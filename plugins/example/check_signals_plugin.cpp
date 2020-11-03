@@ -31,7 +31,6 @@ int main() {
   using namespace quiddity;
 
   Switcher::ptr manager = Switcher::make_switcher("testing_signals");
-  manager->factory<MPtr(&quiddity::Factory::scan_dir)>("./");
 
   // Test create/remove notification system
   unsigned int create_remove_counter = 0;

@@ -58,7 +58,6 @@ void notify_success() {
 int main() {
   {
     Switcher::ptr manager = Switcher::make_switcher("ladspatest");
-    manager->factory<MPtr(&Factory::scan_dir)>("./");
     manager->conf<MPtr(&Configuration::from_file)>("./check_ladspa.json");
 
     // creating a ladspa audiotest bundle

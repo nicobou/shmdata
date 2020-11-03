@@ -4,7 +4,7 @@
 set -e
 
 # run a switcher
-switcher --verbose &
+switcher --verbose  --extra-plugin-dir ../plugins/gsoap/&
 ret=$!
 sleep 1
 

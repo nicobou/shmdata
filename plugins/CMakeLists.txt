@@ -1,19 +1,14 @@
-#pkg_check_modules(GMODULE REQUIRED gmodule-2.0)
 
 option(WITH_OPTIONAL_PLUGINS "Optional Plugins" ON)
 add_feature_info("plugins-optional" WITH_OPTIONAL_PLUGINS "Optional Plugins")
 
 link_libraries(
     ${SWITCHER_LIBRARY}
-    #${GMODULE_LIBRARIES}
 )
 
 include_directories(
     ${SWITCHER_DIR}
-    #${GMODULE_INCLUDE_DIRS}
 )
-
-#add_compile_options(${GMODULE_CFLAGS})
 
 # Required plugins
 add_subdirectory(gsoap)
