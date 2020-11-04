@@ -82,7 +82,6 @@ Test package:
     - mkdir -p build && cd build 
     - cmake -DENABLE_GPL="ON" -DCMAKE_BUILD_TYPE="Release" ..
     - DEBIAN_FRONTEND=noninteractive apt install -y xvfb
-    - xvfb-run  --auto-servernum --server-args='-screen 0 1920x1080x24'  pulseaudio &
     - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make package_source_test
   only:
     - develop
