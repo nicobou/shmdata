@@ -1,6 +1,6 @@
 # CMake Config
 cmake_minimum_required(VERSION 3.5.1)
-
+project(switcher)
 #
 # CONFIGURATION
 #
@@ -40,9 +40,25 @@ set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
 set(CPACK_PACKAGE_VERSION_MAJOR "${SWITCHER_VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${SWITCHER_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${SWITCHER_VERSION_PATCH}")
-set(CPACK_GENERATOR TGZ)
+set(CPACK_GENERATOR DEB)
 set(CPACK_SOURCE_GENERATOR TGZ)
 set(CPACK_COMPONENTS_ALL applications libraries headers)
+
+# CPack - Debian Package
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+set(CPACK_DEBIAN_PACKAGE_NAME "${CPACK_PACKAGE_NAME}")
+set(CPACK_DEBIAN_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION}")
+set(CPACK_DEBIAN_PROJECT_HOMEPAGE "https://gitlab.com/sat-metalab/switcher/")
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "${CPACK_PACKAGE_VENDOR} <nbouillot@sat.qc.ca>")
+set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Switcher is an integration environment, able to interoperate with other software and protocols. Switcher provides low latency streaming of multichannel audio, video and data through IP networks. Switcher provides managing of several instances of services (called Quiddities). A Quiddity can be created and removed dynamically and can be controlled through property get/set as well as method invocations and information tree monitoring. Switcher provides introspection mechanisms to help write higher level software written in python3 or C++. Switcher can save and load the state of quiddities. 
+")
+set(CPACK_DEBIAN_PACKAGE_SECTION "utils")
+set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libshmdata (>= 1.3)")
+set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/README.md ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE
+  DESTINATION share/doc/${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}/)
 
 # CPack - Applications
 set(CPACK_COMPONENT_APPLICATIONS_DISPLAY_NAME "Switcher & Switcher Control Application")
@@ -59,9 +75,9 @@ set(CPACK_COMPONENT_HEADERS_DESCRIPTION "C/C++ header files for use with Switche
 set(CPACK_COMPONENT_HEADERS_DEPENDS libraries)
 
 # CPack - Source
-set(CPACK_SOURCE_IGNORE_FILES "/\.hooks/;/\.idea/;/build/;/html/;/scripts/;${CPACK_SOURCE_IGNORE_FILES}")
+set(CPACK_SOURCE_IGNORE_FILES "/\.hooks/;/build/;/html/;/scripts/;${CPACK_SOURCE_IGNORE_FILES}")
 
-# Add local cmake directory to ckame module path in case we need it
+# Add local cmake directory to cmaee module path in case we need it
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 #
