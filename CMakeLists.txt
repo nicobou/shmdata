@@ -1,5 +1,6 @@
 # CMake Config
 cmake_minimum_required(VERSION 3.5.1)
+project(shmdata)
 
 #
 # CONFIGURATION
@@ -55,7 +56,7 @@ endif()  # TEST_COVERAGE
 
 # CPack - General
 set(CPACK_PACKAGE_NAME ${PACKAGE_NAME})
-set(CPACK_PACKAGE_VENDOR "Métalab - Société des arts technologiques")
+set(CPACK_PACKAGE_VENDOR "Metalab - Société des arts technologiques")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY ${PACKAGE_DESCRIPTION})
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
@@ -63,9 +64,25 @@ set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
 set(CPACK_PACKAGE_VERSION_MAJOR "${SHMDATA_VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${SHMDATA_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${SHMDATA_VERSION_PATCH}")
-set(CPACK_GENERATOR TGZ)
+set(CPACK_GENERATOR DEB)
 set(CPACK_SOURCE_GENERATOR TGZ)
 set(CPACK_COMPONENTS_ALL applications libraries headers)
+
+# CPack - Debian Package
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+set(CPACK_DEBIAN_PACKAGE_NAME "lib${CPACK_PACKAGE_NAME}")
+set(CPACK_DEBIAN_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION}")
+set(CPACK_DEBIAN_PROJECT_HOMEPAGE "https://gitlab.com/sat-metalab/shmdata/")
+#set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
+set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "${CPACK_PACKAGE_VENDOR} <nbouillot@sat.qc.ca>")
+set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Library to share streams of framed data between processes via shared memory. shmdata is server less: it requires applications to link data streams using socket path (e.g. \"/tmp/my_shmdata_stream\"). Shmdata is very fast and allows processes to access data streams without the need of extra copy. The communication paradigm is 1 to many, i.e., one writer is making available data frames to several followers. Followers and writers can hot connect & disconnect.")
+set(CPACK_DEBIAN_PACKAGE_SECTION "libs")
+set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "")
+set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/README.md ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE
+  DESTINATION share/doc/${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}/)
 
 # CPack - Applications
 set(CPACK_COMPONENT_APPLICATIONS_DISPLAY_NAME "SDFlow & SDCrash Applications")
@@ -82,9 +99,9 @@ set(CPACK_COMPONENT_HEADERS_DESCRIPTION "C/C++ header files for use with shmdata
 set(CPACK_COMPONENT_HEADERS_DEPENDS libraries)
 
 # CPack - Source
-set(CPACK_SOURCE_IGNORE_FILES "/\.hooks/;/\.idea/;/build/;/html/;${CPACK_SOURCE_IGNORE_FILES}")
+set(CPACK_SOURCE_IGNORE_FILES "/\.hooks/;/build/;/html/;${CPACK_SOURCE_IGNORE_FILES}")
 
-# Add local cmake directory to ckame module path in case we need it
+# Add local cmake directory to cmake module path in case we need it
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 #
