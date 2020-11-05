@@ -18,10 +18,13 @@
  */
 
 #include "avrec.hpp"
+
 #include <sys/stat.h>
 
 #include "switcher/quiddity/property/gprop-to-prop.hpp"
+#include "switcher/shmdata/caps/utils.hpp"
 #include "switcher/utils/scope-exit.hpp"
+#include "switcher/utils/string-utils.hpp"
 
 namespace switcher {
 namespace quiddities {
@@ -265,15 +268,7 @@ bool AVRecorder::stop() {
 }
 
 bool AVRecorder::on_shmdata_connect(const std::string& shmpath) {
-  auto shmdata_name =
-      get_quiddity_name_from_file_name(shmpath) + "_" + get_shmdata_name_from_file_name(shmpath);
-  if (shmdata_name.empty()) {
-    warning("Invalid shmdata path % (avrec)", shmpath);
-    message("ERROR: Invalid shmdata path % (avrec)", shmpath);
-    return false;
-  }
-
-  auto connected_shmdata = std::make_unique<ConnectedShmdata>(this, shmdata_name, shmpath);
+  auto connected_shmdata = std::make_unique<ConnectedShmdata>(this, shmpath);
 
   // Create a follower on the connecting shmdata, when receiving its caps, discover compatible
   // muxers and fetch all their gstreamer properties then create the appropriate switcher
@@ -282,21 +277,31 @@ bool AVRecorder::on_shmdata_connect(const std::string& shmpath) {
       this,
       shmpath,
       nullptr,
-      [this, connected_shmdata = connected_shmdata.get(), shmdata_name, shmpath](
-          const std::string& str_caps) {
+      [this, connected_shmdata = connected_shmdata.get(), shmpath](const std::string& str_caps) {
+        auto manager = switcher::shmdata::caps::get_switcher_name(str_caps);
+        auto id = switcher::shmdata::caps::get_quiddity_id(str_caps);
+        auto category =
+            stringutils::replace_char(switcher::shmdata::caps::get_category(str_caps), ' ', "_");
+
+        auto name = std::string();
+        if (!manager.empty()) name = manager + "_";
+        if (!id.empty()) name = name + id + "_";
+        name += category;
+
+        connected_shmdata->shmdata_name_ = name;
         pmanage<MPtr(&property::PBag::make_group)>(
-            shmdata_name + "_group",
-            "Muxer for " + shmdata_name,
-            std::string("Properties of the muxer for shmdata ") + shmdata_name);
+            name + "_group",
+            "Muxer for " + name,
+            std::string("Properties of the muxer for shmdata ") + name);
 
         connected_shmdata->caps_ = str_caps;
         std::vector<std::string> muxer_list;
         connected_shmdata->discover_compatible_muxers(muxer_list);
 
-        auto recfile_prop_name = "recfile_" + shmdata_name;
+        auto recfile_prop_name = "recfile_" + name;
         connected_shmdata->recfile_id_ = pmanage<MPtr(&property::PBag::make_parented_string)>(
             recfile_prop_name,
-            shmdata_name + "_group",
+            name + "_group",
             [connected_shmdata](const std::string& val) {
               connected_shmdata->recfile_ = val;
               return true;
@@ -312,7 +317,7 @@ bool AVRecorder::on_shmdata_connect(const std::string& shmpath) {
         connected_shmdata->muxer_selection_id_ =
             pmanage<MPtr(&property::PBag::make_parented_selection<>)>(
                 muxer_selection_prop_name,
-                shmdata_name + "_group",
+                name + "_group",
                 [connected_shmdata](const quiddity::property::IndexOrName& val) {
                   connected_shmdata->muxer_selection_.select(val);
                   return connected_shmdata->update_gst_properties();
@@ -326,7 +331,7 @@ bool AVRecorder::on_shmdata_connect(const std::string& shmpath) {
         if (record_mode_.get_current() == AVRecorder::kRecordModeLabel)
           connected_shmdata->create_label_property();
 
-        auto saved_properties = saved_properties_.find(shmdata_name);
+        auto saved_properties = saved_properties_.find(name);
         if (saved_properties != saved_properties_.end()) {
           pmanage<MPtr(&property::PBag::set_str)>(connected_shmdata->muxer_selection_id_,
                                                   saved_properties->second["muxer"]);
@@ -445,9 +450,8 @@ void AVRecorder::save_properties() {
 }
 
 AVRecorder::ConnectedShmdata::ConnectedShmdata(AVRecorder* parent,
-                                               const std::string& shmdata_name,
                                                const std::string& shmpath)
-    : parent_(parent), shmdata_name_(shmdata_name), shmpath_(shmpath) {}
+    : parent_(parent), shmpath_(shmpath) {}
 
 AVRecorder::ConnectedShmdata::~ConnectedShmdata() {
   parent_->pmanage<MPtr(&property::PBag::remove)>(muxer_selection_id_);

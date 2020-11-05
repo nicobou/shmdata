@@ -59,7 +59,9 @@ class Container : public log::Logged {
   InfoTree::ptr get_quiddities_description();
   qid_t get_id(const std::string& name) const;
   std::string get_name(qid_t id) const;
+  std::string get_nickname(qid_t id) const;
   std::vector<std::string> get_names() const;
+  std::string get_name_from_caps(const std::string& caps);
 
   // **** creation/remove/get and notification
   // &?= chars are not allowed in nicknames

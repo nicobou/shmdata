@@ -83,7 +83,7 @@ class SIPPlugin : public Quiddity {
   bool start_sip_transport();
   void apply_log_level_configuration();
   void apply_configuration();
-  void create_quiddity_stream(const std::string& peer_uri, const std::string& quid_name);
+  void create_quiddity_stream(const std::string& peer_uri, const std::string& quid_name, const std::string& nickname = "");
   void expose_stream_to_quiddity(const std::string& quid_name, const std::string& shmpath);
   void remove_exposed_quiddity(const std::string& peer_uri, const std::string& quid_name);
   void remove_exposed_quiddities(const std::string& peer_uri);

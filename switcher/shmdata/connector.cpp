@@ -70,17 +70,6 @@ bool Connector::install_connect_method(OnConnect on_connect_cb,
           quid_->warning("on connect callback not installed\n");
           return false;
         }
-        auto quid_name = quid_->get_quiddity_name_from_file_name(path);
-        auto suffix = quid_->get_shmdata_name_from_file_name(path);
-        auto tree = InfoTree::make();
-        if (!quid_name.empty() && !suffix.empty()) {
-          tree->graft("name", InfoTree::make(quid_name));
-          tree->graft("suffix", InfoTree::make(suffix));
-        } else {
-          tree->graft("name", InfoTree::make(""));
-          tree->graft("suffix", InfoTree::make(""));
-        }
-        quid_->information_tree_->graft(std::string(".shmdata.reader.") + path + ".writer", tree);
         return on_connect_cb_(path);
       });
 
@@ -113,11 +102,7 @@ bool Connector::install_connect_method(OnConnect on_connect_cb,
           quid_->warning("quiddity % not found: %", quid_name, qrox.msg());
           return false;
         }
-        auto tree = InfoTree::make();
-        tree->graft("name", InfoTree::make(quid_name));
-        tree->graft("suffix", InfoTree::make(suffix));
         auto path = qrox.get()->make_shmpath(suffix);
-        quid_->information_tree_->graft(std::string(".shmdata.reader.") + path + ".writer", tree);
         return on_connect_cb_(path);
       });
 

@@ -18,8 +18,9 @@
  */
 
 #include "./utils.hpp"
+
 #include <algorithm>
-#include "../gst-subscriber.hpp"
+#include <shmdata/type.hpp>
 
 namespace switcher {
 namespace shmdata {
@@ -51,6 +52,16 @@ std::string get_category(const std::string& caps) {
     category = mime_type;
   }
   return category;
+}
+
+std::string get_quiddity_id(const std::string& caps) {
+  auto caps_type = ::shmdata::Type(caps);
+  return std::any_cast<std::string>(caps_type.get("quiddity-id"));
+}
+
+std::string get_switcher_name(const std::string& caps) {
+  auto caps_type = ::shmdata::Type(caps);
+  return std::any_cast<std::string>(caps_type.get("switcher-name"));
 }
 
 }  // namespace caps

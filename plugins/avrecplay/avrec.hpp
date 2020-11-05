@@ -63,7 +63,6 @@ class AVRecorder : public Quiddity, public Startable {
 
   struct ConnectedShmdata {
     ConnectedShmdata(AVRecorder* parent,
-                     const std::string& shmdata_name,
                      const std::string& shmpath);
     ~ConnectedShmdata();
     void discover_compatible_muxers(std::vector<std::string>&);

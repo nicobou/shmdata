@@ -18,12 +18,14 @@
 #ifndef PLUGINS_PJSIP_PJ_CALL_H_
 #define PLUGINS_PJSIP_PJ_CALL_H_
 
-#include <pjsua-lib/pjsua.h>
 #include <condition_variable>
 #include <map>
 #include <mutex>
 #include <string>
 #include <vector>
+
+#include <pjsua-lib/pjsua.h>
+
 #include "./pj-codec.hpp"
 #include "./pj-ice-stream-trans.hpp"
 #include "./pj-media-endpt.hpp"
@@ -109,6 +111,9 @@ class PJCall {
                                        pjmedia_sdp_session** p_sdp);
   static pj_status_t parse_SDP_from_incoming_request(pjsip_rx_data* rdata,
                                                      pjmedia_sdp_session* offer);
+  bool is_call_valid(const std::string& contact_uri);
+  pjsip_dialog* create_sip_dialog(const pj_str_t local_uri, const pj_str_t remote_uri);
+  bool send_invite_request(pjsip_dialog* dlg, call_t* call, const pjmedia_sdp_session* sdp);
   bool make_call(std::string contact_uri);
   bool create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_session** res);
   quiddity::Quiddity::ptr retrieve_rtp_manager();

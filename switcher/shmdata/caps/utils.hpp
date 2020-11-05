@@ -21,15 +21,16 @@
 #define __SWITCHER_SHMDATA_CAPS_H__
 
 #include <string>
-#include "../../infotree/information-tree.hpp"
-#include "../gst-subscriber.hpp"
-#include "../stat.hpp"
 
 namespace switcher {
 namespace shmdata {
 namespace caps {
 
 std::string get_category(const std::string& caps);
+
+std::string get_quiddity_id(const std::string& caps);
+
+std::string get_switcher_name(const std::string& caps);
 
 }  // namespace caps
 }  // namespace shmdata

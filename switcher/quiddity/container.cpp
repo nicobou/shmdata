@@ -18,7 +18,10 @@
  */
 
 #include "./container.hpp"
+
 #include <limits>
+
+#include "../shmdata/caps/utils.hpp"
 #include "../switcher.hpp"
 #include "../utils/scope-exit.hpp"
 
@@ -209,6 +212,25 @@ qid_t Container::get_id(const std::string& name) const {
 }
 
 std::string Container::get_name(qid_t id) const { return quiddities_.find(id)->second->get_name(); }
+
+std::string Container::get_nickname(qid_t id) const {
+  return quiddities_.find(id)->second->get_nickname();
+}
+
+std::string Container::get_name_from_caps(const std::string& caps) {
+  std::string quiddity_name = "";
+
+  const std::string manager = switcher::shmdata::caps::get_switcher_name(caps);
+  if (manager != switcher_->get_name()) {
+    quiddity_name = get_quiddity(get_id(manager))->get_nickname();
+  } else {
+    const auto id =
+        deserialize::apply<quiddity::qid_t>(switcher::shmdata::caps::get_quiddity_id(caps));
+    if (id.first) quiddity_name = get_quiddity(id.second)->get_nickname();
+  }
+
+  return quiddity_name;
+}
 
 Qrox Container::get_qrox(qid_t id) { return Qrox(true, get_name(id), id, get_quiddity(id).get()); }
 
