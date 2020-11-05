@@ -126,3 +126,23 @@ Build and Deploy Ubuntu for Scenic:
     - develop
     - master
     - test-switcher-image
+
+#
+# Package
+#
+Debian Package Ubuntu 20.04:
+  stage: deploy
+  image: $CI_REGISTRY/sat-metalab/switcher:deps-ubuntu2004
+  script: 
+    - DEBIAN_FRONTEND=noninteractive apt update -y
+    - git submodule update --init
+    - rm -rf build && mkdir build && cd build
+    - cmake -DENABLE_GPL=ON -DCMAKE_INSTALL_PREFIX=/usr ..
+    - make -j$(nproc) package
+    - mv *.deb ../switcher_ubuntu20.04_latest_amd64.deb
+  artifacts:
+    name: "switcher_package_${CI_BUILD_REF_NAME}"
+    paths:
+    - switcher_ubuntu20.04_latest_amd64.deb
+  only:
+    - master
