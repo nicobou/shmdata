@@ -1,10 +1,13 @@
 stages:
-  - test-ubuntu18.04
-  - test-package
+  - test
   - coverage
+  - package
 
-Test:
-  stage: test-ubuntu18.04
+#
+# Test
+#
+Test Ubuntu 18.04:
+  stage: test
   image: ubuntu:18.04
   script:
     - DEBIAN_FRONTEND=noninteractive apt update -y
@@ -17,8 +20,8 @@ Test:
     - develop
     - master
 
-Test package:
-  stage: test-package
+Test package Ubuntu 20.04:
+  stage: test
   image: ubuntu:20.04
   script:
     - DEBIAN_FRONTEND=noninteractive apt update -y
@@ -31,7 +34,7 @@ Test package:
     - master
 
 #
-# Test coverage
+# Coverage
 #
 coverage:
   stage: coverage
@@ -52,3 +55,25 @@ coverage:
     - "coverage.zip"
   only:
     - develop
+
+#
+# Package
+#
+Debian Package Ubuntu 20.04:
+  stage: package
+  image: ubuntu:20.04
+  script: 
+    - DEBIAN_FRONTEND=noninteractive apt update -y
+    - DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends file
+    - DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends cmake build-essential git libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-base python3-dev
+    - rm -rf build && mkdir build && cd build
+    - cmake -DCMAKE_INSTALL_PREFIX=/usr ..
+    - make package
+    - mv *.deb ../libshmdata_latest_amd64.deb
+  artifacts:
+    name: "shmdata_package_${CI_BUILD_REF_NAME}"
+    paths:
+    - libshmdata_latest_amd64.deb
+  only:
+    - master
+
