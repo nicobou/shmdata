@@ -11,7 +11,7 @@ Test:
     - DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends cmake build-essential git libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-base python3-dev
     - rm -rf build && mkdir build && cd build
     - cmake ..
-    - make -j${nproc} && make install && ldconfig
+    - make -j${nproc}
     - make test
   except:
     - develop
@@ -42,7 +42,7 @@ coverage:
     - DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends cmake build-essential git libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-base python3-dev
     - rm -rf build && mkdir build && cd build
     - cmake -DTEST_COVERAGE=ON ..
-    - make -j$(nproc) && make install && ldconfig
+    - make -j$(nproc)
     - make check_coverage
     - zip -r coverage.zip coverage
     - mv coverage.zip ../
