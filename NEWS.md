@@ -2,6 +2,19 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 2.1.26 (2020-11-16)
+---------------------------
+This is an official release in the 2.1 stable series.
+
+Packaging and CI:
+* 💚 fix check_switcher_ctrl with package_source_test
+* 💚 fix pulsesrc test blocked when no pulseaudio server is running
+* 👷 add Debian package build in CI with ubuntu 20.04
+* 📦 generate Debian package with make package
+
+Improvement:
+* ♻️ Give IDs to shmpaths created by SIP quiddity
+
 switcher 2.1.24 (2020-11-03)
 ---------------------------
 This is an official release in the 2.1 stable series.
