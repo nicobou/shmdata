@@ -15,6 +15,8 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include <filesystem>
+
 #include "./pj-call.hpp"
 #include "./pj-call-utils.hpp"
 #include "./pj-sip-plugin.hpp"
@@ -22,6 +24,8 @@
 #include "switcher/infotree/json-serializer.hpp"
 #include "switcher/utils/net-utils.hpp"
 #include "switcher/utils/scope-exit.hpp"
+
+namespace fs = std::filesystem;
 
 namespace switcher {
 namespace quiddities {
@@ -480,7 +484,7 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
   char uristr[PJSIP_MAX_URL_SIZE];
   int len = pjsip_uri_print(
       PJSIP_URI_IN_REQ_URI, rdata->msg_info.msg->line.req.uri, uristr, sizeof(uristr));
-  SIPPlugin::this_->debug("incomimg call from %", std::string(uristr, len));
+  SIPPlugin::this_->debug("Incoming call from %", std::string(uristr, len));
   len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR,
                         pjsip_uri_get_uri(rdata->msg_info.from->uri),
                         uristr,
@@ -604,15 +608,13 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
   if (!call->ice_trans_) SIPPlugin::this_->warning("ICE transport initialization failed");
   // initializing shmdata writers and linking with ICE transport
   call->recv_rtp_session_ = std::make_unique<gst::RTPSession>();
-  for (auto& it : media_to_receive) {
-    auto shm_prefix = SIPPlugin::this_->get_shmpath_prefix() +
-                      SIPPlugin::this_->get_manager_name() + "_" + SIPPlugin::this_->get_name() +
-                      "-" + std::string(call->peer_uri, 0, call->peer_uri.find('@')) + "_";
-    auto media_label = PJCallUtils::get_media_label(it);
-    auto rtp_shmpath = shm_prefix + "rtp-" + media_label;
-    // ensure rtp_shmpath is unique (can happen in case of label collision) and add suffix to
-    // media_label if necessary
-    unsigned int i = 1;
+  for (unsigned int i = 0; i < media_to_receive.size(); ++i) {
+    auto media = media_to_receive.at(i);
+    auto media_label = PJCallUtils::get_media_label(media);
+
+    auto rtp_shmpath = SIPPlugin::this_->make_shmpath("rtp");
+    // ensure rtp_shmpath is unique (can happen in case of label collision) and add suffix if necessary
+    unsigned int j = 1;
     std::string rtp_shmpath_suffix;
     while (call->rtp_writers_.end() !=
            std::find_if(call->rtp_writers_.cbegin(),
@@ -621,23 +623,22 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
                             const std::unique_ptr<shmdata::Writer>& writer) {
                           return writer->get_path() == testpath;
                         })) {
-      ++i;
-      rtp_shmpath_suffix = std::to_string(i);
+      ++j;
+      rtp_shmpath_suffix = std::to_string(j);
     }
     if (!rtp_shmpath_suffix.empty()) {
-      rtp_shmpath = rtp_shmpath + rtp_shmpath_suffix;
-      media_label = media_label + rtp_shmpath_suffix;
+      rtp_shmpath = rtp_shmpath + '-' + rtp_shmpath_suffix;
     }
     // get caps
-    auto rtp_caps = PJCallUtils::get_rtp_caps(it);
+    auto rtp_caps = PJCallUtils::get_rtp_caps(media);
     if (rtp_caps.empty()) rtp_caps = "unknown_data_type";
 
     call->rtp_writers_.emplace_back(
         std::make_unique<shmdata::Writer>(SIPPlugin::this_, rtp_shmpath, 1, rtp_caps));
     // uncomment the following in order to get rtp shmdata shown in scenic:
-    // SIPPlugin::this_->graft_tree(
-    //     std::string(".shmdata.writer.") + rtp_shmpath + ".uri",
-    //     InfoTree::make(call->peer_uri));
+    SIPPlugin::this_->graft_tree(
+         std::string(".shmdata.writer.") + rtp_shmpath + ".uri",
+         InfoTree::make(call->peer_uri));
     auto* writer = call->rtp_writers_.back().get();
     call->ice_trans_->set_data_cb(
         call->rtp_writers_.size(), [writer, rtp_shmpath](void* data, size_t size) {
@@ -646,15 +647,20 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
         });
     // setting a decoder for this shmdata
     // Create a shmdata quiddity for this stream.
-    std::string quid_name =
-        media_label + "-" + std::string(call->peer_uri, 0, call->peer_uri.find('@'));
-    SIPPlugin::this_->create_quiddity_stream(call->peer_uri, quid_name);
+    std::string quid_name = "sipMedia";
+    auto quid_names = SIPPlugin::this_->qcontainer_->get_names();
+    auto suffix = 0;
+    while (std::any_of(quid_names.begin(), quid_names.end(), [quid_name, suffix](auto name){ return name == (quid_name + std::to_string(suffix)); })) {
+      ++suffix;
+    }
+    quid_name = quid_name + std::to_string(suffix);
+    SIPPlugin::this_->create_quiddity_stream(call->peer_uri, quid_name, media_label);
     // Create a gst::RTPReceiver
     call->rtp_receivers_.emplace_back(std::make_unique<gst::RTPReceiver>(
         call->recv_rtp_session_.get(),
         rtp_shmpath,
         [=](GstElement* el, const std::string& media_type, const std::string&) {
-          auto shmpath = shm_prefix + media_label + "-" + media_type;
+          auto shmpath = SIPPlugin::this_->make_shmpath(media_type) + '-' + std::to_string(i);
           auto extra_caps = SIPPlugin::this_->get_quiddity_caps();
           g_object_set(G_OBJECT(el), "socket-path", shmpath.c_str(), "extra-caps-properties", extra_caps.c_str(), nullptr);
           std::lock_guard<std::mutex> lock(call->shm_subs_mtx_);
@@ -716,9 +722,11 @@ pj_status_t PJCall::create_sdp_answer(pj_pool_t* pool,
                                       const std::vector<pjmedia_sdp_media*>& media_to_receive,
                                       pjmedia_sdp_session** p_sdp) {
   PJ_ASSERT_RETURN(pool && p_sdp, PJ_EINVAL);
-  /* Create and initialize basic SDP session */
+  // Create and initialize basic SDP session
   pjmedia_sdp_session* sdp =
       static_cast<pjmedia_sdp_session*>(pj_pool_zalloc(pool, sizeof(pjmedia_sdp_session)));
+
+  // Originator ('o' field)
   pj_time_val tv;
   pj_gettimeofday(&tv);
   pj_cstr(&sdp->origin.user, "-");
@@ -726,13 +734,20 @@ pj_status_t PJCall::create_sdp_answer(pj_pool_t* pool,
   pj_cstr(&sdp->origin.net_type, "IN");
   pj_cstr(&sdp->origin.addr_type, "IP4");
   sdp->origin.addr = SIPPlugin::this_->sip_calls_->local_addr_;
+
+  // Session name ('s' field)
   pj_cstr(&sdp->name, "switcher");
+
+  // Connection information ('c' field)
   sdp->conn = static_cast<pjmedia_sdp_conn*>(pj_pool_zalloc(pool, sizeof(pjmedia_sdp_conn)));
   pj_cstr(&sdp->conn->net_type, "IN");
   pj_cstr(&sdp->conn->addr_type, "IP4");
   sdp->conn->addr = SIPPlugin::this_->sip_calls_->local_addr_;
-  /* SDP time and attributes. */
+
+  // Session time ('t' field)
   sdp->time.start = sdp->time.stop = 0;
+
+  // ICE-related attributes ('ice-ufrag' and 'ice-pwd' 'a' fields)
   sdp->attr_count = 0;
   if (call->ice_trans_) {
     auto ufrag_pwd = call->ice_trans_->get_ufrag_and_passwd();
@@ -749,14 +764,17 @@ pj_status_t PJCall::create_sdp_answer(pj_pool_t* pool,
     sdp->attr[sdp->attr_count] = pwd;
     ++sdp->attr_count;
   }
+
+  // Media-related attributes
   sdp->media_count = 0;
   auto candidates = call->ice_trans_->get_components();
   auto default_ports = call->ice_trans_->get_first_candidate_ports();
   for (unsigned i = 0; i < media_to_receive.size(); i++) {
-    // getting offer media to receive
+    // Getting offer media to receive ('m' field and related 'a' fields)
     pjmedia_sdp_media* sdp_media = media_to_receive[i];
-    // set port
+    // Set port
     sdp_media->desc.port = default_ports[i];
+    // ICE candidates ('candidate')
     for (auto& it : candidates[i]) {
       pjmedia_sdp_attr* cand =
           static_cast<pjmedia_sdp_attr*>(pj_pool_zalloc(pool, sizeof(pjmedia_sdp_attr)));
@@ -765,246 +783,330 @@ pj_status_t PJCall::create_sdp_answer(pj_pool_t* pool,
       sdp_media->attr[sdp_media->attr_count] = cand;
       ++sdp_media->attr_count;
     }
-    // put media in answer
+    // Set media in answer ('m' field and updated 'a' fields)
     sdp->media[i] = sdp_media;
     sdp->media_count++;
   }
+
   *p_sdp = sdp;
   return PJ_SUCCESS;
 }
 
-void PJCall::print_sdp(const pjmedia_sdp_session* local_sdp) {
-  char sdpbuf1[65536];
-  pj_ssize_t len1;
-  len1 = pjmedia_sdp_print(local_sdp, sdpbuf1, sizeof(sdpbuf1));
-  if (len1 < 1) {
-    SIPPlugin::this_->warning("error when printing local sdp");
-    return;
+void PJCall::print_sdp(const pjmedia_sdp_session* sdp) {
+  char sdpbuf[65536];
+  pj_ssize_t len = pjmedia_sdp_print(sdp, sdpbuf, sizeof(sdpbuf));
+  if (len >= 1) {
+    sdpbuf[len] = '\0';
+    SIPPlugin::this_->debug("SDP : \n% \n ", std::string(sdpbuf));
+  } else {
+    SIPPlugin::this_->error("Error while printing SDP");
   }
-  sdpbuf1[len1] = '\0';
-  SIPPlugin::this_->debug("sdp : \n% \n ", std::string(sdpbuf1));
 }
 
-bool PJCall::make_call(std::string dst_uri) {
+bool PJCall::is_call_valid(const std::string& contact_uri) {
+  // Are we registered?
   if (SIPPlugin::this_->sip_presence_->sip_local_user_.empty()) {
-    SIPPlugin::this_->warning("cannot call if not registered");
-    return false;
-  }
-  auto it = std::find_if(
-      outgoing_call_.begin(), outgoing_call_.end(), [&dst_uri](const std::unique_ptr<call_t>& c) {
-        return c->peer_uri == dst_uri;
-      });
-  if (it != outgoing_call_.end()) {
-    SIPPlugin::this_->warning("cannot call % (already calling)", dst_uri);
-    return false;
-  }
-  auto& sip_local_user = SIPPlugin::this_->sip_presence_->sip_local_user_;
-  if (std::string("sip:") + dst_uri ==
-      std::string(sip_local_user, 0, sip_local_user.find_last_of(':'))) {
-    SIPPlugin::this_->message("ERROR:cannot self call");
-    SIPPlugin::this_->warning("cannot self call");
+    SIPPlugin::this_->error("Not registered to SIP server. Call aborted.");
     return false;
   }
 
-  pj_str_t local_uri;
-  std::string local_uri_tmp(sip_local_user);
-  pj_cstr(&local_uri, local_uri_tmp.c_str());
-  call_t* cur_call = nullptr;
-  pjsip_dialog* dlg = nullptr;
-  pjmedia_sdp_session* sdp = nullptr;
-  pjsip_tx_data* tdata = nullptr;
-  pj_status_t status;
-  pj_str_t dest_str;
-  std::string tmp_dest_uri("sip:" + dst_uri);
-  pj_cstr(&dest_str, tmp_dest_uri.c_str());
-  auto id = pjsua_buddy_find(&dest_str);
-  if (PJSUA_INVALID_ID == id) {
-    SIPPlugin::this_->warning("buddy not found: cannot call %", dst_uri);
+  // Are we already calling the contact?
+  auto it = std::find_if(
+    outgoing_call_.begin(),
+    outgoing_call_.end(),
+    [&contact_uri](const auto& c) {return c->peer_uri == contact_uri;}
+  );
+  if (it != outgoing_call_.end()) {
+    SIPPlugin::this_->error("A call with % already exists. Aborting new call.", contact_uri);
     return false;
   }
+
+  // Are we calling self?
+  auto sip_local_user = SIPPlugin::this_->sip_presence_->sip_local_user_;
+  auto sip_dest_user = "sip:" + contact_uri;
+  if (sip_dest_user == std::string(sip_local_user, 0, sip_local_user.find_last_of(':'))) {
+    SIPPlugin::this_->error("Cannot call self. Call aborted.");
+    return false;
+  }
+
+  // Does contact exist?
+  pj_str_t remote_uri;
+  pj_cstr(&remote_uri, sip_dest_user.c_str());
+  auto id = pjsua_buddy_find(&remote_uri);
+  if (id == PJSUA_INVALID_ID) {
+    SIPPlugin::this_->error("Cannot find buddy %. Call aborted.", contact_uri);
+    return false;
+  }
+
+  // Is at least one shmdata attached to the contact?
   auto paths = SIPPlugin::this_->tree<MPtr(&InfoTree::copy_leaf_values)>(
       std::string(".buddies." + std::to_string(id) + ".connections"));
   if (paths.empty()) {
-    SIPPlugin::this_->warning("not calling % since no shmdata path has been attached", dst_uri);
+    SIPPlugin::this_->error("No shmdatas attached to buddy %. Call aborted.", contact_uri);
     return false;
   }
-  // Find unused call slot
-  outgoing_call_.emplace_back(std::make_unique<call_t>());
-  cur_call = outgoing_call_.back().get();
+
+  // Call is valid
+  return true;
+}
+
+pjsip_dialog* PJCall::create_sip_dialog(const pj_str_t local_uri, const pj_str_t remote_uri) {
   // Create UAC dialog
-  status = pjsip_dlg_create_uac(pjsip_ua_instance(),
+  pjsip_dialog* dlg = nullptr;
+  pj_status_t status = pjsip_dlg_create_uac(pjsip_ua_instance(),
                                 &local_uri, /* local URI */
                                 nullptr,    /* local Contact */
-                                &dest_str,  /* remote URI */
+                                &remote_uri,  /* remote URI */
                                 nullptr,    /* remote target */
                                 &dlg);      /* dialog */
+  
+  // Could we create the dialog?
   if (status != PJ_SUCCESS) {
     char errstr[1024];
     pj_strerror(status, errstr, 1024);
-    SIPPlugin::this_->warning("pjsip_dlg_create_uac FAILLED %", std::string(errstr));
-    return false;
+    SIPPlugin::this_->error("Error while creating SIP dialog: %", std::string(errstr));
+    SIPPlugin::this_->error("Could not create SIP dialog. Call aborted.");
+    outgoing_call_.pop_back();
+    return nullptr;
   }
-  /* we expect the outgoing INVITE to be challenged*/
-  pjsip_auth_clt_set_credentials(
-      &dlg->auth_sess, 1, &SIPPlugin::this_->sip_presence_->cfg_.cred_info[0]);
-  cur_call->peer_uri = dst_uri;
-  // Create SDP
-  if (!create_outgoing_sdp(dlg, cur_call, &sdp)) {
-    SIPPlugin::this_->warning("% failed creating sdp", std::string(__FUNCTION__));
+
+  // Set credentials in the dialog's client authentication session
+  status = pjsip_auth_clt_set_credentials(&dlg->auth_sess, 1, &SIPPlugin::this_->sip_presence_->cfg_.cred_info[0]);
+  if (status != PJ_SUCCESS) {
+    char errstr[1024];
+    pj_strerror(status, errstr, 1024);
+    SIPPlugin::this_->error("Error while setting session credentials: %", std::string(errstr));
+    SIPPlugin::this_->error("Could not set session credentials. Call aborted.");
     pjsip_dlg_terminate(dlg);
     outgoing_call_.pop_back();
-    return false;
+    return nullptr;
   }
-  print_sdp(sdp);
+
+  return dlg;
+}
+
+bool PJCall::send_invite_request(pjsip_dialog* dlg, call_t* call, const pjmedia_sdp_session* sdp) {
   // Create the INVITE session.
-  status = pjsip_inv_create_uac(dlg, sdp, 0, &cur_call->inv);
+  pj_status_t status = pjsip_inv_create_uac(dlg, sdp, 0, &call->inv);
   if (status != PJ_SUCCESS) {
+    char errstr[1024];
+    pj_strerror(status, errstr, 1024);
+    SIPPlugin::this_->error("Error while creating INVITE session: %", std::string(errstr));
+    SIPPlugin::this_->error("Could not create INVITE session. Call aborted.");
+    pjsip_inv_terminate(call->inv, 500, PJ_FALSE);
     pjsip_dlg_terminate(dlg);
-    SIPPlugin::this_->warning("pjsip_inv_create_uac FAILLED");
     outgoing_call_.pop_back();
     return false;
   }
+
   // Attach call data to invite session
-  cur_call->inv->mod_data[mod_siprtp_.id] = cur_call;
-  /* Create initial INVITE request.
-   * This INVITE request will contain a perfectly good request and
-   * an SDP body as well.
-   */
-  status = pjsip_inv_invite(cur_call->inv, &tdata);
+  call->inv->mod_data[mod_siprtp_.id] = call;
+
+  // Create initial INVITE request.
+  // This INVITE request will contain a perfectly good request and an SDP body as well.
+  pjsip_tx_data* tdata = nullptr;
+  status = pjsip_inv_invite(call->inv, &tdata);
   if (status != PJ_SUCCESS) {
-    SIPPlugin::this_->warning("pjsip_inv_invite error");
+    char errstr[1024];
+    pj_strerror(status, errstr, 1024);
+    SIPPlugin::this_->error("Error while creating INVITE request: %", std::string(errstr));
+    SIPPlugin::this_->error("Could not create INVITE request. Call aborted.");
+    pjsip_inv_end_session(call->inv, 500, nullptr, &tdata);
+    pjsip_dlg_terminate(dlg);
+    outgoing_call_.pop_back();
     return false;
   }
+
   /* Send initial INVITE request.
    * From now on, the invite session's state will be reported to us
    * via the invite session callbacks.
    */
-  status = pjsip_inv_send_msg(cur_call->inv, tdata);
+  status = pjsip_inv_send_msg(call->inv, tdata);
   if (status != PJ_SUCCESS) {
-    SIPPlugin::this_->warning("pjsip_inv_send_msg error");
+    char errstr[1024];
+    pj_strerror(status, errstr, 1024);
+    SIPPlugin::this_->error("Error while sending INVITE request: %", std::string(errstr));
+    SIPPlugin::this_->error("Could not send INVITE request. Call aborted.");
+    pjsip_inv_end_session(call->inv, 500, nullptr, &tdata);
+    pjsip_dlg_terminate(dlg);
+    outgoing_call_.pop_back();
     return false;
   }
-  // updating call status in the tree
-  InfoTree::ptr tree =
-      SIPPlugin::this_->prune_tree(std::string(".buddies." + std::to_string(id)),
-                                   false);  // do not signal since the branch will be re-grafted
+
+  return true;
+}
+
+bool PJCall::make_call(const std::string contact_uri) {
+  // Validate parameters of the call
+  if (!is_call_valid(contact_uri)) {
+    return false;
+  }
+
+  // Create new call object
+  outgoing_call_.emplace_back(std::make_unique<call_t>());
+  call_t* cur_call = outgoing_call_.back().get();
+  pj_str_t local_uri;
+  pj_cstr(&local_uri, SIPPlugin::this_->sip_presence_->sip_local_user_.c_str());
+  std::string sip_dest_user = "sip:" + contact_uri;
+  pj_str_t remote_uri;
+  pj_cstr(&remote_uri, sip_dest_user.c_str());
+
+  // Create dialog for call
+  pjsip_dialog* dlg = create_sip_dialog(local_uri, remote_uri);
+  if (dlg == nullptr) return false;
+
+  // Set peer uri for current call
+  cur_call->peer_uri = contact_uri;
+
+  // Create SDP
+  pjmedia_sdp_session* sdp = nullptr;
+  if (!create_outgoing_sdp(dlg, cur_call, &sdp)) {
+    SIPPlugin::this_->error("Could not create outgoing SDP. Call aborted.");
+    pjsip_dlg_terminate(dlg);
+    outgoing_call_.pop_back();
+    return false;
+  }
+
+  // Log created SDP
+  print_sdp(sdp);
+
+  // Create and send INVITE to buddy
+  if(!send_invite_request(dlg, cur_call, sdp)) return false;
+
+  // Updating call status in the tree
+  // Do not signal the prune operation since the branch will be re-grafted
+  auto id = pjsua_buddy_find(&remote_uri);
+  InfoTree::ptr tree = SIPPlugin::this_->prune_tree(".buddies." + std::to_string(id), false);
   if (!tree) {
-    SIPPlugin::this_->warning("cannot find buddy information tree, call cancelled");
+    SIPPlugin::this_->error("Could not find buddy % information tree. Aborting call.", contact_uri);
+    pjsip_tx_data* tdata = nullptr;
+    pjsip_inv_end_session(cur_call->inv, 500, nullptr, &tdata);
+    pjsip_dlg_terminate(dlg);
+    outgoing_call_.pop_back();
     return false;
   }
-  tree->graft(std::string(".send_status."), InfoTree::make(SendRecvStatusMap.at(SendRecvStatus::CALLING)));
-  SIPPlugin::this_->graft_tree(std::string(".buddies." + std::to_string(id)), tree);
+  tree->graft(".send_status.", InfoTree::make(SendRecvStatusMap.at(SendRecvStatus::CALLING)));
+  SIPPlugin::this_->graft_tree(".buddies." + std::to_string(id), tree);
+
   return true;
 }
 
 bool PJCall::create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_session** res) {
+  // Get shmdatas connected to contact
   pj_str_t contact;
-  std::string tmpstr("sip:" + call->peer_uri);
+  std::string tmpstr = "sip:" + call->peer_uri;
   pj_cstr(&contact, tmpstr.c_str());
   auto id = pjsua_buddy_find(&contact);
-  if (PJSUA_INVALID_ID == id) {
-    SIPPlugin::this_->warning("buddy not found: cannot call %", call->peer_uri);
+  if (id == PJSUA_INVALID_ID) {
+    SIPPlugin::this_->error("Could not find buddy %", call->peer_uri);
     return false;
   }
   auto paths = SIPPlugin::this_->tree<MPtr(&InfoTree::copy_leaf_values)>(
       std::string(".buddies." + std::to_string(id) + ".connections"));
-  if (paths.empty()) return false;
-  // creating ice transport for sending
+
+  // Create ICE transport for sending
   call->ice_trans_send_ =
       SIPPlugin::this_->stun_turn_->get_ice_transport(paths.size(), PJ_ICE_SESS_ROLE_CONTROLLING);
   if (!call->ice_trans_send_) {
-    SIPPlugin::this_->warning("cannot init ICE transport for sending");
+    SIPPlugin::this_->error("Could not initialize ICE transport for sending. Aborting call.");
     return false;
   }
-  // making SDP description
+
+  // Create SDP description
   gst::SDPDescription desc(call->ice_trans_send_->get_first_candidate_host());
-  // adding ICE ufrag and pwd to sdp session
+
+  // Add ICE-related attributes ('ice-ufrag' and 'ice-pwd')
   auto ufrag_pwd = call->ice_trans_send_->get_ufrag_and_passwd();
-  if (!desc.add_msg_attribute("ice-ufrag", std::string(ufrag_pwd.first.ptr, ufrag_pwd.first.slen)))
-    SIPPlugin::this_->warning("issue adding ice-ufrag");
-  if (!desc.add_msg_attribute("ice-pwd", std::string(ufrag_pwd.second.ptr, ufrag_pwd.second.slen)))
-    SIPPlugin::this_->warning("issue adding ice-pwd");
-  // adding media and candidate lines to each the media
+  if (!desc.add_msg_attribute("ice-ufrag", std::string(ufrag_pwd.first.ptr, ufrag_pwd.first.slen))) {
+    SIPPlugin::this_->warning("Could not add 'ice-ufrag' in outgoing SDP");
+  }
+  if (!desc.add_msg_attribute("ice-pwd", std::string(ufrag_pwd.second.ptr, ufrag_pwd.second.slen))) {
+    SIPPlugin::this_->warning("Could not add 'ice-pwd' in outgoing SDP");
+  }
+
+  // Add medias ('m' fields) and 'candidate' lines for each media ('a' fields)
   auto default_ports = call->ice_trans_send_->get_first_candidate_ports();
   auto candidates = call->ice_trans_send_->get_components();
-  for (auto& it : paths) {
-    std::string rtpcaps;
-    auto reader = readers_.find(it);
-    if (reader != readers_.cend() && reader->second) {
-      rtpcaps = reader->second->get_caps();
-    } else {
+  for (auto& path : paths) {
+    // Get the RTPSender connected to the current shmdata path and get its caps as a string
+    auto reader = readers_.find(path);
+    if (reader == readers_.cend() || !reader->second) {
       break;
     }
+    std::string rtp_caps_str = reader->second->get_caps();
 
-    // Shmdata received from SIP have a very different nomenclature than those created locally.
-    // When sending those shmdatas received from SIP to someone else (i.e. creating a relay),
-    // we mustn't use the get_quiddity_name_from_file_name() function; rather, we must interrogate
-    // the SIP quiddity (which manages the shmpaths received from SIP contacts).
-    std::string rawlabel = SIPPlugin::this_->get_exposed_quiddity_name_from_shmpath(it);
-    if (rawlabel.empty()) {
-      rawlabel = SIPPlugin::this_->get_quiddity_name_from_file_name(it);
+    // Get the caps of the actual shmdata feeding into the RTPSender as a string
+    std::string media_caps_str = reader->second->get_input_caps();
+
+    // Get the name of the quiddity writing the shmdata using its caps
+    auto quiddity_name = SIPPlugin::this_->qcontainer_->get_name_from_caps(media_caps_str);
+
+    // If name cannot be found, then it is not a Switcher-generated shmdata.
+    // It could be a Gstreamer pipeline or any stream produced by a generic shmdata writer.
+    // Those shmdatas can have completely arbitrary naming patterns and caps.
+    // In those cases, we use the socket name.
+    // For reference: /tmp/ndi_test_value_suffix -> we get the "ndi_test_value_suffix" part
+    if (quiddity_name.empty()) {
+      quiddity_name = fs::path(path).filename();
     }
 
-    // If shmdata is not received from SIP, then it is most probably generated by the current
-    // Switcher instance. We get the quiddity name/bundle name
-    if (!rawlabel.empty()) {
-      auto quid_id = SIPPlugin::this_->qcontainer_->get_id(rawlabel);
-      auto quid = SIPPlugin::this_->qcontainer_->get_quiddity(quid_id);
-      if (quid) rawlabel = quid->get_nickname();
-    } else {
-      // If shmdata is not received from SIP and is not a Switcher generated path, it can be an NDI
-      // stream, a Gstreamer pipeline or any stream produced by a shmdata writer.
-      // Those shmdatas can have completely arbitrary naming patterns. In that case, we take
-      // only the socket name, not its whole path
-      // For reference: /tmp/ndi_default_value_suffix -> we want the "ndi_default_value_suffix" part
-      auto last_slash = it.find_last_of('/');
-      if (last_slash == std::string::npos)
-        rawlabel = it;
-      else
-        rawlabel = it.substr(last_slash + 1);
-    }
-
-    std::istringstream ss(rawlabel);  // Turn the string into a stream
+    // Create a base64-encoded media label from the quiddity name and append it to the RTP caps
+    std::istringstream ss(quiddity_name);
     std::string tok;
     std::getline(ss, tok, ' ');
     std::string label = tok;
-    while (std::getline(ss, tok, ' ')) label += tok;
-    rtpcaps += ", media-label=(string)\"" +
-               stringutils::replace_char(stringutils::base64_encode(label), '=', "") + "\"";
-    GstCaps* caps = gst_caps_from_string(rtpcaps.c_str());
-    On_scope_exit { gst_caps_unref(caps); };
-    gst::SDPMedia media;
-    media.set_media_info_from_caps(caps);
-    media.set_port(default_ports.back());
-    for (auto& it : candidates.back()) {
-      media.add_ice_candidate(it);
+    while (std::getline(ss, tok, ' ')) {
+      label += tok;
     }
+    rtp_caps_str += ", media-label=(string)\"" +
+                stringutils::replace_char(stringutils::base64_encode(label), '=', "") + "\"";
+
+    // Convert the updated RTP caps into GstCaps, and add them to a new SDPMedia object
+    GstCaps* rtp_caps = gst_caps_from_string(rtp_caps_str.c_str());
+    On_scope_exit { gst_caps_unref(rtp_caps); };
+    gst::SDPMedia media;
+    media.set_media_info_from_caps(rtp_caps);
+
+    // Add port and candidate attributes to SDPMedia for current media
+    media.set_port(default_ports.back());
+    for (auto& candidate : candidates.back()) {
+      media.add_ice_candidate(candidate);
+    }
+
     default_ports.pop_back();
     candidates.pop_back();
+
+    // Add SDPMedia to current SDP description
     if (!desc.add_media(media)) {
-      SIPPlugin::this_->warning("a media has not been added to the SDP description");
+      SIPPlugin::this_->warning("Could not add a media to the SDP description");
     } else {
       call->media.emplace_back();
-      call->media.back().shm_path_to_send = it;
+      call->media.back().shm_path_to_send = path;
     }
   }
+
+  // Abort if there is nothing to send (no media)
   if (call->media.empty()) {
-    SIPPlugin::this_->warning("no valid media stream found, aborting call");
+    SIPPlugin::this_->error("No valid media could be added to SDP. Aborting call");
     return false;
   }
-  // checking produced SDP
+
+  // Abort if the produced SDP description is empty
   std::string desc_str = desc.get_string();
   if (desc_str.empty()) {
-    SIPPlugin::this_->warning("%: empty SDP description", std::string(__FUNCTION__));
+    SIPPlugin::this_->error("Newly created SDP description is empty. Aborting call.");
     return false;
   }
+
+  // Parse the produced SDP description to ensure it is valid
   pj_str_t sdp_str;
   pj_strdup2(dlg->pool, &sdp_str, desc_str.c_str());
   pj_status_t status = pjmedia_sdp_parse(dlg->pool, sdp_str.ptr, sdp_str.slen, res);
   if (status != PJ_SUCCESS) {
-    SIPPlugin::this_->warning("pjmedia_sdp_parse FAILLED in %", std::string(__FUNCTION__));
+    SIPPlugin::this_->error("Newly created SDP description is malformed. Aborting call.");
     return false;
   }
+
   return true;
 }
 
@@ -1102,9 +1204,7 @@ bool PJCall::hang_up(const std::string& sip_url) {
 
 void PJCall::make_hang_up(pjsip_inv_session* inv) {
   pjsip_tx_data* tdata;
-  pj_status_t status;
-
-  status = pjsip_inv_end_session(inv, 603, nullptr, &tdata);
+  pj_status_t status = pjsip_inv_end_session(inv, 603, nullptr, &tdata);
 
   if (status == PJ_SUCCESS && tdata != nullptr)
     pjsip_inv_send_msg(inv, tdata);

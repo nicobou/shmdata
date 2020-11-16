@@ -4,9 +4,9 @@
 set -e
 
 # run a switcher
-switcher --verbose  --extra-plugin-dir ../plugins/gsoap/&
+switcher --debug&
 ret=$!
-sleep 1
+sleep 3
 
 # query information to the switcher
 switcher-ctrl --list-classes

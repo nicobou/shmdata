@@ -49,6 +49,7 @@ class RTPSender {
   bool remove_cb(id_t cb_id);
   // get caps for data in the callback:
   std::string get_caps() const;
+  std::string get_input_caps() const;
 
  private:
   RTPSession* session_;

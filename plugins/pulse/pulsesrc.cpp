@@ -22,6 +22,8 @@
 #include "./pulsesrc.hpp"
 #include "switcher/quiddity/property/gprop-to-prop.hpp"
 
+using namespace std::chrono_literals;
+
 namespace switcher {
 namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PulseSrc,
@@ -69,7 +71,7 @@ PulseSrc::PulseSrc(quiddity::Config&& conf)
                                            this,
                                            nullptr);
   // waiting for devices to be updated
-  devices_cond_.wait(lock);
+  devices_cond_.wait_for(lock, 1s);
   if (!connected_to_pulse_) {
     message("ERROR:Not connected to pulse, cannot initialize.");
     is_valid_ = false;
@@ -107,7 +109,7 @@ PulseSrc::~PulseSrc() {
     std::unique_lock<std::mutex> lock(quit_mutex_);
     gst::utils::g_idle_add_full_with_context(
         main_context, G_PRIORITY_DEFAULT_IDLE, quit_pulse, this, nullptr);
-    quit_cond_.wait(lock);
+    quit_cond_.wait_for(lock, 1s);
   }
 }
 

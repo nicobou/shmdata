@@ -144,6 +144,19 @@ std::string RTPSender::get_caps() const {
   return fakesink_caps_;
 }
 
+std::string RTPSender::get_input_caps() const {
+  GstPad* pad = gst_element_get_static_pad(shmdatasrc_, "src");
+  if (nullptr == pad) return "";
+  On_scope_exit { gst_object_unref(pad); };
+  GstCaps* caps = gst_pad_get_current_caps(pad);
+  if (nullptr == caps) return "";
+  On_scope_exit { gst_caps_unref(caps); };
+  gchar* str = gst_caps_to_string(caps);
+  if (nullptr == str) return "";
+  On_scope_exit { g_free(str); };
+  return std::string(str);
+}
+
 RTPSender::id_t RTPSender::add_cb(frame_cb_t fun) {
   if (!fun) return 0;
   std::unique_lock<std::mutex> lock(mtx_);

@@ -8,7 +8,7 @@ Switcher
 
 [Switcher](https://gitlab.com/sat-metalab/switcher) is an integration environment, able to interoperate with other software and protocols. Switcher provides low latency streaming of multichannel audio, video and data through IP networks.
 
-Switcher is more generic and provides managing of several instances of services (called Quiddities). A Quiddity can be created and removed dynamically and can be controlled through property get/set as well as method invocations and information tree monitoring. Switcher provides introspection mechanisms to help write higher level software written in C++, python3, node.js or shell. Switcher can save and load the state of quiddities. 
+Switcher provides managing of several instances of services (called Quiddities). A Quiddity can be created and removed dynamically and can be controlled through property get/set as well as method invocations and information tree monitoring. Switcher provides introspection mechanisms to help write higher level software written in python3 or C++. Switcher can save and load the state of quiddities. 
 
 Most Quiddities expose and/or consume live streams of data frames using the [shmdata](https://gitlab.com/sat-metalab/shmdata), a library for sharing data streams among processes with zero copy through POSIX shared memory. Note shmdata has [GStreamer](https://gstreamer.freedesktop.org/) elements.
 

@@ -24,10 +24,7 @@
 #include "./quiddity.hpp"
 #include <sys/un.h>
 #include <algorithm>
-#include <list>
 #include <regex>
-#include "../gst/utils.hpp"
-#include "../infotree/json-serializer.hpp"
 #include "../shmdata/stat.hpp"
 #include "../switcher.hpp"
 #include "./container.hpp"
@@ -133,60 +130,6 @@ std::string Quiddity::get_shmpath_prefix() {
   return Switcher::get_shm_dir() + "/" + Switcher::get_shm_prefix();
 }
 
-std::string Quiddity::get_quiddity_name_from_file_name(const std::string& path) const {
-  auto file_begin = path.find("switcher_");
-  if (std::string::npos == file_begin) {
-    warning("%: not a switcher generated path", std::string(__FUNCTION__));
-    return std::string();
-  }
-  std::string filename(path, file_begin);
-  // searching for underscores
-  std::vector<size_t> underscores;
-  bool done = false;
-  size_t found = 0;
-  while (!done) {
-    found = filename.find('_', found);
-    if (std::string::npos == found)
-      done = true;
-    else {
-      underscores.push_back(found);
-      if (found + 1 == filename.size())
-        done = true;
-      else
-        found = found + 1;
-    }
-  }
-  if (3 != underscores.size()) {
-    warning("%: wrong shmdata path format", std::string(__FUNCTION__));
-    return std::string();
-  }
-  // handling bundle: they use there own internal manager named with their actual quiddity name
-  auto manager_name =
-      std::string(filename, underscores[0] + 1, underscores[1] - (underscores[0] + 1));
-  if (qcontainer_->get_switcher()->get_name() != manager_name) return manager_name;
-  auto qid = deserialize::apply<quiddity::qid_t>(
-      std::string(filename, underscores[1] + 1, underscores[2] - (underscores[1] + 1)));
-  if (qid.first) return qcontainer_->get_name(qid.second);
-  return std::string();
-}
-
-std::string Quiddity::get_shmdata_name_from_file_name(const std::string& path) const {
-  size_t pos = 0;
-  // Check if external shmdata or regular shmdata.
-  if (path.find(get_shmpath_prefix()) != std::string::npos) {  // Regular shmdata
-    int i = 0;
-    while (i < 3) {  // Looking for third '_'
-      if (pos != 0) pos += 1;
-      pos = path.find('_', pos);
-      ++i;
-    }
-  } else {                  // External shmdata
-    pos = path.rfind('/');  // Check last '/' to find the file name only.
-  }
-
-  return pos != std::string::npos ? std::string(path, pos + 1) : path;
-}
-
 std::string Quiddity::get_manager_name() { return qcontainer_->get_switcher()->get_name(); }
 
 std::string Quiddity::get_quiddity_caps() {
@@ -194,10 +137,6 @@ std::string Quiddity::get_quiddity_caps() {
   caps_str = caps_str + ",quiddity-id=(int)" + std::to_string(qcontainer_->get_id(get_name()));
   return caps_str;
 }
-
-std::string Quiddity::get_socket_name_prefix() { return "switcher_"; }
-
-std::string Quiddity::get_socket_dir() { return "/tmp"; }
 
 bool Quiddity::graft_tree(const std::string& path, InfoTree::ptr tree, bool do_signal) {
   if (!information_tree_->graft(path, tree)) return false;

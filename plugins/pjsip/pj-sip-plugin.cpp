@@ -266,7 +266,7 @@ std::string SIPPlugin::get_exposed_quiddity_name_from_shmpath(const std::string&
   }
 }
 
-void SIPPlugin::create_quiddity_stream(const std::string& peer_uri, const std::string& quid_name) {
+void SIPPlugin::create_quiddity_stream(const std::string& peer_uri, const std::string& quid_name, const std::string& nickname) {
   auto quid = Quiddity::string_to_quiddity_name(quid_name);
   {
     std::lock_guard<std::mutex> lock(exposed_quiddities_mutex_);
@@ -274,10 +274,13 @@ void SIPPlugin::create_quiddity_stream(const std::string& peer_uri, const std::s
     if (std::find(exposed_quids.begin(), exposed_quids.end(), quid) != exposed_quids.end()) return;
     exposed_quids.push_back(quid);
   }
-  quid = qcontainer_->create("extshmsrc", quid, nullptr);
-  if (quid.empty()) {
+  auto qrox = qcontainer_->create("extshmsrc", quid, nullptr);
+  if (!qrox) {
     warning("Failed to create external shmdata quiddity for pjsip incoming stream.");
     return;
+  }
+  if (!nickname.empty()) {
+    qrox.get()->set_nickname(nickname);
   }
 }
 
