@@ -2,6 +2,18 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.3.34 (2020-11-16)
+---------------------------
+This is an official release in the 1.3 stable series.
+
+Packaging and CI:
+* 👷 add Debian package build in CI with Ubuntu 20.04
+* 📦 generate Debian package with make package
+* 🐛 Fixed running tests without having to install
+
+Improvement:
+* 🔥 remove IntelliJ IDEA files
+
 shmdata 1.3.32 (2020-10-20)
 ---------------------------
 This is an official release in the 1.3 stable series.
