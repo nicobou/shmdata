@@ -24,5 +24,6 @@ libxrandr-dev
 libxxf86vm-dev
 python3-dev
 python3-pip
+swh-plugins
 uuid-dev
 wah-plugins
