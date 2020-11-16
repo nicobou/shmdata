@@ -39,5 +39,7 @@ add_executable(check-writer-follower check-writer-follower.cpp)
 add_test(check-writer-follower check-writer-follower)
 
 add_test(NAME check-sdflow COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/check-sdflow.sh)
+set_tests_properties(check-sdflow PROPERTIES ENVIRONMENT "PATH=${CMAKE_BINARY_DIR}/utils:${PATH}")
 
 add_test(NAME check-sdcrash COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/check-sdcrash.sh)
+set_tests_properties(check-sdcrash PROPERTIES ENVIRONMENT "PATH=${CMAKE_BINARY_DIR}/utils:${PATH}")
