@@ -1,0 +1,5 @@
+# You must remove unused comment lines for the released package.
+usr/lib/*.so*
+usr/lib/gstreamer-1.0/*.so
+usr/lib/python3/dist-packages/*.so
+usr/bin/*
