@@ -1,0 +1,63 @@
+Source: libshmdata
+Section: libs
+Priority: optional
+Maintainer: Emmanuel Durand <edurand@sat.qc.ca>
+Build-Depends:
+ cmake,
+ build-essential,
+ debhelper( >=11~),
+ doxygen,
+ pkg-config,
+ python3-dev,
+ libgstreamer1.0-dev,
+ libgstreamer-plugins-base1.0-dev
+Standards-Version: 4.1.4
+Homepage: https://gitlab.com/sat-metalab/shmdata
+Vcs-Git: git://gitlab.com/sat-metalab/shmdata
+Vcs-Browser: https://gitlab.com/sat-metalab/shmdata
+
+Package: libshmdata
+Section: libs
+Architecture: any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: Shares data flows between applications.
+ Library to share streams of framed data between processes via shared memory.
+ shmdata is server less: it requires applications to link data streams using
+ socket path (e.g. ;/tmp/my_shmdata_stream;). Shmdata is very fast and allows
+ processes to access data streams without the need of extra copy. The
+ communication paradigm is 1 to many, i.e., one writer is making available data
+ frames to several followers. Followers and writers can hot connect & disconnect.
+ .
+ This package contains the binary shared libraries.
+
+Package: libshmdata-dev
+Section: libdevel
+Architecture: any
+Multi-Arch: same
+Depends: libshmdata (= ${binary:Version}), ${misc:Depends}
+Description: Shares data flows between applications.
+ Library to share streams of framed data between processes via shared memory.
+ shmdata is server less: it requires applications to link data streams using
+ socket path (e.g. ;/tmp/my_shmdata_stream;). Shmdata is very fast and allows
+ processes to access data streams without the need of extra copy. The
+ communication paradigm is 1 to many, i.e., one writer is making available data
+ frames to several followers. Followers and writers can hot connect & disconnect.
+ .
+ This package contains headers, documentation and static libraries.
+
+Package: libshmdata-doc
+Section: doc
+Architecture: all
+Multi-Arch: foreign
+Depends: ${misc:Depends}
+Description: Shares data flows between applications.
+ Library to share streams of framed data between processes via shared memory.
+ shmdata is server less: it requires applications to link data streams using
+ socket path (e.g. ;/tmp/my_shmdata_stream;). Shmdata is very fast and allows
+ processes to access data streams without the need of extra copy. The
+ communication paradigm is 1 to many, i.e., one writer is making available data
+ frames to several followers. Followers and writers can hot connect & disconnect.
+ .
+ This package contains the documentation.
