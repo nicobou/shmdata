@@ -36,32 +36,23 @@ JackToShmdata::JackToShmdata(quiddity::Config&& conf)
     : Quiddity(std::forward<quiddity::Config>(conf)),
       Startable(this),
       client_name_(get_name()),
-      jack_client_(client_name_,
-                   conf.tree_config_->branch_has_data("server_name")
+      server_name_(conf.tree_config_->branch_has_data("server_name")
                        ? conf.tree_config_->branch_get_value("server_name").copy_as<std::string>()
-                       : std::string(),
-                   &JackToShmdata::jack_process,
-                   this,
-                   [this](uint n) { on_xrun(n); },
-                   [this](jack_port_t* port) { on_port(port); },
-                   [this]() {
-                     auto thread = std::thread([this]() {
-                       if (!qcontainer_->remove(qcontainer_->get_id(get_name())))
-                         warning("% did not self destruct after jack shutdown", get_name());
-                     });
-                     thread.detach();
-                   }) {
-  if (jack_client_) client_name_ = jack_client_.get_name();
-
-  if (!jack_client_) {
-    message("ERROR:JackClient cannot be instanciated (is jack server running?)");
-    is_valid_ = false;
-    return;
-  }
+                       : "default") {
   size_t max_number_of_channels = kMaxNumberOfChannels;
   if (config<MPtr(&InfoTree::branch_has_data)>("max_number_of_channels"))
     max_number_of_channels =
         config<MPtr(&InfoTree::branch_get_value)>("max_number_of_channels").copy_as<size_t>();
+  server_name_id_ = pmanage<MPtr(&property::PBag::make_string)>(
+      "server_name",
+      [this](const std::string& val) {
+        server_name_ = val;
+        return true;
+      },
+      [this]() { return server_name_; },
+      "Server Name",
+      "The jack server name",
+      server_name_);
   client_name_id_ = pmanage<MPtr(&property::PBag::make_string)>("jack-client-name",
                                                                 [this](const std::string& val) {
                                                                   client_name_ = val;
@@ -131,13 +122,36 @@ JackToShmdata::JackToShmdata(quiddity::Config&& conf)
 }
 
 bool JackToShmdata::start() {
-  buf_.resize(num_channels_ * jack_client_.get_buffer_size());
+  jack_client_ = std::make_unique<JackClient>(
+      client_name_,
+      server_name_.empty() ? "default" : server_name_,
+      &JackToShmdata::jack_process,
+      this,
+      [this](uint n) { on_xrun(n); },
+      [this](jack_port_t* port) { on_port(port); },
+      [this]() {
+        auto thread = std::thread([this]() {
+          if (!qcontainer_->remove(qcontainer_->get_id(get_name())))
+            warning("% did not self destruct after jack shutdown", get_name());
+        });
+        thread.detach();
+      });
+
+  if (!jack_client_) {
+    message("ERROR: JackClient cannot be instantiated (is jack server running?)");
+    is_valid_ = false;
+    return false;
+  }
+
+  client_name_ = jack_client_->get_name();
+
+  buf_.resize(num_channels_ * jack_client_->get_buffer_size());
   std::string data_type(
       "audio/x-raw, "
       "format=(string)F32LE, "
       "layout=(string)interleaved, "
       "rate=(int)" +
-      std::to_string(jack_client_.get_sample_rate()) +
+      std::to_string(jack_client_->get_sample_rate()) +
       ", "
       "channels=(int)" +
       std::to_string(num_channels_) + ", channel-mask=(bitmask)");
@@ -180,13 +194,13 @@ bool JackToShmdata::start() {
   pmanage<MPtr(&property::PBag::disable)>(auto_connect_id_, disabledWhenStartedMsg);
   pmanage<MPtr(&property::PBag::disable)>(num_channels_id_, disabledWhenStartedMsg);
   pmanage<MPtr(&property::PBag::disable)>(client_name_id_, disabledWhenStartedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(server_name_id_, disabledWhenStartedMsg);
   pmanage<MPtr(&property::PBag::disable)>(connect_to_id_, disabledWhenStartedMsg);
   pmanage<MPtr(&property::PBag::disable)>(index_id_, disabledWhenStartedMsg);
   {
     std::lock_guard<std::mutex> lock(input_ports_mutex_);
     input_ports_.clear();
-    for (size_t i = 0; i < num_channels_; ++i)
-      input_ports_.emplace_back(jack_client_, i + 1, false);
+    for (size_t i = 1; i <= num_channels_; ++i) input_ports_.emplace_back(*jack_client_, i, false);
     connect_ports();
   }
   return true;
@@ -197,10 +211,12 @@ bool JackToShmdata::stop() {
     std::lock_guard<std::mutex> lock(input_ports_mutex_);
     input_ports_.clear();
   }
-  shm_.reset(nullptr);
+  shm_.reset();
+  jack_client_.reset();
   pmanage<MPtr(&property::PBag::enable)>(auto_connect_id_);
   pmanage<MPtr(&property::PBag::enable)>(num_channels_id_);
   pmanage<MPtr(&property::PBag::enable)>(client_name_id_);
+  pmanage<MPtr(&property::PBag::enable)>(server_name_id_);
   pmanage<MPtr(&property::PBag::enable)>(connect_to_id_);
   pmanage<MPtr(&property::PBag::enable)>(index_id_);
   return true;
@@ -211,7 +227,7 @@ int JackToShmdata::jack_process(jack_nframes_t nframes, void* arg) {
   {
     std::lock_guard<std::mutex> lock(context->port_to_connect_in_jack_process_mutex_);
     for (auto& it : context->port_to_connect_in_jack_process_)
-      jack_connect(context->jack_client_.get_raw(), it.first.c_str(), it.second.c_str());
+      jack_connect(context->jack_client_->get_raw(), it.first.c_str(), it.second.c_str());
     context->port_to_connect_in_jack_process_.clear();
   }
 
@@ -246,6 +262,7 @@ void JackToShmdata::on_xrun(uint num_of_missed_samples) {
 }
 
 void JackToShmdata::update_port_to_connect() {
+  std::lock_guard<std::mutex> lock(port_to_connect_in_jack_process_mutex_);
   ports_to_connect_.clear();
 
   if (!auto_connect_) {
@@ -253,7 +270,6 @@ void JackToShmdata::update_port_to_connect() {
     return;
   }
 
-  std::lock_guard<std::mutex> lock(port_to_connect_in_jack_process_mutex_);
   for (size_t i = index_; i < index_ + num_channels_; ++i) {
     char buff[128];
     std::snprintf(buff, sizeof(buff), connect_to_.c_str(), i);
@@ -271,8 +287,8 @@ void JackToShmdata::connect_ports() {
         "happen.");
     return;
   }
-  for (size_t i = 0; i < num_channels_; ++i) {
-    jack_connect(jack_client_.get_raw(),
+  for (size_t i = 0; i < ports_to_connect_.size(); ++i) {
+    jack_connect(jack_client_->get_raw(),
                  ports_to_connect_[i].c_str(),
                  std::string(client_name_ + ":" + input_ports_[i].get_name()).c_str());
   }

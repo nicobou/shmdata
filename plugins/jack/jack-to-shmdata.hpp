@@ -43,6 +43,8 @@ class JackToShmdata : public Quiddity, public Startable {
   property::prop_id_t num_channels_id_{0};
   std::string client_name_{};
   property::prop_id_t client_name_id_{0};
+  std::string server_name_{};
+  property::prop_id_t server_name_id_{0};
   bool auto_connect_{true};
   property::prop_id_t auto_connect_id_{0};
   std::string connect_to_{"system:capture_%d"};
@@ -55,7 +57,7 @@ class JackToShmdata : public Quiddity, public Startable {
   std::mutex port_to_connect_in_jack_process_mutex_{};
   std::vector<std::pair<std::string, std::string>> port_to_connect_in_jack_process_{};
   std::unique_ptr<shmdata::Writer> shm_{nullptr};
-  JackClient jack_client_;
+  std::unique_ptr<JackClient> jack_client_{nullptr};
   std::vector<JackPort> input_ports_{};
 
   bool start() final;
