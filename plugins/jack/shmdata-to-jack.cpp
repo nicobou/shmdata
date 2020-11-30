@@ -181,11 +181,11 @@ int ShmdataToJack::jack_process(jack_nframes_t nframes, void* arg) {
         write_zero = true;
       }
       for (unsigned int i = 0; i < context->output_ports_.size(); ++i) {
-        jack_sample_t* buf =
-            (jack_sample_t*)jack_port_get_buffer(context->output_ports_[i].get_raw(), nframes);
+        jack_sample_t* buf = static_cast<jack_sample_t*>(
+            jack_port_get_buffer(context->output_ports_[i].get_raw(), nframes));
         if (!buf) return 0;
         if (!write_zero) {
-          context->ring_buffers_[i].pop_samples((std::size_t)nframes, buf);
+          context->ring_buffers_[i].pop_samples(static_cast<std::size_t>(nframes), buf);
         } else {
           for (unsigned int j = 0; j < nframes; ++j) buf[j] = 0;
         }
@@ -202,7 +202,7 @@ void ShmdataToJack::on_xrun(uint num_of_missed_samples) {
   for (auto& it : ring_buffers_) {
     // this is safe since on_xrun is called right before jack_process,
     // on the same thread
-    it.shrink_to((std::size_t)jack_buffer_size * 1.5);
+    it.shrink_to(static_cast<std::size_t>(jack_buffer_size * 1.5));
   }
 }
 
@@ -234,9 +234,10 @@ void ShmdataToJack::on_handoff_cb(GstElement* /*object*/,
   jack_nframes_t duration = map.size / (4 * channels);
   // setting the smoothing value affecting (20 sec)
   context->drift_observer_.set_smoothing_factor(
-      (double)duration / (20.0 * (double)context->jack_client_->get_sample_rate()));
-  std::size_t new_size =
-      (std::size_t)context->drift_observer_.set_current_time_info(current_time, duration);
+      static_cast<double>(duration) /
+      (20.0 * static_cast<double>(context->jack_client_->get_sample_rate())));
+  std::size_t new_size = static_cast<std::size_t>(
+      context->drift_observer_.set_current_time_info(current_time, duration));
   --context->debug_buffer_usage_;
   if (0 == context->debug_buffer_usage_) {
     context->debug("buffer load is %, ratio is %",
@@ -307,7 +308,7 @@ bool ShmdataToJack::start() {
         });
         thread.detach();
       });
-  if (!jack_client_) {
+  if (!*jack_client_.get()) {
     message("ERROR: JackClient cannot be instantiated (is jack server running?)");
     is_valid_ = false;
     return false;

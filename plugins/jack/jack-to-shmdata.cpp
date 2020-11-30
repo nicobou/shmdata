@@ -53,15 +53,16 @@ JackToShmdata::JackToShmdata(quiddity::Config&& conf)
       "Server Name",
       "The jack server name",
       server_name_);
-  client_name_id_ = pmanage<MPtr(&property::PBag::make_string)>("jack-client-name",
-                                                                [this](const std::string& val) {
-                                                                  client_name_ = val;
-                                                                  return true;
-                                                                },
-                                                                [this]() { return client_name_; },
-                                                                "Client Name",
-                                                                "The jack client name",
-                                                                client_name_);
+  client_name_id_ = pmanage<MPtr(&property::PBag::make_string)>(
+      "client_name",
+      [this](const std::string& val) {
+        client_name_ = val;
+        return true;
+      },
+      [this]() { return client_name_; },
+      "Client Name",
+      "The jack client name",
+      client_name_);
   auto_connect_id_ = pmanage<MPtr(&property::PBag::make_bool)>(
       "auto_connect",
       [this](const bool& val) {
@@ -137,7 +138,7 @@ bool JackToShmdata::start() {
         thread.detach();
       });
 
-  if (!jack_client_) {
+  if (!*jack_client_.get()) {
     message("ERROR: JackClient cannot be instantiated (is jack server running?)");
     is_valid_ = false;
     return false;
@@ -238,7 +239,8 @@ int JackToShmdata::jack_process(jack_nframes_t nframes, void* arg) {
       if (0 == num_chan) return 0;
       std::vector<jack_sample_t*> jack_bufs;
       for (auto& port : context->input_ports_) {
-        jack_sample_t* buf = (jack_sample_t*)jack_port_get_buffer(port.get_raw(), nframes);
+        jack_sample_t* buf =
+            static_cast<jack_sample_t*>(jack_port_get_buffer(port.get_raw(), nframes));
         if (!buf) return 0;
         jack_bufs.emplace_back(buf);
       }
