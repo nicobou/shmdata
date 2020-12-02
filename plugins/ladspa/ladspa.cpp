@@ -106,8 +106,14 @@ LADSPA::PluginList LADSPA::get_ladspa_plugins() {
   size_t index = 0;
   for (auto& plugin : plugins.second) {
     if (stringutils::starts_with(plugin, "ladspa")) {
-      plugins_list.first.push_back(plugins.first.at(index));
-      plugins_list.second.push_back(plugin);
+      auto value = gst::utils::get_gst_element_capability(plugin, "channels", GST_PAD_SINK);
+      if (value && 1 != g_value_get_int(value)) {
+        warning("ladspa plugin % not supported because it requires more than one input channel",
+                plugins.first.at(index));
+      } else {
+        plugins_list.first.push_back(plugins.first.at(index));
+        plugins_list.second.push_back(plugin);
+      }
     }
     ++index;
   }
@@ -116,6 +122,7 @@ LADSPA::PluginList LADSPA::get_ladspa_plugins() {
 }
 
 void LADSPA::mirror_gst_properties() {
+  if (ladspa_elements_.empty()) return;
   // Unsubscribe old global properties
   for (auto& subscriber : prop_subscribers_) {
     pmanage<MPtr(&property::PBag::unsubscribe)>(subscriber.first, subscriber.second);
@@ -217,7 +224,7 @@ bool LADSPA::create_gst_pipeline() {
 
   if (!shmdatasrc || !shmdatasink) return false;
 
-  // We do not leak GstElement pointers here since they are in a RAII gstreamer pipeline that
+  // We do not leak GstElement pointers here since they are in a RAII gstreamer pipeline
   ladspa_elements_.clear();
   std::vector<GstElement*> ladspa_elements;
 
