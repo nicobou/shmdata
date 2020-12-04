@@ -2,6 +2,21 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 2.1.28 (2020-12-03)
+---------------------------
+This is an official release in the 2.1 stable series.
+
+Bug fix:
+* 🐛 fix ladspa quiddity issue limiting to mono input ladspa plugins
+
+New features:
+* ✨ Add server_name & client_name props in jacksink
+* ✨ Add server_name property in jacksrc
+
+Improvements
+* 🎨 Rename jack-client-name property to client_name
+* ➕ Add back swh-plugins dependency
+
 switcher 2.1.26 (2020-11-16)
 ---------------------------
 This is an official release in the 2.1 stable series.
