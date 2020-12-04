@@ -19,17 +19,11 @@ add_test(check_information_tree check_information_tree)
 add_executable(check_manager check_manager.cpp)
 add_test(check_manager check_manager)
 
-add_executable(check_quiddity_create_remove check_quiddity_create_remove.cpp)
-add_test(check_quiddity_create_remove check_quiddity_create_remove)
-
 add_executable(check_scope_guard check_scope_guard.cpp)
 add_test(check_scope_guard check_scope_guard)
 
 add_executable(check_shmdelay check_shmdelay.cpp)
 add_test(check_shmdelay check_shmdelay)
-
-add_executable(check_startable check_startable.cpp)
-add_test(check_startable check_startable)
 
 add_executable(check_test_full check_test_full.cpp)
 add_test(check_test_full check_test_full)

@@ -47,7 +47,6 @@ class ShmdataToJack : public Quiddity {
   std::string shmpath_{};
   GstElement* shmdatasrc_{nullptr};
   GstElement* audiobin_{nullptr};
-  GstElement* fakesink_{nullptr};
   gulong handoff_handler_{0};
   unsigned short channels_{0};
   unsigned int debug_buffer_usage_{1000};
@@ -60,6 +59,10 @@ class ShmdataToJack : public Quiddity {
   DriftObserver<jack_nframes_t> drift_observer_{};
 
   // properties
+  std::string client_name_{};
+  std::string server_name_{};
+  property::prop_id_t client_name_id_{0};
+  property::prop_id_t server_name_id_{0};
   bool auto_connect_{true};
   std::string connect_to_{"system:playback_%d"};
   property::prop_id_t connect_to_id_;
@@ -88,12 +91,12 @@ class ShmdataToJack : public Quiddity {
   std::vector<std::string> ports_to_connect_{};
   std::mutex port_to_connect_in_jack_process_mutex_{};
   std::vector<std::pair<std::string, std::string>> port_to_connect_in_jack_process_{};
-  JackClient jack_client_;
+  std::unique_ptr<JackClient> jack_client_{nullptr};
   std::vector<JackPort> output_ports_{};
 
   bool start();
   bool stop();
-  void update_port_to_connect();
+  void update_ports_to_connect();
   void connect_ports();
   void disconnect_ports();
   void on_port(jack_port_t* port);
@@ -101,7 +104,8 @@ class ShmdataToJack : public Quiddity {
   bool on_shmdata_connect(const std::string& shmdata_socket_path);
   bool can_sink_caps(const std::string& caps);
   bool make_elements();
-  void check_output_ports(unsigned int channels);
+  void on_channel_update(unsigned int channels);
+  void clean_output_ports();
   void on_xrun(uint num_of_missed_samples);
   static void on_handoff_cb(GstElement* object, GstBuffer* buf, GstPad* pad, gpointer user_data);
   static int jack_process(jack_nframes_t nframes, void* arg);

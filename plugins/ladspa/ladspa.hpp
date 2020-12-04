@@ -53,7 +53,7 @@ class LADSPA : public Quiddity {
   static const std::vector<std::string> KPropertiesBlackList;  //!< Blacklisted gstreamer properties
 
   //! Method used to get all the available ladspa plugins on your system.
-  static PluginList get_ladspa_plugins();
+  PluginList get_ladspa_plugins();
 
   //! Gstreamer pipeline creation methods
   bool create_gst_pipeline();

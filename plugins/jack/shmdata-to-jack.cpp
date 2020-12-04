@@ -37,21 +37,44 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToJack,
 
 ShmdataToJack::ShmdataToJack(quiddity::Config&& conf)
     : Quiddity(std::forward<quiddity::Config>(conf)),
-      connect_to_id_(pmanage<MPtr(&property::PBag::make_string)>("connect_to",
-                                                                 [this](const std::string& val) {
-                                                                   connect_to_ = val;
-                                                                   update_port_to_connect();
-                                                                   return true;
-                                                                 },
-                                                                 [this]() { return connect_to_; },
-                                                                 "Connect To",
-                                                                 "Which client to connect to",
-                                                                 connect_to_)),
+      client_name_(get_name()),
+      server_name_(conf.tree_config_->branch_has_data("server_name")
+                       ? conf.tree_config_->branch_get_value("server_name").copy_as<std::string>()
+                       : "default"),
+      client_name_id_(pmanage<MPtr(&property::PBag::make_string)>(
+          "client_name",
+          [this](const std::string& val) {
+            client_name_ = val;
+            return true;
+          },
+          [this]() { return client_name_; },
+          "Client Name",
+          "The jack client name",
+          client_name_)),
+      server_name_id_(pmanage<MPtr(&property::PBag::make_string)>(
+          "server_name",
+          [this](const std::string& val) {
+            server_name_ = val;
+            return true;
+          },
+          [this]() { return server_name_; },
+          "Server Name",
+          "The jack server name",
+          server_name_)),
+      connect_to_id_(pmanage<MPtr(&property::PBag::make_string)>(
+          "connect_to",
+          [this](const std::string& val) {
+            connect_to_ = val;
+            return true;
+          },
+          [this]() { return connect_to_; },
+          "Connect To",
+          "Which client to connect to",
+          connect_to_)),
       auto_connect_id_(pmanage<MPtr(&property::PBag::make_bool)>(
           "auto_connect",
           [this](const bool& val) {
             auto_connect_ = val;
-            update_port_to_connect();
             if (auto_connect_) {
               pmanage<MPtr(&property::PBag::enable)>(connect_to_id_);
               pmanage<MPtr(&property::PBag::enable)>(index_id_);
@@ -71,90 +94,64 @@ ShmdataToJack::ShmdataToJack(quiddity::Config&& conf)
           "Auto Connect",
           "Auto Connect to another client",
           auto_connect_)),
-      connect_all_to_first_id_(
-          pmanage<MPtr(&property::PBag::make_bool)>("connect_all_to_first",
-                                                    [this](const bool& val) {
-                                                      connect_all_to_first_ = val;
-                                                      return true;
-                                                    },
-                                                    [this]() { return connect_all_to_first_; },
-                                                    "Many Channels To One",
-                                                    "Connect all channels to the first",
-                                                    connect_all_to_first_)),
-      connect_only_first_id_(
-          pmanage<MPtr(&property::PBag::make_bool)>("connect_only_first",
-                                                    [this](const bool& val) {
-                                                      connect_only_first_ = val;
-                                                      return true;
-                                                    },
-                                                    [this]() { return connect_only_first_; },
-                                                    "Connect only first channel",
-                                                    "Connect only first channel",
-                                                    connect_only_first_)),
-      do_format_conversion_id_(
-          pmanage<MPtr(&property::PBag::make_bool)>("do_format_conversion",
-                                                    [this](const bool& val) {
-                                                      do_format_conversion_ = val;
-                                                      return true;
-                                                    },
-                                                    [this]() { return do_format_conversion_; },
-                                                    "Do sample conversion to float (F32LE)",
-                                                    "Do sample conversion to float (F32LE)",
-                                                    do_format_conversion_)),
-      do_rate_conversion_id_(
-          pmanage<MPtr(&property::PBag::make_bool)>("do_rate_conversion",
-                                                    [this](const bool& val) {
-                                                      do_rate_conversion_ = val;
-                                                      return true;
-                                                    },
-                                                    [this]() { return do_format_conversion_; },
-                                                    "Convert to Jack rate",
-                                                    "Convert to Jack rate",
-                                                    do_rate_conversion_)),
+      connect_all_to_first_id_(pmanage<MPtr(&property::PBag::make_bool)>(
+          "connect_all_to_first",
+          [this](const bool& val) {
+            connect_all_to_first_ = val;
+            return true;
+          },
+          [this]() { return connect_all_to_first_; },
+          "Many Channels To One",
+          "Connect all channels to the first",
+          connect_all_to_first_)),
+      connect_only_first_id_(pmanage<MPtr(&property::PBag::make_bool)>(
+          "connect_only_first",
+          [this](const bool& val) {
+            connect_only_first_ = val;
+            return true;
+          },
+          [this]() { return connect_only_first_; },
+          "Connect only first channel",
+          "Connect only first channel",
+          connect_only_first_)),
+      do_format_conversion_id_(pmanage<MPtr(&property::PBag::make_bool)>(
+          "do_format_conversion",
+          [this](const bool& val) {
+            do_format_conversion_ = val;
+            return true;
+          },
+          [this]() { return do_format_conversion_; },
+          "Do sample conversion to float (F32LE)",
+          "Do sample conversion to float (F32LE)",
+          do_format_conversion_)),
+      do_rate_conversion_id_(pmanage<MPtr(&property::PBag::make_bool)>(
+          "do_rate_conversion",
+          [this](const bool& val) {
+            do_rate_conversion_ = val;
+            return true;
+          },
+          [this]() { return do_format_conversion_; },
+          "Convert to Jack rate",
+          "Convert to Jack rate",
+          do_rate_conversion_)),
       shmcntr_(static_cast<Quiddity*>(this)),
-      gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)),
-      jack_client_(get_name(),
-                   conf.tree_config_->branch_has_data("server_name")
-                       ? conf.tree_config_->branch_get_value("server_name").copy_as<std::string>()
-                       : std::string(),
-                   &ShmdataToJack::jack_process,
-                   this,
-                   [this](uint n) { on_xrun(n); },
-                   [this](jack_port_t* port) { on_port(port); },
-                   [this]() {
-                     if (!is_constructed_) return;
-                     auto thread = std::thread([this]() {
-                       if (!qcontainer_->remove(qcontainer_->get_id(get_name())))
-                         warning("% did not self destruct after jack shutdown", get_name());
-                     });
-                     thread.detach();
-                   }) {
-  // is_constructed_ is needed because of a cross reference among JackClient and JackPort
-  is_constructed_ = true;
-  if (!jack_client_) {
-    message("ERROR:JackClient cannot be instanciated (is jack server running?)");
-    is_valid_ = false;
-    return;
-  }
-  if (!make_elements()) {
-    is_valid_ = false;
-    return;
-  }
+      gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)) {
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
       [this](const std::string&) { return this->on_shmdata_disconnect(); },
       [this]() { return this->on_shmdata_disconnect(); },
       [this](const std::string& caps) { return this->can_sink_caps(caps); },
       1);
+
   unsigned int max_number_of_channels = kMaxNumberOfChannels;
   if (config<MPtr(&InfoTree::branch_has_data)>("max_number_of_channels"))
     max_number_of_channels =
         config<MPtr(&InfoTree::branch_get_value)>("max_number_of_channels").copy_as<unsigned int>();
+
   index_id_ = pmanage<MPtr(&property::PBag::make_int)>(
       "index",
       [this](const int& val) {
         index_ = val;
-        update_port_to_connect();
         return true;
       },
       [this]() { return index_; },
@@ -163,7 +160,6 @@ ShmdataToJack::ShmdataToJack(quiddity::Config&& conf)
       index_,
       0,
       max_number_of_channels);
-  update_port_to_connect();
 }
 
 int ShmdataToJack::jack_process(jack_nframes_t nframes, void* arg) {
@@ -172,7 +168,7 @@ int ShmdataToJack::jack_process(jack_nframes_t nframes, void* arg) {
   {
     std::lock_guard<std::mutex> lock(context->port_to_connect_in_jack_process_mutex_);
     for (auto& it : context->port_to_connect_in_jack_process_)
-      jack_connect(context->jack_client_.get_raw(), it.first.c_str(), it.second.c_str());
+      jack_connect(context->jack_client_->get_raw(), it.first.c_str(), it.second.c_str());
     context->port_to_connect_in_jack_process_.clear();
   }
   {
@@ -185,11 +181,11 @@ int ShmdataToJack::jack_process(jack_nframes_t nframes, void* arg) {
         write_zero = true;
       }
       for (unsigned int i = 0; i < context->output_ports_.size(); ++i) {
-        jack_sample_t* buf =
-            (jack_sample_t*)jack_port_get_buffer(context->output_ports_[i].get_raw(), nframes);
+        jack_sample_t* buf = static_cast<jack_sample_t*>(
+            jack_port_get_buffer(context->output_ports_[i].get_raw(), nframes));
         if (!buf) return 0;
         if (!write_zero) {
-          context->ring_buffers_[i].pop_samples((std::size_t)nframes, buf);
+          context->ring_buffers_[i].pop_samples(static_cast<std::size_t>(nframes), buf);
         } else {
           for (unsigned int j = 0; j < nframes; ++j) buf[j] = 0;
         }
@@ -201,12 +197,12 @@ int ShmdataToJack::jack_process(jack_nframes_t nframes, void* arg) {
 
 void ShmdataToJack::on_xrun(uint num_of_missed_samples) {
   if (!is_constructed_) return;
-  warning("jack xrun (delay of % samples)", std::to_string(num_of_missed_samples));
-  jack_nframes_t jack_buffer_size = jack_client_.get_buffer_size();
+  info("jack xrun (delay of % samples)", std::to_string(num_of_missed_samples));
+  jack_nframes_t jack_buffer_size = jack_client_->get_buffer_size();
   for (auto& it : ring_buffers_) {
     // this is safe since on_xrun is called right before jack_process,
     // on the same thread
-    it.shrink_to((std::size_t)jack_buffer_size * 1.5);
+    it.shrink_to(static_cast<std::size_t>(jack_buffer_size * 1.5));
   }
 }
 
@@ -215,7 +211,7 @@ void ShmdataToJack::on_handoff_cb(GstElement* /*object*/,
                                   GstPad* pad,
                                   gpointer user_data) {
   ShmdataToJack* context = static_cast<ShmdataToJack*>(user_data);
-  auto current_time = jack_frame_time(context->jack_client_.get_raw());
+  auto current_time = jack_frame_time(context->jack_client_->get_raw());
   GstCaps* caps = gst_pad_get_current_caps(pad);
   if (nullptr == caps) return;
   On_scope_exit { gst_caps_unref(caps); };
@@ -224,7 +220,10 @@ void ShmdataToJack::on_handoff_cb(GstElement* /*object*/,
   // debug("on handoff, negotiated caps is %", std::string(string_caps));
   const GValue* val = gst_structure_get_value(gst_caps_get_structure(caps, 0), "channels");
   const int channels = g_value_get_int(val);
-  context->check_output_ports(channels);
+  if (channels != context->channels_) {
+    context->on_channel_update(channels);
+    if (channels > 0) context->connect_ports();
+  }
   // getting buffer infomation:
   GstMapInfo map;
   if (!gst_buffer_map(buf, &map, GST_MAP_READ)) {
@@ -235,9 +234,10 @@ void ShmdataToJack::on_handoff_cb(GstElement* /*object*/,
   jack_nframes_t duration = map.size / (4 * channels);
   // setting the smoothing value affecting (20 sec)
   context->drift_observer_.set_smoothing_factor(
-      (double)duration / (20.0 * (double)context->jack_client_.get_sample_rate()));
-  std::size_t new_size =
-      (std::size_t)context->drift_observer_.set_current_time_info(current_time, duration);
+      static_cast<double>(duration) /
+      (20.0 * static_cast<double>(context->jack_client_->get_sample_rate())));
+  std::size_t new_size = static_cast<std::size_t>(
+      context->drift_observer_.set_current_time_info(current_time, duration));
   --context->debug_buffer_usage_;
   if (0 == context->debug_buffer_usage_) {
     context->debug("buffer load is %, ratio is %",
@@ -257,23 +257,6 @@ void ShmdataToJack::on_handoff_cb(GstElement* /*object*/,
   }
 }
 
-void ShmdataToJack::check_output_ports(unsigned int channels) {
-  if (channels == channels_) return;
-  channels_ = channels;
-  // thread safe operations on output ports
-  {
-    std::unique_lock<std::mutex> lock(output_ports_mutex_);
-    // unregistering previous ports
-    output_ports_.clear();
-    // replacing with new ports
-    for (unsigned int i = 0; i < channels; ++i) output_ports_.emplace_back(jack_client_, i);
-    if (channels > 0) connect_ports();
-    // replacing ring buffers
-    std::vector<AudioRingBuffer<jack_sample_t>> tmp(channels);
-    std::swap(ring_buffers_, tmp);
-  }  // unlocking output_ports_
-}
-
 bool ShmdataToJack::make_elements() {
   GError* error = nullptr;
   auto src = std::string("shmdatasrc ");
@@ -283,7 +266,7 @@ bool ShmdataToJack::make_elements() {
   std::string description(src +
                           " ! capsfilter caps=\"audio/x-raw, format=(string)F32LE, "
                           "layout=(string)interleaved, rate=" +
-                          std::to_string(jack_client_.get_sample_rate()) + "\" !" +
+                          std::to_string(jack_client_->get_sample_rate()) + "\" !" +
                           " fakesink silent=true signal-handoffs=true sync=false");
   GstElement* jacksink = gst_parse_bin_from_description(description.c_str(), TRUE, &error);
   if (error != nullptr) {
@@ -299,7 +282,6 @@ bool ShmdataToJack::make_elements() {
   if (nullptr != audiobin_) gst::utils::clean_element(audiobin_);
   shmdatasrc_ = shmdatasrc;
   audiobin_ = jacksink;
-  fakesink_ = fakesink;
   return true;
 }
 
@@ -308,12 +290,52 @@ bool ShmdataToJack::start() {
     warning("cannot start, no shmdata to connect with");
     return false;
   }
+
+  // Create JACK Client
+  channels_ = 0;  // Channels will be dynamically discovered
+  jack_client_ = std::make_unique<JackClient>(
+      client_name_,
+      server_name_.empty() ? "default" : server_name_,
+      &ShmdataToJack::jack_process,
+      this,
+      [this](uint n) { on_xrun(n); },
+      [this](jack_port_t* port) { on_port(port); },
+      [this]() {
+        if (!is_constructed_) return;
+        auto thread = std::thread([this]() {
+          if (!qcontainer_->remove(qcontainer_->get_id(get_name())))
+            warning("% did not self destruct after jack shutdown", get_name());
+        });
+        thread.detach();
+      });
+  if (!*jack_client_.get()) {
+    message("ERROR: JackClient cannot be instantiated (is jack server running?)");
+    is_valid_ = false;
+    return false;
+  }
+  is_constructed_ = true;  // needed because of a cross reference between JackClient and JackPort
+  client_name_ = jack_client_->get_name();
+
+  // Create and start gst pipeline
+  if (!gst_pipeline_) gst_pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, nullptr);
+  if (!make_elements()) {
+    is_valid_ = false;
+    return false;
+  }
   g_object_set(G_OBJECT(shmdatasrc_), "socket-path", shmpath_.c_str(), nullptr);
-  shm_sub_ = std::make_unique<shmdata::GstTreeUpdater>(
-      this, shmdatasrc_, shmpath_, shmdata::GstTreeUpdater::Direction::reader);
   gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), audiobin_);
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
   gst_pipeline_->play(true);
+
+  // Create shmdata follower
+  shm_sub_ = std::make_unique<shmdata::GstTreeUpdater>(
+      this, shmdatasrc_, shmpath_, shmdata::GstTreeUpdater::Direction::reader);
+
+  // Disable properties
+  pmanage<MPtr(&property::PBag::disable)>(server_name_id_,
+                                          shmdata::Connector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(client_name_id_,
+                                          shmdata::Connector::disabledWhenConnectedMsg);
   pmanage<MPtr(&property::PBag::disable)>(auto_connect_id_,
                                           shmdata::Connector::disabledWhenConnectedMsg);
   pmanage<MPtr(&property::PBag::disable)>(connect_to_id_,
@@ -323,30 +345,59 @@ bool ShmdataToJack::start() {
                                           shmdata::Connector::disabledWhenConnectedMsg);
   pmanage<MPtr(&property::PBag::disable)>(connect_only_first_id_,
                                           shmdata::Connector::disabledWhenConnectedMsg);
-  connect_ports();
+  pmanage<MPtr(&property::PBag::disable)>(do_format_conversion_id_,
+                                          shmdata::Connector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(do_rate_conversion_id_,
+                                          shmdata::Connector::disabledWhenConnectedMsg);
+
   return true;
 }
 
 bool ShmdataToJack::stop() {
-  shm_sub_.reset();
+  // Stop processing
   disconnect_ports();
-  {
-    On_scope_exit { gst_pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, nullptr); };
-    if (!make_elements()) return false;
-  }
+  gst_pipeline_->play(false);
+
+  // Reset gst-related stuff
+  shm_sub_.reset();
+  gst_pipeline_.reset();
+  shmpath_.clear();
+
+  // Clean JACK-related stuff
+  clean_output_ports();  // Must clean ports before unreffing jack_client
+  jack_client_.reset();
+  is_constructed_ = false;
+
+  // Enable properties
+  pmanage<MPtr(&property::PBag::enable)>(server_name_id_);
+  pmanage<MPtr(&property::PBag::enable)>(client_name_id_);
   pmanage<MPtr(&property::PBag::enable)>(auto_connect_id_);
   pmanage<MPtr(&property::PBag::enable)>(connect_to_id_);
   pmanage<MPtr(&property::PBag::enable)>(index_id_);
   pmanage<MPtr(&property::PBag::enable)>(connect_all_to_first_id_);
   pmanage<MPtr(&property::PBag::enable)>(connect_only_first_id_);
+  pmanage<MPtr(&property::PBag::enable)>(do_format_conversion_id_);
+  pmanage<MPtr(&property::PBag::enable)>(do_rate_conversion_id_);
+
   return true;
 }
 
-bool ShmdataToJack::on_shmdata_disconnect() { return stop(); }
+bool ShmdataToJack::on_shmdata_disconnect() {
+  if (shmpath_.empty()) {
+    return false;
+  }
+  return stop();
+}
 
 bool ShmdataToJack::on_shmdata_connect(const std::string& shmpath) {
+  if (shmpath.empty()) {
+    error("shmpath must not be empty");
+    return false;
+  }
+  if (!shmpath_.empty()) {
+    stop();
+  }
   shmpath_ = shmpath;
-  stop();
   return start();
 }
 
@@ -354,16 +405,27 @@ bool ShmdataToJack::can_sink_caps(const std::string& caps) {
   return gst::utils::can_sink_caps("audioconvert", caps);
 }
 
-void ShmdataToJack::update_port_to_connect() {
+void ShmdataToJack::on_channel_update(unsigned int channels) {
+  channels_ = channels;
+  // thread safe operations on output ports
+  {
+    std::unique_lock<std::mutex> lock(output_ports_mutex_);
+    // unregistering previous ports
+    output_ports_.clear();
+    // replacing with new ports
+    for (unsigned int i = 0; i < channels; ++i) output_ports_.emplace_back(*jack_client_, i);
+    update_ports_to_connect();
+    // replacing ring buffers
+    std::vector<AudioRingBuffer<jack_sample_t>> tmp(channels);
+    std::swap(ring_buffers_, tmp);
+  }  // unlocking output_ports_
+}
+
+void ShmdataToJack::update_ports_to_connect() {
   std::lock_guard<std::mutex> lock(ports_to_connect_mutex_);
   ports_to_connect_.clear();
 
-  if (!auto_connect_) {
-    warning("Auto-connect for jack is disabled.");
-    return;
-  }
-
-  for (unsigned int i = index_; i < index_ + output_ports_.size(); ++i) {
+  for (unsigned int i = index_; i < index_ + channels_; ++i) {
     char buff[128];
     std::snprintf(buff, sizeof(buff), connect_to_.c_str(), i);
     ports_to_connect_.emplace_back(buff);
@@ -371,29 +433,36 @@ void ShmdataToJack::update_port_to_connect() {
 }
 
 void ShmdataToJack::connect_ports() {
-  update_port_to_connect();
-
-  if (0 == output_ports_.size()) return;
+  if (output_ports_.empty()) return;
   if (!auto_connect_) return;
 
-  std::lock_guard<std::mutex> lock(ports_to_connect_mutex_);
-  if (ports_to_connect_.size() != output_ports_.size()) {
-    warning(
-        "Port number mismatch in shmdata to jack autoconnect, should not "
-        "happen.");
-    return;
-  }
+  {
+    std::lock_guard<std::mutex> lock(output_ports_mutex_);
+    if (ports_to_connect_.size() != output_ports_.size()) {
+      warning("Port number mismatch in shmdata to jack autoconnect, should not happen.");
+      return;
+    }
 
-  for (unsigned int i = 0; i < (connect_only_first_ ? 1 : output_ports_.size()); ++i) {
-    unsigned int dest_port_index = connect_all_to_first_ ? 0 : i;
-    jack_connect(jack_client_.get_raw(),
-                 std::string(jack_client_.get_name() + ":" + output_ports_[i].get_name()).c_str(),
-                 ports_to_connect_[dest_port_index].c_str());
+    for (unsigned int i = 0; i < (connect_only_first_ ? 1 : output_ports_.size()); ++i) {
+      unsigned int dest_port_index = connect_all_to_first_ ? 0 : i;
+      debug("Connecting % to %",
+            std::string(client_name_ + ":" + output_ports_[i].get_name()),
+            ports_to_connect_[dest_port_index]);
+      jack_connect(jack_client_->get_raw(),
+                   std::string(client_name_ + ":" + output_ports_[i].get_name()).c_str(),
+                   ports_to_connect_[dest_port_index].c_str());
+    }
   }
 }
 
 void ShmdataToJack::disconnect_ports() {
-  for (auto& it : output_ports_) jack_port_disconnect(jack_client_.get_raw(), it.get_raw());
+  std::lock_guard<std::mutex> lock(output_ports_mutex_);
+  for (auto& it : output_ports_) jack_port_disconnect(jack_client_->get_raw(), it.get_raw());
+}
+
+void ShmdataToJack::clean_output_ports() {
+  std::lock_guard<std::mutex> lock(output_ports_mutex_);
+  output_ports_.clear();
 }
 
 void ShmdataToJack::on_port(jack_port_t* port) {
@@ -405,10 +474,9 @@ void ShmdataToJack::on_port(jack_port_t* port) {
   if (ports_to_connect_.end() == it) return;
   {
     std::lock_guard<std::mutex> lock(port_to_connect_in_jack_process_mutex_);
-    port_to_connect_in_jack_process_.push_back(
-        std::make_pair(std::string(jack_client_.get_name() + ":" +
-                                   output_ports_[it - ports_to_connect_.begin()].get_name()),
-                       *it));
+    port_to_connect_in_jack_process_.push_back(std::make_pair(
+        std::string(client_name_ + ":" + output_ports_[it - ports_to_connect_.begin()].get_name()),
+        *it));
   }
 }
 
