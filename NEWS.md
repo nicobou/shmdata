@@ -2,6 +2,12 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.3.38 (2020-12-14)
+---------------------------
+This is an official release in the 1.3 stable series.
+
+* 🐛 Fixed packaging issue where patches were not updated correctly when merging the upstream
+
 shmdata 1.3.36 (2020-11-30)
 ---------------------------
 This is an official release in the 1.3 stable series.
