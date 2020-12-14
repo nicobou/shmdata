@@ -337,6 +337,7 @@ if __name__ == "__main__":
 
     print(f"Merging the {bringup_branch} into {debian_master_branch}")
     gbp_pq("import")
+    git_checkout(debian_master_branch)
     git_merge(bringup_branch)
     gbp_pq("rebase")
     gbp_pq("export")
