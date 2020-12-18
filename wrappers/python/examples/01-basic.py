@@ -42,8 +42,8 @@ vidqrox = sw.create('videotestsrc', 'vid')
 assert None != vidqrox
 vid = vidqrox.quid()
 
-# Quiddities have names, types & nicknames
-assert None != vid.get_name()
+# Quiddities have nicknames & types
+assert None != vid.get_nickname()
 assert None != vid.get_type()
 nick = 'my vid'
 assert vid.set_nickname(nick)
@@ -77,7 +77,7 @@ assert win.invoke('disconnect', [vidshmpath])
 
 time.sleep(1)
 # and can reconnect, using the alternative connect-quid method
-assert win.invoke('connect-quid', ['vid', 'video'])
+assert win.invoke('connect-quid', ['my vid', 'video'])
 time.sleep(1)
 
 sw.remove(vidqrox.id())

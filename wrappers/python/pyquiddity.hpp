@@ -73,7 +73,6 @@ class pyQuiddity {
   static PyObject* get_info(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* get_info_tree_as_json(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   // name, type and nickname
-  static PyObject* get_name(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* get_type(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* set_nickname(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* get_nickname(pyQuiddityObject* self, PyObject* args, PyObject* kwds);

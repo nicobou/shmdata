@@ -648,7 +648,7 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
     // setting a decoder for this shmdata
     // Create a shmdata quiddity for this stream.
     std::string quid_name = "sipMedia";
-    auto quid_names = SIPPlugin::this_->qcontainer_->get_names();
+    auto quid_names = SIPPlugin::this_->qcontainer_->get_nicknames();
     auto suffix = 0;
     while (std::any_of(quid_names.begin(), quid_names.end(), [quid_name, suffix](auto name){ return name == (quid_name + std::to_string(suffix)); })) {
       ++suffix;
@@ -1039,7 +1039,7 @@ bool PJCall::create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_se
     std::string media_caps_str = reader->second->get_input_caps();
 
     // Get the name of the quiddity writing the shmdata using its caps
-    auto quiddity_name = SIPPlugin::this_->qcontainer_->get_name_from_caps(media_caps_str);
+    auto quiddity_name = SIPPlugin::this_->qcontainer_->get_nickname_from_caps(media_caps_str);
 
     // If name cannot be found, then it is not a Switcher-generated shmdata.
     // It could be a Gstreamer pipeline or any stream produced by a generic shmdata writer.

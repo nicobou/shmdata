@@ -37,7 +37,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToJack,
 
 ShmdataToJack::ShmdataToJack(quiddity::Config&& conf)
     : Quiddity(std::forward<quiddity::Config>(conf)),
-      client_name_(get_name()),
+      client_name_(get_nickname()),
       server_name_(conf.tree_config_->branch_has_data("server_name")
                        ? conf.tree_config_->branch_get_value("server_name").copy_as<std::string>()
                        : "default"),
@@ -303,8 +303,8 @@ bool ShmdataToJack::start() {
       [this]() {
         if (!is_constructed_) return;
         auto thread = std::thread([this]() {
-          if (!qcontainer_->remove(qcontainer_->get_id(get_name())))
-            warning("% did not self destruct after jack shutdown", get_name());
+          if (!qcontainer_->remove(get_id()))
+            warning("% did not self destruct after jack shutdown", get_nickname());
         });
         thread.detach();
       });

@@ -53,8 +53,8 @@ with open('save.switcher', 'r') as save_file:
 sw2.load_state(pyquid.InfoTree(content))
 
 # check win and vid exist
-assert None != sw.get_qrox_from_name('win')
-assert None != sw.get_qrox_from_name('vid')
+assert None != sw.get_qrox_from_nickname('win')
+assert None != sw.get_qrox_from_nickname('vid')
 
 time.sleep(1)
 

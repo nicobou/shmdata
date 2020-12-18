@@ -190,18 +190,18 @@ GLFWVideo::GLFWVideo(quiddity::Config&& conf)
             });
           },
           std::chrono::milliseconds(500))),
-      title_(get_name()),
-      title_id_(pmanage<MPtr(&property::PBag::make_string)>("title",
-                                                            [this](const std::string& val) {
-                                                              title_ = val;
-                                                              glfwSetWindowTitle(window_,
-                                                                                 title_.c_str());
-                                                              return true;
-                                                            },
-                                                            [this]() { return title_; },
-                                                            "Window Title",
-                                                            "Window Title",
-                                                            title_)),
+      title_(get_nickname()),
+      title_id_(pmanage<MPtr(&property::PBag::make_string)>(
+          "title",
+          [this](const std::string& val) {
+            title_ = val;
+            glfwSetWindowTitle(window_, title_.c_str());
+            return true;
+          },
+          [this]() { return title_; },
+          "Window Title",
+          "Window Title",
+          title_)),
       xevents_to_shmdata_id_(pmanage<MPtr(&property::PBag::make_bool)>(
           "xevents",
           [this](bool val) {
@@ -1569,7 +1569,7 @@ void GLFWVideo::GUIConfiguration::show() {
     text_position.y = (parent_window_->height_ - text_size_.y) / 2.f;
 
   ImGui::SetNextWindowPos(text_position);
-  ImGui::Begin(parent_window_->get_name().c_str(),
+  ImGui::Begin(parent_window_->get_nickname().c_str(),
                nullptr,
                ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
                    ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_AlwaysAutoResize);

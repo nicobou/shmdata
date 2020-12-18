@@ -24,19 +24,22 @@
 
 #include "../infotree/information-tree.hpp"
 #include "../logger/base.hpp"
+#include "./quid-id-t.hpp"
 
 namespace switcher {
 namespace quiddity {
 class Container;
 struct Config {
   Config() = delete;
-  Config(const std::string& name,
+  Config(qid_t id,
+         const std::string& nickname,
          const std::string& type,
          const InfoTree::ptrc tree_config,
          Container* qc,
          log::Base* log)
-      : name_(name), type_(type), tree_config_(tree_config), qc_(qc), log_(log) {}
-  std::string name_;
+      : id_(id), nickname_(nickname), type_(type), tree_config_(tree_config), qc_(qc), log_(log) {}
+  qid_t id_;
+  std::string nickname_;
   std::string type_;
   InfoTree::ptrc tree_config_;
   Container* qc_;

@@ -33,6 +33,7 @@
 #include "./logger/console.hpp"
 #include "./quiddity/container.hpp"
 #include "./quiddity/factory.hpp"
+#include "./quiddity/quid-id-t.hpp"
 #include "./utils/make-consultable.hpp"
 #include "./utils/string-utils.hpp"
 
@@ -129,7 +130,7 @@ class Switcher : public gst::Initialized {
   Configuration conf_;
   quiddity::Container::ptr qcontainer_;
   std::string name_;
-  std::vector<std::string> quiddities_at_reset_{};
+  std::vector<quiddity::qid_t> quiddities_at_reset_{};
   std::weak_ptr<Switcher> me_{};
   int control_port_{0};
 };

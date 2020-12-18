@@ -34,7 +34,7 @@ async def make_switcher_scenario(sw: pyquid.Switcher) -> None:
     while (time.monotonic() < now + 4):
         await asyncio.sleep(0.001)
         for name in sw.list_quids():
-            sw.get_qrox_from_name(name).quid().get_info_tree_as_json()
+            sw.get_qrox_from_nickname(name).quid().get_info_tree_as_json()
 
 
 def on_tree(key: str, quid: pyquid.Quiddity) -> None:

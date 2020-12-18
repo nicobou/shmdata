@@ -201,7 +201,7 @@ int controlService::get_classes_doc(std::string* result) {
   return SOAP_OK;
 }
 
-int controlService::get_quiddity_description(const std::string& quiddity_name,
+int controlService::get_quiddity_description(const std::string& quiddity_nickname,
                                              std::string* result) {
   using namespace switcher;
   quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
@@ -216,7 +216,7 @@ int controlService::get_quiddity_description(const std::string& quiddity_name,
   *result = infotree::json::serialize(
       manager
           ->quids<MPtr(&quiddity::Container::get_quiddity_description)>(
-              manager->quids<MPtr(&quiddity::Container::get_id)>(quiddity_name))
+              manager->quids<MPtr(&quiddity::Container::get_id)>(quiddity_nickname))
           .get());
 
   return SOAP_OK;
@@ -241,41 +241,43 @@ int controlService::get_quiddities_description(std::string* result) {
   return SOAP_OK;
 }
 
-int controlService::get_quiddity_names(std::vector<std::string>* result) {
+int controlService::get_quiddity_nicknames(std::vector<std::string>* result) {
   using namespace switcher;
   quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
-  *result = ctrl_server->get_switcher()->quids<MPtr(&quiddity::Container::get_names)>();
+  *result = ctrl_server->get_switcher()->quids<MPtr(&quiddity::Container::get_nicknames)>();
   return SOAP_OK;
 }
 
-int controlService::set_property(const std::string& quiddity_name,
+int controlService::set_property(const std::string& quiddity_nickname,
                                  const std::string& property_name,
                                  const std::string& property_value) {
   using namespace switcher;
   quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
 
-  auto qrox = manager->quids<MPtr(&quiddity::Container::get_qrox_from_name)>(quiddity_name);
+  auto qrox = manager->quids<MPtr(&quiddity::Container::get_qrox_from_nickname)>(quiddity_nickname);
 
   auto id = qrox ? qrox.get()->prop<MPtr(&quiddity::property::PBag::get_id)>(property_name) : 0;
   if (0 == id) {
     char* s = reinterpret_cast<char*>(soap_malloc(this, 1024));
-    sprintf(
-        s, "property %s not found for quiddity %s", property_name.c_str(), quiddity_name.c_str());
+    sprintf(s,
+            "property %s not found for quiddity %s",
+            property_name.c_str(),
+            quiddity_nickname.c_str());
     return soap_senderfault("set property error", s);
   }
   qrox.get()->prop<MPtr(&quiddity::property::PBag::set_str)>(id, property_value);
   return send_set_property_empty_response(SOAP_OK);
 }
 
-int controlService::get_property(const std::string& quiddity_name,
+int controlService::get_property(const std::string& quiddity_nickname,
                                  const std::string& property_name,
                                  std::string* result) {
   using namespace switcher;
   quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
 
-  auto qrox = manager->quids<MPtr(&quiddity::Container::get_qrox_from_name)>(quiddity_name);
+  auto qrox = manager->quids<MPtr(&quiddity::Container::get_qrox_from_nickname)>(quiddity_nickname);
   auto id = qrox ? qrox.get()->prop<MPtr(&quiddity::property::PBag::get_id)>(property_name) : 0;
   if (0 == id)
     *result = std::string();
@@ -284,14 +286,14 @@ int controlService::get_property(const std::string& quiddity_name,
   return SOAP_OK;
 }
 
-int controlService::make_shmpath(const std::string& quiddity_name,
+int controlService::make_shmpath(const std::string& quiddity_nickname,
                                  const std::string& suffix,
                                  std::string* result) {
   using namespace switcher;
   quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
 
-  auto qrox = manager->quids<MPtr(&quiddity::Container::get_qrox_from_name)>(quiddity_name);
+  auto qrox = manager->quids<MPtr(&quiddity::Container::get_qrox_from_nickname)>(quiddity_nickname);
   if (!qrox)
     *result = std::string();
   else
@@ -319,22 +321,22 @@ int controlService::create_named_quiddity(const std::string& quiddity_class,
   return SOAP_OK;
 }
 
-int controlService::delete_quiddity(const std::string& quiddity_name) {
+int controlService::delete_quiddity(const std::string& quiddity_nickname) {
   using namespace switcher;
   quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
 
   if (manager->quids<MPtr(&quiddity::Container::remove)>(
-          manager->quids<MPtr(&quiddity::Container::get_id)>(quiddity_name)))
+          manager->quids<MPtr(&quiddity::Container::get_id)>(quiddity_nickname)))
     return send_set_property_empty_response(SOAP_OK);
   else {
     char* s = reinterpret_cast<char*>(soap_malloc(this, 1024));
-    sprintf(s, "%s is not found, not deleting", quiddity_name.c_str());
+    sprintf(s, "%s is not found, not deleting", quiddity_nickname.c_str());
     return send_set_property_empty_response(soap_senderfault("Quiddity creation error", s));
   }
 }
 
-int controlService::invoke_method(const std::string& quiddity_name,
+int controlService::invoke_method(const std::string& quiddity_nickname,
                                   const std::string& method_name,
                                   std::vector<std::string> args,
                                   std::string* result) {
@@ -350,7 +352,7 @@ int controlService::invoke_method(const std::string& quiddity_name,
       tuple_args = tuple_args + "," + serialize::esc_for_tuple(it);
   }
 
-  auto qrox = manager->quids<MPtr(&quiddity::Container::get_qrox_from_name)>(quiddity_name);
+  auto qrox = manager->quids<MPtr(&quiddity::Container::get_qrox_from_nickname)>(quiddity_nickname);
 
   auto method_id = qrox ? qrox.get()->meth<MPtr(&quiddity::method::MBag::get_id)>(method_name) : 0;
   if (0 != method_id) {
@@ -361,7 +363,7 @@ int controlService::invoke_method(const std::string& quiddity_name,
     }
   }
   char* s = reinterpret_cast<char*>(soap_malloc(this, 1024));
-  sprintf(s, "invoking %s/%s returned false", quiddity_name.c_str(), method_name.c_str());
+  sprintf(s, "invoking %s/%s returned false", quiddity_nickname.c_str(), method_name.c_str());
   return soap_senderfault("Method invocation error", s);
 }
 
@@ -408,36 +410,36 @@ int controlService::run(const std::string& file_name, std::string* result) {
   return SOAP_OK;
 }
 
-int controlService::get_information_tree(const std::string& quiddity_name,
+int controlService::get_information_tree(const std::string& quiddity_nickname,
                                          const std::string& path,
                                          std::string* result) {
   using namespace switcher;
   quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
 
-  auto qrox = manager->quids<MPtr(&quiddity::Container::get_qrox_from_name)>(quiddity_name);
+  auto qrox = manager->quids<MPtr(&quiddity::Container::get_qrox_from_nickname)>(quiddity_nickname);
   if (qrox) *result = qrox.get()->tree<MPtr(&InfoTree::serialize_json)>(path);
   return SOAP_OK;
 }
 
-int controlService::get_user_data(const std::string& quiddity_name,
+int controlService::get_user_data(const std::string& quiddity_nickname,
                                   const std::string& path,
                                   std::string* result) {
   using namespace switcher;
   quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
-  auto qrox = manager->quids<MPtr(&quiddity::Container::get_qrox_from_name)>(quiddity_name);
+  auto qrox = manager->quids<MPtr(&quiddity::Container::get_qrox_from_nickname)>(quiddity_nickname);
   if (qrox) *result = qrox.get()->user_data<MPtr(&InfoTree::serialize_json)>(path);
   return SOAP_OK;
 }
 
-int controlService::prune_user_data(const std::string& quiddity_name,
+int controlService::prune_user_data(const std::string& quiddity_nickname,
                                     const std::string& path,
                                     std::string* result) {
   using namespace switcher;
   quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
-  auto qrox = manager->quids<MPtr(&quiddity::Container::get_qrox_from_name)>(quiddity_name);
+  auto qrox = manager->quids<MPtr(&quiddity::Container::get_qrox_from_nickname)>(quiddity_nickname);
   if (qrox)
     *result =
         static_cast<bool>(qrox.get()->user_data<MPtr(&InfoTree::prune)>(path)) ? "true" : "false";
@@ -445,7 +447,7 @@ int controlService::prune_user_data(const std::string& quiddity_name,
   return SOAP_OK;
 }
 
-int controlService::graft_user_data(const std::string& quiddity_name,
+int controlService::graft_user_data(const std::string& quiddity_nickname,
                                     const std::string& path,
                                     const std::string& type,
                                     const std::string& value,
@@ -454,7 +456,7 @@ int controlService::graft_user_data(const std::string& quiddity_name,
   quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
 
-  auto qrox = manager->quids<MPtr(&quiddity::Container::get_qrox_from_name)>(quiddity_name);
+  auto qrox = manager->quids<MPtr(&quiddity::Container::get_qrox_from_nickname)>(quiddity_nickname);
   auto res = false;
   if (!qrox) {
   } else if (type == "int") {
@@ -488,7 +490,7 @@ int controlService::graft_user_data(const std::string& quiddity_name,
   return SOAP_OK;
 }
 
-int controlService::tag_as_array_user_data(const std::string& quiddity_name,
+int controlService::tag_as_array_user_data(const std::string& quiddity_nickname,
                                            const std::string& path,
                                            bool is_array,
                                            std::string* result) {
@@ -496,7 +498,7 @@ int controlService::tag_as_array_user_data(const std::string& quiddity_name,
   quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
 
-  auto qrox = manager->quids<MPtr(&quiddity::Container::get_qrox_from_name)>(quiddity_name);
+  auto qrox = manager->quids<MPtr(&quiddity::Container::get_qrox_from_nickname)>(quiddity_nickname);
   if (qrox)
     *result =
         static_cast<bool>(qrox.get()->user_data<MPtr(&InfoTree::tag_as_array)>(path, is_array))

@@ -292,15 +292,6 @@ PyObject* pyQuiddity::get_info(pyQuiddityObject* self, PyObject* args, PyObject*
   return pyInfoTree::any_to_pyobject(self->quid->tree<MPtr(&InfoTree::branch_get_value)>(path));
 }
 
-PyDoc_STRVAR(pyquiddity_get_name_doc,
-             "Get the quiddity name.\n"
-             "Arguments: none\n"
-             "Returns: the value\n");
-
-PyObject* pyQuiddity::get_name(pyQuiddityObject* self, PyObject*, PyObject*) {
-  return PyUnicode_FromString(self->quid->get_name().c_str());
-}
-
 PyDoc_STRVAR(pyquiddity_get_type_doc,
              "Get the quiddity type as string.\n"
              "Arguments: none\n"
@@ -639,10 +630,10 @@ PyMethodDef pyQuiddity::pyQuiddity_methods[] = {
      (PyCFunction)pyQuiddity::get_info,
      METH_VARARGS | METH_KEYWORDS,
      pyquiddity_get_info_doc},
-    {"get_name",
-     (PyCFunction)pyQuiddity::get_name,
+    {"get_nickname",
+     (PyCFunction)pyQuiddity::get_nickname,
      METH_VARARGS | METH_KEYWORDS,
-     pyquiddity_get_name_doc},
+     pyquiddity_get_nickname_doc},
     {"get_type",
      (PyCFunction)pyQuiddity::get_type,
      METH_VARARGS | METH_KEYWORDS,
@@ -651,10 +642,6 @@ PyMethodDef pyQuiddity::pyQuiddity_methods[] = {
      (PyCFunction)pyQuiddity::set_nickname,
      METH_VARARGS | METH_KEYWORDS,
      pyquiddity_set_nickname_doc},
-    {"get_nickname",
-     (PyCFunction)pyQuiddity::get_nickname,
-     METH_VARARGS | METH_KEYWORDS,
-     pyquiddity_get_nickname_doc},
     {"get_info_tree_as_json",
      (PyCFunction)pyQuiddity::get_info_tree_as_json,
      METH_VARARGS | METH_KEYWORDS,

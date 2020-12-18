@@ -61,7 +61,8 @@ int main() {
 
     {  // check loading
       manager->load_state(save.get());
-      auto loaded = manager->quids<MPtr(&quiddity::Container::get_qrox_from_name)>("test").get();
+      auto loaded =
+          manager->quids<MPtr(&quiddity::Container::get_qrox_from_nickname)>("test").get();
       assert(loaded);
       assert(loaded->prop<MPtr(&property::PBag::get<bool>)>(
           loaded->prop<MPtr(&property::PBag::get_id)>(std::string("has_loaded_custom_state"))));

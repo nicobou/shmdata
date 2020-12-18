@@ -187,19 +187,21 @@ PyObject* pySwitch::remove(pySwitchObject* self, PyObject* args, PyObject* kwds)
   return Py_True;
 }
 
-PyDoc_STRVAR(pyswitch_get_qrox_from_name_doc,
-             "Get a Qrox of an existing quiddity (from its name).\n"
-             "Arguments: (name)\n"
+PyDoc_STRVAR(pyswitch_get_qrox_from_nickname_doc,
+             "Get a Qrox of an existing quiddity (from its nickname).\n"
+             "WARNING: if several quiddity are given the same nickname,"
+             "then only one will be retrieved with get_qrox_from_nickname."
+             "Arguments: (nickname)\n"
              "Returns: a handle to the quiddity (pyquid.Qrox), or None.\n");
 
-PyObject* pySwitch::get_qrox_from_name(pySwitchObject* self, PyObject* args, PyObject* kwds) {
+PyObject* pySwitch::get_qrox_from_nickname(pySwitchObject* self, PyObject* args, PyObject* kwds) {
   const char* name = nullptr;
-  static char* kwlist[] = {(char*)"name", nullptr};
+  static char* kwlist[] = {(char*)"nickname", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &name)) {
     Py_INCREF(Py_None);
     return Py_None;
   }
-  auto qrox = self->switcher->quids<MPtr(&quiddity::Container::get_qrox_from_name)>(name);
+  auto qrox = self->switcher->quids<MPtr(&quiddity::Container::get_qrox_from_nickname)>(name);
   if (!qrox) {
     Py_INCREF(Py_None);
     return Py_None;
@@ -343,7 +345,7 @@ PyDoc_STRVAR(pyswitch_list_quids_doc,
              "Returns: A list a of quiddities.\n");
 
 PyObject* pySwitch::list_quids(pySwitchObject* self, PyObject* args, PyObject* kwds) {
-  auto quids = self->switcher->quids<MPtr(&quiddity::Container::get_names)>();
+  auto quids = self->switcher->quids<MPtr(&quiddity::Container::get_nicknames)>();
   PyObject* result = PyList_New(quids.size());
   for (unsigned int i = 0; i < quids.size(); ++i) {
     PyList_SetItem(result, i, Py_BuildValue("s", quids[i].c_str()));
@@ -386,7 +388,7 @@ bool pySwitch::subscribe_to_signal(pySwitchObject* self,
                                    PyObject* cb,
                                    PyObject* user_data) {
   auto signalCb = [cb, user_data, self](quiddity::qid_t id) {
-    auto quid_name = self->switcher->quids<MPtr(&quiddity::Container::get_name)>(id);
+    auto quid_name = self->switcher->quids<MPtr(&quiddity::Container::get_nickname)>(id);
     bool has_gil = (1 == PyGILState_Check()) ? true : false;
     PyThreadState* m_state = nullptr;
     if (!has_gil) {
@@ -523,10 +525,10 @@ PyMethodDef pySwitch::pySwitch_methods[] = {
      (PyCFunction)pySwitch::get_qrox,
      METH_VARARGS | METH_KEYWORDS,
      pyswitch_get_qrox_doc},
-    {"get_qrox_from_name",
-     (PyCFunction)pySwitch::get_qrox_from_name,
+    {"get_qrox_from_nickname",
+     (PyCFunction)pySwitch::get_qrox_from_nickname,
      METH_VARARGS | METH_KEYWORDS,
-     pyswitch_get_qrox_from_name_doc},
+     pyswitch_get_qrox_from_nickname_doc},
     {"get_state", (PyCFunction)pySwitch::get_state, METH_NOARGS, pyswitch_get_state_doc},
     {"load_state",
      (PyCFunction)pySwitch::load_state,

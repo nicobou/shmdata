@@ -97,7 +97,7 @@ bool Connector::install_connect_method(OnConnect on_connect_cb,
           quid_->warning("on connect callback not installed");
           return false;
         }
-        auto qrox = quid_->qcontainer_->get_qrox_from_name(quid_name);
+        auto qrox = quid_->qcontainer_->get_qrox_from_nickname(quid_name);
         if (!qrox) {
           quid_->warning("quiddity % not found: %", quid_name, qrox.msg());
           return false;
