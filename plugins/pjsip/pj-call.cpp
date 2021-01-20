@@ -1051,15 +1051,9 @@ bool PJCall::create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_se
     }
 
     // Create a base64-encoded media label from the quiddity name and append it to the RTP caps
-    std::istringstream ss(quiddity_name);
-    std::string tok;
-    std::getline(ss, tok, ' ');
-    std::string label = tok;
-    while (std::getline(ss, tok, ' ')) {
-      label += tok;
-    }
     rtp_caps_str += ", media-label=(string)\"" +
-                stringutils::replace_char(stringutils::base64_encode(label), '=', "") + "\"";
+                    stringutils::replace_char(stringutils::base64_encode(quiddity_name), '=', "") +
+                    "\"";
 
     // Convert the updated RTP caps into GstCaps, and add them to a new SDPMedia object
     GstCaps* rtp_caps = gst_caps_from_string(rtp_caps_str.c_str());
