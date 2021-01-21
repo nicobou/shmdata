@@ -1,0 +1,5 @@
+# You must remove unused comment lines for the released package.
+usr/lib/*.so*
+usr/bin/*
+usr/switcher*/plugins/*.so
+usr/share/switcher/fonts/*.ttf

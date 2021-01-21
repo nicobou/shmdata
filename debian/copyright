@@ -1,0 +1,40 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: switcher
+Source: <https://gitlab.com/sat-metalab/switcher>
+#
+# Please double check copyright with the licensecheck(1) command.
+
+Files: *
+Copyright: Nicolas Bouillot
+           Jérémie Soria
+           Emmanuel Durand
+           Francis Lecavalier
+           François Ubald Brien
+           Ludovic Schreiber
+           Michal Seta
+           Hantz-Carly F. Vius
+           Valentin Laurent
+           Sebastien Paquet
+           Mike Wozniewski
+           Alexandre Quessy
+           Patrick Dupuis
+           Marie-Eve Dumas
+           Jerome Berthelin
+           Rostom Mesli
+           Patrick Keroulas
+           Michał Seta
+           Marc Lavallée
+License:   GPL-3.0
+switcher is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+switcher is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with switcher.  If not, see <http://www.gnu.org/licenses/>.
+
