@@ -19,8 +19,9 @@
 
 #include "switcher/gst/pipeliner.hpp"
 #include "switcher/quiddity/quiddity.hpp"
+#include "switcher/quiddity/startable.hpp"
 #include "switcher/shmdata/connector.hpp"
-#include "switcher/shmdata/gst-tree-updater.hpp"
+#include "switcher/shmdata/follower.hpp"
 
 namespace switcher {
 namespace quiddities {
@@ -29,42 +30,36 @@ namespace quiddities {
  * RTMP quiddity compatible with multiple streaming applications (Youtube, Twitch,...)
  */
 using namespace quiddity;
-class RTMP : public Quiddity {
+class RTMP : public Quiddity, public Startable {
  public:
-
-  //! Constructor
   RTMP(quiddity::Config&&);
-
-  //! Destructor
-  ~RTMP() = default;
-
-  //! Mandatory quiddity base class method
+  ~RTMP();
+  RTMP(const RTMP&) = delete;
+  RTMP& operator=(const RTMP&) = delete;
 
  private:
-  enum class ShmType { AUDIO = 0, VIDEO = 1 };
+  bool start() final;
+  bool stop() final;
+  bool on_shmdata_connect(const std::string& shmpath);
+  bool on_shmdata_disconnect(const std::string& shmpath);
+  bool on_shmdata_disconnect_all();
+  bool can_sink_caps(const std::string& str_caps);
 
-  // Shmdata methods
-  bool on_shmdata_connect(const std::string& shmpath, ShmType type);
-  bool on_shmdata_disconnect(ShmType type);
-  bool can_sink_caps(std::string str_caps);
-
-  // Gstreamer pipeline creation
   bool create_gst_pipeline();
 
-  std::string audio_shmpath_{};  //!< Path of the audio input shmdata
-  std::string video_shmpath_{};  //!< Path of the video input shmdata
-  shmdata::Connector
-      shmcntr_;  //!< Shmdata connector of uncompressed audio/video into the quiddity.
-  std::unique_ptr<shmdata::GstTreeUpdater> shmaudio_sub_{nullptr};  //!< Subscriber to audio shmdata
-  std::unique_ptr<shmdata::GstTreeUpdater> shmvideo_sub_{nullptr};  //!< Subscriber to video shmdata
+  std::string audio_shmpath_{};
+  std::string video_shmpath_{};
+  shmdata::Connector shmcntr_;
+  std::unique_ptr<shmdata::Follower> follower_video_{nullptr};
+  std::unique_ptr<shmdata::Follower> follower_audio_{nullptr};
 
-  std::unique_ptr<gst::Pipeliner> gst_pipeline_{nullptr};  //!< Gstreamer pipeline
+  std::string stream_app_url_{};
+  property::prop_id_t stream_app_url_id_;
+  std::string stream_key_{};
+  property::prop_id_t stream_key_id_;
 
-  property::prop_id_t stream_app_url_id_{0};    //!< Stream URL property id
-  std::string stream_app_url_{};                //!< RTMP url of the streaming application
-  property::prop_id_t stream_key_id_{0};        //!< Stream key property id
-  std::string stream_key_{};                    //!< Stream key, found on the streaming application
+  std::unique_ptr<gst::Pipeliner> gst_pipeline_{nullptr};
 };
-
+SWITCHER_DECLARE_PLUGIN(RTMP);
 }  // namespace quiddities
 }  // namespace switcher
