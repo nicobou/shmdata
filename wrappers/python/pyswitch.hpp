@@ -42,6 +42,7 @@ class pySwitch {
   static PyObject* name(pySwitchObject* self);
   static PyObject* version(pySwitchObject* self);
   // quiddity life
+  static PyObject* load_bundles(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* create(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* remove(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* get_qrox(pySwitchObject* self, PyObject* args, PyObject* kwds);

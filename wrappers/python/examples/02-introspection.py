@@ -20,6 +20,25 @@ sw = pyquid.Switcher("introspection", debug=True)
 class_list = sw.list_classes()
 assert 0 < len(class_list)
 
+# load custom classes (bundles)
+description = '''{
+    "bundle": {
+        "testBundle" : {
+            "pipeline" : "dummy name=Test",
+            "doc" : {
+                "long_name" : "Test",
+                "category" : "test",
+                "tags" : "writer",
+                "description" : "Test"
+            }
+        }
+    }
+}'''
+
+sw.load_bundles(description)
+classes = sw.list_classes()
+assert "testBundle" in classes
+
 # classes doc (JSON)
 assert 0 < len(sw.classes_doc())
 

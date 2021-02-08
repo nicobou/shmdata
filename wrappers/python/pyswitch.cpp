@@ -92,6 +92,30 @@ PyObject* pySwitch::version(pySwitchObject* self) {
   return PyUnicode_FromString(self->switcher.get()->get_switcher_version().c_str());
 }
 
+PyDoc_STRVAR(
+    pyswitch_load_bundles_doc,
+    "Load bundles description from a JSON object and make them available for creation."
+    "The description must be a stringified JSON object containing a valid bundle description.\n"
+    "Arguments: (description)\n"
+    "Returns: True or False.\n");
+
+PyObject* pySwitch::load_bundles(pySwitchObject* self, PyObject* args, PyObject* kwds) {
+  const char* description = nullptr;
+  static char* kwlist[] = {(char*)"description", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &description)) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
+
+  if (!self->switcher.get()->load_bundle_from_config(description)) {
+    Py_INCREF(Py_False);
+    return Py_False;
+  }
+
+  Py_INCREF(Py_True);
+  return Py_True;
+}
+
 PyDoc_STRVAR(pyswitch_create_doc,
              "Create a quiddity. The name and the config are optional."
              "The config (an InfoTree) overrides the switcher configuration file  \n"
@@ -131,7 +155,7 @@ PyObject* pySwitch::create(pySwitchObject* self, PyObject* args, PyObject* kwds)
 
 PyDoc_STRVAR(pyswitch_remove_doc,
              "Remove a quiddity.\n"
-             "Arguments: (name)\n"
+             "Arguments: (id)\n"
              "Returns: true or false\n");
 
 PyObject* pySwitch::remove(pySwitchObject* self, PyObject* args, PyObject* kwds) {
@@ -346,6 +370,10 @@ PyObject* pySwitch::quid_descr(pySwitchObject* self, PyObject* args, PyObject* k
 PyMethodDef pySwitch::pySwitch_methods[] = {
     {"name", (PyCFunction)pySwitch::name, METH_NOARGS, pyswitch_name_doc},
     {"version", (PyCFunction)pySwitch::version, METH_NOARGS, pyswitch_version_doc},
+    {"load_bundles",
+     (PyCFunction)pySwitch::load_bundles,
+     METH_VARARGS | METH_KEYWORDS,
+     pyswitch_load_bundles_doc},
     {"create", (PyCFunction)pySwitch::create, METH_VARARGS | METH_KEYWORDS, pyswitch_create_doc},
     {"remove", (PyCFunction)pySwitch::remove, METH_VARARGS | METH_KEYWORDS, pyswitch_remove_doc},
     {"get_qrox",
