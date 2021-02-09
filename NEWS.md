@@ -2,6 +2,21 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 2.1.30 (2021-02-09)
+---------------------------
+This is an official release in the 2.1 stable series.
+
+New feature:
+* ✨ Make the RTMP quiddity startable
+
+Improvement:
+* ✨ Allow whitespaces in nicknames sent to SIP
+
+Bug fixes:
+* 🐛 Fixed shmdata2jack not attaching to the jack dummy server
+* 🐛 Fixed release script options
+* 🐛 Fixed xvfb installation for CI tests
+
 switcher 2.1.28 (2020-12-03)
 ---------------------------
 This is an official release in the 2.1 stable series.
