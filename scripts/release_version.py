@@ -260,7 +260,7 @@ if __name__ == "__main__":
     lib = ""
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "l", ["lib="])
+        opts, args = getopt.getopt(sys.argv[1:], "l:", ["lib="])
     except getopt.GetoptError as err:
         print(err)
         usage()

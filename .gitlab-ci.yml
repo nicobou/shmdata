@@ -46,7 +46,7 @@ Test Ubuntu 18.04:
     - mkdir -p build && cd build 
     - CC="gcc-8" CXX="g++-8" cmake -DENABLE_GPL="ON" -DCMAKE_BUILD_TYPE="Release" ..
     - make -j"$(nproc)" && make install && ldconfig
-    - DEBIAN_FRONTEND=noninteractive apt install -y xvfb
+    - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y xvfb
     - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make test
   except:
     - develop
@@ -62,7 +62,7 @@ Test Ubuntu 20.04:
     - mkdir -p build && cd build 
     - cmake -DENABLE_GPL="ON" -DCMAKE_BUILD_TYPE="Release" ..
     - make -j"$(nproc)" && make install && ldconfig
-    - DEBIAN_FRONTEND=noninteractive apt install -y xvfb
+    - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y xvfb
     - xvfb-run  --auto-servernum --server-args='-screen 0 1920x1080x24'  pulseaudio &
     - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make test
   except:
@@ -81,7 +81,7 @@ Test package:
   script:
     - mkdir -p build && cd build 
     - cmake -DENABLE_GPL="ON" -DCMAKE_BUILD_TYPE="Release" ..
-    - DEBIAN_FRONTEND=noninteractive apt install -y xvfb
+    - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y xvfb
     - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make package_source_test
   only:
     - develop
@@ -93,7 +93,7 @@ coverage:
   stage: coverage
   image: $CI_REGISTRY/sat-metalab/switcher:deps-ubuntu2004
   script:
-    - DEBIAN_FRONTEND=noninteractive apt install -y lcov zip xvfb
+    - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y lcov zip xvfb
     - git submodule update --init
     - rm -rf build && mkdir build && cd build
     - cmake -DTEST_COVERAGE=ON -DENABLE_GPL=ON ..

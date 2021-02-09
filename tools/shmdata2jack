@@ -25,6 +25,7 @@ def parse_args() -> argparse.Namespace:
     argp.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
     argp.add_argument("-d", "--debug", help="print switcher log messages", action="store_true")
     argp.add_argument("-n", "--name", help="jack client name", type=str)
+    argp.add_argument("-s", "--server", help="jack server name", type=str)
     argp.add_argument("--no-auto-connect",
                       help="do not connect to another jack client", action="store_true")
     argp.add_argument("--connect-all-to-first",
@@ -55,9 +56,15 @@ def main() -> None:
         jack_name = sw.name()
     else:
         jack_name = args.name
+    if not args.server:
+        jack_server = "default"
+    else:
+        jack_server = args.server
     if args.verbose:
-        print('Jack name is ' + jack_name)
-    jackquid = sw.create('jacksink', jack_name).quid()
+        print('Connecting to jack server ' + jack_server + ' as client named ' + jack_name)
+    jackquid = sw.create('jacksink',
+                         jack_name,
+                         InfoTree('{ "server_name" : "' + jack_server + '" }')).quid()
     if args.connect_to:
         jackquid.set('connect_to', args.connect_to)
     if args.no_auto_connect:
@@ -85,7 +92,8 @@ def main() -> None:
             print('shmdata caps is ' + tree.get('caps'))
             caps_displayed = True
         if(args.verbose and caps_displayed):
-            print('byte rate: %.2fMbps' % (8 * tree.get('stat.byte_rate') / 1000000.0), end='\r', flush=True)
+            print('byte rate: %.2fMbps' %
+                  (8 * tree.get('stat.byte_rate') / 1000000.0), end='\r', flush=True)
         time.sleep(0.2)
 
 
