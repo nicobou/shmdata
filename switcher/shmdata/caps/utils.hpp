@@ -22,13 +22,15 @@
 
 #include <string>
 
+#include "switcher/quiddity/quid-id-t.hpp"
+
 namespace switcher {
 namespace shmdata {
 namespace caps {
 
 std::string get_category(const std::string& caps);
 
-std::string get_quiddity_id(const std::string& caps);
+switcher::quiddity::qid_t get_quiddity_id(const std::string& caps);
 
 std::string get_switcher_name(const std::string& caps);
 

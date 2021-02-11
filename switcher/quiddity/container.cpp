@@ -224,9 +224,8 @@ std::string Container::get_name_from_caps(const std::string& caps) {
   if (manager != switcher_->get_name()) {
     quiddity_name = get_quiddity(get_id(manager))->get_nickname();
   } else {
-    const auto id =
-        deserialize::apply<quiddity::qid_t>(switcher::shmdata::caps::get_quiddity_id(caps));
-    if (id.first) quiddity_name = get_quiddity(id.second)->get_nickname();
+    const auto id = switcher::shmdata::caps::get_quiddity_id(caps);
+    if (id != 0) quiddity_name = get_quiddity(id)->get_nickname();
   }
 
   return quiddity_name;
