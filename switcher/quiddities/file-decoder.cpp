@@ -35,39 +35,41 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(FileDecoder,
 
 FileDecoder::FileDecoder(quiddity::Config&& conf)
     : Quiddity(std::forward<quiddity::Config>(conf)),
-      location_id_(pmanage<MPtr(&property::PBag::make_string)>("location",
-                                                               [this](const std::string& val) {
-                                                                 location_ = val;
-                                                                 return load_file(location_);
-                                                               },
-                                                               [this]() { return location_; },
-                                                               "File location",
-                                                               "Location of the file to decode",
-                                                               "")),
-      play_id_(pmanage<MPtr(&property::PBag::make_bool)>("play",
-                                                         [this](const bool& val) {
-                                                           play_ = val;
-                                                           if (gst_pipeline_) {
-                                                             gst_pipeline_->play(play_);
-                                                           }
-                                                           return true;
-                                                         },
-                                                         [this]() { return play_; },
-                                                         "Play",
-                                                         "Play/pause the player",
-                                                         play_)),
+      location_id_(pmanage<MPtr(&property::PBag::make_string)>(
+          "location",
+          [this](const std::string& val) {
+            location_ = val;
+            return load_file(location_);
+          },
+          [this]() { return location_; },
+          "File location",
+          "Location of the file to decode",
+          "")),
+      play_id_(pmanage<MPtr(&property::PBag::make_bool)>(
+          "play",
+          [this](const bool val) {
+            play_ = val;
+            if (gst_pipeline_) {
+              gst_pipeline_->play(play_);
+            }
+            return true;
+          },
+          [this]() { return play_; },
+          "Play",
+          "Play/pause the player",
+          play_)),
       cur_pos_id_(0),
-      loop_id_(pmanage<MPtr(&property::PBag::make_bool)>("loop",
-                                                         [this](const bool& val) {
-                                                           loop_ = val;
-                                                           if (gst_pipeline_)
-                                                             gst_pipeline_->loop(loop_);
-                                                           return true;
-                                                         },
-                                                         [this]() { return loop_; },
-                                                         "Looping",
-                                                         "Loop media",
-                                                         loop_)),
+      loop_id_(pmanage<MPtr(&property::PBag::make_bool)>(
+          "loop",
+          [this](const bool val) {
+            loop_ = val;
+            if (gst_pipeline_) gst_pipeline_->loop(loop_);
+            return true;
+          },
+          [this]() { return loop_; },
+          "Looping",
+          "Loop media",
+          loop_)),
       speed_id_(pmanage<MPtr(&property::PBag::make_double)>(
           "rate",
           [this](const double& val) {

@@ -77,7 +77,7 @@ PJStunTurn::PJStunTurn() {
 
   SIPPlugin::this_->pmanage<MPtr(&property::PBag::make_bool)>(
       "lower-case-turn-account",
-      [this](const bool& val) {
+      [this](const bool val) {
         lower_case_turn_account_ = val;
         return true;
       },

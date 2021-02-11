@@ -56,16 +56,16 @@ VncClientSrc::VncClientSrc(quiddity::Config&& conf)
                                                   "IP address",
                                                   "Address of the VNC server",
                                                   vnc_server_address_);
-  capture_truecolor_id_ =
-      pmanage<MPtr(&property::PBag::make_bool)>("capture_truecolor",
-                                                [this](const bool& val) {
-                                                  capture_truecolor_ = val;
-                                                  return true;
-                                                },
-                                                [this]() { return capture_truecolor_; },
-                                                "Capture color depth",
-                                                "Capture in 32bits if true, 16bits otherwise",
-                                                capture_truecolor_);
+  capture_truecolor_id_ = pmanage<MPtr(&property::PBag::make_bool)>(
+      "capture_truecolor",
+      [this](const bool val) {
+        capture_truecolor_ = val;
+        return true;
+      },
+      [this]() { return capture_truecolor_; },
+      "Capture color depth",
+      "Capture in 32bits if true, 16bits otherwise",
+      capture_truecolor_);
 }
 
 VncClientSrc::~VncClientSrc() { stop(); }

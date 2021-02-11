@@ -116,8 +116,8 @@ Qrox Container::quiet_create(const std::string& quiddity_class,
 
 BoolLog Container::remove(qid_t id) {
   // We work on a copy in case a callback modifies the map of registered callbacks
-  auto tmp_removed_cbs_ = on_removed_cbs_;
-  for (auto& cb : tmp_removed_cbs_) {
+  const auto tmp_removed_cbs_ = on_removed_cbs_;
+  for (const auto& cb : tmp_removed_cbs_) {
     cb.second(id);
     if (on_removed_cbs_.empty()) break;  // In case the map gets reset in the callback, e.g. bundle
   }
@@ -152,7 +152,7 @@ InfoTree::ptr Container::get_quiddities_description() {
   for (const auto& it : quiddities_) {
     if (it.second) {
       auto quid = it.second;
-      auto id = std::to_string(quid->get_id());
+      const auto id = std::to_string(quid->get_id());
       subtree->graft(id + ".id", InfoTree::make(quid->get_id()));
       subtree->graft(id + ".class", InfoTree::make(quid->get_type()));
     }

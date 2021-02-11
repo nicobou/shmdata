@@ -381,7 +381,7 @@ GLFWVideo::GLFWVideo(quiddity::Config&& conf)
   }
   // win_aspect_ratio_toggle_id_ =
   //     pmanage<MPtr(&property::PBag::make_bool)>("win_aspect_ratio_toggle",
-  //                                           [this](const bool& val) {
+  //                                           [this](const bool val) {
   //                                             win_aspect_ratio_toggle_ = val;
   //                                             minimized_width_ = width_;
   //                                             minimized_height_ = height_;
@@ -489,15 +489,16 @@ GLFWVideo::GLFWVideo(quiddity::Config&& conf)
       [this](const std::string& caps) { return can_sink_caps(caps); },
       1);
 
-  pmanage<MPtr(&property::PBag::make_bool)>("keyb_interaction",
-                                            [this](const bool& val) {
-                                              keyb_interaction_ = val;
-                                              return true;
-                                            },
-                                            [this]() { return keyb_interaction_; },
-                                            "Keyboard Shortcuts",
-                                            "Enable/Disable keybord shortcuts",
-                                            keyb_interaction_);
+  pmanage<MPtr(&property::PBag::make_bool)>(
+      "keyb_interaction",
+      [this](const bool val) {
+        keyb_interaction_ = val;
+        return true;
+      },
+      [this]() { return keyb_interaction_; },
+      "Keyboard Shortcuts",
+      "Enable/Disable keybord shortcuts",
+      keyb_interaction_);
 
   if (!remake_elements()) {
     is_valid_ = false;

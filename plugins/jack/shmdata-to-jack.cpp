@@ -73,7 +73,7 @@ ShmdataToJack::ShmdataToJack(quiddity::Config&& conf)
           connect_to_)),
       auto_connect_id_(pmanage<MPtr(&property::PBag::make_bool)>(
           "auto_connect",
-          [this](const bool& val) {
+          [this](const bool val) {
             auto_connect_ = val;
             if (auto_connect_) {
               pmanage<MPtr(&property::PBag::enable)>(connect_to_id_);
@@ -96,7 +96,7 @@ ShmdataToJack::ShmdataToJack(quiddity::Config&& conf)
           auto_connect_)),
       connect_all_to_first_id_(pmanage<MPtr(&property::PBag::make_bool)>(
           "connect_all_to_first",
-          [this](const bool& val) {
+          [this](const bool val) {
             connect_all_to_first_ = val;
             return true;
           },
@@ -106,7 +106,7 @@ ShmdataToJack::ShmdataToJack(quiddity::Config&& conf)
           connect_all_to_first_)),
       connect_only_first_id_(pmanage<MPtr(&property::PBag::make_bool)>(
           "connect_only_first",
-          [this](const bool& val) {
+          [this](const bool val) {
             connect_only_first_ = val;
             return true;
           },
@@ -116,7 +116,7 @@ ShmdataToJack::ShmdataToJack(quiddity::Config&& conf)
           connect_only_first_)),
       do_format_conversion_id_(pmanage<MPtr(&property::PBag::make_bool)>(
           "do_format_conversion",
-          [this](const bool& val) {
+          [this](const bool val) {
             do_format_conversion_ = val;
             return true;
           },
@@ -126,7 +126,7 @@ ShmdataToJack::ShmdataToJack(quiddity::Config&& conf)
           do_format_conversion_)),
       do_rate_conversion_id_(pmanage<MPtr(&property::PBag::make_bool)>(
           "do_rate_conversion",
-          [this](const bool& val) {
+          [this](const bool val) {
             do_rate_conversion_ = val;
             return true;
           },

@@ -65,7 +65,7 @@ JackToShmdata::JackToShmdata(quiddity::Config&& conf)
       client_name_);
   auto_connect_id_ = pmanage<MPtr(&property::PBag::make_bool)>(
       "auto_connect",
-      [this](const bool& val) {
+      [this](const bool val) {
         auto_connect_ = val;
         update_port_to_connect();
         if (auto_connect_) {

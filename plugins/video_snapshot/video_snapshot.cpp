@@ -88,7 +88,7 @@ VideoSnapshot::VideoSnapshot(quiddity::Config&& conf)
           img_name_)),
       num_files_id_(pmanage<MPtr(&property::PBag::make_bool)>(
           "num_files",
-          [this](const bool& num_files) {
+          [this](const bool num_files) {
             num_files_ = num_files;
             return true;
           },
@@ -98,7 +98,7 @@ VideoSnapshot::VideoSnapshot(quiddity::Config&& conf)
           num_files_)),
       jpg_quality_id_(pmanage<MPtr(&property::PBag::make_unsigned_int)>(
           "quality",
-          [this](unsigned int val) {
+          [this](const unsigned int val) {
             jpg_quality_ = val;
             return true;
           },

@@ -84,16 +84,16 @@ SIPPlugin::SIPPlugin(quiddity::Config&& conf)
           "DNS address",
           "IP address used for DNS",
           dns_address_)),
-      decompress_streams_id_(
-          pmanage<MPtr(&property::PBag::make_bool)>("decompress",
-                                                    [this](const bool& val) {
-                                                      decompress_streams_ = val;
-                                                      return true;
-                                                    },
-                                                    [this]() { return decompress_streams_; },
-                                                    "Decompress",
-                                                    "Decompress received streams",
-                                                    decompress_streams_)) {
+      decompress_streams_id_(pmanage<MPtr(&property::PBag::make_bool)>(
+          "decompress",
+          [this](const bool val) {
+            decompress_streams_ = val;
+            return true;
+          },
+          [this]() { return decompress_streams_; },
+          "Decompress",
+          "Decompress received streams",
+          decompress_streams_)) {
   if (1 == sip_plugin_used_.fetch_or(1)) {
     warning("an other sip quiddity is instancied, cannot init");
     is_valid_ = false;
