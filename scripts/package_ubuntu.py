@@ -308,7 +308,7 @@ if __name__ == "__main__":
 
     # Get command line arguments
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "p", ["ppa="])
+        opts, args = getopt.getopt(sys.argv[1:], "p:", ["ppa="])
     except getopt.GetoptError as err:
         print(err)
         usage()
@@ -337,6 +337,7 @@ if __name__ == "__main__":
 
     print(f"Merging the {bringup_branch} into {debian_master_branch}")
     gbp_pq("import")
+    git_checkout(debian_master_branch)
     git_merge(bringup_branch)
     gbp_pq("rebase")
     gbp_pq("export")
