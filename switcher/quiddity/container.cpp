@@ -219,15 +219,17 @@ std::string Container::get_nickname(qid_t id) const {
 
 std::string Container::get_name_from_caps(const std::string& caps) {
   std::string quiddity_name = "";
-
   const std::string manager = switcher::shmdata::caps::get_switcher_name(caps);
+  if (manager.empty()) return "";
   if (manager != switcher_->get_name()) {
-    quiddity_name = get_quiddity(get_id(manager))->get_nickname();
+    // check if this manager is not actually a bundle from current switcher
+    auto id = get_id(manager);
+    if (id == 0) return "";
+    quiddity_name = get_quiddity(id)->get_nickname();
   } else {
     const auto id = switcher::shmdata::caps::get_quiddity_id(caps);
     if (id != 0) quiddity_name = get_quiddity(id)->get_nickname();
   }
-
   return quiddity_name;
 }
 
