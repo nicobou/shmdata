@@ -57,10 +57,9 @@ if (PLUGIN_SIP)
     configure_file("build_scripts/configure.sh.in" "configure.sh")
     configure_file("build_scripts/build.sh.in" "build.sh")
 
-    # Configure the extarnal project
+    # Configure the external project
     ExternalProject_Add(pjproject
-        URL https://github.com/pjsip/pjproject/archive/${PJPROJECT_VERSION}.tar.gz
-        URL_HASH MD5=13e5c418008ae46c4ce0c1e27cdfe9b5
+        URL ${CMAKE_CURRENT_SOURCE_DIR}/external/pjsip
         PATCH_COMMAND ${CMAKE_CURRENT_BINARY_DIR}/patch.sh
         BUILD_IN_SOURCE 1
         CONFIGURE_COMMAND ${CMAKE_CURRENT_BINARY_DIR}/configure.sh

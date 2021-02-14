@@ -13,7 +13,7 @@ stages:
   - deploy
 
 #
-# Build depencies images
+# Build dependencies images
 #
 Build and Deploy dependency images:
   stage: deps
@@ -43,6 +43,7 @@ Test Ubuntu 18.04:
   variables:
     CTEST_OUTPUT_ON_FAILURE: 1
   script:
+    - git submodule update --init --recursive
     - mkdir -p build && cd build 
     - CC="gcc-8" CXX="g++-8" cmake -DENABLE_GPL="ON" -DCMAKE_BUILD_TYPE="Release" ..
     - make -j"$(nproc)" && make install && ldconfig
@@ -59,6 +60,7 @@ Test Ubuntu 20.04:
   variables:
     CTEST_OUTPUT_ON_FAILURE: 1
   script:
+    - git submodule update --init --recursive
     - mkdir -p build && cd build 
     - cmake -DENABLE_GPL="ON" -DCMAKE_BUILD_TYPE="Release" ..
     - make -j"$(nproc)" && make install && ldconfig
@@ -79,6 +81,7 @@ Test package:
   variables:
     CTEST_OUTPUT_ON_FAILURE: 1
   script:
+    - git submodule update --init --recursive
     - mkdir -p build && cd build 
     - cmake -DENABLE_GPL="ON" -DCMAKE_BUILD_TYPE="Release" ..
     - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y xvfb
@@ -94,7 +97,7 @@ coverage:
   image: $CI_REGISTRY/sat-metalab/switcher:deps-ubuntu2004
   script:
     - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y lcov zip xvfb
-    - git submodule update --init
+    - git submodule update --init --recursive
     - rm -rf build && mkdir build && cd build
     - cmake -DTEST_COVERAGE=ON -DENABLE_GPL=ON ..
     - make -j$(nproc) && make install && ldconfig
@@ -134,7 +137,7 @@ Debian Package Ubuntu 20.04:
   image: $CI_REGISTRY/sat-metalab/switcher:deps-ubuntu2004
   script: 
     - DEBIAN_FRONTEND=noninteractive apt update -y
-    - git submodule update --init
+    - git submodule update --init --recursive
     - rm -rf build && mkdir build && cd build
     - cmake -DENABLE_GPL=ON -DCMAKE_INSTALL_PREFIX=/usr ..
     - make -j$(nproc) package
