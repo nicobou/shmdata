@@ -53,5 +53,6 @@ if (WITH_PYTHON)
     add_test(pyquid_quid_infotree_stress ${CMAKE_CURRENT_SOURCE_DIR}/examples/08-quid-infotree-stress.py)
     add_test(pyquid_uri_in_video_window ${CMAKE_CURRENT_SOURCE_DIR}/examples/09-uri-in-video-window.py)
     add_test(pyquid_quid_conf_and_two_jack_servers ${CMAKE_CURRENT_SOURCE_DIR}/examples/10-quid-conf-and-two-jack-servers.py)
+    add_test(pyquid_switcher_signals ${CMAKE_CURRENT_SOURCE_DIR}/examples/11-switcher-signals.py)
 
 endif ()

@@ -21,15 +21,25 @@
 #define __SWITCHER_PYSWITCH_H__
 
 #include <Python.h>  // according to python doc, this *must* be the first include
+
+#include <map>
+
 #include "switcher/switcher.hpp"
 
 using namespace switcher;
 
 class pySwitch {
  public:
+  using sig_registering_t = struct {
+    std::map<std::string, unsigned int> signals{};
+    std::map<std::string, PyObject*> callbacks{};
+    std::map<std::string, PyObject*> user_data{};
+  };
   using pySwitchObject = struct {
     PyObject_HEAD PyObject* name{nullptr};
     Switcher::ptr switcher{};
+    std::unique_ptr<sig_registering_t> sig_reg{};
+    PyInterpreterState* interpreter_state{nullptr};
   };
 
   static PyMethodDef pySwitch_methods[];
@@ -58,5 +68,13 @@ class pySwitch {
   static PyObject* list_quids(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* quids_descr(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* quid_descr(pySwitchObject* self, PyObject* args, PyObject* kwds);
+  // signals
+  static bool subscribe_to_signal(pySwitchObject* self,
+                                  const std::string signal_name,
+                                  PyObject* cb,
+                                  PyObject* user_data);
+  static PyObject* subscribe(pySwitchObject* self, PyObject* args, PyObject* kwds);
+  static bool unsubscribe_from_signal(pySwitchObject* self, const std::string signal_name);
+  static PyObject* unsubscribe(pySwitchObject* self, PyObject* args, PyObject* kwds);
 };
 #endif
