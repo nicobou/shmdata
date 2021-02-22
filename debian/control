@@ -61,3 +61,18 @@ Description: Shares data flows between applications.
  frames to several followers. Followers and writers can hot connect & disconnect.
  .
  This package contains the documentation.
+
+Package: python3-shmdata
+Section: python
+Architecture: any
+Multi-arch: same
+Depends: libshmdata (= ${binary:Version}), ${misc:Depends}
+Description: Shares data flows between applications.
+ Library to share streams of framed data between processes via shared memory.
+ shmdata is server less: it requires applications to link data streams using
+ socket path (e.g. ;/tmp/my_shmdata_stream;). Shmdata is very fast and allows
+ processes to access data streams without the need of extra copy. The
+ communication paradigm is 1 to many, i.e., one writer is making available data
+ frames to several followers. Followers and writers can hot connect & disconnect.
+ .
+ This package contains the Python3 module for libshmdata.
