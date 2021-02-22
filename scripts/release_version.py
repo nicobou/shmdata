@@ -188,6 +188,10 @@ def git_pull() -> int:
     return subprocess.call("git pull", shell=True)
 
 
+def git_submodule_update() -> int:
+    return subprocess.call("git submodule update --init --recursive", shell=True)
+
+
 def get_git_config(property: str, default_value: str) -> str:
     config_property = default_value
     git_config_full = subprocess.check_output("git config --list", shell=True, encoding="utf-8").strip().split("\n")
@@ -306,6 +310,7 @@ if __name__ == "__main__":
 
     os.chdir(os.path.join(libs_root_path, lib))
     git_checkout(working_branch)
+    git_submodule_update()
 
     release_version = parse_version_number(lib, version_pattern.format(lib.upper()))
     assert release_version != [-1, -1, -1]
