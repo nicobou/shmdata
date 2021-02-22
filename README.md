@@ -5,37 +5,48 @@ shmdata
 
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0) [![pipeline status](https://gitlab.com/sat-metalab/shmdata/badges/develop/pipeline.svg)](https://gitlab.com/sat-metalab/shmdata/commits/develop) [![coverage report](https://gitlab.com/sat-metalab/shmdata/badges/develop/coverage.svg)](https://gitlab.com/sat-metalab/shmdata/commits/develop)
 
-Library to share streams of framed data between processes via shared memory. shmdata is server less: it requires applications to link data streams using socket path (e.g. "/tmp/my_shmdata_stream"). Shmdata is very fast and allows processes to access data streams without the need of extra copy.
+[[_TOC_]]
+
+## What is shmdata ?
+A library to share streams of framed data between processes via shared memory. It supports any kind of data stream:  it has been used with multichannel audio, video frames, 3D models, OSC messages, and various others types of data. Shmdata is server-less, but requires applications to link data streams using socket path (e.g. "/tmp/my-shmdata-stream"). Shmdata is very fast and allows processes to access data streams without the need for extra copies.
 
 The communication paradigm is 1 to many, i.e., one writer is making available data frames to several followers. Followers and writers can hot connect & disconnect. Shmdata transmission supports buffer resizing. Each shmdata has a type specified with a string description, itself published by the shmdata writer at each reconnection. The type is specified as a user-defined string. Although left to the user, we encourage type specification to follow GStreamer 1.0 caps specification format, for instance "audio/x-raw,format=S16LE,channels=2,layout=interleaved". 
 
 Note the existence of [NDI2shmdata](https://gitlab.com/sat-metalab/ndi2shmdata) that converts shmdata to [NewTek's NDI](http://ndi.newtek.com), and _vice versa_.
 
-Some examples :
+## Technical consideration
 
-* [C++](tests/check-writer-follower.cpp)
-* [C](test/check-c-wrapper.cpp)
-* [Python3](wrappers/python/example.py)
-* [GStreamer writer](gst/check-shmdatasink.c)
-* [GStreamer follower](gst/check-shmdatasrc.c)
+Shmdata runs on Linux and should works on Unix-like operating systems that supports System V shared memory, System V semaphore and Unix sockets, such as OSX.
 
-## Use compiled GStreamer plugins with GStreamer tools:
+Shmdata is intended to be used as an extension to applications in order to enable shmdata reading and/or writing, thanks to one of the shdmata APIs. Currently, the following languages are available for implementation specific tools or to add shmdata support in your software: C/C++, Python and GStreamer.
 
-By default, GStreamer plugins are installed in ```/usr/local/lib/gstreamer-1.0/```.
 
+## Get started
+
+### Installation
+
+On ubuntu 20.04, shmdata can be installed as follows:
 ```
-gst-inspect-1.0 --gst-plugin-path=/usr/local/lib/gstreamer-1.0/ shmdatasrc
-gst-inspect-1.0 --gst-plugin-path=/usr/local/lib/gstreamer-1.0/ shmdatasink
-```
-
-## Create a video shmdata with GStreamer
-The path of the shmdata will be /tmp/video_shmdata
-```
-gst-launch --gst-plugin-path=/usr/local/lib/gstreamer-1.0/ videotestsrc ! shmdatasink socket-path=/tmp/video_shmdata
+sudo add-apt-repository ppa:sat-metalab/metalab
+sudo apt-get update
+sudo apt install libshmdata
 ```
 
-## Monitor a shmdata
-The `sdflow` utility is installed along with the shmdata library. It prints the shmdata metadata once connected with the shmdata writer, and then a line of information for each buffer pushed by the shmdata writer. Here is an example :
+Otherwise, you can [install shmdata from sources](doc/install-from-sources.md)
+
+### Try shmdata with GStreamer
+#### Transmit video through shmdata with GStreamer
+
+By default, GStreamer plugins are installed in ```/usr/lib/gstreamer-1.0/```.
+
+Create a shmdata in which raw video will be sent.
+```
+gst-launch --gst-plugin-path=/usr/lib/gstreamer-1.0/ videotestsrc ! shmdatasink socket-path=/tmp/video_shmdata
+```
+Here the path to the shmdata will be `/tmp/video_shmdata`
+
+#### Monitor a shmdata
+The `sdflow` utility is installed along with the shmdata library. It prints the shmdata metadata once connected with the shmdata writer, and then a line of information for each buffer pushed by the shmdata writer. Keep the video shmdata running, and then from a new terminal type:
 ```
 $ sdflow /tmp/video_shmdata 
 connected: type video/x-raw, format=(string)I420, width=(int)320, height=(int)240, framerate=(fraction)30/1, multiview-mode=(string)mono, pixel-aspect-ratio=(fraction)1/1, interlace-mode=(string)progressive
@@ -44,97 +55,53 @@ connected: type video/x-raw, format=(string)I420, width=(int)320, height=(int)24
 etc
 ```
 
-## Monitor frame rate of a shmdata
+Note that you can [monitor a shmadata framerate using pv and sdflow](doc/monitor-framerate).
 
-You need the `pv` utily:
-```
-sudo apt install pv
-```
+#### Display video from the video shmdata
 
-With `pv` and `sdflow` you can display the frame rate of a shmdata (here `/tmp/video_shmdata`):
+Keept the video transmission (and optionally, the `sdflow` monitoring) running, then open a new terminal window and display the video using the following command:
 ```
-sdflow /tmp/video_shmdata | pv --line-mode --rate > /dev/null
+gst-launch --gst-plugin-path=/usr/lib/gstreamer-1.0/ videotestsrc ! shmdatasink socket-path=/tmp/video_shmdata
 ```
 
-You can get this as a command (`sdfps`) if you copy the following into your `~/.bashrc` file:
+### Use shmdata in your code
+
+
+shmdata can be used with several languages, here are some example files:
+
+* [C++](tests/check-writer-follower.cpp)
+* [C](test/check-c-wrapper.cpp)
+* [Python3](wrappers/python/example.py)
+* [GStreamer writer](gst/check-shmdatasink.c)
+* [GStreamer follower](gst/check-shmdatasrc.c)
+
+Note that in order to develop with shmdata C or C++ API, you may want to install development files:
 ```
-function sdfps {
-        sdflow $1 | pv --line-mode --rate > /dev/null
-}
+sudo apt install libshmdata-dev
 ```
-
-Then you can monitor the rate of a shmdata like this:
-```
-source ~/.bashrc # this reloads the bashrc configuration
-sdfps /tmp/video_shmdata
-```
-
-## Installation
-Here is how to build and install it on Debian GNU/Linux or Ubuntu::
-
-    $ sudo apt install cmake build-essential git
-    $ # this is only for building gstreamer plugins:
-    $ sudo apt install libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
-    $ # this is for building python wrappers 
-    $ sudo apt install python3-dev
-    $ git clone https://gitlab.com/sat-metalab/shmdata.git
-    $ cd shmdata
-    $ mkdir build
-    $ cd build
-    $ cmake -DCMAKE_BUILD_TYPE=Release .. # replace "Release" with "Debug" when coding
-    $ make
-    $ sudo make install
-    $ sudo ldconfig
-  
-  
-### Other build options
-
-* To run the tests
-
-        make test
-    
-* To generate installation packages (as configured in CMakeLists.txt)
-
-        make package
-        
-* To generate a source package
-
-        make package_source
-        
-* To test the source package, this will create the source package, then try to build and test it
-
-        make package_source_test
-
-
-## Mac OS installation
-
-**Note**: we had success building this image on OSX with Homebrew, but it is not supported by the shmdata contributors, and it is not included in our continuous integration pipeline: it might be broken when you read this.
-
-1. Install homebrew
-
+Then C and C++ using shmdata can be compiled with help from pkgconfig, as follows:
 ```bash
-/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+# C code:
+gcc -o check-c-wrapper $(pkg-config --cflags shmdata-1.3) ./check-c-wrapper.cpp $(pkg-config --libs shmdata-1.3)
+
+# C++ code
+g++ -o check-writer-follower $(pkg-config --cflags shmdata-1.3) ./check-writer-follower.cpp $(pkg-config --libs shmdata-1.3)
 ```
+ 
 
-2. Install dependencies
-
-```bash
-brew install cmake pkg-config gstreamer gst-plugins-base python3
-```
-
-3. Build & Install
-```bash
-mkdir build
-cd build
-cmake ..
-make
-sudo make install
-```
-
-### Mac OS Notes
-* If you are using homebrew to install dependencies and encountering errors about ```-lintl```, you have to ```brew link gettext```
-
-
-## Contributions and advance uses
+## Contribution
 
 To contribute to shmdata, see the [contribution guide](doc/contributing.md)
+
+## Sponsors
+
+This project is made possible thanks to the Society for Arts and Technology. [SAT](http://www.sat.qc.ca/) and to the Ministère de l'Économie et de l'Innovation du Québec (MEI).
+
+
+## About us
+
+Shmdata is maintained by the [Metalab](https://sat.qc.ca/fr/recherche/metalab), the Society for Arts and Technology [SAT] research laboratory. Our mission is to provide artists and creators with a powerful ecosystem of immersion and telepresence software for live arts and new media installations. 
+
+Shmdata is also used in the [Scènes ouvertes](http://sat.qc.ca/en/scenes-ouvertes) project: a network of more than 20 venues from all across the province of Quebec collaborating through artistic telepresence installations . 
+
+See a list of shmdata authors [here](AUTHORS.md).
