@@ -2,6 +2,13 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.3.42 (2021-02-22)
+---------------------------
+This is an official release in the 1.3 stable series.
+
+* Fixed packaging script not keeping updated changelog
+* 🎨 Reordered text and improved readme
+
 shmdata 1.3.40 (2021-02-08)
 ---------------------------
 This is an official release in the 1.3 stable series.
