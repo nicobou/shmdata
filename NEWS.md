@@ -2,6 +2,24 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 2.1.32 (2021-02-22)
+---------------------------
+This is an official release in the 2.1 stable series.
+
+New features:
+* ✨ Add subscribe and unsubscribe PySwitch methods
+* ✨ Update PythonAPI to include load_bundles
+
+Improvement:
+* 👷 Replaced GLFW, ImGUI and PJSIP downloads with submodules
+* ♻️  Get_quiddity_id returns a qid_t
+
+Bug Fixes:
+* 🐛 Fix make package_source_test to include non-root directories named build
+* 🐛 Fix release script to get submodules
+* 🐛 Fix call with shmdata with no switcher-name and quiddity-id in caps
+* 🐛 Fix call with nvenc
+
 switcher 2.1.30 (2021-02-09)
 ---------------------------
 This is an official release in the 2.1 stable series.
