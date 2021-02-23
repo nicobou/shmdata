@@ -75,7 +75,7 @@ set(CPACK_COMPONENT_HEADERS_DESCRIPTION "C/C++ header files for use with Switche
 set(CPACK_COMPONENT_HEADERS_DEPENDS libraries)
 
 # CPack - Source
-set(CPACK_SOURCE_IGNORE_FILES "/\.hooks/;/build/;/html/;/scripts/;${CPACK_SOURCE_IGNORE_FILES}")
+set(CPACK_SOURCE_IGNORE_FILES "/\.hooks/;${CMAKE_SOURCE_DIR}/build;${CMAKE_SOURCE_DIR}/html/;${CMAKE_SOURCE_DIR}/scripts/;.git/;${CPACK_SOURCE_IGNORE_FILES}")
 
 # Add local cmake directory to cmaee module path in case we need it
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
