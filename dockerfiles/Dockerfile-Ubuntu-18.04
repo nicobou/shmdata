@@ -1,5 +1,3 @@
-ARG SWITCHER_TAG="master"
-
 FROM "registry.gitlab.com/sat-metalab/switcher":deps-ubuntu1804 AS build
 LABEL MAINTAINER="Metalab <metalab-dev@sat.qc.ca>"
 
@@ -12,7 +10,7 @@ WORKDIR ${BUILD_DIR}
 COPY . ${BUILD_DIR}
 
 # Build and install switcher
-RUN mkdir -p build \
+RUN git submodule deinit -f . && git submodule update --init --recursive && rm -rf build && mkdir build \
     && cd build \
     && CC="gcc-8" CXX="g++-8" cmake -DENABLE_GPL=ON -DCMAKE_BUILD_TYPE="Release" .. \
     && make -j"$(nproc)" \
