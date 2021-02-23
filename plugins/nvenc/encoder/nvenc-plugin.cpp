@@ -18,8 +18,11 @@
  */
 
 #include "./nvenc-plugin.hpp"
+
 #include <gst/gst.h>
+
 #include "cuda/cuda-context.hpp"
+#include "switcher/quiddity/container.hpp"
 #include "switcher/utils/scope-exit.hpp"
 
 namespace switcher {
@@ -447,13 +450,14 @@ void NVencPlugin::on_shmreader_server_connected(const std::string& data_descr) {
       this,
       make_shmpath("video-encoded"),
       1,
-      std::string("video/" + codec +
-                  ", stream-format=(string)byte-stream, "
-                  "alignment=(string)au, profile=(string)baseline" +
-                  ", width=(int)" + std::to_string(width) + ", height=(int)" +
-                  std::to_string(height) +
-                  ", pixel-aspect-ratio=(fraction)1/1, framerate=(fraction)" +
-                  std::to_string(frameNum) + "/" + std::to_string(frameDen)));
+      std::string(
+          "video/" + codec +
+          ", stream-format=(string)byte-stream, "
+          "alignment=(string)au, profile=(string)baseline" +
+          ", width=(int)" + std::to_string(width) + ", height=(int)" + std::to_string(height) +
+          ", pixel-aspect-ratio=(fraction)1/1, framerate=(fraction)" + std::to_string(frameNum) +
+          "/" + std::to_string(frameDen) + ", switcher-name=(string)" + get_manager_name() +
+          ", quiddity-id=(int)" + std::to_string(qcontainer_->get_id(get_name()))));
 }
 
 }  // namespace quiddities

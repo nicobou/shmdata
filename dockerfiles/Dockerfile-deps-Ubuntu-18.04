@@ -23,7 +23,10 @@ RUN apt update -y \
         $(cat deps/apt-build-nvidia-deps-ubuntu-18.04) \
         $(cat deps/apt-runtime-nvidia-deps-ubuntu-18.04) \
     # install python dependencies 
+    && python3 -m pip install -U pip \
+    && apt-get remove -y --purge python3-pip \
     && pip3 install -r deps/pip3-ubuntu18.04 \
+    && pip3 install -U six \
     # Clean apt cache
     && apt-get clean \
     && apt-get autoclean \

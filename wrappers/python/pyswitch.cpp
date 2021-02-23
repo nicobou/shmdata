@@ -58,15 +58,29 @@ int pySwitch::Switcher_init(pySwitchObject* self, PyObject* args, PyObject* kwds
     return -1;
   }
 
+  self->sig_reg = std::make_unique<sig_registering_t>();
+
   if (configFile) {
     if (!self->switcher->conf<MPtr(&Configuration::from_file)>(PyUnicode_AsUTF8(configFile)))
       return -1;
   }
 
+  self->interpreter_state = PyThreadState_Get()->interp;
+
   return 0;
 }
 
 void pySwitch::Switcher_dealloc(pySwitchObject* self) {
+  // cleaning signal subscription
+  self->switcher->quids<MPtr(&quiddity::Container::reset_create_remove_cb)>();
+  for (const auto& it : self->sig_reg->callbacks) {
+    Py_XDECREF(it.second);
+  }
+  for (auto& it : self->sig_reg->user_data) {
+    Py_XDECREF(it.second);
+  }
+  self->sig_reg.reset();
+
   Py_XDECREF(self->name);
   Switcher::ptr empty;
   self->switcher.swap(empty);
@@ -90,6 +104,30 @@ PyDoc_STRVAR(pyswitch_version_doc,
 
 PyObject* pySwitch::version(pySwitchObject* self) {
   return PyUnicode_FromString(self->switcher.get()->get_switcher_version().c_str());
+}
+
+PyDoc_STRVAR(
+    pyswitch_load_bundles_doc,
+    "Load bundles description from a JSON object and make them available for creation."
+    "The description must be a stringified JSON object containing a valid bundle description.\n"
+    "Arguments: (description)\n"
+    "Returns: True or False.\n");
+
+PyObject* pySwitch::load_bundles(pySwitchObject* self, PyObject* args, PyObject* kwds) {
+  const char* description = nullptr;
+  static char* kwlist[] = {(char*)"description", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &description)) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
+
+  if (!self->switcher.get()->load_bundle_from_config(description)) {
+    Py_INCREF(Py_False);
+    return Py_False;
+  }
+
+  Py_INCREF(Py_True);
+  return Py_True;
 }
 
 PyDoc_STRVAR(pyswitch_create_doc,
@@ -131,7 +169,7 @@ PyObject* pySwitch::create(pySwitchObject* self, PyObject* args, PyObject* kwds)
 
 PyDoc_STRVAR(pyswitch_remove_doc,
              "Remove a quiddity.\n"
-             "Arguments: (name)\n"
+             "Arguments: (id)\n"
              "Returns: true or false\n");
 
 PyObject* pySwitch::remove(pySwitchObject* self, PyObject* args, PyObject* kwds) {
@@ -343,9 +381,142 @@ PyObject* pySwitch::quid_descr(pySwitchObject* self, PyObject* args, PyObject* k
           .c_str());
 }
 
+bool pySwitch::subscribe_to_signal(pySwitchObject* self,
+                                   const std::string signal_name,
+                                   PyObject* cb,
+                                   PyObject* user_data) {
+  auto signalCb = [cb, user_data, self](quiddity::qid_t id) {
+    auto quid_name = self->switcher->quids<MPtr(&quiddity::Container::get_name)>(id);
+    bool has_gil = (1 == PyGILState_Check()) ? true : false;
+    PyThreadState* m_state = nullptr;
+    if (!has_gil) {
+      m_state = PyThreadState_New(self->interpreter_state);
+      PyEval_RestoreThread(m_state);
+    }
+    PyObject* arglist;
+    if (user_data)
+      arglist = Py_BuildValue("(sO)", (char*)quid_name.c_str(), user_data);
+    else
+      arglist = Py_BuildValue("(s)", (char*)quid_name.c_str());
+    PyObject* pyobjresult = PyEval_CallObject(cb, arglist);
+    PyObject* pyerr = PyErr_Occurred();
+    if (pyerr != nullptr) PyErr_Print();
+    Py_DECREF(arglist);
+    Py_XDECREF(pyobjresult);
+    if (!has_gil) {
+      PyEval_SaveThread();
+      if (m_state) {
+        PyThreadState_Clear(m_state);
+        PyThreadState_Delete(m_state);
+      }
+    }
+  };
+
+  unsigned int reg_id = 0;
+  if ("on-quiddity-created" == signal_name) {
+    reg_id = self->switcher->quids<MPtr(&quiddity::Container::register_creation_cb)>(signalCb);
+  } else if ("on-quiddity-removed" == signal_name) {
+    reg_id = self->switcher->quids<MPtr(&quiddity::Container::register_removal_cb)>(signalCb);
+  } else {
+    return false;
+  }
+
+  if (0 == reg_id) return false;
+  Py_INCREF(cb);
+  self->sig_reg->callbacks.emplace(signal_name, cb);
+  self->sig_reg->signals.emplace(signal_name, reg_id);
+  if (user_data) {
+    Py_INCREF(user_data);
+    self->sig_reg->user_data.emplace(signal_name, user_data);
+  }
+  return true;
+}
+
+PyDoc_STRVAR(pyswitch_subscribe_doc,
+             "Subscribe to a signal. The callback has two argument(s): 'value'"
+             "(JSON representation of the signal's value) and 'user_data', "
+             "if 'subscribe' has been invoked with 'user_data'.\n"
+             "Arguments: (name, callback, user_data) where 'name' is either 'on-quiddity-created' "
+             "or 'on-quiddity-removed'."
+             "Note that 'user_data' is optional\n"
+             "Returns: True or False\n");
+
+PyObject* pySwitch::subscribe(pySwitchObject* self, PyObject* args, PyObject* kwds) {
+  const char* name = nullptr;
+  PyObject* cb = nullptr;
+  PyObject* user_data = nullptr;
+
+  static char* kwlist[] = {(char*)"name", (char*)"cb", (char*)"user_data", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO|O", kwlist, &name, &cb, &user_data)) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
+  if (!PyCallable_Check(cb)) {
+    PyErr_SetString(PyExc_TypeError, "pySwitch callback argument must be callable");
+    return static_cast<PyObject*>(nullptr);
+  }
+
+  if (subscribe_to_signal(self, name, cb, user_data)) {
+    Py_INCREF(Py_True);
+    return Py_True;
+  }
+
+  // no subscription worked
+  Py_INCREF(Py_False);
+  return Py_False;
+}
+
+bool pySwitch::unsubscribe_from_signal(pySwitchObject* self, const std::string signal_name) {
+  auto found = self->sig_reg->signals.find(signal_name);
+  if (self->sig_reg->signals.end() == found) return false;
+  if (found->first == "on-quiddity-created") {
+    self->switcher->quids<MPtr(&quiddity::Container::unregister_creation_cb)>(found->second);
+  } else {
+    self->switcher->quids<MPtr(&quiddity::Container::unregister_removal_cb)>(found->second);
+  }
+  auto cb = self->sig_reg->callbacks.find(signal_name);
+  Py_XDECREF(cb->second);
+  self->sig_reg->callbacks.erase(cb);
+  auto user_data = self->sig_reg->user_data.find(signal_name);
+  if (self->sig_reg->user_data.end() != user_data) {
+    Py_XDECREF(user_data->second);
+    self->sig_reg->user_data.erase(user_data);
+  }
+  self->sig_reg->signals.erase(signal_name);
+  return true;
+}
+
+PyDoc_STRVAR(
+    pyswitch_unsubscribe_doc,
+    "Unsubscribe from a signal.\n"
+    "Arguments: (name) where 'name' is either 'on-quiddity-created' or 'on-quiddity-removed'.\n"
+    "Returns: True or False\n");
+
+PyObject* pySwitch::unsubscribe(pySwitchObject* self, PyObject* args, PyObject* kwds) {
+  const char* name = nullptr;
+  static char* kwlist[] = {(char*)"name", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &name)) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
+
+  if (unsubscribe_from_signal(self, name)) {
+    Py_INCREF(Py_True);
+    return Py_True;
+  }
+
+  // no unsubscribe worked
+  Py_INCREF(Py_False);
+  return Py_False;
+}
+
 PyMethodDef pySwitch::pySwitch_methods[] = {
     {"name", (PyCFunction)pySwitch::name, METH_NOARGS, pyswitch_name_doc},
     {"version", (PyCFunction)pySwitch::version, METH_NOARGS, pyswitch_version_doc},
+    {"load_bundles",
+     (PyCFunction)pySwitch::load_bundles,
+     METH_VARARGS | METH_KEYWORDS,
+     pyswitch_load_bundles_doc},
     {"create", (PyCFunction)pySwitch::create, METH_VARARGS | METH_KEYWORDS, pyswitch_create_doc},
     {"remove", (PyCFunction)pySwitch::remove, METH_VARARGS | METH_KEYWORDS, pyswitch_remove_doc},
     {"get_qrox",
@@ -389,6 +560,14 @@ PyMethodDef pySwitch::pySwitch_methods[] = {
      (PyCFunction)pySwitch::quid_descr,
      METH_VARARGS | METH_KEYWORDS,
      pyswitch_quid_descr_doc},
+    {"subscribe",
+     (PyCFunction)pySwitch::subscribe,
+     METH_VARARGS | METH_KEYWORDS,
+     pyswitch_subscribe_doc},
+    {"unsubscribe",
+     (PyCFunction)pySwitch::unsubscribe,
+     METH_VARARGS | METH_KEYWORDS,
+     pyswitch_unsubscribe_doc},
     {nullptr}};
 
 PyDoc_STRVAR(pyquid_switcher_doc,

@@ -23,6 +23,8 @@ RUN apt update -y \
         $(cat deps/apt-build-nvidia-deps-ubuntu-20.04) \
         $(cat deps/apt-runtime-nvidia-deps-ubuntu-20.04) \
     # install python dependencies 
+    && python3 -m pip install -U pip \
+    && apt-get remove -y --purge python3-pip \
     && pip3 install -r deps/pip3-ubuntu20.04 \
     # Clean apt cache
     && apt-get clean \

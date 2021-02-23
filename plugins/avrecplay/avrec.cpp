@@ -279,7 +279,7 @@ bool AVRecorder::on_shmdata_connect(const std::string& shmpath) {
       nullptr,
       [this, connected_shmdata = connected_shmdata.get(), shmpath](const std::string& str_caps) {
         auto manager = switcher::shmdata::caps::get_switcher_name(str_caps);
-        auto id = switcher::shmdata::caps::get_quiddity_id(str_caps);
+        auto id = std::to_string(switcher::shmdata::caps::get_quiddity_id(str_caps));
         auto category =
             stringutils::replace_char(switcher::shmdata::caps::get_category(str_caps), ' ', "_");
 

@@ -54,14 +54,16 @@ std::string get_category(const std::string& caps) {
   return category;
 }
 
-std::string get_quiddity_id(const std::string& caps) {
-  auto caps_type = ::shmdata::Type(caps);
-  return std::any_cast<std::string>(caps_type.get("quiddity-id"));
+switcher::quiddity::qid_t get_quiddity_id(const std::string& caps) {
+  auto id = ::shmdata::Type(caps).get("quiddity-id");
+  if (!id.has_value()) return 0;
+  return std::any_cast<int>(id);
 }
 
 std::string get_switcher_name(const std::string& caps) {
-  auto caps_type = ::shmdata::Type(caps);
-  return std::any_cast<std::string>(caps_type.get("switcher-name"));
+  auto name = ::shmdata::Type(caps).get("switcher-name");
+  if (!name.has_value()) return "";
+  return std::any_cast<std::string>(name);
 }
 
 }  // namespace caps

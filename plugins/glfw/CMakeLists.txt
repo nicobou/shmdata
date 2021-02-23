@@ -8,22 +8,8 @@ add_feature_info("${PLUGIN_NAME}" PLUGIN_GLFW "${PLUGIN_DESCRIPTION}")
 
 if (PLUGIN_GLFW)
 
-    # GLFW
-
-    include(ExternalProject)
-    ExternalProject_Add(glfw
-        URL https://github.com/glfw/glfw/archive/3.3.2.tar.gz
-        CMAKE_ARGS -DBUILD_SHARED_LIBS=FALSE
-        CMAKE_ARGS -DGLFW_BUILD_EXAMPLES=FALSE
-        CMAKE_ARGS -DGLFW_BUILD_TESTS=FALSE
-        CMAKE_ARGS -DGLFW_BUILD_DOCS=FALSE
-        CMAKE_ARGS -DGLFW_INSTALL=FALSE
-        CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-        INSTALL_COMMAND ""
-        )
-
-    set(GLFW_INCLUDE_DIRS ${CMAKE_CURRENT_BINARY_DIR}/glfw-prefix/src/glfw/include)
-    set(GLFW_LIBRARIES ${CMAKE_CURRENT_BINARY_DIR}/glfw-prefix/src/glfw-build/src/${CMAKE_STATIC_LIBRARY_PREFIX}glfw3${CMAKE_STATIC_LIBRARY_SUFFIX})
+    # Externals, GLFW for now
+    add_subdirectory(external)
 
     # sbt_image requires the following:
     check_cxx_compiler_flag(-Wno-error=misleading-indentation CAN_IGNORE_MISLEADING_INDENTATION)
@@ -64,7 +50,7 @@ if (PLUGIN_GLFW)
     )
 
     link_libraries(
-        ${GLFW_LIBRARIES}
+        glfw
         dl
     )
 
@@ -90,25 +76,14 @@ if (PLUGIN_GLFW)
 
     # IMGUI
 
-    set(IMGUI_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/imgui-prefix/src/imgui)
+    set(IMGUI_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external/imgui)
     set(IMGUI_SOURCE_FILES ${IMGUI_SOURCE_DIR}/imgui.cpp ${IMGUI_SOURCE_DIR}/imgui_draw.cpp)
-
-    ExternalProject_Add(imgui
-        GIT_REPOSITORY https://github.com/ocornut/imgui.git
-        GIT_TAG v1.49
-        DOWNLOAD_DIR ${IMGUI_SOURCE_DIR}
-        CONFIGURE_COMMAND ""
-        BUILD_COMMAND ""
-        INSTALL_COMMAND ""
-        )
 
     include_directories(
         ${IMGUI_SOURCE_DIR}
     )
 
     # Plugin
-
-    add_custom_command(OUTPUT ${IMGUI_SOURCE_FILES} DEPENDS imgui COMMAND "")
 
     add_library(glfwvideo SHARED
         external/glad.c
@@ -119,7 +94,6 @@ if (PLUGIN_GLFW)
 
     add_dependencies(glfwvideo ${SWITCHER_LIBRARY})
     add_dependencies(glfwvideo glfw)
-    add_dependencies(glfwvideo imgui)
 
     # TEST
 
