@@ -12,7 +12,7 @@ if (PLUGIN_VRPN)
 
     include(ExternalProject)
     ExternalProject_Add(vrpn
-        GIT_REPOSITORY https://github.com/vrpn/vrpn.git
+        URL ${CMAKE_CURRENT_SOURCE_DIR}/external/vrpn
         UPDATE_COMMAND "" # Prevents rebuilds on every update
         INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}
         CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/vrpn-install

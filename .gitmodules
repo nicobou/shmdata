@@ -1,7 +1,3 @@
-[submodule "plugins/vrpn/vrpn-lib"]
-	path = plugins/vrpn/vrpn-lib
-	url = https://github.com/vrpn/vrpn.git
-	ignore = untracked
 [submodule "external/imgui"]
 	path = external/imgui
 	url = https://github.com/ocornut/imgui.git
@@ -20,3 +16,6 @@
 [submodule "plugins/glfw/external/imgui"]
 	path = plugins/glfw/external/imgui
 	url = https://github.com/ocornut/imgui
+[submodule "plugins/vrpn/external/vrpn"]
+	path = plugins/vrpn/external/vrpn
+	url = https://github.com/vrpn/vrpn.git
