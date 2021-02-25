@@ -1,5 +1,5 @@
-switcher (2.1.32-1) focal; urgency=low
+switcher (2.1.33-1) focal; urgency=low
 
   * Initial release.
 
- --  Emmanuel Durand <edurand@sat.qc.ca>  Tue, 23 Feb 2021 10:34:49 -0500
+ -- Emmanuel Durand <edurand@sat.qc.ca>  Thu, 25 Feb 2021 11:19:21 -0500
