@@ -140,6 +140,23 @@ SIPPlugin::SIPPlugin(quiddity::Config&& conf)
       }
     }
   });
+
+  this_->mmanage<MPtr(&method::MBag::make_method<std::function<bool(std::string)>>)>(
+      "can-sink-caps",
+      infotree::json::deserialize(
+          R"(
+                  {
+                   "name" : "Can sink caps",
+                   "description" : "Can SIP contacts connect with this caps",
+                   "arguments" : [
+                     {
+                        "long name" : "String Caps",
+                        "description" : "Caps as a string"
+                     }
+                   ]
+                  }
+              )"),
+      [this](const std::string& caps) { return can_sink_caps(caps); });
 }
 
 SIPPlugin::~SIPPlugin() {
@@ -323,6 +340,10 @@ InfoTree::ptr SIPPlugin::on_saving() {
 
 void SIPPlugin::on_saved() {
   if (dns_address_ == "default") dns_address_ = default_dns_address_;
+}
+
+bool SIPPlugin::can_sink_caps(const std::string& str_caps) {
+  return !stringutils::starts_with(str_caps, "video/x-raw");
 }
 
 }  // namespace quiddities
