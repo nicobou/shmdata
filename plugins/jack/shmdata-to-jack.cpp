@@ -260,6 +260,7 @@ void ShmdataToJack::on_handoff_cb(GstElement* /*object*/,
 bool ShmdataToJack::make_elements() {
   GError* error = nullptr;
   auto src = std::string("shmdatasrc ");
+  if (do_format_conversion_) src += " ! interleave ";
   if (do_format_conversion_) src += " ! audioconvert ";
   if (do_rate_conversion_) src += " ! audioresample ";
   if (do_format_conversion_ && do_rate_conversion_) src += " ! audioconvert ";
