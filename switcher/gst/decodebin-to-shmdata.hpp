@@ -85,7 +85,7 @@ class DecodebinToShmdata {
   static GstPadProbeReturn gstrtpdepay_event_probe_cb(GstPad* /*pad */,
                                                       GstPadProbeInfo* /*info*/,
                                                       gpointer user_data);
-  void pad_to_shmdata_writer(GstElement* bin, GstPad* pad);
+  void pad_to_shmdata_writer(GstElement* bin, GstPad* pad, const std::string& force_padname = "");
   static gboolean eos_probe_cb(GstPad* pad, GstEvent* event, gpointer user_data);
   static gboolean rewind(gpointer user_data);
 };

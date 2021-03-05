@@ -66,8 +66,12 @@ void DecodebinToShmdata::on_pad_added(GstElement* object, GstPad* pad, gpointer 
   On_scope_exit { gst_caps_unref(rtpcaps); };
   GstCaps* glmemorycaps = gst_caps_from_string("video/x-raw(memory:GLMemory)");
   On_scope_exit { gst_caps_unref(glmemorycaps); };
+  GstCaps* audiocaps = gst_caps_from_string("audio/x-raw");
+  On_scope_exit { gst_caps_unref(audiocaps); };
   GstCaps* padcaps = gst_pad_get_current_caps(pad);
   On_scope_exit { gst_caps_unref(padcaps); };
+  gchar* caps_str2 = gst_caps_to_string(padcaps);
+  On_scope_exit { g_free(caps_str2); };
   if (gst_caps_can_intersect(rtpcaps, padcaps)) {
     // asking rtpbin to send an event when a packet is lost (do-lost property)
     gst::utils::set_element_property_in_bin(object, "gstrtpbin", "do-lost", TRUE);
@@ -116,17 +120,47 @@ void DecodebinToShmdata::on_pad_added(GstElement* object, GstPad* pad, gpointer 
     gst::utils::make_element("capsfilter", &capsfilter);
     GstCaps* videocaps = gst_caps_from_string("video/x-raw");
     g_object_set(G_OBJECT(capsfilter), "caps", videocaps, nullptr);
-    gst_object_unref(videocaps);
+    gst_caps_unref(videocaps);
     gst_bin_add(GST_BIN(GST_ELEMENT_PARENT(object)), capsfilter);
     GstPad* filtersinkpad = gst_element_get_static_pad(capsfilter, "sink");
     gst::utils::check_pad_link_return(gst_pad_link(glsrcpad, filtersinkpad));
-    gst_object_unref(glsrcpad);
     gst_object_unref(filtersinkpad);
     GstPad* filtersrcpad = gst_element_get_static_pad(capsfilter, "src");
     gst::utils::sync_state_with_parent(capsfilter);
     gst_element_get_state(capsfilter, nullptr, nullptr, GST_CLOCK_TIME_NONE);
 
-    context->pad_to_shmdata_writer(GST_ELEMENT_PARENT(object), filtersrcpad);
+    context->pad_to_shmdata_writer(GST_ELEMENT_PARENT(object), filtersrcpad, "video");
+    gst_object_unref(glsrcpad);
+    gst_object_unref(filtersrcpad);
+    return;
+  } else if (gst_caps_can_intersect(audiocaps, padcaps)) {
+    // Create audioconvert element1 to enforce interleaved audio
+    GstElement* audioconvert;
+    gst::utils::make_element("audioconvert", &audioconvert);
+    gst_bin_add(GST_BIN(GST_ELEMENT_PARENT(object)), audioconvert);
+    GstPad* sinkpad = gst_element_get_static_pad(audioconvert, "sink");
+    gst::utils::check_pad_link_return(gst_pad_link(pad, sinkpad));
+    gst_object_unref(sinkpad);
+    GstPad* srcpad = gst_element_get_static_pad(audioconvert, "src");
+    gst::utils::sync_state_with_parent(audioconvert);
+    gst_element_get_state(audioconvert, nullptr, nullptr, GST_CLOCK_TIME_NONE);
+
+    // Create capsfilter element to force output caps to be 'audio/x-raw,
+    // layout=(string)interleaved'
+    GstElement* capsfilter;
+    gst::utils::make_element("capsfilter", &capsfilter);
+    GstCaps* interlcaps = gst_caps_from_string("audio/x-raw, layout=(string)interleaved");
+    g_object_set(G_OBJECT(capsfilter), "caps", interlcaps, nullptr);
+    gst_caps_unref(interlcaps);
+    gst_bin_add(GST_BIN(GST_ELEMENT_PARENT(object)), capsfilter);
+    GstPad* filtersinkpad = gst_element_get_static_pad(capsfilter, "sink");
+    gst::utils::check_pad_link_return(gst_pad_link(srcpad, filtersinkpad));
+    gst_object_unref(filtersinkpad);
+    GstPad* filtersrcpad = gst_element_get_static_pad(capsfilter, "src");
+    gst::utils::sync_state_with_parent(capsfilter);
+    gst_element_get_state(capsfilter, nullptr, nullptr, GST_CLOCK_TIME_NONE);
+    context->pad_to_shmdata_writer(GST_ELEMENT_PARENT(object), filtersrcpad, "audio");
+    gst_object_unref(srcpad);
     gst_object_unref(filtersrcpad);
     return;
   }
@@ -140,14 +174,14 @@ int /*GstAutoplugSelectResult*/ DecodebinToShmdata::on_autoplug_select(GstElemen
                                                                        gpointer user_data) {
   enum Result { TRY, EXPOSE, SKIP };  // faking GstAutoplugSelectResult;
   DecodebinToShmdata* context = static_cast<DecodebinToShmdata*>(user_data);
-
   if (!context->decompress_) {
     gchar* caps_str = gst_caps_to_string(caps);
     On_scope_exit { g_free(caps_str); };
     if (stringutils::starts_with(caps_str, "audio/") ||
         stringutils::starts_with(caps_str, "video/") ||
-        stringutils::starts_with(caps_str, "image/"))
+        stringutils::starts_with(caps_str, "image/")) {
       return EXPOSE;
+    }
   }
 
   if (g_strcmp0(GST_OBJECT_NAME(factory), "rtpgstdepay") == 0) {
@@ -207,7 +241,9 @@ GstPadProbeReturn DecodebinToShmdata::gstrtpdepay_event_probe_cb(GstPad* /*pad *
   return GST_PAD_PROBE_PASS;
 }
 
-void DecodebinToShmdata::pad_to_shmdata_writer(GstElement* bin, GstPad* pad) {
+void DecodebinToShmdata::pad_to_shmdata_writer(GstElement* bin,
+                                               GstPad* pad,
+                                               const std::string& force_padname) {
   // looking for type of media
   std::string padname;
   {
@@ -223,6 +259,7 @@ void DecodebinToShmdata::pad_to_shmdata_writer(GstElement* bin, GstPad* pad) {
       else
         padname = gst_structure_get_name(gst_caps_get_structure(padcaps, 0));
     }
+    if (!force_padname.empty()) padname = force_padname;
   }
   GstElement* shmdatasink;
   gst::utils::make_element("shmdatasink", &shmdatasink);
