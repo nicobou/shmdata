@@ -312,7 +312,7 @@ PyObject* pyQuiddity::get_type(pyQuiddityObject* self, PyObject*, PyObject*) {
 
 PyDoc_STRVAR(pyquiddity_set_nickname_doc,
              "Set the quiddity nickname.\n"
-             "Arguments: none\n"
+             "Arguments: (nickname)\n"
              "Returns: True or False\n");
 
 PyObject* pyQuiddity::set_nickname(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
