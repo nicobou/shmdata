@@ -2,6 +2,25 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 2.1.34 (2021-03-08)
+---------------------------
+This is an official release in the 2.1 stable series.
+
+New Feature:
+* Add a Ubuntu packaging script
+
+Improvements:
+* ✅ Improved python tests about signal subscription
+* 🎨 Remove property refresh in videotestsrc
+* ✨ Add can-sink-caps method to SIP quiddity
+
+Bug Fixes:
+* 💚 Fixed docker deploy CI for scenic
+* 📝 Fixed docstring of Pyquid set_nickname
+* 🐛 Fixed decodebin-to-shmdata issue with non-interleaved audio
+* 🐛 Fixed jacksink quiddity segfault with non interleaved audio
+* 🐛 Fixed VRPN not using the submodule
+
 switcher 2.1.32 (2021-02-22)
 ---------------------------
 This is an official release in the 2.1 stable series.
