@@ -2,6 +2,12 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.3.44 (2021-03-08)
+---------------------------
+This is an official release in the 1.3 stable series.
+
+* 📝 fixed display video from shmdata in README
+
 shmdata 1.3.42 (2021-02-22)
 ---------------------------
 This is an official release in the 1.3 stable series.

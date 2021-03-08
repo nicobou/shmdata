@@ -1,4 +1,4 @@
-shmdata
+Shmdata
 =======
 
 ![Shmdata logo](doc/logo/png/Shmdata-color-horizontal-black-text.png)
@@ -61,7 +61,7 @@ Note that you can [monitor a shmadata framerate using pv and sdflow](doc/monitor
 
 Keept the video transmission (and optionally, the `sdflow` monitoring) running, then open a new terminal window and display the video using the following command:
 ```
-gst-launch --gst-plugin-path=/usr/lib/gstreamer-1.0/ videotestsrc ! shmdatasink socket-path=/tmp/video_shmdata
+gst-launch --gst-plugin-path=/usr/lib/gstreamer-1.0/ shmdatasrc socket-path=/tmp/video_shmdata ! xvimagesink
 ```
 
 ### Use shmdata in your code
