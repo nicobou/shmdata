@@ -16,15 +16,22 @@ import time
 import assert_exit_1
 
 # "my_user_data" will be passed to the subscribe method
-my_user_data = ["my", "user", "data"]
+my_user_data = 'width user data'
+my_user_data2 = 'height user data'
 my_width = 123
+my_height = 123
+num_success = 0
 
 
 def on_property_changed(value, user_data):
-    assert value == my_width
-    assert user_data == my_user_data
-    # success
-    exit(0)
+    global num_success, my_user_data, my_user_data2
+    if (user_data == my_user_data):
+        assert value == my_width
+    if (user_data == my_user_data2):
+        assert value == my_height
+    num_success += 1
+    if (num_success == 4):
+        exit(0)
 
 
 sw = pyquid.Switcher("prop-sub", debug=True)
@@ -40,11 +47,17 @@ assert "width" in pyquid.InfoTree(
 
 # subscribe to the property named "width". Unsubscribe will be called with vid destruction
 assert vid.subscribe("width", on_property_changed, my_user_data)
+assert vid.subscribe("height", on_property_changed, my_user_data2)
 
 # WARNING: do not subscribe using the quid() method of a qrox. In this case subscription  is done on a temporary quid object which cannot hold data required when triggering the callback.
 # The following is wrong and results in on_property_changed not being called back:
-assert qroxvid.quid().subscribe("height", on_property_changed, my_user_data)
+assert qroxvid.quid().subscribe("pattern", on_property_changed, my_user_data)
 
+vid.set("height", my_height)
+vid.set("width", my_width)
+my_height += 1
+my_width += 1
+vid.set("height", my_height)
 vid.set("width", my_width)
 
 

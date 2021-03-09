@@ -92,6 +92,8 @@ class SIPPlugin : public Quiddity {
   // on_saving and on_saved methods set DNS server to "default" when system (default) DNS is used.
   InfoTree::ptr on_saving() final;
   void on_saved() final;
+
+  bool can_sink_caps(const std::string& str_caps);
 };
 
 }  // namespace quiddities

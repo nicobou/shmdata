@@ -20,6 +20,7 @@ Build and Deploy dependency images:
   image: docker:18-git
   variables:
     CONTAINER_TAG_PREFIX: $CI_REGISTRY/sat-metalab/switcher:deps
+    GIT_SUBMODULE_STRATEGY: recursive
   script:
     - git clone --single-branch --branch develop https://gitlab.com/sat-metalab/switcher.git switcher-dev
     - mkdir -p switcher-dev/deps
@@ -32,85 +33,6 @@ Build and Deploy dependency images:
   except:
     - develop
     - master
-    - test-switcher-image
-
-#
-# Test distributions
-#
-Test Ubuntu 18.04:
-  stage: test
-  image: $CI_REGISTRY/sat-metalab/switcher:deps-ubuntu1804
-  variables:
-    CTEST_OUTPUT_ON_FAILURE: 1
-  script:
-    - git submodule update --init --recursive
-    - mkdir -p build && cd build 
-    - CC="gcc-8" CXX="g++-8" cmake -DENABLE_GPL="ON" -DCMAKE_BUILD_TYPE="Release" ..
-    - make -j"$(nproc)" && make install && ldconfig
-    - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y xvfb
-    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make test
-  except:
-    - develop
-    - master
-    - test-switcher-image
-
-Test Ubuntu 20.04:
-  stage: test
-  image: $CI_REGISTRY/sat-metalab/switcher:deps-ubuntu2004
-  variables:
-    CTEST_OUTPUT_ON_FAILURE: 1
-  script:
-    - git submodule update --init --recursive
-    - mkdir -p build && cd build 
-    - cmake -DENABLE_GPL="ON" -DCMAKE_BUILD_TYPE="Release" ..
-    - make -j"$(nproc)" && make install && ldconfig
-    - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y xvfb
-    - xvfb-run  --auto-servernum --server-args='-screen 0 1920x1080x24'  pulseaudio &
-    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make test
-  except:
-    - develop
-    - master
-    - test-switcher-image
-
-#
-# Test package
-#
-Test package:
-  stage: test
-  image: $CI_REGISTRY/sat-metalab/switcher:deps-ubuntu2004
-  variables:
-    CTEST_OUTPUT_ON_FAILURE: 1
-  script:
-    - git submodule update --init --recursive
-    - mkdir -p build && cd build 
-    - cmake -DENABLE_GPL="ON" -DCMAKE_BUILD_TYPE="Release" ..
-    - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y xvfb
-    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make package_source_test
-  only:
-    - develop
-
-#
-# Test coverage
-#
-coverage:
-  stage: coverage
-  image: $CI_REGISTRY/sat-metalab/switcher:deps-ubuntu2004
-  script:
-    - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y lcov zip xvfb
-    - git submodule update --init --recursive
-    - rm -rf build && mkdir build && cd build
-    - cmake -DTEST_COVERAGE=ON -DENABLE_GPL=ON ..
-    - make -j$(nproc) && make install && ldconfig
-    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24'  pulseaudio &
-    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make check_coverage
-    - zip -r coverage.zip coverage
-    - mv coverage.zip ../
-  artifacts:
-    name: "switcher_coverage_${CI_BUILD_REF_NAME}"
-    paths:
-    - "coverage.zip"
-  only:
-    - develop
 
 #
 # Docker image for Scenic CI
@@ -120,6 +42,7 @@ Build and Deploy Ubuntu for Scenic:
   image: docker:18
   variables:
     CONTAINER_TAG: $CI_REGISTRY/sat-metalab/switcher:$CI_COMMIT_REF_NAME
+    GIT_SUBMODULE_STRATEGY: recursive
   script:
     - docker build -t $CONTAINER_TAG --build-arg SWITCHER_TAG=$CI_COMMIT_REF_NAME -f dockerfiles/Dockerfile-Ubuntu-18.04 --target build .
     - echo $CI_DEPLOY_PASSWORD | docker login -u $CI_DEPLOY_USER --password-stdin $CI_REGISTRY
@@ -127,7 +50,86 @@ Build and Deploy Ubuntu for Scenic:
   only:
     - develop
     - master
-    - test-switcher-image
+    - test-switcher-ci
+
+#
+# Test distributions
+#
+Test Ubuntu 18.04:
+  stage: test
+  image: $CI_REGISTRY/sat-metalab/switcher:deps-ubuntu1804
+  variables:
+    CTEST_OUTPUT_ON_FAILURE: 1
+    GIT_SUBMODULE_STRATEGY: recursive
+  script:
+    - mkdir -p build && cd build 
+    - CC="gcc-8" CXX="g++-8" cmake -DENABLE_GPL="ON" -DCMAKE_BUILD_TYPE="Release" ..
+    - make -j"$(nproc)" && make install && ldconfig
+    - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y xvfb
+    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make test
+  except:
+    - develop
+    - master
+
+Test Ubuntu 20.04:
+  stage: test
+  image: $CI_REGISTRY/sat-metalab/switcher:deps-ubuntu2004
+  variables:
+    CTEST_OUTPUT_ON_FAILURE: 1
+    GIT_SUBMODULE_STRATEGY: recursive
+  script:
+    - mkdir -p build && cd build 
+    - cmake -DENABLE_GPL="ON" -DCMAKE_BUILD_TYPE="Release" ..
+    - make -j"$(nproc)" && make install && ldconfig
+    - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y xvfb
+    - xvfb-run  --auto-servernum --server-args='-screen 0 1920x1080x24'  pulseaudio &
+    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make test
+  except:
+    - develop
+    - master
+
+#
+# Test package
+#
+Test package:
+  stage: test
+  image: $CI_REGISTRY/sat-metalab/switcher:deps-ubuntu2004
+  variables:
+    CTEST_OUTPUT_ON_FAILURE: 1
+    GIT_SUBMODULE_STRATEGY: recursive
+  script:
+    - mkdir -p build && cd build 
+    - cmake -DENABLE_GPL="ON" -DCMAKE_BUILD_TYPE="Release" ..
+    - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y xvfb
+    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make package_source_test
+  only:
+    - develop
+    - test-switcher-ci
+
+#
+# Test coverage
+#
+coverage:
+  stage: coverage
+  image: $CI_REGISTRY/sat-metalab/switcher:deps-ubuntu2004
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
+  script:
+    - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y lcov zip xvfb
+    - rm -rf build && mkdir build && cd build
+    - cmake -DTEST_COVERAGE=ON -DENABLE_GPL=ON ..
+    - make -j$(nproc) && make install && ldconfig
+    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' pulseaudio &
+    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make check_coverage
+    - zip -r coverage.zip coverage
+    - mv coverage.zip ../
+  artifacts:
+    name: "switcher_coverage_${CI_BUILD_REF_NAME}"
+    paths:
+    - "coverage.zip"
+  only:
+    - develop
+    - test-switcher-ci
 
 #
 # Package
@@ -135,9 +137,10 @@ Build and Deploy Ubuntu for Scenic:
 Debian Package Ubuntu 20.04:
   stage: deploy
   image: $CI_REGISTRY/sat-metalab/switcher:deps-ubuntu2004
+  variables:
+    GIT_SUBMODULE_STRATEGY: recursive
   script: 
     - DEBIAN_FRONTEND=noninteractive apt update -y
-    - git submodule update --init --recursive
     - rm -rf build && mkdir build && cd build
     - cmake -DENABLE_GPL=ON -DCMAKE_INSTALL_PREFIX=/usr ..
     - make -j$(nproc) package
@@ -148,3 +151,5 @@ Debian Package Ubuntu 20.04:
     - switcher_ubuntu20.04_latest_amd64.deb
   only:
     - master
+    - test-switcher-ci
+

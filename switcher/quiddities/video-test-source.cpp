@@ -149,9 +149,6 @@ bool VideoTestSource::start() {
       this, shmdatasink_.get_raw(), shmpath_, shmdata::GstTreeUpdater::Direction::writer);
   update_caps();
   g_object_set(G_OBJECT(gst_pipeline_->get_pipeline()), "async-handling", TRUE, nullptr);
-  pmanage<MPtr(&property::PBag::replace)>(
-      pmanage<MPtr(&property::PBag::get_id)>("pattern"),
-      quiddity::property::to_prop(G_OBJECT(videotestsrc_.get_raw()), "pattern"));
   gst_pipeline_->play(true);
   pmanage<MPtr(&property::PBag::disable)>(width_id_, disabledWhenStartedMsg);
   pmanage<MPtr(&property::PBag::disable)>(height_id_, disabledWhenStartedMsg);
