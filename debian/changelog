@@ -1,3 +1,9 @@
+switcher (2.1.34-1) focal; urgency=low
+
+  * New release for version 2.1.34
+
+ -- Emmanuel Durand <edurand@sat.qc.ca>  Tue, 09 Mar 2021 14:04:30 -0500
+
 switcher (2.1.33-1) focal; urgency=low
 
   * Initial release.
