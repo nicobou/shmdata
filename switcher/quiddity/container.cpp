@@ -225,31 +225,8 @@ std::string Container::get_nickname(qid_t id) const {
   return quiddities_.find(id)->second->get_nickname();
 }
 
-std::string Container::get_nickname_from_caps(const std::string& caps) {
-  std::string nickname;
-
-  const std::string manager = switcher::shmdata::caps::get_switcher_name(caps);
-  if (manager.empty()) return "";
-  if (manager != switcher_->get_name()) {
-    // check if this manager is not actually a bundle from current switcher
-    auto id = get_id(manager);
-    if (id == 0) return "";
-    nickname = get_quiddity(id)->get_nickname();
-  } else {
-    const auto id = switcher::shmdata::caps::get_quiddity_id(caps);
-    if (id != 0) nickname = get_quiddity(id)->get_nickname();
-  }
-  return nickname;
-}
-
 Qrox Container::get_qrox(qid_t id) {
   return Qrox(true, get_nickname(id), id, get_quiddity(id).get());
-}
-
-Qrox Container::get_qrox_from_nickname(const std::string& nickname) {
-  auto id = get_id(nickname);
-  if (0 == id) return Qrox(false, "not quiddity named " + nickname + " found");
-  return get_qrox(id);
 }
 
 }  // namespace quiddity

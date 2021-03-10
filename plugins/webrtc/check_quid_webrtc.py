@@ -84,8 +84,8 @@ assert web2.invoke('connect', [vidshmpath])
 assert web2.invoke('connect', [audioshmpath])
 
 # connect the dummysink to the webrtc quids
-assert dummy1.invoke('connect-quid', ['webrtcclient1', 'webrtc'])
-assert dummy2.invoke('connect-quid', ['webrtcclient2', 'webrtc'])
+assert dummy1.invoke('connect-quid', [webqrox1.id(), 'webrtc'])
+assert dummy2.invoke('connect-quid', [webqrox2.id(), 'webrtc'])
 
 # subscribe to the 'frame-received' property of the dummysinks
 assert dummy1.subscribe('frame-received', on_frame_received, vid)
@@ -103,6 +103,8 @@ assert web1.set('room', 'switcher-room')
 assert web2.set('room', 'switcher-room')
 
 # 3. start the webrtc quid
+
+
 def launch_server():
     @dataclass
     class Options:
@@ -120,10 +122,12 @@ def launch_server():
         server.run()
         loop.run_forever()
 
+
 # to lauch the server, we need to generate a certificate first
 cert = Generator()
 file_dir = os.path.dirname(os.path.realpath(__file__))
-cert.generate_certificate(key_file=os.path.join(file_dir, 'key.pem'), cert_file=os.path.join(file_dir, 'cert.pem'))
+cert.generate_certificate(key_file=os.path.join(file_dir, 'key.pem'),
+                          cert_file=os.path.join(file_dir, 'cert.pem'))
 
 # launch the server
 server_process = Process(target=launch_server)

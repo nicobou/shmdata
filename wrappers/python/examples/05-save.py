@@ -24,7 +24,7 @@ if None == winqrox:
     winqrox = sw.create(type='dummysink', name='win')
 win = winqrox.quid()
 vid = sw.create('videotestsrc', 'vid').quid()
-assert win.invoke('connect-quid', ['vid', 'video'])
+assert win.invoke('connect-quid', [vid.id(), 'video'])
 assert win.invoke('disconnect-all')
 
 assert win.invoke('connect', [vid.make_shmpath('video')])
@@ -53,8 +53,8 @@ with open('save.switcher', 'r') as save_file:
 sw2.load_state(pyquid.InfoTree(content))
 
 # check win and vid exist
-assert None != sw.get_qrox_from_nickname('win')
-assert None != sw.get_qrox_from_nickname('vid')
+assert 0 != sw.get_quid_id('win')
+assert 0 != sw.get_quid_id('vid')
 
 time.sleep(1)
 

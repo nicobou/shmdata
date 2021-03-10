@@ -16,8 +16,8 @@ audqrox.quid().set("wave", 6)
 audqrox.quid().set("started", True)
 
 wq = w.quid()
-wq.invoke('connect-quid', ['vid', 'video'])
-wq.invoke('connect-quid', ['aud', 'audio'])
+wq.invoke('connect-quid', [vidqrox.id(), 'video'])
+wq.invoke('connect-quid', [audqrox.id(), 'audio'])
 time.sleep(1)
 wq.set("started", True)
 

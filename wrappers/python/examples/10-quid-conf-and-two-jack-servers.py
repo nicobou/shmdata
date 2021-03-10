@@ -39,7 +39,7 @@ swcapture.quid().set('started', True)
 
 # create a shmdata-to-jack in the second sever
 swcard = sw.create('jacksink', 'display', pyquid.InfoTree('{ "server_name" : "swcard" }'))
-swcard.quid().invoke('connect-quid', ['capture', 'audio'])
+swcard.quid().invoke('connect-quid', [swcapture.id(), 'audio'])
 
 # let it go! but just for a sec.
 time.sleep(1)

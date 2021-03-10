@@ -61,7 +61,6 @@ class Container : public log::Logged {
   std::string get_nickname(qid_t id) const;
   std::vector<std::string> get_nicknames() const;
   std::vector<qid_t> get_ids() const;
-  std::string get_nickname_from_caps(const std::string& caps);
 
   // **** creation/remove/get and notification
   Qrox create(const std::string& quiddity_class,
@@ -74,9 +73,6 @@ class Container : public log::Logged {
   BoolLog quiet_remove(qid_t id);
   std::shared_ptr<Quiddity> get_quiddity(qid_t id);
   Qrox get_qrox(qid_t id);
-  // WARNING: if several quiddity are given the same nickname,
-  // then only one will be retrieved with get_qrox_from_nickname.
-  Qrox get_qrox_from_nickname(const std::string& quiddity_nickname);
   unsigned int register_creation_cb(OnCreateRemoveCb cb);
   unsigned int register_removal_cb(OnCreateRemoveCb cb);
   void unregister_creation_cb(unsigned int id);

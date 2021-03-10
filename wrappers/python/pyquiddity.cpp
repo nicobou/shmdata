@@ -322,13 +322,22 @@ PyObject* pyQuiddity::set_nickname(pyQuiddityObject* self, PyObject* args, PyObj
   return Py_True;
 }
 
-PyDoc_STRVAR(pyquiddity_get_nickname_doc,
+PyDoc_STRVAR(pyquiddity_nickname_doc,
              "Get the quiddity nickname.\n"
              "Arguments: none\n"
              "Returns: the value\n");
 
-PyObject* pyQuiddity::get_nickname(pyQuiddityObject* self, PyObject*, PyObject*) {
+PyObject* pyQuiddity::nickname(pyQuiddityObject* self, PyObject*, PyObject*) {
   return PyUnicode_FromString(self->quid->get_nickname().c_str());
+}
+
+PyDoc_STRVAR(pyquiddity_id_doc,
+             "Get the quiddity id.\n"
+             "Arguments: none\n"
+             "Returns: the id (strictly positive long int)\n");
+
+PyObject* pyQuiddity::id(pyQuiddityObject* self, PyObject*, PyObject*) {
+  return PyLong_FromSize_t(self->quid->get_id());
 }
 
 bool pyQuiddity::subscribe_to_signal(pyQuiddityObject* self,
@@ -630,10 +639,11 @@ PyMethodDef pyQuiddity::pyQuiddity_methods[] = {
      (PyCFunction)pyQuiddity::get_info,
      METH_VARARGS | METH_KEYWORDS,
      pyquiddity_get_info_doc},
-    {"get_nickname",
-     (PyCFunction)pyQuiddity::get_nickname,
+    {"nickname",
+     (PyCFunction)pyQuiddity::nickname,
      METH_VARARGS | METH_KEYWORDS,
-     pyquiddity_get_nickname_doc},
+     pyquiddity_nickname_doc},
+    {"id", (PyCFunction)pyQuiddity::id, METH_VARARGS | METH_KEYWORDS, pyquiddity_id_doc},
     {"get_type",
      (PyCFunction)pyQuiddity::get_type,
      METH_VARARGS | METH_KEYWORDS,

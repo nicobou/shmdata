@@ -18,10 +18,12 @@
  */
 
 #include "./connector.hpp"
+
 #include "../gst/utils.hpp"
 #include "../infotree/information-tree.hpp"
 #include "../infotree/json-serializer.hpp"
 #include "../quiddity/container.hpp"
+#include "../quiddity/quid-id-t.hpp"
 #include "../quiddity/quiddity.hpp"
 #include "../shmdata/stat.hpp"
 #include "../utils/scope-exit.hpp"
@@ -73,18 +75,18 @@ bool Connector::install_connect_method(OnConnect on_connect_cb,
         return on_connect_cb_(path);
       });
 
-  using connect_quid_t = std::function<bool(std::string, std::string)>;
+  using connect_quid_t = std::function<bool(quiddity::qid_t id, std::string)>;
   quid_->mmanage<MPtr(&quiddity::method::MBag::make_method<connect_quid_t>)>(
       "connect-quid",
       infotree::json::deserialize(
           R"(
                   {
-                   "name" : "Connect quiddity::Quiddity",
-                   "description" : "connect to a quiddity::Quiddity shmpath",
+                   "name" : "Connect a Quiddity",
+                   "description" : "connect to a Quiddity shmpath",
                    "arguments" : [
                      {
-                        "long name" : "quiddity::Quiddity name",
-                        "description" : "Name of the quiddity::Quiddity producing the shmdata"
+                        "long name" : "The quiddity id",
+                        "description" : "The quiddity id given by the switcher"
                      }, {
                         "long name" : "shmdata suffix",
                         "description" : "Suffix of the shmdata, for instance audio or video2"
@@ -92,14 +94,14 @@ bool Connector::install_connect_method(OnConnect on_connect_cb,
                    ]
                   }
               )"),
-      [this](const std::string& quid_name, const std::string& suffix) {
+      [this](quiddity::qid_t id, const std::string& suffix) {
         if (nullptr == on_connect_cb_) {
           quid_->warning("on connect callback not installed");
           return false;
         }
-        auto qrox = quid_->qcontainer_->get_qrox_from_nickname(quid_name);
+        auto qrox = quid_->qcontainer_->get_qrox(id);
         if (!qrox) {
-          quid_->warning("quiddity % not found: %", quid_name, qrox.msg());
+          quid_->warning("quiddity % not found: %", std::to_string(id), qrox.msg());
           return false;
         }
         auto path = qrox.get()->make_shmpath(suffix);

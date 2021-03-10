@@ -51,7 +51,7 @@ def main() -> None:
             exit(1)
     cam.quid().set('started', True)
     win = sw.create('glfwin', 'win')
-    win.quid().invoke('connect-quid', ['cam', 'video'])
+    win.quid().invoke('connect-quid', [cam.id(), 'video'])
 
     while(True):
         time.sleep(0.2)

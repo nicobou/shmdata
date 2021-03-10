@@ -43,11 +43,11 @@ assert None != vidqrox
 vid = vidqrox.quid()
 
 # Quiddities have nicknames & types
-assert None != vid.get_nickname()
+assert None != vid.nickname()
 assert None != vid.get_type()
 nick = 'my vid'
 assert vid.set_nickname(nick)
-assert nick == vid.get_nickname()
+assert nick == vid.nickname()
 
 # Quiddities have properties that can be accessed with get and set.
 # Before action, you can get property information from the quiddity information tree
@@ -77,7 +77,7 @@ assert win.invoke('disconnect', [vidshmpath])
 
 time.sleep(1)
 # and can reconnect, using the alternative connect-quid method
-assert win.invoke('connect-quid', ['my vid', 'video'])
+assert win.invoke('connect-quid', [vidqrox.id(), 'video'])
 time.sleep(1)
 
 sw.remove(vidqrox.id())

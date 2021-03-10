@@ -50,11 +50,11 @@ async def main():
         vquids[-1].set('started', True)
         vquids.append(sw.create('dummysink', 'vsink' + str(i)).quid())
         vquids[-1].subscribe('on-tree-grafted', on_tree, vquids[-1])
-        vquids[-1].invoke('connect-quid', ['vid' + str(i), 'video'])
+        vquids[-1].invoke('connect-quid', [sw.get_quid_id('vid' + str(i)), 'video'])
         aquids.append(sw.create('audiotestsrc', 'aud' + str(i)).quid())
         aquids[-1].set('started', True)
         aquids.append(sw.create('dummysink', 'asink' + str(i)).quid())
-        aquids[-1].invoke('connect-quid', ['vid' + str(i), 'video'])
+        aquids[-1].invoke('connect-quid', [sw.get_quid_id('vid' + str(i)), 'video'])
 
     for q in aquids:
         q.subscribe('on-tree-grafted', on_tree, q)

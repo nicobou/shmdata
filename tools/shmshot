@@ -152,7 +152,7 @@ def main() -> None:
     if (args.shmpath):
         shot.invoke('connect', [args.shmpath])
     else:
-        shot.invoke('connect-quid', ['cam', 'video'])
+        shot.invoke('connect-quid', [cam.id(), 'video'])
 
     # non-interactive mode
     if (not args.interactive):
@@ -172,7 +172,7 @@ def main() -> None:
         if (args.shmpath):
             win.invoke('connect', [args.shmpath])
         else:
-            win.invoke('connect-quid', ['cam', 'video'])
+            win.invoke('connect-quid', [cam.id(), 'video'])
 
     # interactive mode
     shot.subscribe("last_image", print_image_name)

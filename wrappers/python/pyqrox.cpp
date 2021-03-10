@@ -27,13 +27,13 @@ PyDoc_STRVAR(pyquid_pyqrox_id_doc,
 
 PyObject* pyQrox::id(pyQroxObject* self) { return PyLong_FromSize_t(self->qrox->get_id()); }
 
-PyDoc_STRVAR(pyquid_pyqrox_name_doc,
-             "Get the name of the Quiddity associated with the current qrox.\n"
+PyDoc_STRVAR(pyquid_pyqrox_nickname_doc,
+             "Get the nickname of the Quiddity associated with the current qrox.\n"
              "Arguments: None\n"
              "Returns: the name (string).\n");
 
-PyObject* pyQrox::name(pyQroxObject* self) {
-  return PyUnicode_FromString(self->qrox->msg().c_str());
+PyObject* pyQrox::nickname(pyQroxObject* self) {
+  return PyUnicode_FromString(self->qrox->get()->get_nickname().c_str());
 }
 
 PyDoc_STRVAR(pyquid_pyqrox_quid_doc,
@@ -69,7 +69,7 @@ void pyQrox::Qrox_dealloc(pyQroxObject* self) { Py_TYPE(self)->tp_free((PyObject
 
 PyMethodDef pyQrox::pyQrox_methods[] = {
     {"id", (PyCFunction)id, METH_NOARGS, pyquid_pyqrox_id_doc},
-    {"name", (PyCFunction)name, METH_NOARGS, pyquid_pyqrox_name_doc},
+    {"nickname", (PyCFunction)nickname, METH_NOARGS, pyquid_pyqrox_nickname_doc},
     {"quid", (PyCFunction)quid, METH_NOARGS, pyquid_pyqrox_quid_doc},
     {nullptr}};
 

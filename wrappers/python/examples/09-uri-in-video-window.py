@@ -38,9 +38,9 @@ assert aqrox
 uri = sw.create('urisrc', 'uri').quid()
 
 # connecting quiddities
-assert winqrox.quid().invoke('connect-quid', ['uri', 'image-0'])
-assert winqrox2.quid().invoke('connect-quid', ['uri', 'video-0'])
-assert aqrox.quid().invoke('connect-quid', ['uri', 'audio-0'])
+assert winqrox.quid().invoke('connect-quid', [uri.id(), 'image-0'])
+assert winqrox2.quid().invoke('connect-quid', [uri.id(), 'video-0'])
+assert aqrox.quid().invoke('connect-quid', [uri.id(), 'audio-0'])
 
 assert uri.set('uri', 'https://gitlab.com/sat-metalab/switcher/raw/master/tests/oie.mp3')
 time.sleep(2)

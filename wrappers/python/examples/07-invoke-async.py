@@ -38,7 +38,7 @@ assert vid.set('started', True)
 # creating a dummysink in order to illustrate invoke_async
 dummysink = sw.create('dummysink', 'sink').quid()
 my_user_data = ["my", "user", "data"]
-dummysink.invoke_async('connect-quid', ['vid', 'video'], on_invocation_done, my_user_data)
+dummysink.invoke_async('connect-quid', [vid.id(), 'video'], on_invocation_done, my_user_data)
 
 # wait 200 milliseconds
 time.sleep(0.2)

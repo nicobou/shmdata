@@ -56,7 +56,7 @@ class pySwitch {
   static PyObject* create(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* remove(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* get_qrox(pySwitchObject* self, PyObject* args, PyObject* kwds);
-  static PyObject* get_qrox_from_nickname(pySwitchObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* get_quid_id(pySwitchObject* self, PyObject* args, PyObject* kwds);
   // state saving
   static PyObject* get_state(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* load_state(pySwitchObject* self, PyObject* args, PyObject* kwds);

@@ -15,13 +15,15 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "./pj-call.hpp"
+
 #include <filesystem>
 
-#include "./pj-call.hpp"
 #include "./pj-call-utils.hpp"
 #include "./pj-sip-plugin.hpp"
 #include "switcher/gst/sdp-utils.hpp"
 #include "switcher/infotree/json-serializer.hpp"
+#include "switcher/shmdata/caps/utils.hpp"
 #include "switcher/utils/net-utils.hpp"
 #include "switcher/utils/scope-exit.hpp"
 
@@ -1039,7 +1041,11 @@ bool PJCall::create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_se
     std::string media_caps_str = reader->second->get_input_caps();
 
     // Get the name of the quiddity writing the shmdata using its caps
-    auto quiddity_name = SIPPlugin::this_->qcontainer_->get_nickname_from_caps(media_caps_str);
+    std::string quiddity_name;
+    if (shmdata::caps::get_switcher_name(media_caps_str) == SIPPlugin::this_->get_manager_name()) {
+      quiddity_name = SIPPlugin::this_->qcontainer_->get_nickname(
+          shmdata::caps::get_quiddity_id(media_caps_str));
+    }
 
     // If name cannot be found, then it is not a Switcher-generated shmdata.
     // It could be a Gstreamer pipeline or any stream produced by a generic shmdata writer.
