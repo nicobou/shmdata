@@ -393,7 +393,6 @@ bool pySwitch::subscribe_to_signal(pySwitchObject* self,
                                    PyObject* cb,
                                    PyObject* user_data) {
   auto signalCb = [cb, user_data, self](quiddity::qid_t id) {
-    auto quid_name = self->switcher->quids<MPtr(&quiddity::Container::get_nickname)>(id);
     bool has_gil = (1 == PyGILState_Check()) ? true : false;
     PyThreadState* m_state = nullptr;
     if (!has_gil) {
@@ -402,9 +401,9 @@ bool pySwitch::subscribe_to_signal(pySwitchObject* self,
     }
     PyObject* arglist;
     if (user_data)
-      arglist = Py_BuildValue("(sO)", (char*)quid_name.c_str(), user_data);
+      arglist = Py_BuildValue("(nO)", id, user_data);
     else
-      arglist = Py_BuildValue("(s)", (char*)quid_name.c_str());
+      arglist = Py_BuildValue("(n)", id);
     PyObject* pyobjresult = PyEval_CallObject(cb, arglist);
     PyObject* pyerr = PyErr_Occurred();
     if (pyerr != nullptr) PyErr_Print();
