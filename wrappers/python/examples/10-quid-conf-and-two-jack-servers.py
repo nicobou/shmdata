@@ -25,21 +25,21 @@ sw = pyquid.Switcher('pyquid', debug=True)
 
 # first dummy jack server
 src_serv = sw.create('jackserver', config=pyquid.InfoTree(
-    '{ "driver" : "dummy", "name": "swcapture" }')).quid()
+    '{ "driver" : "dummy", "name": "swcapture" }'))
 src_serv.set('started', True)
 
 # second dummy jack server
 sink_serv = sw.create('jackserver', config=pyquid.InfoTree(
-    '{ "driver" : "dummy", "name": "swcard" }')).quid()
+    '{ "driver" : "dummy", "name": "swcard" }'))
 sink_serv.set('started', True)
 
 # create a jack-to-shmdata in first jack server.
 swcapture = sw.create('jacksrc', 'capture', pyquid.InfoTree('{ "server_name" : "swcapture" }'))
-swcapture.quid().set('started', True)
+swcapture.set('started', True)
 
 # create a shmdata-to-jack in the second sever
 swcard = sw.create('jacksink', 'display', pyquid.InfoTree('{ "server_name" : "swcard" }'))
-swcard.quid().invoke('connect-quid', [swcapture.id(), 'audio'])
+swcard.invoke('connect-quid', [swcapture.id(), 'audio'])
 
 # let it go! but just for a sec.
 time.sleep(1)

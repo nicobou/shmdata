@@ -42,9 +42,8 @@ def on_tree_grafted(data, user_data):
 sw = pyquid.Switcher("signals", debug=True)
 
 # create a quiddity
-qroxvid = sw.create("videotestsrc", "vid")
-assert None != qroxvid
-vid = qroxvid.quid()
+vid = sw.create("videotestsrc", "vid")
+assert None != vid
 
 my_user_data = vid
 my_user_data2 = str('on-nicknamed')

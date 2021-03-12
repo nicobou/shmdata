@@ -55,7 +55,7 @@ class pySwitch {
   static PyObject* load_bundles(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* create(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* remove(pySwitchObject* self, PyObject* args, PyObject* kwds);
-  static PyObject* get_qrox(pySwitchObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* get_quid(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* get_quid_id(pySwitchObject* self, PyObject* args, PyObject* kwds);
   // state saving
   static PyObject* get_state(pySwitchObject* self, PyObject* args, PyObject* kwds);
@@ -66,6 +66,7 @@ class pySwitch {
   static PyObject* classes_doc(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* class_doc(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* list_quids(pySwitchObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* list_ids(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* quids_descr(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* quid_descr(pySwitchObject* self, PyObject* args, PyObject* kwds);
   // signals

@@ -575,10 +575,10 @@ PyObject* pyQuiddity::Quiddity_new(PyTypeObject* type, PyObject* /*args*/, PyObj
 }
 
 int pyQuiddity::Quiddity_init(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
-  PyObject* pyqrox;
+  PyObject* pyquid;
   static char* kwlist[] = {(char*)"quid_c_ptr", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &pyqrox)) return -1;
-  auto* quid = static_cast<Quiddity*>(PyCapsule_GetPointer(pyqrox, nullptr));
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &pyquid)) return -1;
+  auto* quid = static_cast<Quiddity*>(PyCapsule_GetPointer(pyquid, nullptr));
   self->quid = quid;
   self->sig_reg = std::make_unique<sig_registering_t>();
   self->prop_reg = std::make_unique<prop_registering_t>();

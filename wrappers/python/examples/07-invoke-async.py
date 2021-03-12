@@ -29,14 +29,14 @@ def on_invocation_done(value, user_data):
 sw = pyquid.Switcher('pyquid', debug=True)
 
 # creating a video source that will eventually be connected to the dummysink quiddity
-vidqrox = sw.create('videotestsrc', 'vid')
-assert None != vidqrox
-vid = vidqrox.quid()
+vid = sw.create('videotestsrc', 'vid')
+assert None != vid
+
 # the video needs to be activated
 assert vid.set('started', True)
 
 # creating a dummysink in order to illustrate invoke_async
-dummysink = sw.create('dummysink', 'sink').quid()
+dummysink = sw.create('dummysink', 'sink')
 my_user_data = ["my", "user", "data"]
 dummysink.invoke_async('connect-quid', [vid.id(), 'video'], on_invocation_done, my_user_data)
 

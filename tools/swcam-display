@@ -41,17 +41,17 @@ def main() -> None:
         print('sorry, no device found')
         return
     if (args.list_camera):
-        devices = InfoTree(cam.quid().get_info_tree_as_json('.property.device.values'))
+        devices = InfoTree(cam.get_info_tree_as_json('.property.device.values'))
         for id, label in zip(devices.get_key_values('id'), devices.get_key_values('label')):
             print(str(id) + ': "' + label + '"')
         return
     if(args.capture_device):
-        if(not cam.quid().set("device", args.capture_device)):
+        if(not cam.set("device", args.capture_device)):
             print('cannot set device ' + args.capture_device)
             exit(1)
-    cam.quid().set('started', True)
+    cam.set('started', True)
     win = sw.create('glfwin', 'win')
-    win.quid().invoke('connect-quid', [cam.id(), 'video'])
+    win.invoke('connect-quid', [cam.id(), 'video'])
 
     while(True):
         time.sleep(0.2)

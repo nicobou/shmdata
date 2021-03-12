@@ -24,23 +24,19 @@ assert '' != sw.version()
 
 # with switcher, you can create different types of named Quiddities.
 # In this case, glfwin is a quiddity type that manage video window
-winqrox = sw.create(type='glfwin', name='win')
-# a qrox is a handler to the internal quiddity, it provides access to
-# the quiddity itself, its id and its name
+win = sw.create(type='glfwin', name='win')
 
 # The following replace the glfwin quiddity by a dummy quiddity if glfwin is not available
-if None == winqrox:
-    winqrox = sw.create(type='dummysink', name='win')
+if None == win:
+    win = sw.create(type='dummysink', name='win')
 
-# we need our winqrox in order to comsume the video stream
-assert None != winqrox
+# we need our win in order to comsume the video stream
+assert None != win
 
-# get access to the quiddity object
-win = winqrox.quid()
 # creating a video source that will eventually be connected to the video window
-vidqrox = sw.create('videotestsrc', 'vid')
-assert None != vidqrox
-vid = vidqrox.quid()
+vid = sw.create('videotestsrc', 'vid')
+assert None != vid
+
 
 # Quiddities have nicknames & types
 assert None != vid.nickname()
@@ -77,8 +73,8 @@ assert win.invoke('disconnect', [vidshmpath])
 
 time.sleep(1)
 # and can reconnect, using the alternative connect-quid method
-assert win.invoke('connect-quid', [vidqrox.id(), 'video'])
+assert win.invoke('connect-quid', [vid.id(), 'video'])
 time.sleep(1)
 
-sw.remove(vidqrox.id())
-sw.remove(winqrox.id())
+sw.remove(vid.id())
+sw.remove(win.id())

@@ -19,28 +19,28 @@ import assert_exit_1
 sw = pyquid.Switcher('urivid', debug=True)
 
 # creating the window
-winqrox = sw.create(type='glfwin', name='win')
-winqrox2 = sw.create(type='glfwin', name='win2')
-if not winqrox:
-    winqrox = sw.create(type='dummysink', name='win')
-if not winqrox2:
-    winqrox2 = sw.create(type='dummysink', name='win2')
+win = sw.create(type='glfwin', name='win')
+win2 = sw.create(type='glfwin', name='win2')
+if not win:
+    win = sw.create(type='dummysink', name='win')
+if not win2:
+    win2 = sw.create(type='dummysink', name='win2')
 
 # creating a dummysink for audio
-aqrox = sw.create(type='dummysink', name='asink')
+a = sw.create(type='dummysink', name='asink')
 
-assert winqrox
-assert winqrox2
-assert aqrox
+assert win
+assert win2
+assert a
 
 
 # creating the uri decoder
-uri = sw.create('urisrc', 'uri').quid()
+uri = sw.create('urisrc', 'uri')
 
 # connecting quiddities
-assert winqrox.quid().invoke('connect-quid', [uri.id(), 'image-0'])
-assert winqrox2.quid().invoke('connect-quid', [uri.id(), 'video-0'])
-assert aqrox.quid().invoke('connect-quid', [uri.id(), 'audio-0'])
+assert win.invoke('connect-quid', [uri.id(), 'image-0'])
+assert win2.invoke('connect-quid', [uri.id(), 'video-0'])
+assert a.invoke('connect-quid', [uri.id(), 'audio-0'])
 
 assert uri.set('uri', 'https://gitlab.com/sat-metalab/switcher/raw/master/tests/oie.mp3')
 time.sleep(2)
