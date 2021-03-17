@@ -45,7 +45,7 @@ Create a shmdata in which raw video will be sent. The path to the shmdata will b
 # generate a video test signal into a shmdata
 gst-launch --gst-plugin-path=/usr/lib/gstreamer-1.0/ videotestsrc ! shmdatasink socket-path=/tmp/video_shmdata
 ```
-Note: The command `gst-launch` allows for running [GStreamer pipeline](https://gstreamer.freedesktop.org/documentation/tools/gst-launch.html) from command line. Here the pipeline is composed of two elements: `videotesrc` that transmits its video stream to the `shmdatasink` element. The parameter `socket-path` indicates to the `shmdatasink` where the shmdata must be located. Finally, the `--gst-plugin-path` option tells `gst-launch` where it can find the `shmdata` GStreamer elements (by default, shmdata GStreamer plugins are installed in `/usr/lib/gstreamer-1.0/`).
+Note: The command `gst-launch` allows for running [GStreamer pipeline](https://gstreamer.freedesktop.org/documentation/tools/gst-launch.html) from command line. Here the pipeline is composed of two elements: `videotestsrc` that transmits its video stream to the `shmdatasink` element. The parameter `socket-path` indicates to the `shmdatasink` where the shmdata must be located. Finally, the `--gst-plugin-path` option tells `gst-launch` where it can find the `shmdata` GStreamer elements (by default, shmdata GStreamer plugins are installed in `/usr/lib/gstreamer-1.0/`).
 
 #### Monitor a shmdata
 The `sdflow` utility is installed along with the shmdata library. It prints the shmdata metadata once connected with the shmdata writer, and then a line of information for each buffer pushed by the shmdata writer. Keep the video shmdata running, and then from a new terminal type:
@@ -67,6 +67,7 @@ With the video transmission still running (and optionally, the `sdflow` monitori
 # read the video shmdata and display its content into a window
 gst-launch --gst-plugin-path=/usr/lib/gstreamer-1.0/ shmdatasrc socket-path=/tmp/video_shmdata ! xvimagesink
 ```
+![Shmdata principle diagram](doc/shmdata-principle-Diagram.png)
 
 ### Use shmdata in your code
 
