@@ -95,7 +95,7 @@ g++ -o check-writer-follower $(pkg-config --cflags shmdata-1.3) ./check-writer-f
 
 ## Contribution
 
-To contribute to shmdata, see the [contribution guide](doc/contributing.md)
+To contribute to shmdata, see the [contribution guide](CONTRIBUTING.md)
 
 ## Sponsors
 
