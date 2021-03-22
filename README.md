@@ -21,7 +21,7 @@ Shmdata runs on Linux and should works on Unix-like operating systems that suppo
 Shmdata is intended to be used as an extension to applications in order to enable shmdata reading and/or writing, thanks to one of the shdmata APIs. Currently, the following languages are available for implementation specific tools or to add shmdata support in your software: C/C++, Python and GStreamer.
 
 
-## Get started
+## Getting started
 
 ### Installation
 
@@ -34,20 +34,23 @@ sudo apt install libshmdata
 
 Otherwise, you can [install shmdata from sources](doc/install-from-sources.md)
 
-### Try shmdata with GStreamer
+### First shmdata transmission
+
+The following command sequence will let you check your shmdata installation. It describes how to i) generate a video test signal into a shmdata, ii) monitor it, and iii) read the video shmdata for display. All these steps are performed by separate commands running on the same computer.
+
 #### Transmit video through shmdata with GStreamer
 
-By default, GStreamer plugins are installed in ```/usr/lib/gstreamer-1.0/```.
-
-Create a shmdata in which raw video will be sent.
+Create a shmdata in which raw video will be sent. The path to the shmdata will be `/tmp/video_shmdata`.
 ```
+# generate a video test signal into a shmdata
 gst-launch --gst-plugin-path=/usr/lib/gstreamer-1.0/ videotestsrc ! shmdatasink socket-path=/tmp/video_shmdata
 ```
-Here the path to the shmdata will be `/tmp/video_shmdata`
+Note: The command `gst-launch` allows for running [GStreamer pipeline](https://gstreamer.freedesktop.org/documentation/tools/gst-launch.html) from command line. Here the pipeline is composed of two elements: `videotestsrc` that transmits its video stream to the `shmdatasink` element. The parameter `socket-path` indicates to the `shmdatasink` where the shmdata must be located. Finally, the `--gst-plugin-path` option tells `gst-launch` where it can find the `shmdata` GStreamer elements (by default, shmdata GStreamer plugins are installed in `/usr/lib/gstreamer-1.0/`).
 
 #### Monitor a shmdata
 The `sdflow` utility is installed along with the shmdata library. It prints the shmdata metadata once connected with the shmdata writer, and then a line of information for each buffer pushed by the shmdata writer. Keep the video shmdata running, and then from a new terminal type:
 ```
+# monitor a shmdata type and frame sizes 
 $ sdflow /tmp/video_shmdata 
 connected: type video/x-raw, format=(string)I420, width=(int)320, height=(int)240, framerate=(fraction)30/1, multiview-mode=(string)mono, pixel-aspect-ratio=(fraction)1/1, interlace-mode=(string)progressive
 0    size: 115200    data: EBEBEBEBEBEBEBEBEBEBEBEBEBEBEB...
@@ -59,15 +62,16 @@ Note that you can [monitor a shmadata framerate using pv and sdflow](doc/monitor
 
 #### Display video from the video shmdata
 
-Keept the video transmission (and optionally, the `sdflow` monitoring) running, then open a new terminal window and display the video using the following command:
+With the video transmission still running (and optionally, the `sdflow` monitoring), open a new terminal window and display the video using the following command:
 ```
+# read the video shmdata and display its content into a window
 gst-launch --gst-plugin-path=/usr/lib/gstreamer-1.0/ shmdatasrc socket-path=/tmp/video_shmdata ! xvimagesink
 ```
+![Shmdata principle diagram](doc/shmdata-principle-Diagram.png)
 
 ### Use shmdata in your code
 
-
-shmdata can be used with several languages, here are some example files:
+In previous section, GStreamer is used in order to illustrate a transmission, but you can also include shmdata in you project with specific languages, using native shmdata API. Here follows some examples in various languages:
 
 * [C++](tests/check-writer-follower.cpp)
 * [C](test/check-c-wrapper.cpp)
@@ -91,7 +95,7 @@ g++ -o check-writer-follower $(pkg-config --cflags shmdata-1.3) ./check-writer-f
 
 ## Contribution
 
-To contribute to shmdata, see the [contribution guide](doc/contributing.md)
+To contribute to shmdata, see the [contribution guide](CONTRIBUTING.md)
 
 ## Sponsors
 

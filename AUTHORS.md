@@ -7,4 +7,5 @@
 * Francis Lecavalier
 * Valentin Laurent
 * Mike Wozniewski
+* Thomas Piquet
 * Marie-Eve Dumas

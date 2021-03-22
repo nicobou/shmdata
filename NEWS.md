@@ -2,6 +2,14 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.3.46 (2021-03-22)
+---------------------------
+This is an official release in the 1.3 stable series.
+
+* 📝 Improved contributing file and added Code of Conduct
+* 📝 Added Shmdata principle diagram
+* 📝 Updated getting started
+
 shmdata 1.3.44 (2021-03-08)
 ---------------------------
 This is an official release in the 1.3 stable series.
