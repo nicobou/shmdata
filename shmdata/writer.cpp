@@ -73,6 +73,11 @@ Writer::Writer(const std::string& path,
 bool Writer::copy_to_shm(const void* data, size_t size) {
   bool res = true;
   {
+    if (nullptr == sem_) {
+      log_->warning("semaphore is not initialized");
+      return false;
+    }
+
     if (!(*sem_.get())) {
       log_->warning("semaphore was not correctly initialized");
       return false;
