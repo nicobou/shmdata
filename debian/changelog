@@ -2,6 +2,12 @@ libshmdata (1.3.46-1) focal; urgency=low
 
   * New release for version 1.3.46
 
+ -- Nicolas Bouillot <nbouillot@sat.qc.ca>  Tue, 23 Mar 2021 16:56:56 -0400
+
+libshmdata (1.3.46-1) focal; urgency=low
+
+  * New release for version 1.3.46
+
  -- Nicolas Bouillot <nbouillot@sat.qc.ca>  Mon, 22 Mar 2021 11:52:58 -0400
 
 libshmdata (1.3.34-1) focal; urgency=low
