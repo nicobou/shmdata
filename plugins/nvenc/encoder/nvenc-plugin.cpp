@@ -91,7 +91,7 @@ NVencPlugin::NVencPlugin(quiddity::Config&& conf)
         return true;
       },
       [this]() { return devices_.get(); },
-      "encoder GPU",
+      "Encoder GPU",
       "Selection of the GPU used for encoding",
       devices_);
   pmanage<MPtr(&property::PBag::set_to_current)>(default_preset_id_);
@@ -147,12 +147,12 @@ void NVencPlugin::update_codec() {
   auto get = [this]() { return codecs_.get_current_index(); };
   if (0 == codecs_id_)
     codecs_id_ = pmanage<MPtr(&property::PBag::make_selection<>)>(
-        "codec", set, get, "Codec", "Codec property::Selection<>", codecs_);
+        "codec", set, get, "Codec", "Video codec", codecs_);
   else
     pmanage<MPtr(&property::PBag::replace)>(
         codecs_id_,
         std::make_unique<property::Property<property::Selection<>, property::Selection<>::index_t>>(
-            set, get, "Codec", "Codec property::Selection<>", codecs_, codecs_.size() - 1));
+            set, get, "Codec", "Video codec", codecs_, codecs_.size() - 1));
   update_preset();
   update_profile();
   update_max_width_height();
@@ -184,13 +184,13 @@ void NVencPlugin::update_preset() {
   auto get = [this]() { return presets_.get(); };
   if (0 == presets_id_)
     presets_id_ = pmanage<MPtr(&property::PBag::make_selection<>)>(
-        "preset", set, get, "Preset", "Preset property::Selection<>", presets_);
+        "preset", set, get, "Preset", "Encoding preset", presets_);
   else
     pmanage<MPtr(&property::PBag::replace)>(
         presets_id_,
         std::make_unique<
             property::Property<property::Selection<>, quiddity::property::IndexOrName>>(
-            set, get, "Preset", "Preset property::Selection<>", presets_, presets_.size() - 1));
+            set, get, "Preset", "Encoding preset", presets_, presets_.size() - 1));
 }
 
 void NVencPlugin::update_profile() {
@@ -211,13 +211,13 @@ void NVencPlugin::update_profile() {
   auto get = [this]() { return profiles_.get(); };
   if (0 == profiles_id_)
     profiles_id_ = pmanage<MPtr(&property::PBag::make_selection<>)>(
-        "profile", set, get, "Profile", "Profile property::Selection<>", profiles_);
+        "profile", set, get, "Profile", "Encoding profile", profiles_);
   else
     pmanage<MPtr(&property::PBag::replace)>(
         profiles_id_,
         std::make_unique<
             property::Property<property::Selection<>, quiddity::property::IndexOrName>>(
-            set, get, "Profile", "Profile property::Selection<>", profiles_, profiles_.size() - 1));
+            set, get, "Profile", "Encoding profile", profiles_, profiles_.size() - 1));
 }
 
 void NVencPlugin::update_max_width_height() {

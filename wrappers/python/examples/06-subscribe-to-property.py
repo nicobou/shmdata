@@ -15,19 +15,19 @@ import pyquid
 import time
 import assert_exit_1
 
-# "my_user_data" will be passed to the subscribe method
-my_user_data = 'width user data'
-my_user_data2 = 'height user data'
-my_width = 123
+# "xxx_user_data" will be passed to the subscribe method
+width_user_data = 'width user data'
+height_user_data = 'height user data'
+my_width = 222
 my_height = 123
 num_success = 0
 
 
 def on_property_changed(value, user_data):
-    global num_success, my_user_data, my_user_data2
-    if (user_data == my_user_data):
+    global num_success, width_user_data, height_user_data
+    if (user_data == width_user_data):
         assert value == my_width
-    if (user_data == my_user_data2):
+    if (user_data == height_user_data):
         assert value == my_height
     num_success += 1
     if (num_success == 4):
@@ -46,12 +46,12 @@ assert "width" in pyquid.InfoTree(
     vid.get_info_tree_as_json(".property")).get_key_values('id', False)
 
 # subscribe to the property named "width". Unsubscribe will be called with vid destruction
-assert vid.subscribe("width", on_property_changed, my_user_data)
-assert vid.subscribe("height", on_property_changed, my_user_data2)
+assert vid.subscribe("width", on_property_changed, width_user_data)
+assert vid.subscribe("height", on_property_changed, height_user_data)
 
 # WARNING: do not subscribe using the quid() method of a qrox. In this case subscription  is done on a temporary quid object which cannot hold data required when triggering the callback.
 # The following is wrong and results in on_property_changed not being called back:
-assert qroxvid.quid().subscribe("pattern", on_property_changed, my_user_data)
+assert qroxvid.quid().subscribe("pattern", on_property_changed)
 
 vid.set("height", my_height)
 vid.set("width", my_width)
