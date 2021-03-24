@@ -75,6 +75,8 @@ class ShmDelay : public Quiddity {
 
   bool on_shmdata_connect(const std::string& shmpath);
   bool on_shmdata_disconnect(const std::string& shmpath);
+  bool on_shmdata_disconnect_all();
+  bool can_sink_caps(const std::string& str_caps);
 
   ShmBuffer delay_content_{1 << 10};   //!< Size limit for the buffer (~1GB)
   shmdata::Connector shmcntr_{nullptr};  //!< Shmdata connector for ltc and shmdata inputs
@@ -86,9 +88,13 @@ class ShmDelay : public Quiddity {
   double last_timestamp_{0};  //!< Timestamp of the last written shmdata.
 
   // Properties
-  property::prop_id_t time_delay_id_{0};
   double time_delay_{0};  //!< Delay in milliseconds.
+  property::prop_id_t time_delay_id_{};
   unsigned int buffer_size_{1 << 10};
+  property::prop_id_t buffer_size_id_{};
+  property::Selection<> restrict_caps_{{"None", "Audio only", "Video only", "Audio and video only"},
+                                       0};
+  property::prop_id_t restrict_caps_id_{};
 };
 
 }  // namespace quiddities

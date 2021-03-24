@@ -32,46 +32,57 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmDelay,
                                      "Jérémie Soria");
 
 ShmDelay::ShmDelay(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
-  register_writer_suffix("delayed-shm");
-  time_delay_id_ =
-      pmanage<MPtr(&property::PBag::make_double)>("time_delay",
-                                                  [this](const double& val) {
-                                                    time_delay_ = val;
-                                                    return true;
-                                                  },
-                                                  [this]() { return time_delay_; },
-                                                  "Delay in ms",
-                                                  "Delay the input shmdata by a delay in ms",
-                                                  time_delay_,
-                                                  0,
-                                                  60000);
-
-  pmanage<MPtr(&property::PBag::make_unsigned_int)>(
-      "buffer_size",
-      [this](const unsigned int& val) {
-        buffer_size_ = val;
-        delay_content_.set_buffer_size(buffer_size_);
-        return true;
-      },
-      [this]() { return buffer_size_; },
-      "Maximum physical size of the buffer (in MB)",
-      "Maximum size taken by the data buffer in physical memory in MB",
-      buffer_size_,
-      128,  // Minimum 100 MB in the buffer otherwise it doesn't really make sense
-      8096);
-
+    : Quiddity(std::forward<quiddity::Config>(conf)),
+      shmcntr_(static_cast<Quiddity*>(this)),
+      time_delay_id_(pmanage<MPtr(&property::PBag::make_double)>(
+          "time_delay",
+          [this](const double& val) {
+            time_delay_ = val;
+            return true;
+          },
+          [this]() { return time_delay_; },
+          "Delay in ms",
+          "Delay the input shmdata by a delay in ms",
+          time_delay_,
+          0,
+          60000)),
+      buffer_size_id_(pmanage<MPtr(&property::PBag::make_unsigned_int)>(
+          "buffer_size",
+          [this](const unsigned int& val) {
+            buffer_size_ = val;
+            delay_content_.set_buffer_size(buffer_size_);
+            return true;
+          },
+          [this]() { return buffer_size_; },
+          "Maximum physical size of the buffer (in MB)",
+          "Maximum size taken by the data buffer in physical memory in MB",
+          buffer_size_,
+          128,  // Minimum 100 MB in the buffer otherwise it doesn't really make sense
+          8096)),
+      restrict_caps_id_(pmanage<MPtr(&property::PBag::make_selection<>)>(
+          "restrict_caps",
+          [this](const quiddity::property::IndexOrName& val) {
+            restrict_caps_.select(val);
+            return true;
+          },
+          [this]() { return restrict_caps_.get(); },
+          "Restrict authorized caps",
+          "Input data capabilities must comply with the selected caps type (None means any)",
+          restrict_caps_)) {
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
       [this](const std::string& shmpath) { return this->on_shmdata_disconnect(shmpath); },
-      nullptr,
-      [](const std::string&) { return true; },
+      [this]() { return on_shmdata_disconnect_all(); },
+      [this](const std::string& caps) { return can_sink_caps(caps); },
       2);
+
+  register_writer_suffix("delayed-shm");
 }
 
 bool ShmDelay::on_shmdata_connect(const std::string& shmpath) {
   // Get the value of the delay from a shmdata
-  if (!diff_follower_ && stringutils::ends_with(shmpath, "ltc-diff")) {
+  if (stringutils::ends_with(shmpath, "ltc-diff")) {
+    if (diff_follower_) diff_follower_.reset();
     diff_follower_ = std::make_unique<shmdata::Follower>(
         this,
         shmpath,
@@ -80,76 +91,121 @@ bool ShmDelay::on_shmdata_connect(const std::string& shmpath) {
           pmanage<MPtr(&property::PBag::set<double>)>(time_delay_id_, *static_cast<double*>(data));
         },
         nullptr,
-        nullptr);
+        nullptr,
+        shmdata::Stat::kDefaultUpdateInterval,
+        shmdata::Follower::Direction::reader,
+        true);
     pmanage<MPtr(&property::PBag::disable)>(
         time_delay_id_, "Delay is provided by an ltc-diff shmdata, it cannot be changed manually");
-    return true;
+  } else {
+    // We do not delay using an ltc-diff shmdata.
+    if (shm_follower_) {
+      writing_task_.reset();
+      shmw_.reset();
+      shm_follower_.reset();
+    }
+
+    // Follow the shmdata to delay.
+    shm_follower_ = std::make_unique<shmdata::Follower>(
+        this,
+        shmpath,
+        [this](void* data, size_t data_size) {
+          if (!data_size) return;
+
+          // Push the shmdata in the ShmBuffer with the current timestamp.
+          auto current_time = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                  std::chrono::system_clock::now().time_since_epoch())
+                                  .count();
+          delay_content_.push(ShmContent(static_cast<double>(current_time), data, data_size));
+        },
+        [this](const std::string& str_caps) {
+          GstCaps* caps = gst_caps_from_string(str_caps.c_str());
+          On_scope_exit {
+            if (nullptr != caps) gst_caps_unref(caps);
+          };
+
+          // We are only delaying so the caps will be identical to the received shmdata
+          shmw_ = std::make_unique<shmdata::Writer>(this, make_shmpath("delayed-shm"), 1, str_caps);
+
+          // Task checking if a previously recorded shmdata is a candidate to be written.
+          writing_task_ = std::make_unique<PeriodicTask<std::chrono::microseconds>>(
+              [this]() {
+                auto current_time = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                        std::chrono::system_clock::now().time_since_epoch())
+                                        .count();
+                // Look for the closest shmdata content in time to our target time
+                auto closest = delay_content_.find_closest(current_time - time_delay_);
+
+                if (!closest.data_size_) return;
+
+                // Same frame as before, we do not forward it.
+                if (closest.timestamp_ == last_timestamp_) return;
+
+                // We record the timestamp of the shmdata we are now forwarding.
+                last_timestamp_ = closest.timestamp_;
+
+                shmw_->writer<MPtr(&::shmdata::Writer::copy_to_shm)>(closest.content_.data(),
+                                                                     closest.data_size_);
+                shmw_->bytes_written(closest.data_size_);
+              },
+              std::chrono::microseconds(100));
+        },
+        nullptr,
+        shmdata::Stat::kDefaultUpdateInterval,
+        shmdata::Follower::Direction::reader,
+        true);
   }
-
-  // We do not delay an ltc-diff shmdata.
-  if (shm_follower_ || stringutils::ends_with(shmpath, "ltc-diff")) return false;
-
-  // Follow the shmdata to delay.
-  shm_follower_ = std::make_unique<shmdata::Follower>(
-      this,
-      shmpath,
-      [this](void* data, size_t data_size) {
-        if (!data_size) return;
-
-        // Push the shmdata in the ShmBuffer with the current timestamp.
-        auto current_time = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                std::chrono::system_clock::now().time_since_epoch())
-                                .count();
-        delay_content_.push(ShmContent(static_cast<double>(current_time), data, data_size));
-      },
-      [this](const std::string& str_caps) {
-        GstCaps* caps = gst_caps_from_string(str_caps.c_str());
-        On_scope_exit {
-          if (nullptr != caps) gst_caps_unref(caps);
-        };
-
-        // We are only delaying so the caps will be identical to the received shmdata
-        shmw_ = std::make_unique<shmdata::Writer>(this, make_shmpath("delayed-shm"), 1, str_caps);
-
-        // Task checking if a previously recorded shmdata is a candidate to be written.
-        writing_task_ = std::make_unique<PeriodicTask<std::chrono::microseconds>>(
-            [this]() {
-              auto current_time = std::chrono::duration_cast<std::chrono::milliseconds>(
-                                      std::chrono::system_clock::now().time_since_epoch())
-                                      .count();
-              // Look for the closest shmdata content in time to our target time
-              auto closest = delay_content_.find_closest(current_time - time_delay_);
-
-              if (!closest.data_size_) return;
-
-              // Same frame as before, we do not forward it.
-              if (closest.timestamp_ == last_timestamp_) return;
-
-              // We record the timestamp of the shmdata we are now forwarding.
-              last_timestamp_ = closest.timestamp_;
-
-              shmw_->writer<MPtr(&::shmdata::Writer::copy_to_shm)>(closest.content_.data(),
-                                                                   closest.data_size_);
-              shmw_->bytes_written(closest.data_size_);
-            },
-            std::chrono::microseconds(100));
-      },
-      nullptr);
 
   return true;
 }
 
 bool ShmDelay::on_shmdata_disconnect(const std::string& shmpath) {
   if (stringutils::ends_with(shmpath, "ltc-diff")) {
-    diff_follower_.reset(nullptr);
+    diff_follower_.reset();
     pmanage<MPtr(&property::PBag::enable)>(time_delay_id_);
   } else {
-    writing_task_.reset(nullptr);
-    shmw_.reset(nullptr);
-    shm_follower_.reset(nullptr);
+    writing_task_.reset();
+    shmw_.reset();
+    shm_follower_.reset();
   }
 
   return true;
+}
+
+bool ShmDelay::on_shmdata_disconnect_all() {
+  diff_follower_.reset();
+  writing_task_.reset();
+  shmw_.reset();
+  shm_follower_.reset();
+  pmanage<MPtr(&property::PBag::enable)>(time_delay_id_);
+  return true;
+}
+
+bool ShmDelay::can_sink_caps(const std::string& str_caps) {
+  auto index = restrict_caps_.get_current_index();
+  // by default, it accepts all caps if `restrict_caps_` is None
+  if (index == 0) return true;
+
+  GstCaps* user_caps = gst_caps_from_string(str_caps.c_str());
+  GstCaps* audio_caps = gst_caps_from_string("audio/x-raw");
+  GstCaps* video_caps = gst_caps_from_string("video/x-raw");
+  On_scope_exit {
+    if (nullptr != user_caps) gst_caps_unref(user_caps);
+    if (nullptr != audio_caps) gst_caps_unref(audio_caps);
+    if (nullptr != video_caps) gst_caps_unref(video_caps);
+  };
+
+  bool result = false;
+  if (index == 1) {
+    result = gst_caps_can_intersect(user_caps, audio_caps);
+  } else if (index == 2) {
+    result = gst_caps_can_intersect(user_caps, video_caps);
+  } else {
+    result = (gst_caps_can_intersect(user_caps, audio_caps) ||
+              gst_caps_can_intersect(user_caps, video_caps));
+  }
+
+  return result;
 }
 
 ShmDelay::ShmContent::ShmContent(double timestamp, void* content, size_t data_size)
