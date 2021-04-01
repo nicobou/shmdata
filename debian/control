@@ -30,6 +30,9 @@ Build-Depends:
  libxinerama-dev,
  libxrandr-dev,
  libxxf86vm-dev,
+ nvidia-cuda-dev,
+ nvidia-kernel-source-460,
+ libnvidia-encode-460,
  python3-dev,
  python3-pip,
  swh-plugins,
@@ -58,6 +61,28 @@ Description: Low latency streaming and integration environment
  through POSIX shared memory. Note shmdata has GStreamer elements.
  .
  This package contains the binary shared libraries.
+
+Package: switcher-plugins-nvidia
+Section: libs
+Architecture: any
+Multi-Arch: same
+Pre-Depends: ${misc:Pre-Depends}
+Depends: switcher (= ${binary:Version}), ${misc:Depends}, ${shlibs:Depends}
+Description: Low latency streaming and integration environment
+ Switcher is an integration environment, able to interoperate with other
+ software and protocols. Switcher provides low latency streaming of multichannel
+ audio, video and data through IP networks.
+ Switcher provides managing of several instances of services (called
+ Quiddities). A Quiddity can be created and removed dynamically and can be
+ controlled through property get/set as well as method invocations and
+ information tree monitoring. Switcher provides introspection mechanisms to
+ help write higher level software written in python3 or C++. Switcher can save
+ and load the state of quiddities. 
+ Most Quiddities expose and/or consume live streams of data frames using the
+ shmdata, a library for sharing data streams among processes with zero copy
+ through POSIX shared memory. Note shmdata has GStreamer elements.
+ .
+ This package contains plugins depending on Nvidia hardware.
 
 Package: python3-switcher
 Section: libs

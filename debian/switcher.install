@@ -2,4 +2,3 @@
 usr/lib/*.so*
 usr/bin/*
 usr/switcher*/plugins/*.so
-usr/share/switcher/fonts/*.ttf
