@@ -2,6 +2,12 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.3.48 (2021-04-07)
+---------------------------
+This is an official release in the 1.3 stable series.
+
+* 🐛 Fix nullptr segfault in copy_to_shm
+
 shmdata 1.3.46 (2021-03-22)
 ---------------------------
 This is an official release in the 1.3 stable series.
