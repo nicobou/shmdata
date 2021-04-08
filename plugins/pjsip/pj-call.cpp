@@ -613,22 +613,22 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
     auto media_label = PJCallUtils::get_media_label(media);
 
     auto rtp_shmpath = SIPPlugin::this_->make_shmpath("rtp");
+
     // ensure rtp_shmpath is unique (can happen in case of label collision) and add suffix if necessary
-    unsigned int j = 1;
-    std::string rtp_shmpath_suffix;
-    while (call->rtp_writers_.end() !=
-           std::find_if(call->rtp_writers_.cbegin(),
-                        call->rtp_writers_.cend(),
-                        [testpath = rtp_shmpath + rtp_shmpath_suffix](
-                            const std::unique_ptr<shmdata::Writer>& writer) {
-                          return writer->get_path() == testpath;
-                        })) {
-      ++j;
-      rtp_shmpath_suffix = std::to_string(j);
+    unsigned int j = 0;
+    for (const auto& in_call : SIPPlugin::this_->sip_calls_->incoming_call_) {
+      while (in_call->rtp_writers_.end() !=
+             std::find_if(in_call->rtp_writers_.cbegin(),
+                          in_call->rtp_writers_.cend(),
+                          [rtp_shmpath, j](const std::unique_ptr<shmdata::Writer>& writer) {
+                            return writer->get_path() == rtp_shmpath + '-' + std::to_string(j);
+                          })) {
+        ++j;
+      }
     }
-    if (!rtp_shmpath_suffix.empty()) {
-      rtp_shmpath = rtp_shmpath + '-' + rtp_shmpath_suffix;
-    }
+    auto rtp_shmpath_suffix = std::to_string(j);
+    rtp_shmpath = rtp_shmpath + '-' + rtp_shmpath_suffix;
+
     // get caps
     auto rtp_caps = PJCallUtils::get_rtp_caps(media);
     if (rtp_caps.empty()) rtp_caps = "unknown_data_type";
@@ -660,7 +660,7 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
         call->recv_rtp_session_.get(),
         rtp_shmpath,
         [=](GstElement* el, const std::string& media_type, const std::string&) {
-          auto shmpath = SIPPlugin::this_->make_shmpath(media_type) + '-' + std::to_string(i);
+          auto shmpath = SIPPlugin::this_->make_shmpath(media_type) + '-' + rtp_shmpath_suffix;
           auto extra_caps = SIPPlugin::this_->get_quiddity_caps();
           g_object_set(G_OBJECT(el), "socket-path", shmpath.c_str(), "extra-caps-properties", extra_caps.c_str(), nullptr);
           std::lock_guard<std::mutex> lock(call->shm_subs_mtx_);
