@@ -45,33 +45,27 @@ assert 'Webrtc' == sw.name()
 #         ------videoquid-------
 
 # create a videotest quiddity
-vidqrox = sw.create(type='videotestsrc', name='vid')
-assert None != vidqrox
-vid = vidqrox.quid()
+vid = sw.create(type='videotestsrc', name='vid')
+assert None != vid
 
 # create an audiotest quiddity
-audioqrox = sw.create(type='audiotestsrc', name='audio')
-assert None != audioqrox
-audio = audioqrox.quid()
+audio = sw.create(type='audiotestsrc', name='audio')
+assert None != audio
 
 # create a webrtc quiddity that manages a webrtcclient
-webqrox1 = sw.create(type='webrtc', name='webrtcclient1')
-assert None != webqrox1
-web1 = webqrox1.quid()
+web1 = sw.create(type='webrtc', name='webrtcclient1')
+assert None != web1
 
 # create a second webrtc quiddity
-webqrox2 = sw.create(type='webrtc', name='webrtcclient2')
-assert None != webqrox2
-web2 = webqrox2.quid()
+web2 = sw.create(type='webrtc', name='webrtcclient2')
+assert None != web2
 
 # create dummysinks for each webrtcclients
-dummyqrox1 = sw.create(type='dummysink', name='dummy1')
-assert None != dummyqrox1
-dummy1 = dummyqrox1.quid()
+dummy1 = sw.create(type='dummysink', name='dummy1')
+assert None != dummy1
 
-dummyqrox2 = sw.create(type='dummysink', name='dummy2')
-assert None != dummyqrox2
-dummy2 = dummyqrox2.quid()
+dummy2 = sw.create(type='dummysink', name='dummy2')
+assert None != dummy2
 
 # connect audio and video through their shmpaths to the webrtc quids
 vidshmpath = vid.make_shmpath('video')
@@ -84,8 +78,8 @@ assert web2.invoke('connect', [vidshmpath])
 assert web2.invoke('connect', [audioshmpath])
 
 # connect the dummysink to the webrtc quids
-assert dummy1.invoke('connect-quid', ['webrtcclient1', 'webrtc'])
-assert dummy2.invoke('connect-quid', ['webrtcclient2', 'webrtc'])
+assert dummy1.invoke('connect-quid', [web1.id(), 'webrtc'])
+assert dummy2.invoke('connect-quid', [web2.id(), 'webrtc'])
 
 # subscribe to the 'frame-received' property of the dummysinks
 assert dummy1.subscribe('frame-received', on_frame_received, vid)
@@ -103,6 +97,8 @@ assert web1.set('room', 'switcher-room')
 assert web2.set('room', 'switcher-room')
 
 # 3. start the webrtc quid
+
+
 def launch_server():
     @dataclass
     class Options:
@@ -120,10 +116,12 @@ def launch_server():
         server.run()
         loop.run_forever()
 
+
 # to lauch the server, we need to generate a certificate first
 cert = Generator()
 file_dir = os.path.dirname(os.path.realpath(__file__))
-cert.generate_certificate(key_file=os.path.join(file_dir, 'key.pem'), cert_file=os.path.join(file_dir, 'cert.pem'))
+cert.generate_certificate(key_file=os.path.join(file_dir, 'key.pem'),
+                          cert_file=os.path.join(file_dir, 'cert.pem'))
 
 # launch the server
 server_process = Process(target=launch_server)
@@ -150,14 +148,14 @@ dummy1.invoke('disconnect', ['webrtcclient1'])
 dummy2.invoke('disconnect', ['webrtcclient2'])
 
 # remove
-sw.remove(vidqrox.id())
-sw.remove(audioqrox.id())
+sw.remove(vid.id())
+sw.remove(audio.id())
 
-sw.remove(webqrox1.id())
-sw.remove(webqrox2.id())
+sw.remove(web1.id())
+sw.remove(web2.id())
 
-sw.remove(dummyqrox1.id())
-sw.remove(dummyqrox2.id())
+sw.remove(dummy1.id())
+sw.remove(dummy2.id())
 
 server_process.terminate()
 

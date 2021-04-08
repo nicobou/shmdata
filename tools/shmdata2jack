@@ -64,7 +64,7 @@ def main() -> None:
         print('Connecting to jack server ' + jack_server + ' as client named ' + jack_name)
     jackquid = sw.create('jacksink',
                          jack_name,
-                         InfoTree('{ "server_name" : "' + jack_server + '" }')).quid()
+                         InfoTree('{ "server_name" : "' + jack_server + '" }'))
     if args.connect_to:
         jackquid.set('connect_to', args.connect_to)
     if args.no_auto_connect:

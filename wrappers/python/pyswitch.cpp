@@ -18,11 +18,13 @@
  */
 
 #include "./pyswitch.hpp"
+
 #include <switcher/infotree/information-tree.hpp>
 #include <switcher/logger/console.hpp>
 #include <switcher/logger/silent.hpp>
+
 #include "./pyinfotree.hpp"
-#include "./pyqrox.hpp"
+#include "./pyquiddity.hpp"
 
 PyObject* pySwitch::Switcher_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /*kwds*/) {
   pySwitchObject* self;
@@ -134,7 +136,7 @@ PyDoc_STRVAR(pyswitch_create_doc,
              "Create a quiddity. The name and the config are optional."
              "The config (an InfoTree) overrides the switcher configuration file  \n"
              "Arguments: (type, name, config)\n"
-             "Returns: a handle to the created quiddity (pyquid.Qrox), or None\n");
+             "Returns: the created quiddity object (pyquid.Quiddity), or None\n");
 
 PyObject* pySwitch::create(pySwitchObject* self, PyObject* args, PyObject* kwds) {
   const char* type = nullptr;
@@ -159,11 +161,11 @@ PyObject* pySwitch::create(pySwitchObject* self, PyObject* args, PyObject* kwds)
     Py_INCREF(Py_None);
     return Py_None;
   }
-  auto qrox_capsule = PyCapsule_New(static_cast<void*>(&qrox), nullptr, nullptr);
-  PyObject* argList = Py_BuildValue("(O)", qrox_capsule);
-  PyObject* obj = PyObject_CallObject((PyObject*)&pyQrox::pyType, argList);
+  auto quid_capsule = PyCapsule_New(static_cast<void*>(qrox.get()), nullptr, nullptr);
+  PyObject* argList = Py_BuildValue("(O)", quid_capsule);
+  PyObject* obj = PyObject_CallObject((PyObject*)&pyQuiddity::pyType, argList);
   Py_XDECREF(argList);
-  Py_XDECREF(qrox_capsule);
+  Py_XDECREF(quid_capsule);
   return obj;
 }
 
@@ -187,37 +189,12 @@ PyObject* pySwitch::remove(pySwitchObject* self, PyObject* args, PyObject* kwds)
   return Py_True;
 }
 
-PyDoc_STRVAR(pyswitch_get_qrox_from_name_doc,
-             "Get a Qrox of an existing quiddity (from its name).\n"
-             "Arguments: (name)\n"
-             "Returns: a handle to the quiddity (pyquid.Qrox), or None.\n");
-
-PyObject* pySwitch::get_qrox_from_name(pySwitchObject* self, PyObject* args, PyObject* kwds) {
-  const char* name = nullptr;
-  static char* kwlist[] = {(char*)"name", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &name)) {
-    Py_INCREF(Py_None);
-    return Py_None;
-  }
-  auto qrox = self->switcher->quids<MPtr(&quiddity::Container::get_qrox_from_name)>(name);
-  if (!qrox) {
-    Py_INCREF(Py_None);
-    return Py_None;
-  }
-  auto qrox_capsule = PyCapsule_New(static_cast<void*>(&qrox), nullptr, nullptr);
-  PyObject* argList = Py_BuildValue("(O)", qrox_capsule);
-  PyObject* obj = PyObject_CallObject((PyObject*)&pyQrox::pyType, argList);
-  Py_XDECREF(argList);
-  Py_XDECREF(qrox_capsule);
-  return obj;
-}
-
-PyDoc_STRVAR(pyswitch_get_qrox_doc,
-             "Get a Qrox of an existing quiddity.\n"
+PyDoc_STRVAR(pyswitch_get_quid_doc,
+             "Get a Quiddty object from its id.\n"
              "Arguments: (id)\n"
-             "Returns: a handle to the quiddity (pyquid.Qrox), or None.\n");
+             "Returns: a Quiddity object (pyquid.Quiddity), or None.\n");
 
-PyObject* pySwitch::get_qrox(pySwitchObject* self, PyObject* args, PyObject* kwds) {
+PyObject* pySwitch::get_quid(pySwitchObject* self, PyObject* args, PyObject* kwds) {
   long int id = 0;
   static char* kwlist[] = {(char*)"id", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "l", kwlist, &id)) {
@@ -229,12 +206,27 @@ PyObject* pySwitch::get_qrox(pySwitchObject* self, PyObject* args, PyObject* kwd
     Py_INCREF(Py_None);
     return Py_None;
   }
-  auto qrox_capsule = PyCapsule_New(static_cast<void*>(&qrox), nullptr, nullptr);
-  PyObject* argList = Py_BuildValue("(O)", qrox_capsule);
-  PyObject* obj = PyObject_CallObject((PyObject*)&pyQrox::pyType, argList);
+  auto quid_capsule = PyCapsule_New(static_cast<void*>(qrox.get()), nullptr, nullptr);
+  PyObject* argList = Py_BuildValue("(O)", quid_capsule);
+  PyObject* obj = PyObject_CallObject((PyObject*)&pyQuiddity::pyType, argList);
   Py_XDECREF(argList);
-  Py_XDECREF(qrox_capsule);
+  Py_XDECREF(quid_capsule);
   return obj;
+}
+
+PyDoc_STRVAR(pyswitch_get_quid_id_doc,
+             "Get a quiddity id from its nickname.\n"
+             "Arguments: nickname\n"
+             "Returns: the id (strictly positive long int)\n");
+
+PyObject* pySwitch::get_quid_id(pySwitchObject* self, PyObject* args, PyObject* kwds) {
+  const char* nickname = nullptr;
+  static char* kwlist[] = {(char*)"nickname", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &nickname)) {
+    Py_INCREF(Py_None);
+    return Py_None;
+  }
+  return PyLong_FromSize_t(self->switcher->quids<MPtr(&quiddity::Container::get_id)>(nickname));
 }
 
 PyDoc_STRVAR(pyswitch_get_state_doc,
@@ -338,15 +330,30 @@ PyObject* pySwitch::class_doc(pySwitchObject* self, PyObject* args, PyObject* kw
 }
 
 PyDoc_STRVAR(pyswitch_list_quids_doc,
-             "Get the list of instanciated quiddities.\n"
+             "Get the nicknames.\n"
              "Arguments: (None)\n"
-             "Returns: A list a of quiddities.\n");
+             "Returns: List of nicknames.\n");
 
 PyObject* pySwitch::list_quids(pySwitchObject* self, PyObject* args, PyObject* kwds) {
-  auto quids = self->switcher->quids<MPtr(&quiddity::Container::get_names)>();
+  auto quids = self->switcher->quids<MPtr(&quiddity::Container::get_nicknames)>();
   PyObject* result = PyList_New(quids.size());
   for (unsigned int i = 0; i < quids.size(); ++i) {
     PyList_SetItem(result, i, Py_BuildValue("s", quids[i].c_str()));
+  }
+  return result;
+}
+
+PyDoc_STRVAR(pyswitch_list_ids_doc,
+             "Get the quiddity ids.\n"
+             "Arguments: (None)\n"
+             "Returns: List of ids.\n");
+
+PyObject* pySwitch::list_ids(pySwitchObject* self, PyObject* args, PyObject* kwds) {
+  auto quids = self->switcher->quids<MPtr(&quiddity::Container::get_ids)>();
+  PyObject* result = PyList_New(quids.size());
+  for (unsigned int i = 0; i < quids.size(); ++i) {
+    // "n" for Py_ssize_t (size_t)
+    PyList_SetItem(result, i, Py_BuildValue("n", quids[i]));
   }
   return result;
 }
@@ -386,7 +393,6 @@ bool pySwitch::subscribe_to_signal(pySwitchObject* self,
                                    PyObject* cb,
                                    PyObject* user_data) {
   auto signalCb = [cb, user_data, self](quiddity::qid_t id) {
-    auto quid_name = self->switcher->quids<MPtr(&quiddity::Container::get_name)>(id);
     bool has_gil = (1 == PyGILState_Check()) ? true : false;
     PyThreadState* m_state = nullptr;
     if (!has_gil) {
@@ -395,9 +401,9 @@ bool pySwitch::subscribe_to_signal(pySwitchObject* self,
     }
     PyObject* arglist;
     if (user_data)
-      arglist = Py_BuildValue("(sO)", (char*)quid_name.c_str(), user_data);
+      arglist = Py_BuildValue("(nO)", id, user_data);
     else
-      arglist = Py_BuildValue("(s)", (char*)quid_name.c_str());
+      arglist = Py_BuildValue("(n)", id);
     PyObject* pyobjresult = PyEval_CallObject(cb, arglist);
     PyObject* pyerr = PyErr_Occurred();
     if (pyerr != nullptr) PyErr_Print();
@@ -519,14 +525,14 @@ PyMethodDef pySwitch::pySwitch_methods[] = {
      pyswitch_load_bundles_doc},
     {"create", (PyCFunction)pySwitch::create, METH_VARARGS | METH_KEYWORDS, pyswitch_create_doc},
     {"remove", (PyCFunction)pySwitch::remove, METH_VARARGS | METH_KEYWORDS, pyswitch_remove_doc},
-    {"get_qrox",
-     (PyCFunction)pySwitch::get_qrox,
+    {"get_quid",
+     (PyCFunction)pySwitch::get_quid,
      METH_VARARGS | METH_KEYWORDS,
-     pyswitch_get_qrox_doc},
-    {"get_qrox_from_name",
-     (PyCFunction)pySwitch::get_qrox_from_name,
+     pyswitch_get_quid_doc},
+    {"get_quid_id",
+     (PyCFunction)pySwitch::get_quid_id,
      METH_VARARGS | METH_KEYWORDS,
-     pyswitch_get_qrox_from_name_doc},
+     pyswitch_get_quid_id_doc},
     {"get_state", (PyCFunction)pySwitch::get_state, METH_NOARGS, pyswitch_get_state_doc},
     {"load_state",
      (PyCFunction)pySwitch::load_state,
@@ -552,6 +558,10 @@ PyMethodDef pySwitch::pySwitch_methods[] = {
      (PyCFunction)pySwitch::list_quids,
      METH_VARARGS | METH_KEYWORDS,
      pyswitch_list_quids_doc},
+    {"list_ids",
+     (PyCFunction)pySwitch::list_ids,
+     METH_VARARGS | METH_KEYWORDS,
+     pyswitch_list_ids_doc},
     {"quids_descr",
      (PyCFunction)pySwitch::quids_descr,
      METH_VARARGS | METH_KEYWORDS,

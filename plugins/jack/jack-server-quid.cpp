@@ -98,7 +98,7 @@ property::prop_id_t JackServerQuid::make_param(const std::string& config_path,
     return pmanage<MPtr(&property::PBag::make_parented_bool)>(
         name,
         parent,
-        [this, config_path](const bool& val) {
+        [this, config_path](const bool val) {
           return config_->branch_set_value(config_path + ".value", val);
         },
         [this, config_path]() {

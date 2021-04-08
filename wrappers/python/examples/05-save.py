@@ -18,13 +18,13 @@ import assert_exit_1
 sw = pyquid.Switcher('save_example', debug=True)
 
 # instantiate and use some quiddities
-winqrox = sw.create(type='glfwin', name='win')
+win = sw.create(type='glfwin', name='win')
 # The following replace the glfwin quiddity by a dummy quiddity if glfwin is not available
-if None == winqrox:
-    winqrox = sw.create(type='dummysink', name='win')
-win = winqrox.quid()
-vid = sw.create('videotestsrc', 'vid').quid()
-assert win.invoke('connect-quid', ['vid', 'video'])
+if None == win:
+    win = sw.create(type='dummysink', name='win')
+
+vid = sw.create('videotestsrc', 'vid')
+assert win.invoke('connect-quid', [vid.id(), 'video'])
 assert win.invoke('disconnect-all')
 
 assert win.invoke('connect', [vid.make_shmpath('video')])
@@ -53,11 +53,11 @@ with open('save.switcher', 'r') as save_file:
 sw2.load_state(pyquid.InfoTree(content))
 
 # check win and vid exist
-assert None != sw.get_qrox_from_name('win')
-assert None != sw.get_qrox_from_name('vid')
+assert 0 != sw.get_quid_id('win')
+assert 0 != sw.get_quid_id('vid')
 
 time.sleep(1)
 
-total_mem = usage.quid().get_info('top.mem.total')
+total_mem = usage.get_info('top.mem.total')
 # system usage is still here
 assert total_mem.isalnum()

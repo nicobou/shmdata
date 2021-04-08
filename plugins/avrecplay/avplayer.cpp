@@ -65,16 +65,17 @@ AVPlayer::AVPlayer(quiddity::Config&& conf)
       "Location of the folder from which the player will read recorded shmdata files",
       playpath_);
 
-  pmanage<MPtr(&property::PBag::make_bool)>("paused",
-                                            [this](const bool& val) {
-                                              pause_ = val;
-                                              gst_pipeline_->play(pause_);
-                                              return true;
-                                            },
-                                            []() { return false; },
-                                            "Paused",
-                                            "Toggle paused status of the stream",
-                                            pause_);
+  pmanage<MPtr(&property::PBag::make_bool)>(
+      "paused",
+      [this](const bool val) {
+        pause_ = val;
+        gst_pipeline_->play(pause_);
+        return true;
+      },
+      []() { return false; },
+      "Paused",
+      "Toggle paused status of the stream",
+      pause_);
 
   std::error_code ec;
   fs::create_directory(AVPlayer::kShmDestPath, ec);

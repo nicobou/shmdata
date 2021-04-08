@@ -292,15 +292,6 @@ PyObject* pyQuiddity::get_info(pyQuiddityObject* self, PyObject* args, PyObject*
   return pyInfoTree::any_to_pyobject(self->quid->tree<MPtr(&InfoTree::branch_get_value)>(path));
 }
 
-PyDoc_STRVAR(pyquiddity_get_name_doc,
-             "Get the quiddity name.\n"
-             "Arguments: none\n"
-             "Returns: the value\n");
-
-PyObject* pyQuiddity::get_name(pyQuiddityObject* self, PyObject*, PyObject*) {
-  return PyUnicode_FromString(self->quid->get_name().c_str());
-}
-
 PyDoc_STRVAR(pyquiddity_get_type_doc,
              "Get the quiddity type as string.\n"
              "Arguments: none\n"
@@ -331,13 +322,22 @@ PyObject* pyQuiddity::set_nickname(pyQuiddityObject* self, PyObject* args, PyObj
   return Py_True;
 }
 
-PyDoc_STRVAR(pyquiddity_get_nickname_doc,
+PyDoc_STRVAR(pyquiddity_nickname_doc,
              "Get the quiddity nickname.\n"
              "Arguments: none\n"
              "Returns: the value\n");
 
-PyObject* pyQuiddity::get_nickname(pyQuiddityObject* self, PyObject*, PyObject*) {
+PyObject* pyQuiddity::nickname(pyQuiddityObject* self, PyObject*, PyObject*) {
   return PyUnicode_FromString(self->quid->get_nickname().c_str());
+}
+
+PyDoc_STRVAR(pyquiddity_id_doc,
+             "Get the quiddity id.\n"
+             "Arguments: none\n"
+             "Returns: the id (strictly positive long int)\n");
+
+PyObject* pyQuiddity::id(pyQuiddityObject* self, PyObject*, PyObject*) {
+  return PyLong_FromSize_t(self->quid->get_id());
 }
 
 bool pyQuiddity::subscribe_to_signal(pyQuiddityObject* self,
@@ -575,10 +575,10 @@ PyObject* pyQuiddity::Quiddity_new(PyTypeObject* type, PyObject* /*args*/, PyObj
 }
 
 int pyQuiddity::Quiddity_init(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
-  PyObject* pyqrox;
+  PyObject* pyquid;
   static char* kwlist[] = {(char*)"quid_c_ptr", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &pyqrox)) return -1;
-  auto* quid = static_cast<Quiddity*>(PyCapsule_GetPointer(pyqrox, nullptr));
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &pyquid)) return -1;
+  auto* quid = static_cast<Quiddity*>(PyCapsule_GetPointer(pyquid, nullptr));
   self->quid = quid;
   self->sig_reg = std::make_unique<sig_registering_t>();
   self->prop_reg = std::make_unique<prop_registering_t>();
@@ -639,10 +639,11 @@ PyMethodDef pyQuiddity::pyQuiddity_methods[] = {
      (PyCFunction)pyQuiddity::get_info,
      METH_VARARGS | METH_KEYWORDS,
      pyquiddity_get_info_doc},
-    {"get_name",
-     (PyCFunction)pyQuiddity::get_name,
+    {"nickname",
+     (PyCFunction)pyQuiddity::nickname,
      METH_VARARGS | METH_KEYWORDS,
-     pyquiddity_get_name_doc},
+     pyquiddity_nickname_doc},
+    {"id", (PyCFunction)pyQuiddity::id, METH_VARARGS | METH_KEYWORDS, pyquiddity_id_doc},
     {"get_type",
      (PyCFunction)pyQuiddity::get_type,
      METH_VARARGS | METH_KEYWORDS,
@@ -651,10 +652,6 @@ PyMethodDef pyQuiddity::pyQuiddity_methods[] = {
      (PyCFunction)pyQuiddity::set_nickname,
      METH_VARARGS | METH_KEYWORDS,
      pyquiddity_set_nickname_doc},
-    {"get_nickname",
-     (PyCFunction)pyQuiddity::get_nickname,
-     METH_VARARGS | METH_KEYWORDS,
-     pyquiddity_get_nickname_doc},
     {"get_info_tree_as_json",
      (PyCFunction)pyQuiddity::get_info_tree_as_json,
      METH_VARARGS | METH_KEYWORDS,

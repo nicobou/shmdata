@@ -113,8 +113,7 @@ def main() -> None:
 
     # create a switcher and a videosnapshot quiddity:
     sw = Switcher('shmshot' + str(os.getpid()), debug=args.debug)
-    shot_qrox = sw.create('videosnapshot', 'shot')
-    shot = shot_qrox.quid()
+    shot = sw.create('videosnapshot', 'shot')
 
     # configure before connect
     if (args.interactive):
@@ -137,22 +136,22 @@ def main() -> None:
             print('sorry, no device found')
             return
         if (args.list_camera):
-            devices = InfoTree(cam.quid().get_info_tree_as_json('.property.device.values'))
+            devices = InfoTree(cam.get_info_tree_as_json('.property.device.values'))
             for id, label in zip(devices.get_key_values('id'), devices.get_key_values('label')):
                 print(str(id) + ': "' + label + '"')
             return
         if(args.capture_device):
-            if(not cam.quid().set("device", args.capture_device)):
+            if(not cam.set("device", args.capture_device)):
                 print('cannot set device ' + args.capture_device)
                 exit(1)
-        cam.quid().set('started', True)
+        cam.set('started', True)
     # end v4l2 device
 
     # connect the snapshot to the video shmdata
     if (args.shmpath):
         shot.invoke('connect', [args.shmpath])
     else:
-        shot.invoke('connect-quid', ['cam', 'video'])
+        shot.invoke('connect-quid', [cam.id(), 'video'])
 
     # non-interactive mode
     if (not args.interactive):
@@ -160,19 +159,19 @@ def main() -> None:
             shot.subscribe("last_image", on_image_exit, shot)
             shot.set('shot', True)
             cv.wait()
-        sw.remove(shot_qrox.id())
+        sw.remove(shot.id())
         sys.exit(0)
 
     # interactive mode video preview (capture from stdin)
     orig_settings = termios.tcgetattr(sys.stdin)
     tty.setcbreak(sys.stdin)
     if (args.video_preview):
-        win = sw.create('glfwin', 'win').quid()
+        win = sw.create('glfwin', 'win')
         win.set('decorated', True)
         if (args.shmpath):
             win.invoke('connect', [args.shmpath])
         else:
-            win.invoke('connect-quid', ['cam', 'video'])
+            win.invoke('connect-quid', [cam.id(), 'video'])
 
     # interactive mode
     shot.subscribe("last_image", print_image_name)

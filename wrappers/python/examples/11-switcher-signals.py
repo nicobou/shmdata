@@ -13,28 +13,35 @@
 import pyquid
 import time
 
-success = False
+on_created_success = False
+on_removed_success = True
+on_created_id = 0
+on_removed_id = 0
 
 
-def on_create_remove_cb(name, user_data):
-    global success
+def on_created_cb(id, user_data):
+    global on_created_id
     assert user_data == my_user_data
-    assert name == my_name
-    # success
-    success = True
+    on_created_id = id
+
+
+def on_removed_cb(id, user_data):
+    global on_removed_id
+    assert user_data == my_user_data
+    on_removed_id = id
 
 
 sw = pyquid.Switcher("switcher-signals", debug=True)
 
 my_user_data = {"test": {"test2": True}}
-my_name = "vid1"
 
 # subscribe to the 'on-quiddity-created' signal
-assert sw.subscribe("on-quiddity-created", on_create_remove_cb, my_user_data)
+assert sw.subscribe("on-quiddity-created", on_created_cb, my_user_data)
 
 # create a quiddity
-qroxvid = sw.create("videotestsrc", my_name)
-assert None != qroxvid
+vid = sw.create("videotestsrc")
+assert None != vid
+assert vid.id() == on_created_id
 
 # wait for the signal to arrive,
 time.sleep(0.5)
@@ -43,14 +50,15 @@ time.sleep(0.5)
 assert sw.unsubscribe("on-quiddity-created")
 
 # create a quiddity (no callback should be fired)
-qroxvid2 = sw.create("videotestsrc", "vid2")
-assert None != qroxvid2
+vid2 = sw.create("videotestsrc")
+assert None != vid2
 
 # subscribe to the 'on-quiddity-removed' signal
-assert sw.subscribe("on-quiddity-removed", on_create_remove_cb, my_user_data)
+assert sw.subscribe("on-quiddity-removed", on_removed_cb, my_user_data)
 
 # remove a quiddity
-assert sw.remove(qroxvid.id())
+assert sw.remove(vid2.id())
+assert vid2.id() == on_removed_id
 
 # wait for the signal to arrive,
 time.sleep(0.5)
@@ -59,8 +67,6 @@ time.sleep(0.5)
 assert sw.unsubscribe("on-quiddity-removed")
 
 # remove a quiddity (no callback should be fired)
-assert sw.remove(qroxvid2.id())
+assert sw.remove(vid.id())
 
-if (not success):
-    exit(1)
 exit(0)

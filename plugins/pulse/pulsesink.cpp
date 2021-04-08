@@ -51,7 +51,7 @@ PulseSink::PulseSink(quiddity::Config&& conf)
                "slave-method",
                0,  // resample
                "client-name",
-               get_name().c_str(),
+               get_nickname().c_str(),
                nullptr);
   shmcntr_.install_connect_method(
       [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },

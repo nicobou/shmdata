@@ -25,6 +25,7 @@
 #define __SWITCHER_QUIDDITY_H__
 
 #include <string.h>
+
 #include <memory>
 #include <string>
 #include <vector>
@@ -38,6 +39,7 @@
 #include "./documentation-registry.hpp"
 #include "./method/mbag.hpp"
 #include "./property/pbag.hpp"
+#include "./quid-id-t.hpp"
 #include "./signal/sbag.hpp"
 
 namespace switcher {
@@ -96,10 +98,9 @@ class Quiddity : public log::Logged, public SafeBoolIdiom {
   virtual void on_loaded();
   bool prop_is_saved(const std::string& prop);
 
-  // instance name
-  std::string get_name() const;
+  // instance identification
+  qid_t get_id() const;
   std::string get_type() const;
-  static std::string string_to_quiddity_name(const std::string& name);
   bool set_nickname(const std::string& nickname);
   std::string get_nickname() const;
 
@@ -174,7 +175,7 @@ class Quiddity : public log::Logged, public SafeBoolIdiom {
   int position_weight_counter_{0};
 
   // naming
-  std::string name_;
+  const qid_t id_;
   std::string nickname_;
   std::string type_;
 

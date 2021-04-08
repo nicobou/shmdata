@@ -89,10 +89,10 @@ class Doc {
 
   template <typename U = bool>
   Doc(bool is_writable,
-                        const std::string& label,
-                        const std::string& description,
-                        const bool& default_value)
-      : spec_(InfoTree::make()), is_valid_([](const bool&) { return true; }) {
+      const std::string& label,
+      const std::string& description,
+      const bool default_value)
+      : spec_(InfoTree::make()), is_valid_([](const bool) { return true; }) {
     spec_->graft("label", InfoTree::make(label));
     spec_->graft("description", InfoTree::make(description));
     spec_->graft("type", InfoTree::make(TypeNameRegistry::get_name<bool>()));

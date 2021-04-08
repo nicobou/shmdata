@@ -274,7 +274,7 @@ int main(int argc, char* argv[]) {
     std::cout << resultlist << std::endl;
   } else if (listquiddities) {
     std::vector<std::string> resultlist;
-    switcher_control.get_quiddity_names(&resultlist);
+    switcher_control.get_quiddity_nicknames(&resultlist);
     for (uint i = 0; i < resultlist.size(); i++) {
       std::cout << resultlist[i] << std::endl;
     }

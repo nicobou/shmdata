@@ -457,7 +457,7 @@ void NVencPlugin::on_shmreader_server_connected(const std::string& data_descr) {
           ", width=(int)" + std::to_string(width) + ", height=(int)" + std::to_string(height) +
           ", pixel-aspect-ratio=(fraction)1/1, framerate=(fraction)" + std::to_string(frameNum) +
           "/" + std::to_string(frameDen) + ", switcher-name=(string)" + get_manager_name() +
-          ", quiddity-id=(int)" + std::to_string(qcontainer_->get_id(get_name()))));
+          ", quiddity-id=(int)" + std::to_string(qcontainer_->get_id(get_nickname()))));
 }
 
 }  // namespace quiddities
