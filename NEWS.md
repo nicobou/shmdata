@@ -2,6 +2,12 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 2.1.38 (2021-04-08)
+---------------------------
+This is an official release in the 2.1 stable series.
+
+* 🐛 Fix shmpath collision in PJSIP
+
 switcher 2.1.36 (2021-03-23)
 ---------------------------
 This is an official release in the 2.1 stable series.
