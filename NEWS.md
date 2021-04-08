@@ -2,6 +2,19 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 2.2.0 (2021-04-08)
+---------------------------
+This is an official release in the 2.2 stable series.
+
+Breaking changes, API refactoring:
+* 💥 pyswitch on-quiddity-created and on-quiddity-removed callbacks give quiddity id instead of quiddity name
+* 💥 removed pyqrox, pyswitch creates now directly a pyquiddity
+* 💥 removed get_qrox_from_nickname
+* 💥 get_name moved to get_id (Quiddity class), get_name moved to get_nickname and get_qrox_from_name moved to get_qrox_from_nickname (python)
+
+Improvement:
+* ⚡️ improved use of reference and const
+
 switcher 2.1.38 (2021-04-08)
 ---------------------------
 This is an official release in the 2.1 stable series.

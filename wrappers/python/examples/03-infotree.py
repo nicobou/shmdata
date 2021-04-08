@@ -26,7 +26,7 @@ import assert_exit_1
 # first create a quiddity and get a reference to its internal user data tree. Note this
 # user data tree is available for each type of quiddity.
 sw = pyquid.Switcher('infotree', debug=True)
-emptyquid = sw.create('emptyquid').quid()
+emptyquid = sw.create('emptyquid')
 utree = emptyquid.get_user_tree()
 assert utree.empty()
 

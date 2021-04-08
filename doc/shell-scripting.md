@@ -13,15 +13,15 @@ switcher -d
 Then you can send commands to the server using the command line tool switcher-ctrl. The following commands will create a videotestsrc and connect its Shmdata into a video window:
 ```
 # create the quiddities
-switcher-ctrl -C videotestsrc vid
+VIDID=$(switcher-ctrl -C videotestsrc vid)
 switcher-ctrl -C glfwin win
 # start the video with the "started" property set to true (will activate the video Shmdata)
 switcher-ctrl -s vid started true
 # "connect" is a method, it needs to be invoked
-switcher-ctrl -i win connect-quid vid video
+switcher-ctrl -i win connect-quid $VIDID video
 
 # change the video pattern :
-switcher-ctrl -s vid pattern 2
+switcher-ctrl -s vid pattern 18
 switcher-ctrl -s vid pattern "Checkers 1px"
 ```
 

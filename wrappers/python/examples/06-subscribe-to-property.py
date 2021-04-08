@@ -37,9 +37,8 @@ def on_property_changed(value, user_data):
 sw = pyquid.Switcher("prop-sub", debug=True)
 
 # create a quiddity
-qroxvid = sw.create("videotestsrc", "vid")
-assert None != qroxvid
-vid = qroxvid.quid()
+vid = sw.create("videotestsrc", "vid")
+assert None != vid
 
 # check if the "width" property is available with this quiddity
 assert "width" in pyquid.InfoTree(
@@ -48,10 +47,6 @@ assert "width" in pyquid.InfoTree(
 # subscribe to the property named "width". Unsubscribe will be called with vid destruction
 assert vid.subscribe("width", on_property_changed, width_user_data)
 assert vid.subscribe("height", on_property_changed, height_user_data)
-
-# WARNING: do not subscribe using the quid() method of a qrox. In this case subscription  is done on a temporary quid object which cannot hold data required when triggering the callback.
-# The following is wrong and results in on_property_changed not being called back:
-assert qroxvid.quid().subscribe("pattern", on_property_changed)
 
 vid.set("height", my_height)
 vid.set("width", my_width)

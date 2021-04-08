@@ -22,7 +22,6 @@ if (WITH_PYTHON)
         pyinfotree.cpp
         pyquid.cpp
         pyquiddity.cpp
-        pyqrox.cpp
         pyswitch.cpp
         )
     set_target_properties(pyquid PROPERTIES PREFIX "")

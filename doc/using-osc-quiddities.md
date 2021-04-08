@@ -43,10 +43,10 @@ Then you should have seen the frame displayed by the sdflow command.
 (This assumes OSC to Shmdata is still running.)
 
 ```
-switcher-ctrl -C OSCsink OSCsender
+OSCSINK_ID=$(switcher-ctrl -C OSCsink OSCsender)
 switcher-ctrl -s OSCsender port 2397
 switcher-ctrl -s OSCsender host localhost
-switcher-ctrl -i OSCsender connect-quid OSCreceiver osc
+switcher-ctrl -i OSCsender connect-quid $OSCSINK_ID osc
 ```
 
 Run an OSC receiver using liblo command line tools:

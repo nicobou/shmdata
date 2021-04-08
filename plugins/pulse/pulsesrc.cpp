@@ -59,7 +59,7 @@ PulseSrc::PulseSrc(quiddity::Config&& conf)
     return;
   }
   shmpath_ = make_shmpath("audio");
-  g_object_set(G_OBJECT(pulsesrc_.get_raw()), "client-name", get_name().c_str(), nullptr);
+  g_object_set(G_OBJECT(pulsesrc_.get_raw()), "client-name", get_nickname().c_str(), nullptr);
   g_object_set(G_OBJECT(shmsink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
 
   auto extra_caps = get_quiddity_caps();

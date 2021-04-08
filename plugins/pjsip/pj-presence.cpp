@@ -170,7 +170,7 @@ PJPresence::PJPresence() {
 
   SIPPlugin::this_->pmanage<MPtr(&property::PBag::make_bool)>(
       "lower-case-accounts",
-      [this](const bool& val) {
+      [this](const bool val) {
         lower_case_accounts_ = val;
         return true;
       },

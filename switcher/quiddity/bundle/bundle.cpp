@@ -38,7 +38,7 @@ Bundle::Bundle(quiddity::Config&& conf)
     : Quiddity(std::forward<quiddity::Config>(conf)),
       conf_(conf),
       shmcntr_(static_cast<Quiddity*>(this)),
-      manager_(Switcher::make_switcher<log::Forwarder>(conf_.name_, conf_.log_)) {
+      manager_(Switcher::make_switcher<log::Forwarder>(conf_.nickname_, conf_.log_)) {
   for (auto& it : qcontainer_->get_switcher()->qfactory_.get_plugin_dirs()) {
     manager_->qfactory_.scan_dir(it);
   }
@@ -54,7 +54,7 @@ Bundle::Bundle(quiddity::Config&& conf)
   pipeline_ = config<MPtr(&InfoTree::branch_get_value)>("pipeline").copy_as<std::string>();
   auto spec = bundle::DescriptionParser(pipeline_, std::vector<std::string>());
   if (!spec) {
-    warning("% : error parsing the pipeline (%)", get_name(), spec.get_parsing_error());
+    warning("% : error parsing the pipeline (%)", get_nickname(), spec.get_parsing_error());
     is_valid_ = false;
     return;
   }
@@ -171,8 +171,8 @@ bool Bundle::make_quiddities(const std::vector<bundle::quiddity_spec_t>& quids) 
     quiddity_removal_cb_ids_.push_back(
         manager_->qcontainer_->register_removal_cb([this](quiddity::qid_t id) {
           debug("The bundle % was destroyed because one of its quiddities (%) was destroyed",
-                name_,
-                manager_->qcontainer_->get_name(id));
+                nickname_,
+                manager_->qcontainer_->get_nickname(id));
           // We only self destruct it once so we unregister all the removal callbacks.
           manager_->qcontainer_->reset_create_remove_cb();
           self_destruct();
@@ -311,7 +311,7 @@ void Bundle::on_tree_pruned(const std::string& key, void* user_data) {
             "BUG removing property (%) deleted from a quiddity (%) in a bundle (%)",
             prop_name,
             context->quid_name_,
-            context->self_->get_name());
+            context->self_->get_nickname());
       }
     }
     static std::regex prop_rename("\\.?property\\.");
@@ -402,7 +402,7 @@ std::string Bundle::make_shmpath(const std::string& suffix) const {
   if (exposed_writer_quids_.empty()) {
     warning("bundle cannot provide shmpath since no shmdata writer is exposed (suffix % bundle %)",
             suffix,
-            get_name());
+            get_nickname());
     return "";
   }
   for (const auto& it : exposed_writer_quids_) {
@@ -412,7 +412,7 @@ std::string Bundle::make_shmpath(const std::string& suffix) const {
     if (writer_regex.empty()) continue;
     if (std::regex_match(suffix, std::regex(writer_regex))) return quid->make_shmpath(suffix);
   }
-  warning("no shmpath found for suffix % (bundle %)", suffix, get_name());
+  warning("no shmpath found for suffix % (bundle %)", suffix, get_nickname());
   return "";
 }
 }  // namespace bundle

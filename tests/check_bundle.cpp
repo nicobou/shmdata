@@ -87,9 +87,9 @@ int main() {
                }));
 
     assert(dummy->meth<MPtr(
-               &quiddity::method::MBag::invoke<std::function<bool(std::string, std::string)>>)>(
+               &quiddity::method::MBag::invoke<std::function<bool(quiddity::qid_t, std::string)>>)>(
         dummy->meth<MPtr(&quiddity::method::MBag::get_id)>("connect-quid"),
-        std::make_tuple("src", "video-encoded")));
+        std::make_tuple(srcqrox.get_id(), "video-encoded")));
 
     wait_until_success();
 

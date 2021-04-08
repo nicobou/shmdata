@@ -33,8 +33,8 @@ async def make_switcher_scenario(sw: pyquid.Switcher) -> None:
     now = time.monotonic()
     while (time.monotonic() < now + 4):
         await asyncio.sleep(0.001)
-        for name in sw.list_quids():
-            sw.get_qrox_from_name(name).quid().get_info_tree_as_json()
+        for id in sw.list_idss():
+            sw.get_quid(id).get_info_tree_as_json()
 
 
 def on_tree(key: str, quid: pyquid.Quiddity) -> None:
@@ -45,16 +45,16 @@ async def main():
     sw = pyquid.Switcher('quid-info-tree-stress', debug=True)
 
     for i in range(1, 20):
-        vquids.append(sw.create('videotestsrc', 'vid' + str(i)).quid())
+        vquids.append(sw.create('videotestsrc', 'vid' + str(i)))
         vquids[-1].subscribe('on-tree-grafted', on_tree, vquids[-1])
         vquids[-1].set('started', True)
-        vquids.append(sw.create('dummysink', 'vsink' + str(i)).quid())
+        vquids.append(sw.create('dummysink', 'vsink' + str(i)))
         vquids[-1].subscribe('on-tree-grafted', on_tree, vquids[-1])
-        vquids[-1].invoke('connect-quid', ['vid' + str(i), 'video'])
-        aquids.append(sw.create('audiotestsrc', 'aud' + str(i)).quid())
+        vquids[-1].invoke('connect-quid', [sw.get_quid_id('vid' + str(i)), 'video'])
+        aquids.append(sw.create('audiotestsrc', 'aud' + str(i)))
         aquids[-1].set('started', True)
-        aquids.append(sw.create('dummysink', 'asink' + str(i)).quid())
-        aquids[-1].invoke('connect-quid', ['vid' + str(i), 'video'])
+        aquids.append(sw.create('dummysink', 'asink' + str(i)))
+        aquids[-1].invoke('connect-quid', [sw.get_quid_id('vid' + str(i)), 'video'])
 
     for q in aquids:
         q.subscribe('on-tree-grafted', on_tree, q)

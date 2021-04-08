@@ -49,14 +49,14 @@ std::string Switcher::get_switcher_caps() const {
 
 void Switcher::reset_state(bool remove_created_quiddities) {
   if (remove_created_quiddities) {
-    for (auto& quid : qcontainer_->get_names()) {
+    for (auto& quid : qcontainer_->get_ids()) {
       if (quiddities_at_reset_.cend() ==
           std::find(quiddities_at_reset_.cbegin(), quiddities_at_reset_.cend(), quid)) {
-        qcontainer_->remove(qcontainer_->get_id(quid));
+        qcontainer_->remove(quid);
       }
     }
   }
-  quiddities_at_reset_ = qcontainer_->get_names();
+  quiddities_at_reset_ = qcontainer_->get_ids();
 }
 
 bool Switcher::load_state(InfoTree* state) {
@@ -203,37 +203,35 @@ bool Switcher::load_state(InfoTree* state) {
 }
 
 InfoTree::ptr Switcher::get_state() const {
-  auto quiddities = qcontainer_->get_names();
+  auto quiddities = qcontainer_->get_ids();
   InfoTree::ptr tree = InfoTree::make();
 
   // saving per-quiddity information
-  for (auto& quid_name : quiddities) {
+  for (auto& quid_id : quiddities) {
+    auto nick = qcontainer_->get_nickname(quid_id);
     // saving custom tree if some is provided
-    auto custom_tree = qcontainer_->get_quiddity(qcontainer_->get_id(quid_name))->on_saving();
+    auto custom_tree = qcontainer_->get_quiddity(quid_id)->on_saving();
     if (custom_tree && !custom_tree->empty())
-      tree->graft(".custom_states." + quid_name, std::move(custom_tree));
+      tree->graft(".custom_states." + nick, std::move(custom_tree));
 
     // name and class
     if (quiddities_at_reset_.cend() ==
-        std::find(quiddities_at_reset_.cbegin(), quiddities_at_reset_.cend(), quid_name)) {
-      tree->graft(
-          ".quiddities." + quid_name,
-          InfoTree::make(qcontainer_->get_quiddity(qcontainer_->get_id(quid_name))->get_type()));
+        std::find(quiddities_at_reset_.cbegin(), quiddities_at_reset_.cend(), quid_id)) {
+      tree->graft(".quiddities." + nick,
+                  InfoTree::make(qcontainer_->get_quiddity(quid_id)->get_type()));
     }
 
     // nicknames
     if (quiddities_at_reset_.cend() ==
-        std::find(quiddities_at_reset_.cbegin(), quiddities_at_reset_.cend(), quid_name)) {
-      tree->graft(".nicknames." + quid_name,
-                  InfoTree::make(
-                      qcontainer_->get_quiddity(qcontainer_->get_id(quid_name))->get_nickname()));
+        std::find(quiddities_at_reset_.cbegin(), quiddities_at_reset_.cend(), quid_id)) {
+      tree->graft(".nicknames." + nick, InfoTree::make(nick));
     }
 
     // user data
-    auto quid = qcontainer_->get_quiddity(qcontainer_->get_id(quid_name));
+    auto quid = qcontainer_->get_quiddity(quid_id);
     auto quid_user_data_tree = quid->user_data<MPtr(&InfoTree::get_tree)>(".");
     if (!quid_user_data_tree->empty()) {
-      tree->graft(".userdata." + quid_name, quid_user_data_tree);
+      tree->graft(".userdata." + nick, quid_user_data_tree);
     }
 
     // writable property values
@@ -246,7 +244,7 @@ InfoTree::ptr Switcher::get_state() const {
         continue;
       // Don't save properties with saving disabled.
       if (!quid->prop_is_saved(prop)) continue;
-      tree->graft(".properties." + quid_name + "." + prop,
+      tree->graft(".properties." + nick + "." + prop,
                   InfoTree::make(quid->tree<MPtr(&InfoTree::branch_get_value)>(
                       std::string("property.") + prop + ".value")));
     }
@@ -261,19 +259,19 @@ InfoTree::ptr Switcher::get_state() const {
       auto writer_info =
           quid->tree<MPtr(&InfoTree::branch_get_copy)>("shmdata.reader." + reader + ".writer");
       if (writer_info) {
-        tree->graft(".readers." + quid_name + ".shm_from_quid.reader_" + std::to_string(++nb),
+        tree->graft(".readers." + nick + ".shm_from_quid.reader_" + std::to_string(++nb),
                     writer_info);
       } else {
-        tree->graft(".readers." + quid_name + ".raw_shm.reader_" + std::to_string(++nb),
+        tree->graft(".readers." + nick + ".raw_shm.reader_" + std::to_string(++nb),
                     InfoTree::make(reader));
       }
     }
-    tree->tag_as_array(".readers." + quid_name + ".shm_from_quid", true);
-    tree->tag_as_array(".readers." + quid_name + ".raw_shm", true);
+    tree->tag_as_array(".readers." + nick + ".shm_from_quid", true);
+    tree->tag_as_array(".readers." + nick + ".raw_shm", true);
   }
   // calling on_saved callback
-  for (auto& quid_name : quiddities) {
-    qcontainer_->get_quiddity(qcontainer_->get_id(quid_name))->on_saved();
+  for (auto& quid_id : quiddities) {
+    qcontainer_->get_quiddity(quid_id)->on_saved();
   }
 
   return tree;

@@ -79,14 +79,14 @@ def main() -> None:
 
     user_request = args.quiddity_class.split('.', 1)
     doc = InfoTree()
-    qrox = sw.create(user_request[0], config=InfoTree('{ "server_name" : "'+name+'" }'))
-    if (not qrox):
+    quid = sw.create(user_request[0], config=InfoTree('{ "server_name" : "'+name+'" }'))
+    if (not quid):
         print('quiddity class "' + user_request[0] + '" could not be inspected', file=sys.stderr)
         exit(0)
 
     if (args.short_list and (args.properties or args.methods or args.signals)):
         res = []
-        tree = InfoTree(qrox.quid().get_info_tree_as_json())
+        tree = InfoTree(quid.get_info_tree_as_json())
         if (args.properties):
             for it in tree.get_child_keys('.property.'):
                 res.append(tree.get('.property.' + it + '.id'))
@@ -112,11 +112,11 @@ def main() -> None:
             doc = InfoTree(sw.class_doc(user_request[0]))
     elif (args.properties):
         print(path)
-        doc = InfoTree(qrox.quid().get_info_tree_as_json('.property.' + path))
+        doc = InfoTree(quid.get_info_tree_as_json('.property.' + path))
     elif (args.methods):
-        doc = InfoTree(qrox.quid().get_info_tree_as_json('.method.' + path))
+        doc = InfoTree(quid.get_info_tree_as_json('.method.' + path))
     elif (args.signals):
-        doc = InfoTree(qrox.quid().get_info_tree_as_json('.signal.' + path))
+        doc = InfoTree(quid.get_info_tree_as_json('.signal.' + path))
 
     # print the doc
     parsed = json.loads(doc.json())

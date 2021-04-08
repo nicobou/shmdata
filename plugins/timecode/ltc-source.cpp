@@ -38,7 +38,7 @@ LTCSource::LTCSource(quiddity::Config&& conf)
       shmcntr_(static_cast<Quiddity*>(this)) {
   register_writer_suffix("audio");
   jack_client_ = jack_client_open(
-      std::string(std::string("genLTC_") + get_name()).c_str(), JackNullOption, nullptr);
+      std::string(std::string("genLTC_") + get_nickname()).c_str(), JackNullOption, nullptr);
 
   if (!jack_client_) {
     warning("Could not create jack client (ltcsource).");

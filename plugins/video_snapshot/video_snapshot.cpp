@@ -18,6 +18,9 @@
  */
 
 #include "video_snapshot.hpp"
+
+#include <filesystem>
+
 #include "switcher/infotree/json-serializer.hpp"
 #include "switcher/utils/file-utils.hpp"
 
@@ -45,13 +48,13 @@ VideoSnapshot::VideoSnapshot(quiddity::Config&& conf)
           "Take Snapshot",
           "Triger the saving of a frame",
           false)),
-      last_image_id_(
-          pmanage<MPtr(&property::PBag::make_string)>("last_image",
-                                                      nullptr,
-                                                      [this]() { return last_image_; },
-                                                      "Last image written",
-                                                      "Path of the last jpeg file written",
-                                                      last_image_)),
+      last_image_id_(pmanage<MPtr(&property::PBag::make_string)>(
+          "last_image",
+          nullptr,
+          [this]() { return last_image_; },
+          "Last image written",
+          "Path of the last jpeg file written",
+          last_image_)),
       img_dir_id_(pmanage<MPtr(&property::PBag::make_string)>(
           "imgdir",
           [this](const std::string& val) {
@@ -69,7 +72,7 @@ VideoSnapshot::VideoSnapshot(quiddity::Config&& conf)
           "Directory where to store jpeg files to be produced. If empty, the "
           "path will be /tmp/<videosnapshot name>_xxxxx.jpg",
           img_dir_)),
-      img_name_(get_name()),
+      img_name_(std::filesystem::path(get_nickname()).filename()),
       img_name_id_(pmanage<MPtr(&property::PBag::make_string)>(
           "imgname",
           [this](const std::string& val) {
@@ -83,27 +86,28 @@ VideoSnapshot::VideoSnapshot(quiddity::Config&& conf)
           "take the input shmdata name with option file number and jpg "
           "extension",
           img_name_)),
-      num_files_id_(pmanage<MPtr(&property::PBag::make_bool)>("num_files",
-                                                              [this](const bool& num_files) {
-                                                                num_files_ = num_files;
-                                                                return true;
-                                                              },
-                                                              [this]() { return num_files_; },
-                                                              "Number Files",
-                                                              "Automatically number produced files",
-                                                              num_files_)),
-      jpg_quality_id_(
-          pmanage<MPtr(&property::PBag::make_unsigned_int)>("quality",
-                                                            [this](unsigned int val) {
-                                                              jpg_quality_ = val;
-                                                              return true;
-                                                            },
-                                                            [this]() { return jpg_quality_; },
-                                                            "JPEG quality",
-                                                            "Quality of the produced jpeg image",
-                                                            jpg_quality_,
-                                                            0,
-                                                            100)),
+      num_files_id_(pmanage<MPtr(&property::PBag::make_bool)>(
+          "num_files",
+          [this](const bool num_files) {
+            num_files_ = num_files;
+            return true;
+          },
+          [this]() { return num_files_; },
+          "Number Files",
+          "Automatically number produced files",
+          num_files_)),
+      jpg_quality_id_(pmanage<MPtr(&property::PBag::make_unsigned_int)>(
+          "quality",
+          [this](const unsigned int val) {
+            jpg_quality_ = val;
+            return true;
+          },
+          [this]() { return jpg_quality_; },
+          "JPEG quality",
+          "Quality of the produced jpeg image",
+          jpg_quality_,
+          0,
+          100)),
       shmcntr_(static_cast<Quiddity*>(this)),
       gst_pipeline_(std::make_unique<gst::Pipeliner>(
           [this](GstMessage* msg) {

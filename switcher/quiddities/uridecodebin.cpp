@@ -61,15 +61,16 @@ Uridecodebin::Uridecodebin(quiddity::Config&& conf)
                                               "URI To Be Redirected Into Shmdata(s)",
                                               "");
 
-  pmanage<MPtr(&property::PBag::make_bool)>("loop",
-                                            [this](const bool& val) {
-                                              loop_ = val;
-                                              return true;
-                                            },
-                                            [this]() { return loop_; },
-                                            "Looping",
-                                            "Loop media",
-                                            loop_);
+  pmanage<MPtr(&property::PBag::make_bool)>(
+      "loop",
+      [this](const bool val) {
+        loop_ = val;
+        return true;
+      },
+      [this]() { return loop_; },
+      "Looping",
+      "Loop media",
+      loop_);
 }
 
 Uridecodebin::~Uridecodebin() { destroy_uridecodebin(); }

@@ -38,13 +38,14 @@ Quiddity::Quiddity(quiddity::Config&& conf)
       information_tree_(InfoTree::make()),
       structured_user_data_(InfoTree::make()),
       configuration_tree_(conf.tree_config_ ? InfoTree::copy(conf.tree_config_) : InfoTree::make()),
-      sigs_(information_tree_,
-            [this](const std::string& key) {
-              smanage<MPtr(&signal::SBag::notify)>(on_tree_grafted_id_, InfoTree::make(key));
-            },
-            [this](const std::string& key) {
-              smanage<MPtr(&signal::SBag::notify)>(on_tree_pruned_id_, InfoTree::make(key));
-            }),
+      sigs_(
+          information_tree_,
+          [this](const std::string& key) {
+            smanage<MPtr(&signal::SBag::notify)>(on_tree_grafted_id_, InfoTree::make(key));
+          },
+          [this](const std::string& key) {
+            smanage<MPtr(&signal::SBag::notify)>(on_tree_pruned_id_, InfoTree::make(key));
+          }),
       on_method_added_id_(
           smanage<MPtr(&signal::SBag::make)>("on-method-added", "A method has been installed")),
       on_method_removed_id_(
@@ -58,13 +59,14 @@ Quiddity::Quiddity(quiddity::Config&& conf)
           "on-user-data-pruned", "A branch has been pruned from the quiddity's user data tree")),
       on_nicknamed_id_(smanage<MPtr(&signal::SBag::make)>(
           "on-nicknamed", "A nickname has been given to the quiddity")),
-      props_(information_tree_,
-             [this](const std::string& key) {
-               smanage<MPtr(&signal::SBag::notify)>(on_tree_grafted_id_, InfoTree::make(key));
-             },
-             [this](const std::string& key) {
-               smanage<MPtr(&signal::SBag::notify)>(on_tree_pruned_id_, InfoTree::make(key));
-             }),
+      props_(
+          information_tree_,
+          [this](const std::string& key) {
+            smanage<MPtr(&signal::SBag::notify)>(on_tree_grafted_id_, InfoTree::make(key));
+          },
+          [this](const std::string& key) {
+            smanage<MPtr(&signal::SBag::notify)>(on_tree_pruned_id_, InfoTree::make(key));
+          }),
       meths_(
           conf.log_,
           information_tree_,
@@ -88,8 +90,8 @@ Quiddity::Quiddity(quiddity::Config&& conf)
             smanage<MPtr(&signal::SBag::notify)>(on_method_removed_id_,
                                                  InfoTree::make(method_name));
           }),
-      name_(string_to_quiddity_name(conf.name_)),
-      nickname_(name_),
+      id_(conf.id_),
+      nickname_(conf.nickname_),
       type_(conf.type_),
       qcontainer_(conf.qc_) {
   configuration_tree_->graft(".", InfoTree::make());
@@ -100,18 +102,14 @@ Quiddity::~Quiddity() {
   std::lock_guard<std::mutex> lock(self_destruct_mtx_);
 }
 
-std::string Quiddity::get_name() const { return name_; }
+qid_t Quiddity::get_id() const { return id_; }
 
 std::string Quiddity::get_type() const { return type_; }
 
-std::string Quiddity::string_to_quiddity_name(const std::string& name) {
-  return std::regex_replace(name, std::regex("[^[:alnum:]| ]"), "-");
-}
-
 std::string Quiddity::make_shmpath(const std::string& suffix) const {
   auto server_name = qcontainer_->get_switcher()->get_name();
-  auto name = std::string(get_shmpath_prefix() + server_name + "_" +
-                          std::to_string(qcontainer_->get_id(name_)) + "_" + suffix);
+  auto name =
+      std::string(get_shmpath_prefix() + server_name + "_" + std::to_string(id_) + "_" + suffix);
 
   // Done this way for OSX portability, there is a maximum socket path length in UNIX systems and
   // shmdata use sockets.
@@ -134,7 +132,7 @@ std::string Quiddity::get_manager_name() { return qcontainer_->get_switcher()->g
 
 std::string Quiddity::get_quiddity_caps() {
   auto caps_str = qcontainer_->get_switcher()->get_switcher_caps();
-  caps_str = caps_str + ",quiddity-id=(int)" + std::to_string(qcontainer_->get_id(get_name()));
+  caps_str = caps_str + ",quiddity-id=(int)" + std::to_string(id_);
   return caps_str;
 }
 
@@ -182,9 +180,8 @@ void Quiddity::self_destruct() {
   std::unique_lock<std::mutex> lock(self_destruct_mtx_);
   auto thread = std::thread([ this, th_lock = std::move(lock) ]() mutable {
     th_lock.unlock();
-    auto res = qcontainer_->get_switcher()->quids<MPtr(&quiddity::Container::remove)>(
-        qcontainer_->get_switcher()->quids<MPtr(&quiddity::Container::get_id)>(get_name()));
-    if (!res) warning("% did not self destruct (%)", get_name(), res.msg());
+    auto res = qcontainer_->get_switcher()->quids<MPtr(&quiddity::Container::remove)>(id_);
+    if (!res) warning("% did not self destruct (%)", get_nickname(), res.msg());
   });
   thread.detach();
 }

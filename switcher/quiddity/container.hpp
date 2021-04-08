@@ -57,26 +57,22 @@ class Container : public log::Logged {
   // infos
   InfoTree::ptr get_quiddity_description(qid_t id);
   InfoTree::ptr get_quiddities_description();
-  qid_t get_id(const std::string& name) const;
-  std::string get_name(qid_t id) const;
+  qid_t get_id(const std::string& nickname) const;
   std::string get_nickname(qid_t id) const;
-  std::vector<std::string> get_names() const;
-  std::string get_name_from_caps(const std::string& caps);
+  std::vector<std::string> get_nicknames() const;
+  std::vector<qid_t> get_ids() const;
 
   // **** creation/remove/get and notification
-  // &?= chars are not allowed in nicknames
-  // (a name will be generated if arg is an empty string)
   Qrox create(const std::string& quiddity_class,
-              const std::string& name,
+              const std::string& nickname,
               InfoTree::ptrc override_config);
   Qrox quiet_create(const std::string& quiddity_class,
-                    const std::string& name,
+                    const std::string& nickname,
                     InfoTree::ptrc tree);
   BoolLog remove(qid_t id);
   BoolLog quiet_remove(qid_t id);
   std::shared_ptr<Quiddity> get_quiddity(qid_t id);
   Qrox get_qrox(qid_t id);
-  Qrox get_qrox_from_name(const std::string& quiddity_name);
   unsigned int register_creation_cb(OnCreateRemoveCb cb);
   unsigned int register_removal_cb(OnCreateRemoveCb cb);
   void unregister_creation_cb(unsigned int id);
@@ -164,7 +160,7 @@ class Container : public log::Logged {
   unsigned int cur_id_{0};
   std::weak_ptr<Container> me_{};
   Switcher* switcher_;
-  std::unordered_map<std::string, qid_t> names_{};
+  std::vector<qid_t> ids_{};
   std::unordered_map<qid_t, std::shared_ptr<Quiddity>> quiddities_{};
 };
 

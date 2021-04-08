@@ -32,9 +32,8 @@ int main() {
 
     assert(quiddity::test::full(manager, "sip"));
 
-    for (auto& it : manager->quids<MPtr(&quiddity::Container::get_names)>()) {
-      manager->quids<MPtr(&quiddity::Container::remove)>(
-          manager->quids<MPtr(&quiddity::Container::get_id)>(it));
+    for (auto& it : manager->quids<MPtr(&quiddity::Container::get_ids)>()) {
+      manager->quids<MPtr(&quiddity::Container::remove)>(it);
     }
     manager->conf<MPtr(&Configuration::from_file)>("./config.json");
     assert(manager->quids<MPtr(&quiddity::Container::create)>("sip", "test", nullptr));

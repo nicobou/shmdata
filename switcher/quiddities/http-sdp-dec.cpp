@@ -43,16 +43,16 @@ HTTPSDPDec::HTTPSDPDec(quiddity::Config&& conf)
       gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)),
       souphttpsrc_("souphttpsrc"),
       sdpdemux_("sdpdemux"),
-      decompress_streams_id_(
-          pmanage<MPtr(&property::PBag::make_bool)>("decompress",
-                                                    [this](const bool& val) {
-                                                      decompress_streams_ = val;
-                                                      return true;
-                                                    },
-                                                    [this]() { return decompress_streams_; },
-                                                    "Decompress",
-                                                    "Decompress received streams",
-                                                    decompress_streams_)),
+      decompress_streams_id_(pmanage<MPtr(&property::PBag::make_bool)>(
+          "decompress",
+          [this](const bool val) {
+            decompress_streams_ = val;
+            return true;
+          },
+          [this]() { return decompress_streams_; },
+          "Decompress",
+          "Decompress received streams",
+          decompress_streams_)),
       to_shm_id_(pmanage<MPtr(&property::PBag::make_string)>(
           "to_shmdata",
           [this](const std::string& uri) {
