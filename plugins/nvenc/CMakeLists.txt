@@ -73,6 +73,6 @@ if (PLUGIN_NVENC)
 
     # INSTALL
 
-    install(TARGETS nvenc_encoder_plugin LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins)
+    install(TARGETS nvenc_encoder_plugin LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins/nvidia)
 
 endif ()
