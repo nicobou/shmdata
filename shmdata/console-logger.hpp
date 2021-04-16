@@ -18,6 +18,9 @@
 
 namespace shmdata {
 
+/** \addtogroup  cppapi
+ *  @{
+ */
 class ConsoleLogger : public AbstractLogger {
  public:
   void set_debug(bool debug) { debug_ = debug; }
@@ -40,5 +43,6 @@ class ConsoleLogger : public AbstractLogger {
   }
 };
 
+/** @}*/
 }  // namespace shmdata
 #endif

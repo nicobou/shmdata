@@ -20,9 +20,29 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+  /** \addtogroup  capi
+   *  @{
+   */
   
   typedef void * ShmdataWriter;
   typedef void * ShmdataWriterAccess;
+
+  /**
+   * \brief Construct a ShmdataWriter.
+   *
+   * \param   path                  Shmdata path for listening incomming connections by Followers.
+   * \param   memsize               Initial size of the shared memory.
+   *                                Note the shared memory can be resized at each frame.
+   * \param   type_desr             A string description for the frame to be transmitted.
+   *                                It is expected to follow syntax of GStreamer caps.  
+   * \param   on_client_connect     Callback to be triggered when a follower connects.
+   * \param   on_client_disconnect  Callback to be triggered when a follower disconnects.
+   * \param   user_data             Pointer to user data passed to connect and disconnect callbacks.
+   * \param   log                   Log object where to write internal logs.
+   *
+   * \return the created ShmdataWriter
+   */
   
   ShmdataWriter shmdata_make_writer(const char *path,
                                   size_t memsize,
@@ -31,6 +51,11 @@ extern "C" {
                                   void (*on_client_disconnected)(void *user_data, int id),
                                   void *user_data,
                                   ShmdataLogger log);
+
+  /**
+   * \brief Delete the ShmdataWriter and release associated ressources.
+   *
+   */
   void shmdata_delete_writer(ShmdataWriter writer);
 
   // write copying data
@@ -52,6 +77,8 @@ extern "C" {
   // System-wide limit on the number of shared memory segments
   unsigned long shmdata_get_shmmni(ShmdataLogger log);
 
+/** @}*/
+ 
 #ifdef __cplusplus
 }
 #endif

@@ -23,31 +23,97 @@
 #include "shmdata/unix-socket-server.hpp"
 
 namespace shmdata {
+
+/** \addtogroup  cppapi
+ *  @{
+ */
 class OneWriteAccess;
 class Writer : public SafeBoolIdiom {
   friend OneWriteAccess;
 
  public:
+  /**
+   * \brief Construct a Writer object.
+   *
+   * \param   path                  Shmdata path for listening incoming connections by Followers.
+   * \param   memsize               Initial size of the shared memory. Note the shared memory
+   *                                can be resized at each frame.
+   * \param   data_desr             A string description for the frame to be transmitted. It is
+   *                                expected to follow.  
+   * \param   log                   Log object where to write internal logs.
+   * \param   on_client_connect     Callback to be triggered when a follower connects.
+   * \param   on_client_disconnect  Callback to be triggered when a follower disconnects.
+   * 
+   */
   Writer(const std::string& path,
          size_t memsize,
          const std::string& data_descr,
          AbstractLogger* log,
          UnixSocketProtocol::ServerSide::onClientConnect on_client_connect = nullptr,
          UnixSocketProtocol::ServerSide::onClientDisconnect on_client_disconnect = nullptr);
+  /**
+   * \brief Destruct the Writer and releases resources.
+   *
+   */
   ~Writer() = default;
   Writer() = delete;
   Writer(const Writer&) = delete;
   Writer& operator=(const Writer&) = delete;
   Writer& operator=(Writer&&) = default;
 
+  /**
+   * \brief Get currently allocated size of the shared memory used by the writer.
+   *
+   */
   size_t alloc_size() const;
-  // copy to shmdata
+
+  /**
+   * \brief Copy a frame of data to the shmdata.
+   *
+   * \param data  Pointer to the begining of the frame.
+   * \param size  Size of the frame to copy.
+   *
+   * \return Success of the copy to the shared memory
+   *
+   */
   bool copy_to_shm(const void* data, size_t size);
-  // direct access to the memory with lock
+
+  /**
+   * \brief Provide direct access to the memory with lock. The locked/unlocked state of the shared
+   * memory is synchronized with the life of the returned value.
+   *
+   * \return OneWriteAccess object in a unique pointer. Its destruction release the lock.
+   *
+   */
   std::unique_ptr<OneWriteAccess> get_one_write_access();
+  /**
+   * \brief Provide lock and resize simultaneously.
+   * Same as the get_one_write_access method, but allows to resize the shared memory before
+   * the new access
+   *
+   * \param new_size New size to be allocated.
+   *
+   * \return OneWriteAccess object in a unique pointer. Its destruction release the lock.
+   *
+   */
   std::unique_ptr<OneWriteAccess> get_one_write_access_resize(size_t new_size);
-  // (for C wrappers) direct access without uniqueptr (user need to delete)
+
+  /**
+   * \brief Provide lock to the memory.
+   * Pointer version of get_one_write_access.
+   *
+   * \return Pointer to the create OneWriteAccess.
+   *
+   */ 
   OneWriteAccess* get_one_write_access_ptr();
+
+  /**
+   * \brief Provide lock and resize simultaneously.
+   * Pointer version of get_one_write_access_resize
+   *
+   * \return Pointer to the create OneWriteAccess.
+   *
+   */ 
   OneWriteAccess* get_one_write_access_ptr_resize(size_t new_size);
 
  private:
@@ -68,11 +134,35 @@ class OneWriteAccess {
   friend Writer;
 
  public:
+  /**
+   * \brief Get the pointer to the shmdata memory.
+   *
+   * \return The pointer to the shmdata memory
+   */
   void* get_mem() { return mem_; };
-  size_t shm_resize(size_t newsize); /* this will reallocate a new
-                                        uninitialized shared memory space */
-  short notify_clients(size_t size); /* must be called only once,
-                                        return number of clients notified */
+
+  /**
+   * \brief Resize the shmdata with reallocation of a new uninitialized shared memory space.
+   *
+   * \note This reinitialize the memory. You probably want to apply writes after resizing.
+   *
+   * \param newsize Expected new size of the shmdata memory.
+   *
+   * \return Allocated size, or 0 if resize failed. 
+   */
+  size_t shm_resize(size_t newsize);
+
+  /**
+   * \brief Notify shmdata clients.
+   *
+   * \note This method must be called only once.
+   *
+   * \param size Size of the frame to be available for the clients.
+   *
+   * \return Number of notified clients. 
+   *
+   */
+  short notify_clients(size_t size);
   ~OneWriteAccess() = default;
   OneWriteAccess() = delete;
   OneWriteAccess(const OneWriteAccess&) = delete;
@@ -90,5 +180,6 @@ class OneWriteAccess {
   bool has_notified_{false};
 };
 
+/** @}*/
 }  // namespace shmdata
 #endif
