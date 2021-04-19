@@ -2,6 +2,12 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.3.50 (2021-04-19)
+---------------------------
+This is an official release in the 1.3 stable series.
+
+* ✨ Added framerate and frame duration counters
+
 shmdata 1.3.48 (2021-04-07)
 ---------------------------
 This is an official release in the 1.3 stable series.
