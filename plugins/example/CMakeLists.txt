@@ -35,6 +35,12 @@ if (PLUGIN_EXAMPLE)
         custom-save-plugin.cpp
         )
 
+    # Custom Save
+
+    add_library(shmdata_quid SHARED
+        shmdata-quid.cpp
+        )
+
     # GST quid
     
     add_library(gst_quid SHARED
@@ -58,8 +64,11 @@ if (PLUGIN_EXAMPLE)
     add_executable(check_gst_plugin check_gst_plugin.cpp)
     add_test(check_gst_plugin check_gst_plugin)
 
+    add_executable(check_shmdata_quid check_shmdata_quid.cpp)
+    add_test(check_shmdata_quid check_shmdata_quid)
+
     # INSTALL
 
-    install(TARGETS prop_quid meth_quid custom_save signal_quid gst_quid LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins)
+    install(TARGETS prop_quid meth_quid custom_save signal_quid shmdata_quid gst_quid LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins)
 
 endif ()

@@ -33,7 +33,7 @@
 namespace switcher {
 namespace quiddity {
 
-Quiddity::Quiddity(quiddity::Config&& conf)
+Quiddity::Quiddity(quiddity::Config&& conf, claw::Config claw_conf)
     : log::Logged(conf.log_),
       information_tree_(InfoTree::make()),
       structured_user_data_(InfoTree::make()),
@@ -90,6 +90,10 @@ Quiddity::Quiddity(quiddity::Config&& conf)
             smanage<MPtr(&signal::SBag::notify)>(on_method_removed_id_,
                                                  InfoTree::make(method_name));
           }),
+      claw_(this,
+            claw::ConnectionSpec(claw_conf.spec),
+            claw_conf.on_connect_cb,
+            claw_conf.on_disconnect_cb),
       id_(conf.id_),
       nickname_(conf.nickname_),
       type_(conf.type_),

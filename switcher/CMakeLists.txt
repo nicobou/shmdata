@@ -45,6 +45,8 @@ add_library(${SWITCHER_LIBRARY} SHARED
   quiddity/bundle/bundle.cpp
   quiddity/bundle/description-parser.cpp
   quiddity/class-printer.cpp
+  quiddity/claw/claw.cpp
+  quiddity/claw/connection-spec.cpp
   quiddity/container.cpp
   quiddity/doc.cpp
   quiddity/documentation-registry.cpp

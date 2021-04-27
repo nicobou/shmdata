@@ -17,10 +17,6 @@
  * Boston, MA 02111-1307, USA.
  */
 
-/**
- * The Quiddity class
- */
-
 #ifndef __SWITCHER_QUIDDITY_H__
 #define __SWITCHER_QUIDDITY_H__
 
@@ -34,6 +30,9 @@
 #include "../logger/logged.hpp"
 #include "../utils/make-consultable.hpp"
 #include "../utils/safe-bool-idiom.hpp"
+#include "./claw/claw.hpp"
+#include "./claw/config.hpp"
+#include "./claw/types.hpp"
 #include "./config.hpp"
 #include "./doc.hpp"
 #include "./documentation-registry.hpp"
@@ -67,6 +66,9 @@ namespace bundle {
 class Bundle;
 }  // namespace bundle
 
+/**
+ * The Quiddity class.
+ */
 class Quiddity : public log::Logged, public SafeBoolIdiom {
   friend class bundle::Bundle;  // access to props_ in order to forward properties
   friend class Startable;
@@ -85,7 +87,7 @@ class Quiddity : public log::Logged, public SafeBoolIdiom {
 
  public:
   using ptr = std::shared_ptr<Quiddity>;
-  explicit Quiddity(quiddity::Config&&);
+  explicit Quiddity(quiddity::Config&&, claw::Config conf = claw::Config());
   Quiddity() = delete;
   Quiddity(const Quiddity&) = delete;
   Quiddity& operator=(const Quiddity&) = delete;
@@ -115,6 +117,9 @@ class Quiddity : public log::Logged, public SafeBoolIdiom {
 
   // information
   Make_consultable(Quiddity, InfoTree, information_tree_.get(), tree);
+
+  // Connector
+  Make_consultable(Quiddity, claw::Claw, &claw_, claw);
 
   // user data
   Make_delegate(Quiddity, InfoTree, structured_user_data_.get(), user_data);
@@ -170,6 +175,9 @@ class Quiddity : public log::Logged, public SafeBoolIdiom {
 
   // methods
   method::MBag meths_;
+
+  // connections with claw
+  claw::Claw claw_;
 
   // position weight FIXME should be outside this file ?
   int position_weight_counter_{0};
