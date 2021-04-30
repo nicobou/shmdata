@@ -204,7 +204,7 @@ void add_json_node(InfoTree::rptr tree, JsonReader* reader) {
   }
 }
 
-InfoTree::ptr deserialize(const std::string& serialized) {
+InfoTree::ptr deserialize(const std::string& serialized, bool include_parsing_error) {
   auto res = InfoTree::make();
 
   JsonParser* parser = json_parser_new();
@@ -212,8 +212,12 @@ InfoTree::ptr deserialize(const std::string& serialized) {
   GError* error = nullptr;
   json_parser_load_from_data(parser, serialized.c_str(), serialized.size(), &error);
   if (error != nullptr) {
+    auto res_when_error = InfoTree::ptr();
+    if (include_parsing_error) {
+      res_when_error->vgraft("parsing_error", error->message);
+    }
     g_error_free(error);
-    return InfoTree::ptr();
+    return res_when_error;
   }
   JsonNode* root_node = json_parser_get_root(parser);
   if (!root_node) {

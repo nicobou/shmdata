@@ -35,8 +35,28 @@ namespace switcher {
 namespace infotree {
 namespace json {
 
-std::string serialize(InfoTree::ptrc);
-InfoTree::ptr deserialize(const std::string& serialized);
+/**
+ * \brief Serialize an InfoTree into a JSON string
+ * representation
+ *
+ * \param tree Tree to serialize
+ *
+ * \return Serialized string
+ */
+std::string serialize(InfoTree::ptrc tree);
+
+/**
+ * \brief Parse a JSON string and create an Infotree
+ *
+ * \param serialized JSON string to parse
+ * \param include_parsing_error If true, parsing error message
+ * will be writen in the tree. The message will be located at
+ * ".parsing_error"
+ *
+ * \return Tree resulting from the deserialization
+ *
+ */
+InfoTree::ptr deserialize(const std::string& serialized, bool include_parsing_error = false);
 
 }  // namespace json
 }  // namespace infotree
