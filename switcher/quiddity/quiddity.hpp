@@ -72,6 +72,7 @@ class Bundle;
 class Quiddity : public log::Logged, public SafeBoolIdiom {
   friend class bundle::Bundle;  // access to props_ in order to forward properties
   friend class Startable;
+  friend class claw::Claw;
   // FIXME do something for this (to many friend class in quiddity.hpp):
   friend class gst::AudioCodec;
   friend class gst::VideoCodec;
@@ -118,7 +119,8 @@ class Quiddity : public log::Logged, public SafeBoolIdiom {
   // information
   Make_consultable(Quiddity, InfoTree, information_tree_.get(), tree);
 
-  // Connector
+  // Shmdata connections
+  Make_consultable(Quiddity, InfoTree, connection_spec_tree_.get(), conspec);
   Make_consultable(Quiddity, claw::Claw, &claw_, claw);
 
   // user data
@@ -148,6 +150,14 @@ class Quiddity : public log::Logged, public SafeBoolIdiom {
   // tree used by quiddity to communicate info to user,
   // read-only by user, read/write by quiddity
   InfoTree::ptr information_tree_;
+
+  /**
+   * \brief connection_spec_tree_ contains the shmdata branching
+   * specification. It is intended to be feed and maintained by
+   * the Claw class through the claw_ member.
+   *
+   */
+  InfoTree::ptr connection_spec_tree_{};
 
   // writable tree for custom user data, should not be used by quiddity
   // (hooks are installed for signaling graft and prune)

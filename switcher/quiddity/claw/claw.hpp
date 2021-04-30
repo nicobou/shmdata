@@ -71,11 +71,7 @@ class Claw : public SafeBoolIdiom {
   Claw(Quiddity* quid,
        ConnectionSpec spec,
        OnConnect_t on_connect_cb,
-       OnDisconnect_t on_disconnect_cb)
-      : quid_(quid),
-        connection_spec_(spec),
-        on_connect_cb_(on_connect_cb),
-        on_disconnect_cb_(on_disconnect_cb) {}
+       OnDisconnect_t on_disconnect_cb);
 
   // the following for a next MR
   // // reader quiddity

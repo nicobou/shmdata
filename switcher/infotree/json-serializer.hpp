@@ -36,8 +36,8 @@ namespace infotree {
 namespace json {
 
 /**
- * \brief Serialize an InfoTree into a JSON string
- * representation
+ * Serialize an InfoTree into a JSON string
+ * representation.
  *
  * \param tree Tree to serialize
  *
@@ -46,12 +46,12 @@ namespace json {
 std::string serialize(InfoTree::ptrc tree);
 
 /**
- * \brief Parse a JSON string and create an Infotree
+ * Parse a JSON string and create an Infotree.
  *
- * \param serialized JSON string to parse
- * \param include_parsing_error If true, parsing error message
+ * \param Serialized JSON string to parse
+ * \param include_parsing_error If true, then parsing error message
  * will be writen in the tree. The message will be located at
- * ".parsing_error"
+ * the ".parsing_error" branch.
  *
  * \return Tree resulting from the deserialization
  *

@@ -31,32 +31,34 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataQuid,
                                      "Nicolas Bouillot");
 
 const std::string ShmdataQuid::kConnectionSpec(R"(
+{
 "follower":
   [
     {
       "name": "texture",
-      "description": "Texture to apply during the processing"
+      "description": "Texture to apply during the processing",
       "caps": ["video/x-raw"]
     },
     {
       "name": "mic%d",
-      "description": "Audio inputs to be analysed"
+      "description": "Audio inputs to be analysed",
       "caps": ["audio/x-raw", "audio/mpeg"]
     },
     {
       "name": "custom",
-      "description": "Custom shmdata for my statistical anlysis",
-      "caps": [""]
+      "description": "Custom shmdata for my statistical analysis",
+      "caps": []
     }
-  ]
+  ],
 "writer":
   [
     {
       "name": "texture",
-      "description": "Produced rendering"
+      "description": "Produced rendering",
       "caps": ["video/x-raw"]
     }
   ]
+}
 )");
 
 ShmdataQuid::ShmdataQuid(quiddity::Config&& conf)

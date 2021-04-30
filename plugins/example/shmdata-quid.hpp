@@ -55,13 +55,13 @@ class ShmdataQuid : public Quiddity {
 
   /**
    * Callback to be triggered by the Claw class when
-   * is invoke for a connection.
+   * the ShmdataQuid is invoked for a connection.
    *
    */
   bool on_connect(const std::string& shmpath, claw::sid_t sid);
   /**
    * Callback to be triggered by the Claw class when
-   * is invoke for a disconnection.
+   * the ShmdataQuid is invoked for a disconnection.
    *
    */
   bool on_disconnect(claw::sid_t sid);

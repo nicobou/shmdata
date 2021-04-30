@@ -212,9 +212,9 @@ InfoTree::ptr deserialize(const std::string& serialized, bool include_parsing_er
   GError* error = nullptr;
   json_parser_load_from_data(parser, serialized.c_str(), serialized.size(), &error);
   if (error != nullptr) {
-    auto res_when_error = InfoTree::ptr();
+    auto res_when_error = InfoTree::make();
     if (include_parsing_error) {
-      res_when_error->vgraft("parsing_error", error->message);
+      res_when_error->vgraft("parsing_error", std::string(error->message));
     }
     g_error_free(error);
     return res_when_error;

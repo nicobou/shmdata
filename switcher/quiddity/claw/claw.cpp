@@ -19,11 +19,25 @@
 
 #include "./claw.hpp"
 
+#include "../quiddity.hpp"
+
 namespace switcher {
 namespace quiddity {
 namespace claw {
 
 bool Claw::safe_bool_idiom() const { return static_cast<bool>(connection_spec_); }
+
+Claw::Claw(Quiddity* quid,
+           ConnectionSpec spec,
+           OnConnect_t on_connect_cb,
+           OnDisconnect_t on_disconnect_cb)
+    : quid_(quid),
+      connection_spec_(spec),
+      on_connect_cb_(on_connect_cb),
+      on_disconnect_cb_(on_disconnect_cb) {
+  if (!static_cast<bool>(connection_spec_))
+    quid->error("Connection spec error: %", connection_spec_.msg());
+}
 
 }  // namespace claw
 }  // namespace quiddity

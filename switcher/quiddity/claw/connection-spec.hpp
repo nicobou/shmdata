@@ -22,7 +22,8 @@
 
 #include <string>
 
-#include "../../utils/safe-bool-idiom.hpp"
+#include "../../infotree/information-tree.hpp"
+#include "../../utils/bool-log.hpp"
 
 namespace switcher {
 namespace quiddity {
@@ -34,17 +35,17 @@ namespace claw {
  * of the specifications.
  *
  */
-class ConnectionSpec : public SafeBoolIdiom {
+class ConnectionSpec : public BoolLog {
  public:
   /**
-   * \brief ConnectionSpec constructor. Start with an
+   * ConnectionSpec constructor. Start with an
    * empty specification.
    *
    */
   ConnectionSpec();
 
   /**
-   * \brief ConnectionSpec constructor. Parse the spec and
+   * ConnectionSpec constructor. Parse the spec and
    * construct the Infotree accordingly.
    *
    * \param spec the specification in JSON format.
@@ -53,13 +54,21 @@ class ConnectionSpec : public SafeBoolIdiom {
   ConnectionSpec(const std::string& spec);
 
  private:
-  bool is_valid_{true};
   /**
-   * \brief Implementation of the safe bool idiom. The ConnectionSpec
-   * is valid if the constructor successfully parsed the initial spec.
+   * Tree with structured specifications.
    *
    */
-  bool safe_bool_idiom() const;
+  InfoTree::ptr connection_spec_;
+
+  /**
+   * Validate the shmdata specification.
+   *
+   * \param Tree containing the shmdata specification.
+   *
+   * \return Success with errors in the BoolLog message if any.
+   *
+   */
+  BoolLog check_shmdata_spec(const InfoTree* tree);
 };
 
 }  // namespace claw

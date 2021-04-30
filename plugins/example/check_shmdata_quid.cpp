@@ -20,8 +20,6 @@
 #undef NDEBUG  // get assert in release mode
 
 #include <cassert>
-#include <iostream>
-#include <vector>
 
 #include "switcher/quiddity/basic-test.hpp"
 
