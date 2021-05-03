@@ -2,6 +2,12 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.3.52 (2021-05-03)
+---------------------------
+This is an official release in the 1.3 stable series.
+
+* 📝 Doxygen group for C API, C++ and Python API, with some documentation and code examples
+
 shmdata 1.3.50 (2021-04-19)
 ---------------------------
 This is an official release in the 1.3 stable series.
