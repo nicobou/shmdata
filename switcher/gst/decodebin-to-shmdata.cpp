@@ -66,6 +66,8 @@ void DecodebinToShmdata::on_pad_added(GstElement* object, GstPad* pad, gpointer 
   On_scope_exit { gst_caps_unref(rtpcaps); };
   GstCaps* glmemorycaps = gst_caps_from_string("video/x-raw(memory:GLMemory)");
   On_scope_exit { gst_caps_unref(glmemorycaps); };
+  GstCaps* nvmmmemorycaps = gst_caps_from_string("video/x-raw(memory:NVMM)");
+  On_scope_exit { gst_caps_unref(nvmmmemorycaps); };
   GstCaps* audiocaps = gst_caps_from_string("audio/x-raw");
   On_scope_exit { gst_caps_unref(audiocaps); };
   GstCaps* padcaps = gst_pad_get_current_caps(pad);
@@ -131,6 +133,34 @@ void DecodebinToShmdata::on_pad_added(GstElement* object, GstPad* pad, gpointer 
 
     context->pad_to_shmdata_writer(GST_ELEMENT_PARENT(object), filtersrcpad, "video");
     gst_object_unref(glsrcpad);
+    gst_object_unref(filtersrcpad);
+    return;
+  } else if (gst_caps_can_intersect(nvmmmemorycaps, padcaps)) {
+    // Create nvvidconv element to download the GPU-decoded frames on the CPU
+    GstElement* nvvidconv;
+    gst::utils::make_element("nvvidconv", &nvvidconv);
+    gst_bin_add(GST_BIN(GST_ELEMENT_PARENT(object)), nvvidconv);
+    GstPad* nvmmsinkpad = gst_element_get_static_pad(nvvidconv, "sink");
+    gst_object_unref(nvmmsinkpad);
+    GstPad* nvmmsrcpad = gst_element_get_static_pad(nvvidconv, "src");
+    gst::utils::sync_state_with_parent(nvvidconv);
+    gst_element_get_state(nvvidconv, nullptr, nullptr, GST_CLOCK_TIME_NONE);
+
+    // Create capsfilter element to force output caps to be 'video/x-raw'
+    GstElement* capsfilter;
+    gst::utils::make_element("capsfilter", &capsfilter);
+    GstCaps* videocaps = gst_caps_from_string("video/x-raw");
+    g_object_set(G_OBJECT(capsfilter), "caps", videocaps, nullptr);
+    gst_caps_unref(videocaps);
+    gst_bin_add(GST_BIN(GST_ELEMENT_PARENT(object)), capsfilter);
+    GstPad* filtersinkpad = gst_element_get_static_pad(capsfilter, "sink");
+    gst_object_unref(filtersinkpad);
+    GstPad* filtersrcpad = gst_element_get_static_pad(capsfilter, "src");
+    gst::utils::sync_state_with_parent(capsfilter);
+    gst_element_get_state(capsfilter, nullptr, nullptr, GST_CLOCK_TIME_NONE);
+
+    context->pad_to_shmdata_writer(GST_ELEMENT_PARENT(object), filtersrcpad, "video");
+    gst_object_unref(nvmmsrcpad);
     gst_object_unref(filtersrcpad);
     return;
   } else if (gst_caps_can_intersect(audiocaps, padcaps)) {
