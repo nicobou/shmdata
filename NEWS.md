@@ -2,6 +2,22 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 2.2.4 (2021-05-03)
+---------------------------
+This is an official release in the 2.2 stable series.
+
+* ✨ Add hardware support for Nvidia Jetson
+
+switcher 2.2.2 (2021-04-19)
+---------------------------
+This is an official release in the 2.2 stable series.
+
+New feature:
+* ✨ default plugin path is scanned recursively
+
+Improvement:
+* 🎨 install nvidia plugin in its own folder
+
 switcher 2.2.0 (2021-04-08)
 ---------------------------
 This is an official release in the 2.2 stable series.
