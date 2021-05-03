@@ -13,6 +13,7 @@
 * Patrick Dupuis
 * Marie-Eve Dumas
 * Jerome Berthelin
+* Thomas Piquet
 * Rostom Mesli
 * Patrick Keroulas
 * Michał Seta
