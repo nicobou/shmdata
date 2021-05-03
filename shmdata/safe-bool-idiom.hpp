@@ -21,6 +21,9 @@
 #define __SHMDATA_SAFE_BOOL_IDIOM_H__
 
 namespace shmdata {
+/** \addtogroup  cppapi
+ *  @{
+ */
 class SafeBoolIdiom {
  public:
   virtual ~SafeBoolIdiom() {}
@@ -30,5 +33,6 @@ class SafeBoolIdiom {
   virtual bool is_valid() const = 0;
 };
 
+/** @}*/
 }  // namespace shmdata
 #endif
