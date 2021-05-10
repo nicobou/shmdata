@@ -20,10 +20,12 @@
 #ifndef __SWITCHER_QUIDDITY_CLAW_CONNECTION_SPEC_H__
 #define __SWITCHER_QUIDDITY_CLAW_CONNECTION_SPEC_H__
 
+#include <map>
 #include <string>
 
 #include "../../infotree/information-tree.hpp"
 #include "../../utils/bool-log.hpp"
+#include "./types.hpp"
 
 namespace switcher {
 namespace quiddity {
@@ -53,7 +55,28 @@ class ConnectionSpec : public BoolLog {
    */
   ConnectionSpec(const std::string& spec);
 
+  std::string get_writer_name(swid_t sid) const;
+  std::string get_follower_name(sfid_t sid) const;
+  sfid_t get_sfid(const std::string& name) const;
+  swid_t get_swid(const std::string& name) const;
+  std::string get_writer_shmpath(swid_t id) const;
+  std::vector<std::string> get_writer_names() const;
+  std::vector<std::string> get_follower_names() const;
+
+  // check is sfid is valid and compute the new sfid with a non-meta name
+  bool is_allocated(sfid_t sfid) const;
+  sfid_t get_actual_sfid(sfid_t sfid);
+  bool release(sfid_t sfid);
+  bool is_actual_writer(swid_t swid) const;
+
+  InfoTree::ptr get_tree();
+
  private:
+  Ids follower_id_generator_{};
+  std::map<sfid_t, std::string> follower_ids_{};
+  Ids writer_id_generator_{};
+  std::map<swid_t, std::string> writer_ids_{};
+
   /**
    * Tree with structured specifications.
    *

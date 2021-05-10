@@ -22,8 +22,10 @@
 
 #include <cstdint>  // uint32_t
 #include <functional>
+#include <map>
 
 #include "../../utils/safe-bool-idiom.hpp"
+#include "../quid-id-t.hpp"
 #include "./connection-spec.hpp"
 #include "./types.hpp"
 
@@ -54,7 +56,6 @@ namespace claw {
  */
 class Claw : public SafeBoolIdiom {
  public:
-
   /**
    * \brief Claw constructor. It must be constructed by
    * the Quiddity.
@@ -73,17 +74,19 @@ class Claw : public SafeBoolIdiom {
        OnConnect_t on_connect_cb,
        OnDisconnect_t on_disconnect_cb);
 
+  // reader quiddity
+  sfid_t connect(sfid_t local_sid, quiddity::qid_t writer_quid, swid_t writer_sid);
+  sfid_t connect_raw(sfid_t local_sid, const std::string& shmpath);
+  bool disconnect(sfid_t cid);
+
+  // name & sid converion connect using shmdata names
+  std::string get_writer_name(swid_t sid) const;
+  std::string get_follower_name(sfid_t sid) const;
+  sfid_t get_sfid(const std::string& name) const;
+  swid_t get_swid(const std::string& name) const;
+  std::string get_writer_shmpath(swid_t id) const;
+
   // the following for a next MR
-  // // reader quiddity
-  // conid_t connect(sid_t local_sid, quiddity::qid_t writer_quid, sid_t writer_sid);
-  // conid_t connect(sid_t local_sid, const std::string& shmpath);
-  // bool disconnect(conid_t cid);
-
-  // // name & sid converion connect using shmdata names
-  // std::string get_name(sid_t writer_sid);
-  // std::string get_shmpath(ShmdataId id);
-  // sid_t get_sid(const std::string& name);
-
   // // dynamic specs
   // bool add_follower_spec(InfoTree::ptr spec);
   // bool add_writer_spec(InfoTree::ptr spec);

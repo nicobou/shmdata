@@ -36,6 +36,7 @@ ConnectionSpec::ConnectionSpec(const std::string& spec)
     msg_ = connection_spec_->branch_get_value(".parsing_error").as<std::string>();
     return;
   }
+
   for (const auto& it : connection_spec_->get_child_keys(".")) {
     if (it != "follower" && it != "writer") {
       msg_ = std::string("unexpected key: ") + it;
@@ -46,38 +47,64 @@ ConnectionSpec::ConnectionSpec(const std::string& spec)
       return;
     }
   }
-  bool shm_spec_is_valid = true;
-  std::vector<std::string> names;
-  auto shm_spec_fun = [&](const InfoTree* shmspec) {
+
+  // check specs for shmdata followers
+  connection_spec_->for_each_in_array(".follower", [&](InfoTree* shmspec) {
+    // check name and structure
     const auto name = shmspec->branch_get_value("name").as<std::string>();
     auto parsed = check_shmdata_spec(shmspec);
     if (!parsed) {
       msg_ = parsed.msg();
       return;
     }
-    names.emplace_back(name);
-  };
-  // check specs for shmdata followers
-  connection_spec_->cfor_each_in_array(".follower", shm_spec_fun);
+    // compute an id for this follower and add it to the tree
+    auto id = follower_id_generator_.allocate_id();
+    if (Ids::kInvalid == id) {
+      msg_ = "to many followers, no more ids";
+      return;
+    }
+    shmspec->vgraft("sfid", id);
+    follower_ids_.emplace(std::make_pair(id, name));
+  });
+
   // check if errors during shm_spec_fun
   if (!msg_.empty()) return;
+
   // check if names are unique in follower
-  if (names.end() != std::unique(names.begin(), names.end())) {
+  auto follower_names = get_follower_names();
+  if (follower_names.end() != std::unique(follower_names.begin(), follower_names.end())) {
     msg_ = "duplicate in shmdata follower names";
     return;
   }
-  names.clear();
+
   // check specs for shmdata writers
-  connection_spec_->cfor_each_in_array(".writer", shm_spec_fun);
+  connection_spec_->for_each_in_array(".writer", [&](InfoTree* shmspec) {
+    // check name and structure
+    const auto name = shmspec->branch_get_value("name").as<std::string>();
+    auto parsed = check_shmdata_spec(shmspec);
+    if (!parsed) {
+      msg_ = parsed.msg();
+      return;
+    }
+    // compute an id for this writer and add it to the tree
+    auto id = writer_id_generator_.allocate_id();
+    if (Ids::kInvalid == id) {
+      msg_ = "to many writers, no more ids";
+      return;
+    }
+    shmspec->vgraft("swid", id);
+    writer_ids_.emplace(std::make_pair(id, name));
+  });
+
   // check if errors during shm_spec_fun
   if (!msg_.empty()) return;
+
   // check if names are unique in writer
-  if (names.end() != std::unique(names.begin(), names.end())) {
+  auto writer_names = get_writer_names();
+  if (writer_names.end() != std::unique(writer_names.begin(), writer_names.end())) {
     msg_ = "duplicate in shmdata writer names";
     return;
   }
-  // exit a follower or writer specs are not valid
-  if (!shm_spec_is_valid) return;
 
   // finally all went well
   is_valid_ = true;
@@ -116,6 +143,87 @@ BoolLog ConnectionSpec::check_shmdata_spec(const InfoTree* tree) {
   if (!caps_spec_is_correct) return BoolLog(false, caps_message);
   return BoolLog(true);
 }
+
+std::vector<std::string> ConnectionSpec::get_writer_names() const {
+  std::vector<std::string> res;
+  for (const auto& it : writer_ids_) res.emplace_back(it.second);
+  return res;
+}
+
+std::vector<std::string> ConnectionSpec::get_follower_names() const {
+  std::vector<std::string> res;
+  for (const auto& it : follower_ids_) res.emplace_back(it.second);
+  return res;
+}
+
+std::string ConnectionSpec::get_follower_name(sfid_t sid) const {
+  const auto& it = follower_ids_.find(sid);
+  if (follower_ids_.cend() == it) return "";
+  return it->second;
+}
+
+std::string ConnectionSpec::get_writer_name(swid_t sid) const {
+  const auto& it = writer_ids_.find(sid);
+  if (writer_ids_.cend() == it) return "";
+  return it->second;
+}
+
+sfid_t ConnectionSpec::get_sfid(const std::string& name) const {
+  for (const auto& it : follower_ids_) {
+    if (it.second == name) return it.first;
+  }
+  return Ids::kInvalid;
+}
+
+swid_t ConnectionSpec::get_swid(const std::string& name) const {
+  for (const auto& it : writer_ids_) {
+    if (it.second == name) return it.first;
+  }
+  return Ids::kInvalid;
+}
+
+bool ConnectionSpec::is_allocated(sfid_t sfid) const {
+  return follower_ids_.cend() != follower_ids_.find(sfid);
+}
+
+sfid_t ConnectionSpec::get_actual_sfid(sfid_t sfid) {
+  auto id = sfid;
+
+  // check if sfid is allocated
+  const auto& it = follower_ids_.find(sfid);
+  if (follower_ids_.cend() == it) return Ids::kInvalid;
+
+  // check if local sfid is meta and allocate a new one if needed
+  if (std::string::npos != it->second.find('%')) {
+    // this is a meta shmdata follower, so a new specific sfid is required
+    id = follower_id_generator_.allocate_id();
+    if (Ids::kInvalid == id) {
+      return Ids::kInvalid;
+    }
+    follower_ids_.emplace(
+        std::make_pair(id, stringutils::replace_char(it->second, '%', std::to_string(id))));
+  }
+  return id;
+}
+
+bool ConnectionSpec::release(sfid_t sfid) {
+  return false;
+}
+
+bool ConnectionSpec::is_actual_writer(swid_t swid) const {
+  // check if id is allocated
+  const auto& it = writer_ids_.find(swid);
+  if (writer_ids_.cend() == it) {
+    return false;
+  }
+  // check if this is an actual or a meta shmdata and fail
+  if (std::string::npos != it->second.find('%')) {
+    return false;
+  }
+  return true;
+}
+
+InfoTree::ptr ConnectionSpec::get_tree() { return connection_spec_; }
 
 }  // namespace claw
 }  // namespace quiddity

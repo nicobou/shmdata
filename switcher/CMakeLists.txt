@@ -77,6 +77,7 @@ add_library(${SWITCHER_LIBRARY} SHARED
   utils/bool-log.cpp
   utils/counter-map.cpp
   utils/file-utils.cpp
+  utils/ids.cpp
   utils/net-utils.cpp
   utils/safe-bool-idiom.cpp
   utils/serialize-string.cpp

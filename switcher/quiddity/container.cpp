@@ -19,8 +19,6 @@
 
 #include "./container.hpp"
 
-#include <limits>
-
 #include "../shmdata/caps/utils.hpp"
 #include "../switcher.hpp"
 #include "../utils/scope-exit.hpp"
@@ -44,7 +42,7 @@ Qrox Container::create(const std::string& quiddity_class,
   // We work on a copy in case a callback modifies the map of registered callbacks
   auto tmp_created_cbs = on_created_cbs_;
   for (auto& cb : tmp_created_cbs) {
-    cb.second(cur_id_);
+    cb.second(res.get_id());
     if (on_created_cbs_.empty()) break;  // In case the map gets reset in the callback, e.g bundle
   }
   return res;
@@ -61,21 +59,15 @@ Qrox Container::quiet_create(const std::string& quiddity_class,
   // searching for a free id
   // note id is added into ids before creation because it is possibly used by quiddities
   // during initialization, if initilization fails, id will be removed searching for an available id
-  if (ids_.size() == std::numeric_limits<unsigned int>::max()) {
+  auto cur_id = ids_.allocate_id();
+  if (Ids::kInvalid == cur_id) {
     Qrox(false, "no more id available for Quiddity creation");
   }
-  do {
-    if (cur_id_ == std::numeric_limits<unsigned int>::max())
-      cur_id_ = 1;
-    else
-      ++cur_id_;
-  } while (ids_.cend() != std::find(std::cbegin(ids_), std::cend(ids_), cur_id_));
-  ids_.emplace_back(cur_id_);
 
   // nickname
   std::string nick;
   if (raw_nickname.empty()) {
-    nick = quiddity_class + std::to_string(cur_id_);
+    nick = quiddity_class + std::to_string(cur_id);
   } else {
     nick = raw_nickname;
     for (const auto& it : quiddities_) {
@@ -94,24 +86,24 @@ Qrox Container::quiet_create(const std::string& quiddity_class,
   // creation
   Quiddity::ptr quiddity =
       factory_->create(quiddity_class,
-                       Config(cur_id_,
+                       Config(cur_id,
                               nick,
                               quiddity_class,
                               InfoTree::merge(tree.get(), override_config).get(),
                               this,
                               get_log_ptr()));
   if (!quiddity) {
-    ids_.erase(ids_.end() - 1);
+    ids_.release_last_allocated_id();
     return Qrox(false, "Quiddity creation error");
   }
 
   if (!(*quiddity.get())) {
-    ids_.erase(ids_.end() - 1);
+    ids_.release_last_allocated_id();
     return Qrox(false, "Quiddity initialization error");
   }
-  quiddities_[cur_id_] = quiddity;
+  quiddities_[cur_id] = quiddity;
 
-  return Qrox(true, nick, cur_id_, quiddity.get());
+  return Qrox(true, nick, cur_id, quiddity.get());
 }
 
 /**
@@ -143,12 +135,8 @@ BoolLog Container::remove(qid_t id) {
 }
 
 BoolLog Container::quiet_remove(qid_t id) {
-  auto it = std::find(ids_.begin(), ids_.end(), id);
-  if (ids_.end() == it) {
-    return BoolLog(false, "quiddity not found");
-  }
+  if (!ids_.release_id(id)) return BoolLog(false, "quiddity not found");
   quiddities_.erase(id);
-  ids_.erase(it);
   return BoolLog(true);
 }
 
@@ -158,7 +146,7 @@ std::vector<std::string> Container::get_nicknames() const {
   return res;
 }
 
-std::vector<qid_t> Container::get_ids() const { return ids_; }
+std::vector<qid_t> Container::get_ids() const { return ids_.get_ids(); }
 
 InfoTree::ptr Container::get_quiddities_description() {
   auto tree = InfoTree::make();

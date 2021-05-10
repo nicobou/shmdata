@@ -40,7 +40,7 @@ const std::string ShmdataQuid::kConnectionSpec(R"(
       "caps": ["video/x-raw"]
     },
     {
-      "name": "mic%d",
+      "name": "mic%",
       "description": "Audio inputs to be analysed",
       "caps": ["audio/x-raw", "audio/mpeg"]
     },
@@ -56,21 +56,27 @@ const std::string ShmdataQuid::kConnectionSpec(R"(
       "name": "texture",
       "description": "Produced rendering",
       "caps": ["video/x-raw"]
+    },
+    {
+      "name": "custom%",
+      "description": "Produced random buffers",
+      "caps": []
     }
   ]
 }
 )");
 
 ShmdataQuid::ShmdataQuid(quiddity::Config&& conf)
-    : Quiddity(
-          std::forward<quiddity::Config>(conf),
-          {kConnectionSpec,
-           [this](const std::string& shmpath, claw::sid_t sid) { return on_connect(shmpath, sid); },
-           [this](claw::sid_t sid) { return on_disconnect(sid); }}) {}
+    : Quiddity(std::forward<quiddity::Config>(conf),
+               {kConnectionSpec,
+                [this](const std::string& shmpath, claw::sfid_t sfid) {
+                  return on_connect(shmpath, sfid);
+                },
+                [this](claw::sfid_t sfid) { return on_disconnect(sfid); }}) {}
 
-bool ShmdataQuid::on_connect(const std::string& /*shmpath*/, claw::sid_t /*sid*/) { return true; }
+bool ShmdataQuid::on_connect(const std::string& /*shmpath*/, claw::sfid_t /*sfid*/) { return true; }
 
-bool ShmdataQuid::on_disconnect(claw::sid_t /*sid*/) { return true; }
+bool ShmdataQuid::on_disconnect(claw::sfid_t /*sfid*/) { return true; }
 
 }  // namespace quiddities
 }  // namespace switcher

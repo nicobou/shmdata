@@ -121,7 +121,7 @@ class Quiddity : public log::Logged, public SafeBoolIdiom {
 
   // Shmdata connections
   Make_consultable(Quiddity, InfoTree, connection_spec_tree_.get(), conspec);
-  Make_consultable(Quiddity, claw::Claw, &claw_, claw);
+  Make_delegate(Quiddity, claw::Claw, &claw_, claw);
 
   // user data
   Make_delegate(Quiddity, InfoTree, structured_user_data_.get(), user_data);

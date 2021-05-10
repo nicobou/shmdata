@@ -20,23 +20,25 @@
 #ifndef __SWITCHER_QUIDDITY_CLAW_TYPES_H__
 #define __SWITCHER_QUIDDITY_CLAW_TYPES_H__
 
+#include "../../utils/ids.hpp"
+
 namespace switcher {
 namespace quiddity {
 namespace claw {
 
 /**
- * \brief sid_t is the unique identifier for a shmdata of a Quiddity.
+ * \brief sfid_t is the type for unique identifier for a follower shmdata of a Quiddity.
  * It is allocated and maintained by in the Claw class.
  *
  */
-using sid_t = uint32_t;
+using sfid_t = Ids::id_t;
 
 /**
- * \brief connid_t is the unique identifier of a shmdata connection to
- * a shmdata writer. It is allocated and maintained by in the Claw class.
+ * \brief sid_t is the type for unique identifier for a writer shmdata of a Quiddity.
+ * It is allocated and maintained by in the Claw class.
  *
  */
-using connid_t = uint32_t;
+using swid_t = Ids::id_t;
 
 /**
  * \brief OnConnect_t is the callback triggered by Claw when asked to connect to
@@ -50,7 +52,7 @@ using connid_t = uint32_t;
  * \return Connection success
  *
  */
-using OnConnect_t = std::function<bool(const std::string& /*shmpath*/, sid_t /*sid*/)>;
+using OnConnect_t = std::function<bool(const std::string& /*shmpath*/, sfid_t /*sid*/)>;
 
 /**
  * \brief OnDisconnect_t is the callback triggered by Claw when asked to disconnect
@@ -61,7 +63,7 @@ using OnConnect_t = std::function<bool(const std::string& /*shmpath*/, sid_t /*s
  * \return Disconnection success
  *
  */
-using OnDisconnect_t = std::function<bool(sid_t /*sid*/)>;
+using OnDisconnect_t = std::function<bool(sfid_t /*sid*/)>;
 
 }  // namespace claw
 }  // namespace quiddity
