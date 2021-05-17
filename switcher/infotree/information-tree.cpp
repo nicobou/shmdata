@@ -394,7 +394,7 @@ bool InfoTree::path_is_root(const std::string& path) { return (path == ".") || (
 bool InfoTree::for_each_in_array(const std::string& path, std::function<void(InfoTree*)> fun) {
   std::lock_guard<std::recursive_mutex> lock(mutex_);
   // finding the parent node of the array
-  auto& children = children_;
+  auto children = children_;
   if (path_is_root(path)) {
     if (!is_array_) return false;
   } else {
@@ -416,7 +416,7 @@ bool InfoTree::cfor_each_in_array(const std::string& path,
                                   std::function<void(const InfoTree*)> fun) const {
   std::lock_guard<std::recursive_mutex> lock(mutex_);
   // finding the parent node of the array
-  auto& children = children_;
+  auto children = children_;
   if (path_is_root(path)) {
     if (!is_array_) return false;
   } else {
