@@ -2,6 +2,14 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 2.2.6 (2021-05-17)
+---------------------------
+This is an official release in the 2.2 stable series.
+
+Improvements:
+* ⬆️  upgrade dependency to nvidia driver version 460
+* 📝 add gitlab issues template, code of conduct and RFC process
+
 switcher 2.2.4 (2021-05-03)
 ---------------------------
 This is an official release in the 2.2 stable series.
