@@ -2,7 +2,7 @@
 
 Welcome! We'd love for you to contribute to Shmdata's code.
 
-Shmdata is currently being maintained by a small team of developers working for the [Société des Arts Technologiques (SAT)](https://sat.qc.ca/), a non-profit arts centre based in Montréal, Canada for which this software was originally developed. This core team adds features and bug fixes according to the SAT's interests and needs; however, community contributions on this project are more than welcome! There are many ways to contribute, including submitting bug reports, improving documentation, adding unit tests, adding support for a new language, submitting feature requests, reviewing new submissions, or contributing code that can be incorporated into the project.
+Shmdata is currently being maintained by a small team of developers working for the [Société des arts technologiques [SAT]](https://sat.qc.ca/), a non-profit art centre based in Montréal, Canada for which this software was originally developed. This core team adds features and bug fixes according to the SAT's interests and needs; however, community contributions on this project are more than welcome! There are many ways to contribute, including submitting bug reports, improving documentation, adding unit tests, adding support for a new language, submitting feature requests, reviewing new submissions, or contributing code that can be incorporated into the project.
 
 This document describes this project's development process. Please do your best to follow these guidelines, as doing so will ensure a better contributing experience for you, and for other contributors and maintainers of this project.
 
