@@ -41,9 +41,12 @@ namespace json {
  *
  * \param tree Tree to serialize
  *
+ * \param repeat_array_indexes When a branch is marked as an array, repeat keys in
+ * the array objects under the key "id".
+ *
  * \return Serialized string
  */
-std::string serialize(InfoTree::ptrc tree);
+std::string serialize(InfoTree::ptrc tree, bool repeat_array_indexes = false);
 
 /**
  * Parse a JSON string and create an Infotree.
