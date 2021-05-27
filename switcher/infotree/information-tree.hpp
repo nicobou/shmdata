@@ -92,7 +92,6 @@ class InfoTree {
   static void preorder_tree_walk(InfoTree::ptrc tree,
                                  InfoTree::OnNodeFunction on_visiting_node,
                                  InfoTree::OnNodeFunction on_node_visited);
-  // FIXME replace the following with a get_copy non static method
   static InfoTree::ptrc get_subtree(InfoTree::ptrc tree, const std::string& path);
 
   // const methods
@@ -152,8 +151,9 @@ class InfoTree {
   bool for_each_in_array(const std::string& path, std::function<void(InfoTree*)> fun);
   bool cfor_each_in_array(const std::string& path, std::function<void(const InfoTree*)> fun) const;
 
-  // copy subtree
+  // copy
   InfoTree::ptr branch_get_copy(const std::string& path) const;
+  InfoTree::ptr get_copy() const;
 
   // graft will create the path and graft the tree,
   // or remove old one and replace will the new tree
