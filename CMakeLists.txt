@@ -159,6 +159,13 @@ add_compile_options(-Wno-unused-parameter)
 add_compile_options(-Wno-cast-function-type)
 add_definitions("-DDATADIR=\"${DATADIR}\"")
 
+# COLOR OUTPUT
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag(-fdiagnostics-color CAN_DIAGNOSTICS_COLOR)
+if(CAN_DIAGNOSTICS_COLOR)
+  add_definitions(-fdiagnostics-color)
+endif()
+
 # OSX
 if(APPLE AND ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(OSX TRUE)
