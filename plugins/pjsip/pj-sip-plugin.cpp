@@ -103,6 +103,7 @@ SIPPlugin::SIPPlugin(quiddity::Config&& conf)
   this_ = this;
 
   apply_log_level_configuration();
+  apply_port_configuration();
 
   pjsip_ = std::make_unique<ThreadedWrapper<PJSIP>>(
       // init
@@ -200,17 +201,30 @@ void SIPPlugin::apply_log_level_configuration() {
   }
 }
 
-void SIPPlugin::apply_configuration() {
+void SIPPlugin::apply_port_configuration() {
   // trying to set port if configuration found
   if (config<MPtr(&InfoTree::branch_has_data)>("port")) {
     debug("SIP is trying to set port from configuration");
     auto port = config<MPtr(&InfoTree::branch_get_value)>("port");
-    if (pmanage<MPtr(&property::PBag::set<std::string>)>(port_id_, port.copy_as<std::string>())) {
-      debug("sip has set port from configuration");
-    } else {
-      warning("sip failed setting port from configuration");
+    auto port_str = port.copy_as<std::string>();
+    unsigned int val;
+    if (!isdigit(port_str[0])) {
+      warning("requested local SIP port in config is not a string containing digits: %", port_str);
+      return;
     }
+    val = atoi(port_str.c_str());
+    if (sip_port_ == val) return;
+    if (val > 65535) {
+      warning("requested local SIP port is higher than 65535: %", port_str);
+      return;
+    }
+    sip_port_ = val;
+
+    debug("sip has set port from configuration");
   }
+}
+
+void SIPPlugin::apply_configuration() {
   // trying to set stun/turn from configuration
   std::string stun = config<MPtr(&InfoTree::branch_get_value)>("stun");
   std::string turn = config<MPtr(&InfoTree::branch_get_value)>("turn");
