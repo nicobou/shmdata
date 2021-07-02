@@ -153,19 +153,18 @@ PyObject* pySwitch::create(pySwitchObject* self, PyObject* args, PyObject* kwds)
     return Py_None;
   }
 
-  auto qrox = self->switcher->quids<MPtr(&quiddity::Container::create)>(
-      type,
-      name ? name : std::string(),
-      pyinfotree ? reinterpret_cast<pyInfoTree::pyInfoTreeObject*>(pyinfotree)->tree : nullptr);
-  if (!qrox) {
-    Py_INCREF(Py_None);
-    return Py_None;
-  }
-  auto quid_capsule = PyCapsule_New(static_cast<void*>(qrox.get()), nullptr, nullptr);
-  PyObject* argList = Py_BuildValue("(O)", quid_capsule);
+  PyObject* argList = nullptr;
+  if (!name && !pyinfotree)
+    argList = Py_BuildValue("(Os)", (PyObject*)self, type);
+  else if (name && !pyinfotree)
+    argList = Py_BuildValue("(Oss)", (PyObject*)self, type, name);
+  else if (!name && pyinfotree)
+    argList = Py_BuildValue("(Oss)", (PyObject*)self, type, "", pyinfotree);
+  else if (name && pyinfotree)
+    argList = Py_BuildValue("(OssO)", (PyObject*)self, type, name, pyinfotree);
+
   PyObject* obj = PyObject_CallObject((PyObject*)&pyQuiddity::pyType, argList);
   Py_XDECREF(argList);
-  Py_XDECREF(quid_capsule);
   return obj;
 }
 

@@ -24,9 +24,11 @@ assert '' != sw.version()
 
 # with switcher, you can create different types of named Quiddities.
 # In this case, glfwin is a quiddity type that manage video window
-win = sw.create(type='glfwin', name='win')
+win = pyquid.Quiddity(switcher=sw, type='glfwin', name='win')
 
 # The following replace the glfwin quiddity by a dummy quiddity if glfwin is not available
+# note here the quiddity is constructed from the switcher create method. This is equivalent
+# to createing Quiddity from the pyquid.Quiddity constructor
 if None == win:
     win = sw.create(type='dummysink', name='win')
 
@@ -70,6 +72,10 @@ time.sleep(1)
 
 # win can disconnect from vid
 assert win.invoke('disconnect', [vidshmpath])
+
+# Quiddities can be constructed but need a switcher for the creation
+quid = pyquid.Quiddity(switcher=sw, type='dummysink', name='dummy')
+assert None != quid
 
 time.sleep(1)
 # and can reconnect, using the alternative connect-quid method

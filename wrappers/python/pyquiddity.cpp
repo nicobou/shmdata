@@ -18,8 +18,11 @@
  */
 
 #include "./pyquiddity.hpp"
+
 #include <chrono>
+
 #include "./pyinfotree.hpp"
+#include "./pyswitch.hpp"
 #include "./ungiled.hpp"
 #include "switcher/utils/scope-exit.hpp"
 
@@ -575,11 +578,36 @@ PyObject* pyQuiddity::Quiddity_new(PyTypeObject* type, PyObject* /*args*/, PyObj
 }
 
 int pyQuiddity::Quiddity_init(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
-  PyObject* pyquid;
-  static char* kwlist[] = {(char*)"quid_c_ptr", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &pyquid)) return -1;
-  auto* quid = static_cast<Quiddity*>(PyCapsule_GetPointer(pyquid, nullptr));
-  self->quid = quid;
+  PyObject* pyswitch = nullptr;
+  const char* type = nullptr;
+  const char* name = nullptr;
+  PyObject* pyinfotree = nullptr;
+
+  static char* kwlist[] = {(char*)"switcher",
+                           (char*)"type",
+                           (char*)"name",
+                           (char*)"config",
+                           nullptr};
+  if (!PyArg_ParseTupleAndKeywords(
+          args, kwds, "Os|sO", kwlist, &pyswitch, &type, &name, &pyinfotree))
+    return -1;
+
+  if (pyswitch && !PyObject_IsInstance(pyswitch, reinterpret_cast<PyObject*>(&pySwitch::pyType)))
+    return -1;
+
+  if (pyinfotree &&
+      !PyObject_IsInstance(pyinfotree, reinterpret_cast<PyObject*>(&pyInfoTree::pyType)))
+    return -1;
+
+  auto qrox = reinterpret_cast<pySwitch::pySwitchObject*>(pyswitch)
+                  ->switcher->quids<MPtr(&quiddity::Container::create)>(
+                      type,
+                      name ? name : std::string(),
+                      pyinfotree ? reinterpret_cast<pyInfoTree::pyInfoTreeObject*>(pyinfotree)->tree
+                                 : nullptr);
+  if (!qrox) return -1;
+
+  self->quid = qrox.get();
   self->sig_reg = std::make_unique<sig_registering_t>();
   self->prop_reg = std::make_unique<prop_registering_t>();
   self->async_invocations = std::make_unique<std::list<std::future<void>>>();
@@ -589,29 +617,30 @@ int pyQuiddity::Quiddity_init(pyQuiddityObject* self, PyObject* args, PyObject* 
 }
 
 void pyQuiddity::Quiddity_dealloc(pyQuiddityObject* self) {
-  // cleaning signal subscription
-  for (const auto& it : self->sig_reg->callbacks) {
-    auto found = self->sig_reg->signals.find(it.first);
-    self->quid->sig<MPtr(&signal::SBag::unsubscribe)>(found->first, found->second);
-    Py_XDECREF(it.second);
-  }
-  for (auto& it : self->sig_reg->user_data) {
-    Py_XDECREF(it.second);
-  }
-  self->sig_reg.reset();
+  if (self->quid) {
+    // cleaning signal subscription
+    for (const auto& it : self->sig_reg->callbacks) {
+      auto found = self->sig_reg->signals.find(it.first);
+      self->quid->sig<MPtr(&signal::SBag::unsubscribe)>(found->first, found->second);
+      Py_XDECREF(it.second);
+    }
+    for (auto& it : self->sig_reg->user_data) {
+      Py_XDECREF(it.second);
+    }
+    self->sig_reg.reset();
 
-  // cleaning prop subscription
-  for (const auto& it : self->prop_reg->callbacks) {
-    auto found = self->prop_reg->props.find(it.first);
-    self->quid->prop<MPtr(&property::PBag::unsubscribe)>(found->first, found->second);
-    Py_XDECREF(it.second);
+    // cleaning prop subscription
+    for (const auto& it : self->prop_reg->callbacks) {
+      auto found = self->prop_reg->props.find(it.first);
+      self->quid->prop<MPtr(&property::PBag::unsubscribe)>(found->first, found->second);
+      Py_XDECREF(it.second);
+    }
+    for (auto& it : self->prop_reg->user_data) {
+      Py_XDECREF(it.second);
+    }
+    self->prop_reg.reset();
+    self->async_invocations.reset();
   }
-  for (auto& it : self->prop_reg->user_data) {
-    Py_XDECREF(it.second);
-  }
-  self->prop_reg.reset();
-  self->async_invocations.reset();
-
   // cleaning self
   Py_TYPE(self)->tp_free((PyObject*)self);
 }
@@ -677,7 +706,13 @@ PyDoc_STRVAR(pyquid_quiddity_doc,
              "   - property set, get and subscribe\n"
              "   - method invocation\n"
              "   - InfoTree request\n"
-             "   - specific configuration");
+             "   - specific configuration\n\n"
+             "Construct a Quiddity object:\n"
+             "Arguments: (switcher, type, name, config), where switcher is a pyquid.Switcher object"
+             ", type is a quiddity type (string), name is a nickname for the Quiddity (string)"
+             "and config is an InfoTree that overrides the switcher configuration file for this "
+             "Quiddity type.\n"
+             "Note: switcher and type are mandatory arguments during construction of q Quiddity\n");
 
 PyTypeObject pyQuiddity::pyType = {
     PyVarObject_HEAD_INIT(nullptr, 0)(char*) "pyquid.Quiddity", /* tp_name */
