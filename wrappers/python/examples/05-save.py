@@ -18,9 +18,10 @@ import assert_exit_1
 sw = pyquid.Switcher('save_example', debug=True)
 
 # instantiate and use some quiddities
-win = sw.create(type='glfwin', name='win')
-# The following replace the glfwin quiddity by a dummy quiddity if glfwin is not available
-if None == win:
+try:
+    win = sw.create(type='glfwin', name='win')
+except RuntimeError:
+    # The following replace the glfwin quiddity by a dummy quiddity if glfwin is not available
     win = sw.create(type='dummysink', name='win')
 
 vid = sw.create('videotestsrc', 'vid')

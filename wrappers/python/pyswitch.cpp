@@ -46,9 +46,10 @@ int pySwitch::Switcher_init(pySwitchObject* self, PyObject* args, PyObject* kwds
   PyObject* showDebug = nullptr;
 
   static char* kwlist[] = {(char*)"name", (char*)"config", (char*)"debug", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OO", kwlist, &name, &configFile, &showDebug))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OO", kwlist, &name, &configFile, &showDebug)) {
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
     return -1;
-
+  }
   self->name = name;
   if (showDebug && PyBool_Check(showDebug) && showDebug==Py_True) {
     self->switcher = Switcher::make_switcher<log::Console>(PyUnicode_AsUTF8(self->name));
@@ -57,14 +58,17 @@ int pySwitch::Switcher_init(pySwitchObject* self, PyObject* args, PyObject* kwds
   }
 
   if (!self->switcher) {
+    PyErr_SetString(PyExc_RuntimeError, "Switcher instance could not be created");
     return -1;
   }
 
   self->sig_reg = std::make_unique<sig_registering_t>();
 
   if (configFile) {
-    if (!self->switcher->conf<MPtr(&Configuration::from_file)>(PyUnicode_AsUTF8(configFile)))
+    if (!self->switcher->conf<MPtr(&Configuration::from_file)>(PyUnicode_AsUTF8(configFile))) {
+      PyErr_SetString(PyExc_RuntimeError, "Switcher could not load configuration file");
       return -1;
+    }
   }
 
   self->interpreter_state = PyThreadState_Get()->interp;
@@ -119,8 +123,8 @@ PyObject* pySwitch::load_bundles(pySwitchObject* self, PyObject* args, PyObject*
   const char* description = nullptr;
   static char* kwlist[] = {(char*)"description", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &description)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
 
   if (!self->switcher.get()->load_bundle_from_config(description)) {
@@ -144,13 +148,14 @@ PyObject* pySwitch::create(pySwitchObject* self, PyObject* args, PyObject* kwds)
   PyObject* pyinfotree = nullptr;
   static char* kwlist[] = {(char*)"type", (char*)"name", (char*)"config", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|sO", kwlist, &type, &name, &pyinfotree)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
   if (pyinfotree &&
       !PyObject_IsInstance(pyinfotree, reinterpret_cast<PyObject*>(&pyInfoTree::pyType))) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError,
+                    "error config argument is not an instance of a pyquid.InfoTree");
+    return nullptr;
   }
 
   PyObject* argList = nullptr;
@@ -177,8 +182,8 @@ PyObject* pySwitch::remove(pySwitchObject* self, PyObject* args, PyObject* kwds)
   long int id = 0;
   static char* kwlist[] = {(char*)"id", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "l", kwlist, &id)) {
-    Py_INCREF(Py_False);
-    return Py_False;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
   if (!self->switcher->quids<MPtr(&quiddity::Container::remove)>(id)) {
     Py_INCREF(Py_False);
@@ -197,8 +202,8 @@ PyObject* pySwitch::get_quid(pySwitchObject* self, PyObject* args, PyObject* kwd
   long int id = 0;
   static char* kwlist[] = {(char*)"id", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "l", kwlist, &id)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
   auto qrox = self->switcher->quids<MPtr(&quiddity::Container::get_qrox)>(id);
   if (!qrox) {
@@ -222,8 +227,8 @@ PyObject* pySwitch::get_quid_id(pySwitchObject* self, PyObject* args, PyObject* 
   const char* nickname = nullptr;
   static char* kwlist[] = {(char*)"nickname", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &nickname)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
   return PyLong_FromSize_t(self->switcher->quids<MPtr(&quiddity::Container::get_id)>(nickname));
 }
@@ -250,8 +255,8 @@ PyObject* pySwitch::reset_state(pySwitchObject* self, PyObject* args, PyObject* 
   int clear = 1;
   static char* kwlist[] = {(char*)"clear", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|p", kwlist, &clear)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
   self->switcher->reset_state(clear ? true : false);
   Py_INCREF(Py_None);
@@ -267,12 +272,13 @@ PyObject* pySwitch::load_state(pySwitchObject* self, PyObject* args, PyObject* k
   PyObject* pyinfotree;
   static char* kwlist[] = {(char*)"state", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &pyinfotree)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
   if (!PyObject_IsInstance(pyinfotree, reinterpret_cast<PyObject*>(&pyInfoTree::pyType))) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError,
+                    "error: state argument is not an instance of a pyquid.InfoTree");
+    return nullptr;
   }
   if (!self->switcher->load_state(
           reinterpret_cast<pyInfoTree::pyInfoTreeObject*>(pyinfotree)->tree)) {
@@ -378,8 +384,8 @@ PyObject* pySwitch::quid_descr(pySwitchObject* self, PyObject* args, PyObject* k
   int id = 0;
   static char* kwlist[] = {(char*)"id", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "i", kwlist, &id) && 0 != id) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
   return PyUnicode_FromString(
       infotree::json::serialize(
@@ -453,8 +459,8 @@ PyObject* pySwitch::subscribe(pySwitchObject* self, PyObject* args, PyObject* kw
 
   static char* kwlist[] = {(char*)"name", (char*)"cb", (char*)"user_data", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO|O", kwlist, &name, &cb, &user_data)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
   if (!PyCallable_Check(cb)) {
     PyErr_SetString(PyExc_TypeError, "pySwitch callback argument must be callable");
@@ -501,8 +507,8 @@ PyObject* pySwitch::unsubscribe(pySwitchObject* self, PyObject* args, PyObject* 
   const char* name = nullptr;
   static char* kwlist[] = {(char*)"name", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &name)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
 
   if (unsubscribe_from_signal(self, name)) {

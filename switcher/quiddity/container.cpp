@@ -55,7 +55,7 @@ Qrox Container::quiet_create(const std::string& quiddity_class,
                              InfoTree::ptrc override_config) {
   // checks before creation
   if (!switcher_->factory<MPtr(&Factory::exists)>(quiddity_class)) {
-    return Qrox(false, "unknown class");
+    return Qrox(false, "unknown Quiddity type");
   }
 
   // searching for a free id

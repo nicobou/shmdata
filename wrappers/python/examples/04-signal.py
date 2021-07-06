@@ -43,7 +43,6 @@ sw = pyquid.Switcher("signals", debug=True)
 
 # create a quiddity
 vid = sw.create("videotestsrc", "vid")
-assert None != vid
 
 my_user_data = vid
 my_user_data2 = str('on-nicknamed')

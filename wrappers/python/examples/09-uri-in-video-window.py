@@ -19,20 +19,17 @@ import assert_exit_1
 sw = pyquid.Switcher('urivid', debug=True)
 
 # creating the window
-win = sw.create(type='glfwin', name='win')
-win2 = sw.create(type='glfwin', name='win2')
-if not win:
+try:
+    win = sw.create(type='glfwin', name='win')
+except RuntimeError:
     win = sw.create(type='dummysink', name='win')
-if not win2:
+try:
+    win2 = sw.create(type='glfwin', name='win2')
+except RuntimeError:
     win2 = sw.create(type='dummysink', name='win2')
 
 # creating a dummysink for audio
 a = sw.create(type='dummysink', name='asink')
-
-assert win
-assert win2
-assert a
-
 
 # creating the uri decoder
 uri = sw.create('urisrc', 'uri')

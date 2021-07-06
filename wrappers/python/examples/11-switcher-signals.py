@@ -40,7 +40,6 @@ assert sw.subscribe("on-quiddity-created", on_created_cb, my_user_data)
 
 # create a quiddity
 vid = sw.create("videotestsrc")
-assert None != vid
 assert vid.id() == on_created_id
 
 # wait for the signal to arrive,
@@ -51,7 +50,6 @@ assert sw.unsubscribe("on-quiddity-created")
 
 # create a quiddity (no callback should be fired)
 vid2 = sw.create("videotestsrc")
-assert None != vid2
 
 # subscribe to the 'on-quiddity-removed' signal
 assert sw.subscribe("on-quiddity-removed", on_removed_cb, my_user_data)

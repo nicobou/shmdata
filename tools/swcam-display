@@ -36,9 +36,10 @@ def main() -> None:
 
     # create a switcher.
     sw = Switcher('swcam' + str(os.getpid()), debug=args.debug)
-    cam = sw.create('v4l2src', 'cam')
-    if (not cam):
-        print('sorry, no device found')
+    try:
+        cam = sw.create('v4l2src', 'cam')
+    except RuntimeError:
+        print('Sorry, no device found')
         return
     if (args.list_camera):
         devices = InfoTree(cam.get_info_tree_as_json('.property.device.values'))

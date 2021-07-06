@@ -79,8 +79,9 @@ def main() -> None:
 
     user_request = args.quiddity_class.split('.', 1)
     doc = InfoTree()
-    quid = sw.create(user_request[0], config=InfoTree('{ "server_name" : "'+name+'" }'))
-    if (not quid):
+    try:
+        quid = sw.create(user_request[0], config=InfoTree('{ "server_name" : "'+name+'" }'))
+    except RuntimeError:
         print('quiddity class "' + user_request[0] + '" could not be inspected', file=sys.stderr)
         exit(0)
 
