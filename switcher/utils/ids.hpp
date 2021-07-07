@@ -52,7 +52,6 @@ class Ids {
    * \brief Allocate a new identifier.
    *
    * \return The new identifier.
-   *
    */
   id_t allocate_id();
   /**
@@ -66,14 +65,12 @@ class Ids {
    * \param id The identifier to release.
    *
    * \return Success.
-   *
    */
   bool release_id(id_t id);
   /**
    * \brief Provide all allocated ids.
    *
    * \return The values allocated.
-   *
    */
   std::vector<id_t> get_ids() const;
   /**
@@ -82,7 +79,6 @@ class Ids {
    * \param id the identificator to test.
    *
    * \return the allocation state.
-   *
    */
   bool is_allocated(id_t id) const;
 

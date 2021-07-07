@@ -40,7 +40,7 @@ int main() {
     auto writer = swit->quids<MPtr(&Container::create)>("connection-quid", "writer", nullptr).get();
     assert(writer);
 
-    // get the writer connecction information from the Quiddity conspec tree
+    // get the writer connection information from the Quiddity conspec tree
     std::map<std::string, swid_t> swids;
     {
       auto conspec_tree = writer->conspec<MPtr(&InfoTree::get_copy)>();
@@ -52,7 +52,7 @@ int main() {
       assert(!swids.empty());
     }
 
-    // get the reader connecction information from the Quiddity conspec tree
+    // get the reader connection information from the Quiddity conspec tree
     std::map<std::string, sfid_t> sfids;
     {
       auto conspec_tree = reader->conspec<MPtr(&InfoTree::get_copy)>();

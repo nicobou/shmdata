@@ -31,10 +31,11 @@ const Ids::id_t Ids::kMaxNumOfIds =
 Ids::id_t Ids::allocate_id() {
   if (ids_.size() == kMaxNumOfIds) return kInvalid;
   do {
-    if (cur_id_ == std::numeric_limits<id_t>::max())
+    if (cur_id_ == std::numeric_limits<id_t>::max()) {
       cur_id_ = 1;
-    else
+    } else {
       ++cur_id_;
+    }
   } while (ids_.cend() != std::find(std::cbegin(ids_), std::cend(ids_), cur_id_));
   ids_.emplace_back(cur_id_);
   return cur_id_;

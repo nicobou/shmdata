@@ -22,7 +22,6 @@
 
 #include <cstdint>  // uint32_t
 #include <functional>
-#include <map>
 
 #include "../../utils/safe-bool-idiom.hpp"
 #include "../quid-id-t.hpp"

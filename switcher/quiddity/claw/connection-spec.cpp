@@ -146,7 +146,7 @@ BoolLog ConnectionSpec::check_shmdata_spec(const InfoTree* tree) {
 
 std::vector<std::string> ConnectionSpec::get_writer_names() const {
   std::vector<std::string> res;
-  for (const auto& it : writer_ids_) res.emplace_back(it.second);
+  for (const auto& it : writer_ids_) res.push_back(it.second);
   return res;
 }
 

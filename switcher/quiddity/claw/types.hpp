@@ -34,7 +34,7 @@ namespace claw {
 using sfid_t = Ids::id_t;
 
 /**
- * \brief sid_t is the type for unique identifier for a writer shmdata of a Quiddity.
+ * \brief swid_t is the type for unique identifier for a writer shmdata of a Quiddity.
  * It is allocated and maintained by in the Claw class.
  *
  */
