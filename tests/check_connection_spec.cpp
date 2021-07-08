@@ -33,27 +33,27 @@ int main() {
     "follower":
       [
         {
-          "name": "texture",
+          "label": "texture",
           "description": "Texture to apply during the processing",
-          "caps": ["video/x-raw"]
+          "can_do": ["video/x-raw"]
         },
         {
-          "name": "mic%d",
+          "label": "mic%d",
           "description": "Audio inputs to be analysed",
-          "caps": ["audio/x-raw", "audio/mpeg"]
+          "can_do": ["audio/x-raw", "audio/mpeg"]
         },
         {
-          "name": "custom",
+          "label": "custom",
           "description": "Custom shmdata for my statistical analysis",
-          "caps": []
+          "can_do": []
         }
       ],
     "writer":
       [
         {
-          "name": "texture",
+          "label": "texture",
           "description": "Produced rendering",
-          "caps": ["video/x-raw"]
+          "can_do": ["video/x-raw"]
         }
       ]
     }
@@ -67,9 +67,9 @@ int main() {
     "follower:
       [
         {
-          "name": "texture",
+          "label": "texture",
           "description": "Texture to apply during the processing",
-          "caps": ["video/x-raw"]
+          "can_do": ["video/x-raw"]
         }
       ]
     }
@@ -86,9 +86,9 @@ int main() {
     "foolower":
       [
         {
-          "name": "texture",
+          "label": "texture",
           "description": "Texture to apply during the processing",
-          "caps": ["video/x-raw"]
+          "can_do": ["video/x-raw"]
         }
       ]
     }
@@ -104,9 +104,9 @@ int main() {
     {
     "follower":
         {
-          "name": "texture",
+          "label": "texture",
           "description": "Texture to apply during the processing",
-          "caps": ["video/x-raw"]
+          "can_do": ["video/x-raw"]
         }
     }
     )";
@@ -122,9 +122,9 @@ int main() {
     "follower":
       [
         {
-          "name": "texture",
+          "label": "texture",
           "description": "Texture to apply during the processing",
-          "caps": ["video/x-raw"],
+          "can_do": ["video/x-raw"],
           "comment": "My unexpected comment"
         }
       ]
@@ -136,21 +136,21 @@ int main() {
     assert(!cspec);
   }
 
-  {  // testing name is a string
+  {  // testing label is a string
     auto spec = R"(
     {
     "follower":
       [
         {
-          "name": 3,
+          "label": 3,
           "description": "Texture to apply during the processing",
-          "caps": ["video/x-raw"]
+          "can_do": ["video/x-raw"]
         }
       ]
     }
     )";
     auto cspec = ConnectionSpec(spec);
-    std::cout << "name is not a string : " << cspec.msg() << '\n';
+    std::cout << "label is not a string : " << cspec.msg() << '\n';
     assert(!cspec.msg().empty());
     assert(!cspec);
   }
@@ -161,9 +161,9 @@ int main() {
     "follower":
       [
         {
-          "name": "texture",
+          "label": "texture",
           "description": 3.14,
-          "caps": ["video/x-raw"]
+          "can_do": ["video/x-raw"]
         }
       ]
     }
@@ -174,107 +174,107 @@ int main() {
     assert(!cspec);
   }
 
-  {  // testing caps entry must be an array
+  {  // testing can_do entry must be an array
     auto spec = R"(
     {
     "follower":
       [
         {
-          "name": "texture",
+          "label": "texture",
           "description": "Texture to apply during the processing",
-          "caps": "video/x-raw"
+          "can_do": "video/x-raw"
         }
       ]
     }
     )";
     auto cspec = ConnectionSpec(spec);
-    std::cout << "caps entry must be an array : " << cspec.msg() << '\n';
+    std::cout << "can_do entry must be an array : " << cspec.msg() << '\n';
     assert(!cspec.msg().empty());
     assert(!cspec);
   }
 
-  {  // testing caps entry contain strings
+  {  // testing can_do entry contain strings
     auto spec = R"(
     {
     "follower":
       [
         {
-          "name": "texture",
+          "label": "texture",
           "description": "Texture to apply during the processing",
-          "caps": ["video/x-raw", 3]
+          "can_do": ["video/x-raw", 3]
         }
       ]
     }
     )";
     auto cspec = ConnectionSpec(spec);
-    std::cout << "caps entry must contain strings : " << cspec.msg() << '\n';
+    std::cout << "can_do entry must contain strings : " << cspec.msg() << '\n';
     assert(!cspec.msg().empty());
     assert(!cspec);
   }
 
-  {  // testing caps entry can be parsed as shmdata type (here missing value for width)
+  {  // testing can_do entry can be parsed as shmdata type (here missing value for width)
     auto spec = R"(
     {
     "follower":
       [
         {
-          "name": "texture",
+          "label": "texture",
           "description": "Texture to apply during the processing",
-          "caps": ["video/x-raw, width"]
+          "can_do": ["video/x-raw, width"]
         }
       ]
     }
     )";
     auto cspec = ConnectionSpec(spec);
-    std::cout << "caps entry must be shmdata type : " << cspec.msg() << '\n';
+    std::cout << "can_do entry must be shmdata type : " << cspec.msg() << '\n';
     assert(!cspec.msg().empty());
     assert(!cspec);
   }
 
-  {  // testing spec with duplicates in follower names
+  {  // testing spec with duplicates in follower labels
     auto spec = R"(
     {
     "follower":
       [
         {
-          "name": "texture",
+          "label": "texture",
           "description": "Texture to apply during the processing",
-          "caps": ["video/x-raw"]
+          "can_do": ["video/x-raw"]
         },
         {
-          "name": "texture",
+          "label": "texture",
           "description": "Texture to apply during the processing",
-          "caps": ["video/x-raw"]
+          "can_do": ["video/x-raw"]
         }
       ]
     }
     )";
     auto cspec = ConnectionSpec(spec);
-    std::cout << "Duplicates in follower names: " << cspec.msg() << '\n';
+    std::cout << "Duplicates in follower labels: " << cspec.msg() << '\n';
     assert(!cspec.msg().empty());
     assert(!cspec);
   }
 
-  {  // testing spec with duplicates in writer names
+  {  // testing spec with duplicates in writer labels
     auto spec = R"(
     {
     "writer":
       [
         {
-          "name": "texture",
+          "label": "texture",
           "description": "Texture to apply during the processing",
-          "caps": ["video/x-raw"]
+          "can_do": ["video/x-raw"]
         },
         {
-          "name": "texture",
+          "label": "texture",
           "description": "Texture to apply during the processing",
-          "caps": ["video/x-raw"]
+          "can_do": ["video/x-raw"]
         }
       ]
     }
     )";
     auto cspec = ConnectionSpec(spec);
-    std::cout << "Duplicates in writer names: " << cspec.msg() << '\n';
+    std::cout << "Duplicates in writer labels: " << cspec.msg() << '\n';
     assert(!cspec.msg().empty());
     assert(!cspec);
   }

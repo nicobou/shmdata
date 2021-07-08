@@ -55,31 +55,156 @@ class ConnectionSpec : public BoolLog {
    */
   ConnectionSpec(const std::string& spec);
 
-  std::string get_writer_name(swid_t sid) const;
-  std::string get_follower_name(sfid_t sid) const;
-  sfid_t get_sfid(const std::string& name) const;
-  swid_t get_swid(const std::string& name) const;
+  /**
+   * Get Shmdata writer label from its identifier.
+   *
+   * \param swid the identifier
+   *
+   * \return the label
+   */
+  std::string get_writer_label(swid_t swid) const;
+
+  /**
+   * Get Shmdata follower label from its identifier.
+   *
+   * \param swid the identifier
+   *
+   * \return the label
+   */
+  std::string get_follower_label(sfid_t sfid) const;
+
+  /**
+   * Get Shmdata follower identifier from its label.
+   *
+   * \param label the label
+   *
+   * \return the identifier
+   */
+  sfid_t get_sfid(const std::string& label) const;
+
+  /**
+   * Get Shmdata writer identifier from its label.
+   *
+   * \param label the label
+   *
+   * \return the identifier
+   */
+  swid_t get_swid(const std::string& label) const;
+
+  /**
+   * Get Shmdata writer shmdata path from its identifier.
+   *
+   * \param id the identifier
+   *
+   * \return the Shmdata path
+   */
   std::string get_writer_shmpath(swid_t id) const;
-  std::vector<std::string> get_writer_names() const;
-  std::vector<std::string> get_follower_names() const;
 
-  // check is sfid is valid and compute the new sfid with a non-meta name
-  bool is_allocated(sfid_t sfid) const;
-  sfid_t get_actual_sfid(sfid_t sfid);
-  bool release(sfid_t sfid);
-  bool is_actual_writer(swid_t swid) const;
+  /**
+   * List labels of the Shmdata writers.
+   *
+   * \return the labels in a vector
+   */
+  std::vector<std::string> get_writer_labels() const;
 
+  /**
+   * List labels of the Shmdata followers.
+   *
+   * \return the labels in a vector
+   */
+  std::vector<std::string> get_follower_labels() const;
+
+  /**
+   * Test if an identifier is allocated.
+   *
+   * \param sfid the identifer
+   *
+   * \return true is allocated, false otherwise
+   */
+  bool is_allocated_follower(sfid_t sfid) const;
+
+  /**
+   * Test if the follower is a meta follower.
+   *
+   * \param sfid the follower identifier
+   *
+   * \return true if meta, false otherwise
+   */
+  bool is_meta_follower(sfid_t sfid) const;
+
+  /**
+   * Allocate a new identifier from a meta follower.
+   *
+   * \param sfid the meta follower identifier
+   *
+   * \return the newly allocated identifier, or Id::kInvalid
+   */
+  sfid_t allocate_sfid_from_meta(sfid_t sfid) const;
+
+  /**
+   * Deallocate an identifier allocated from a meta follower.
+   * Also removes the follower description from the three.
+   *
+   * \param sfid the identifier to deallocate
+   *
+   * \return true if sfid has been deallocated, false if
+   * sfid is not allocated, or not generated from a meta follower
+   */
+  bool deallocate_sfid_from_meta(sfid_t sfid) const;
+
+  /**
+   * Test if a Shmdata writer is allocated
+   *
+   * \param swid the Shmdata writer identifier
+   *
+   * \return true is allocated, false otherwise
+   */
+  bool is_allocated_writer(swid_t swid) const;
+
+  /**
+   * Test if a writer is meta.
+   *
+   * \param swid the writer identifier
+   *
+   * \return true if the write is meta, false otherwise
+   */
+  bool is_meta_writer(swid_t swid) const;
+
+  /**
+   * Allocate a writer from a meta writer.
+   *
+   * \param swid the identifier of the meta writer
+   * \param spec the writer specification
+   *
+   * \return the identifier of newly allocated writer, of Id::kInvalid
+   */
+  swid_t allocate_swid_from_meta(swid_t swid, const shm_spec_t& spec);
+
+  /**
+   * Deallocate a writer allocated from a meta writer.
+   * Also removes the writer from the connection specification.
+   *
+   * \param swid the identifier to deallocate
+   *
+   * return true if deallocated, false otherwise
+   */
+  bool deallocate_swid_from_meta(swid_t swid);
+
+  /**
+   * Get a reference to the internal InfomationTree.
+   *
+   * \return a ref-counted reference to the tree
+   */
   InfoTree::ptr get_tree();
 
  private:
-  Ids follower_id_generator_{};
-  std::map<sfid_t, std::string> follower_ids_{};
+  mutable Ids follower_id_generator_{};
+  mutable std::map<sfid_t, std::string> follower_ids_{};
   Ids writer_id_generator_{};
   std::map<swid_t, std::string> writer_ids_{};
 
   /**
    * Tree with structured specifications.
-   *
    */
   InfoTree::ptr connection_spec_;
 
@@ -89,7 +214,6 @@ class ConnectionSpec : public BoolLog {
    * \param Tree containing the shmdata specification.
    *
    * \return Success with errors in the BoolLog message if any.
-   *
    */
   BoolLog check_shmdata_spec(const InfoTree* tree);
 };

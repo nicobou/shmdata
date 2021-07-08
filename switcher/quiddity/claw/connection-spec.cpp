@@ -50,8 +50,8 @@ ConnectionSpec::ConnectionSpec(const std::string& spec)
 
   // check specs for shmdata followers
   connection_spec_->for_each_in_array(".follower", [&](InfoTree* shmspec) {
-    // check name and structure
-    const auto name = shmspec->branch_get_value("name").as<std::string>();
+    // check label and structure
+    const auto label = shmspec->branch_get_value("label").as<std::string>();
     auto parsed = check_shmdata_spec(shmspec);
     if (!parsed) {
       msg_ = parsed.msg();
@@ -64,23 +64,24 @@ ConnectionSpec::ConnectionSpec(const std::string& spec)
       return;
     }
     shmspec->vgraft("sfid", id);
-    follower_ids_.emplace(std::make_pair(id, name));
+    shmspec->vgraft("from_sfid", Ids::kInvalid);
+    follower_ids_.emplace(std::make_pair(id, label));
   });
 
   // check if errors during shm_spec_fun
   if (!msg_.empty()) return;
 
-  // check if names are unique in follower
-  auto follower_names = get_follower_names();
-  if (follower_names.end() != std::unique(follower_names.begin(), follower_names.end())) {
-    msg_ = "duplicate in shmdata follower names";
+  // check if labels are unique in follower
+  auto follower_labels = get_follower_labels();
+  if (follower_labels.end() != std::unique(follower_labels.begin(), follower_labels.end())) {
+    msg_ = "duplicate in shmdata follower labels";
     return;
   }
 
   // check specs for shmdata writers
   connection_spec_->for_each_in_array(".writer", [&](InfoTree* shmspec) {
-    // check name and structure
-    const auto name = shmspec->branch_get_value("name").as<std::string>();
+    // check label and structure
+    const auto label = shmspec->branch_get_value("label").as<std::string>();
     auto parsed = check_shmdata_spec(shmspec);
     if (!parsed) {
       msg_ = parsed.msg();
@@ -93,16 +94,17 @@ ConnectionSpec::ConnectionSpec(const std::string& spec)
       return;
     }
     shmspec->vgraft("swid", id);
-    writer_ids_.emplace(std::make_pair(id, name));
+    shmspec->vgraft("from_swid", Ids::kInvalid);
+    writer_ids_.emplace(std::make_pair(id, label));
   });
 
   // check if errors during shm_spec_fun
   if (!msg_.empty()) return;
 
-  // check if names are unique in writer
-  auto writer_names = get_writer_names();
-  if (writer_names.end() != std::unique(writer_names.begin(), writer_names.end())) {
-    msg_ = "duplicate in shmdata writer names";
+  // check if labels are unique in writer
+  auto writer_labels = get_writer_labels();
+  if (writer_labels.end() != std::unique(writer_labels.begin(), writer_labels.end())) {
+    msg_ = "duplicate in shmdata writer labels";
     return;
   }
 
@@ -115,112 +117,202 @@ BoolLog ConnectionSpec::check_shmdata_spec(const InfoTree* tree) {
   if (3 != keys.size())
     return BoolLog(false,
                    std::string("unexpected number of key for ") + infotree::json::serialize(tree));
-  const auto name = tree->branch_get_value("name");
-  if (!name.is<std::string>())
-    return BoolLog(false, "name must be a string: " + infotree::json::serialize(tree));
-  if (name.as<std::string>().empty()) return BoolLog(false, "name must not be empty");
+  const auto label = tree->branch_get_value("label");
+  if (!label.is<std::string>())
+    return BoolLog(false, "label must be a string: " + infotree::json::serialize(tree));
+  if (label.as<std::string>().empty()) return BoolLog(false, "label must not be empty");
   const auto description = tree->branch_get_value("description");
   if (!description.is<std::string>())
     return BoolLog(false, "description must be a string: " + infotree::json::serialize(tree));
 
-  if (!tree->branch_is_array("caps"))
-    return BoolLog(false, "caps entry must be an array in " + infotree::json::serialize(tree));
-  auto caps_spec_is_correct = true;
+  if (!tree->branch_is_array("can_do"))
+    return BoolLog(false,
+                   "can_do entry must be an array of caps in " + infotree::json::serialize(tree));
+  auto can_do_spec_is_correct = true;
   std::string caps_message;
-  tree->cfor_each_in_array("caps", [&](const InfoTree* caps) {
+  tree->cfor_each_in_array("can_do", [&](const InfoTree* caps) {
     auto val = caps->get_value();
     if (!val.is<std::string>()) {
       caps_message = std::string("caps must be string value: ") + infotree::json::serialize(caps);
-      caps_spec_is_correct = false;
+      can_do_spec_is_correct = false;
     }
     auto type = shmdata::Type(val.as<std::string>());
     if (!type.get_parsing_errors().empty()) {
       caps_message = std::string("caps parsing error: ") + type.get_parsing_errors() + "(" +
                      val.as<std::string>() + ")";
-      caps_spec_is_correct = false;
+      can_do_spec_is_correct = false;
     }
   });
-  if (!caps_spec_is_correct) return BoolLog(false, caps_message);
+  if (!can_do_spec_is_correct) return BoolLog(false, caps_message);
   return BoolLog(true);
 }
 
-std::vector<std::string> ConnectionSpec::get_writer_names() const {
+std::vector<std::string> ConnectionSpec::get_writer_labels() const {
   std::vector<std::string> res;
   for (const auto& it : writer_ids_) res.push_back(it.second);
   return res;
 }
 
-std::vector<std::string> ConnectionSpec::get_follower_names() const {
+std::vector<std::string> ConnectionSpec::get_follower_labels() const {
   std::vector<std::string> res;
   for (const auto& it : follower_ids_) res.emplace_back(it.second);
   return res;
 }
 
-std::string ConnectionSpec::get_follower_name(sfid_t sid) const {
+std::string ConnectionSpec::get_follower_label(sfid_t sid) const {
   const auto& it = follower_ids_.find(sid);
   if (follower_ids_.cend() == it) return "";
   return it->second;
 }
 
-std::string ConnectionSpec::get_writer_name(swid_t sid) const {
+std::string ConnectionSpec::get_writer_label(swid_t sid) const {
   const auto& it = writer_ids_.find(sid);
   if (writer_ids_.cend() == it) return "";
   return it->second;
 }
 
-sfid_t ConnectionSpec::get_sfid(const std::string& name) const {
+sfid_t ConnectionSpec::get_sfid(const std::string& label) const {
   for (const auto& it : follower_ids_) {
-    if (it.second == name) return it.first;
+    if (it.second == label) return it.first;
   }
   return Ids::kInvalid;
 }
 
-swid_t ConnectionSpec::get_swid(const std::string& name) const {
+swid_t ConnectionSpec::get_swid(const std::string& label) const {
   for (const auto& it : writer_ids_) {
-    if (it.second == name) return it.first;
+    if (it.second == label) return it.first;
   }
   return Ids::kInvalid;
 }
 
-bool ConnectionSpec::is_allocated(sfid_t sfid) const {
+bool ConnectionSpec::is_allocated_follower(sfid_t sfid) const {
   return follower_ids_.cend() != follower_ids_.find(sfid);
 }
 
-sfid_t ConnectionSpec::get_actual_sfid(sfid_t sfid) {
-  auto id = sfid;
+bool ConnectionSpec::is_meta_follower(sfid_t sfid) const {
+  const auto& it = follower_ids_.find(sfid);
+  if (writer_ids_.cend() == it) {
+    return false;
+  }
+  if (std::string::npos == it->second.find('%')) {
+    return false;
+  }
+  return true;
+}
 
+sfid_t ConnectionSpec::allocate_sfid_from_meta(sfid_t sfid) const {
   // check if sfid is allocated
   const auto& it = follower_ids_.find(sfid);
-  if (follower_ids_.cend() == it) return Ids::kInvalid;
-
-  // check if local sfid is meta and allocate a new one if needed
-  if (std::string::npos != it->second.find('%')) {
-    // this is a meta shmdata follower, so a new specific sfid is required
-    id = follower_id_generator_.allocate_id();
-    if (Ids::kInvalid == id) {
-      return Ids::kInvalid;
-    }
-    follower_ids_.emplace(
-        std::make_pair(id, stringutils::replace_char(it->second, '%', std::to_string(id))));
+  if (follower_ids_.cend() == it) {
+    return Ids::kInvalid;
   }
+
+  // check if local sfid is meta
+  if (std::string::npos == it->second.find('%')) {
+    return Ids::kInvalid;
+  }
+
+  // allocate a new sfid
+  auto id = follower_id_generator_.allocate_id();
+  if (Ids::kInvalid == id) {
+    return Ids::kInvalid;
+  }
+  auto label = stringutils::replace_char(it->second, '%', std::to_string(id));
+  follower_ids_.emplace(std::make_pair(id, label));
+
+  // add to the tree
+  InfoTree::ptr follower_tree = InfoTree::make();
+  follower_tree->vgraft("label", label);
+  follower_tree->vgraft("sfid", id);
+  follower_tree->vgraft("from_sfid", sfid);
+  connection_spec_->graft("follower." + std::to_string(id), follower_tree);
   return id;
 }
 
-bool ConnectionSpec::release(sfid_t sfid) {
-  return false;
+bool ConnectionSpec::deallocate_sfid_from_meta(sfid_t sfid) const {
+  // check sfid is a dynamic
+  if (Ids::kInvalid ==
+      connection_spec_->branch_get_value("follower." + std::to_string(sfid) + ".from_sfid")
+          .as<sfid_t>()) {
+    return false;
+  }
+  connection_spec_->prune("follower." + std::to_string(sfid));
+  follower_ids_.erase(follower_ids_.find(sfid));
+  return true;
 }
 
-bool ConnectionSpec::is_actual_writer(swid_t swid) const {
-  // check if id is allocated
+bool ConnectionSpec::is_allocated_writer(swid_t swid) const {
   const auto& it = writer_ids_.find(swid);
   if (writer_ids_.cend() == it) {
     return false;
   }
-  // check if this is an actual or a meta shmdata and fail
+  return true;
+}
+
+bool ConnectionSpec::is_meta_writer(swid_t swid) const {
+  const auto& it = writer_ids_.find(swid);
+  if (writer_ids_.cend() == it) {
+    return false;
+  }
   if (std::string::npos != it->second.find('%')) {
     return false;
   }
   return true;
+}
+
+swid_t ConnectionSpec::allocate_swid_from_meta(swid_t swid, const shm_spec_t& spec) {
+  // check if swid is allocated
+  const auto& it = writer_ids_.find(swid);
+  if (writer_ids_.cend() == it) {
+    return Ids::kInvalid;
+  }
+
+  // check if local swid is meta
+  if (std::string::npos == it->second.find('%')) {
+    return Ids::kInvalid;
+  }
+
+  // allocate a new swid
+  auto id = writer_id_generator_.allocate_id();
+  if (Ids::kInvalid == id) {
+    return Ids::kInvalid;
+  }
+  auto label = spec.label;
+  if (label.empty()) {
+    label = stringutils::replace_char(it->second, '%', std::to_string(id));
+  }
+  writer_ids_.emplace(std::make_pair(id, label));
+
+  // add to the tree
+  InfoTree::ptr writer_tree = InfoTree::make();
+  writer_tree->vgraft("label", label);
+  writer_tree->vgraft("swid", id);
+  writer_tree->vgraft("description", spec.label);
+  writer_tree->vgraft("from_swid", swid);
+  connection_spec_->graft("writer." + std::to_string(id), writer_tree);
+  return id;
+}
+
+bool ConnectionSpec::deallocate_swid_from_meta(swid_t swid) {
+  // check if swid is allocated
+  const auto& it = writer_ids_.find(swid);
+  if (writer_ids_.cend() == it) {
+    return false;
+  }
+
+  // check if swid is genreated from an other swid
+  if (Ids::kInvalid ==
+      connection_spec_->branch_get_value("writer." + std::to_string(swid) + ".from_swid")
+          .as<swid_t>()) {
+    return false;
+  }
+
+  // deallocate the swid
+  writer_ids_.erase(writer_ids_.find(swid));
+
+  // remove from the tree
+  connection_spec_->prune("writer." + std::to_string(swid));
+  return swid;
 }
 
 InfoTree::ptr ConnectionSpec::get_tree() { return connection_spec_; }

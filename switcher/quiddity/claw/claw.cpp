@@ -36,26 +36,41 @@ Claw::Claw(Quiddity* quid,
       connection_spec_(spec),
       on_connect_cb_(on_connect_cb),
       on_disconnect_cb_(on_disconnect_cb) {
+  // check specification has been parsed
   if (!static_cast<bool>(connection_spec_)) {
     quid->warning("Connection spec error: %", connection_spec_.msg());
     return;
   }
+  // check callbacks for follower connection are installed properly
+  if (!connection_spec_.get_follower_labels().empty()) {
+    if (!on_connect_cb_) {
+      quid->warning(
+          "a follower is specified in connection spec, but no connection callback is configured");
+      return;
+    }
+    if (!on_disconnect_cb_) {
+      quid->warning(
+          "a follower is specified in connection spec, but no disconnection callback is "
+          "configured");
+      return;
+    }
+  }
   quid->connection_spec_tree_ = connection_spec_.get_tree();
 }
 
-std::string Claw::get_follower_name(sfid_t sfid) const {
-  return connection_spec_.get_follower_name(sfid);
+std::string Claw::get_follower_label(sfid_t sfid) const {
+  return connection_spec_.get_follower_label(sfid);
 }
 
-std::string Claw::get_writer_name(swid_t swid) const {
-  return connection_spec_.get_writer_name(swid);
+std::string Claw::get_writer_label(swid_t swid) const {
+  return connection_spec_.get_writer_label(swid);
 }
 
-sfid_t Claw::get_sfid(const std::string& name) const { return connection_spec_.get_sfid(name); }
+sfid_t Claw::get_sfid(const std::string& label) const { return connection_spec_.get_sfid(label); }
 
-swid_t Claw::get_swid(const std::string& name) const { return connection_spec_.get_sfid(name); }
+swid_t Claw::get_swid(const std::string& label) const { return connection_spec_.get_swid(label); }
 
-sfid_t Claw::connect(sfid_t local_sid, quiddity::qid_t writer_quid, swid_t writer_sid) {
+sfid_t Claw::connect(sfid_t local_sid, quiddity::qid_t writer_quid, swid_t writer_sid) const {
   auto writer_qrox = quid_->qcontainer_->get_qrox(writer_quid);
   if (!writer_qrox) {
     quid_->warning("Quiddity % not found, cannot connect", std::to_string(writer_quid));
@@ -69,40 +84,69 @@ sfid_t Claw::connect(sfid_t local_sid, quiddity::qid_t writer_quid, swid_t write
   return connect_raw(local_sid, shmpath);
 }
 
-sfid_t Claw::connect_raw(sfid_t sfid, const std::string& shmpath) {
-  auto id = connection_spec_.get_actual_sfid(sfid);
-  if (Ids::kInvalid == id) {
-    quid_->warning("cannot connect, shmdata follower not found (id requested is %)",
+sfid_t Claw::connect_raw(sfid_t sfid, const std::string& shmpath) const {
+  auto id = sfid;
+  bool is_meta = connection_spec_.is_meta_follower(sfid);
+  if (is_meta) {
+    id = connection_spec_.allocate_sfid_from_meta(sfid);
+  }
+  if (!connection_spec_.is_allocated_follower(id)) {
+    quid_->warning("cannot connect_raw, shmdata follower not found (id requested is %)",
                    std::to_string(sfid));
     return Ids::kInvalid;
   }
   // trigger quiddity callback
   if (!(on_connect_cb_(shmpath, id))) {
-    connection_spec_.release(id);
+    if (is_meta) {
+      connection_spec_.deallocate_sfid_from_meta(id);
+    }
     return Ids::kInvalid;
   }
   return id;
 }
 
-bool Claw::disconnect(sfid_t sfid) {
-  if (!connection_spec_.is_allocated(sfid)) {
+bool Claw::disconnect(sfid_t sfid) const {
+  if (!connection_spec_.is_allocated_follower(sfid)) {
     quid_->warning("cannot disconnect (sfid % not allocated)", std::to_string(sfid));
     return false;
   }
   if (!(on_disconnect_cb_(sfid))) {
     return false;
   }
+  // remove from connection spec if a follower is generated from a meta follower
+  connection_spec_.deallocate_sfid_from_meta(sfid);
   return true;
 }
 
 std::string Claw::get_writer_shmpath(swid_t id) const {
-  if (!connection_spec_.is_actual_writer(id)) {
-    quid_->warning("cannot provide shmpath for id % (id not valid for writer)", std::to_string(id));
+  if (!connection_spec_.is_allocated_writer(id)) {
+    quid_->warning("cannot provide shmpath for id % (not allocated)", std::to_string(id));
+    return "";
+  }
+  if (!connection_spec_.is_meta_writer(id)) {
+    quid_->warning("cannot provide shmpath for id % (id refers to a meta Shmdata)",
+                   std::to_string(id));
     return "";
   }
   return Switcher::get_shm_dir() + "/" + Switcher::get_shm_prefix() +
          quid_->qcontainer_->get_switcher()->get_name() + "_" + std::to_string(quid_->id_) + "_" +
          std::to_string(id);
+}
+
+swid_t Claw::add_writer_to_meta(swid_t id, const shm_spec_t& spec) {
+  return connection_spec_.allocate_swid_from_meta(id, spec);
+}
+
+bool Claw::remove_writer_from_meta(swid_t id) {
+  return connection_spec_.deallocate_swid_from_meta(id);
+}
+
+std::vector<std::string> Claw::get_follower_labels() const {
+  return connection_spec_.get_follower_labels();
+}
+
+std::vector<std::string> Claw::get_writer_labels() const {
+  return connection_spec_.get_writer_labels();
 }
 
 }  // namespace claw

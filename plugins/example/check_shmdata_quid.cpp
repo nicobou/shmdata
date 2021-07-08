@@ -20,6 +20,7 @@
 #undef NDEBUG  // get assert in release mode
 
 #include <cassert>
+#include <map>
 
 #include "switcher/infotree/information-tree.hpp"
 #include "switcher/infotree/json-serializer.hpp"
@@ -47,7 +48,7 @@ int main() {
       assert(conspec_tree);
       assert(!conspec_tree->empty());
       conspec_tree->cfor_each_in_array("writer", [&](const InfoTree* tree) {
-        swids.emplace(tree->branch_get_value("name"), tree->branch_get_value("swid"));
+        swids.emplace(tree->branch_get_value("label"), tree->branch_get_value("swid"));
       });
       assert(!swids.empty());
     }
@@ -59,7 +60,7 @@ int main() {
       assert(conspec_tree);
       assert(!conspec_tree->empty());
       conspec_tree->cfor_each_in_array("follower", [&](const InfoTree* tree) {
-        sfids.emplace(tree->branch_get_value("name"), tree->branch_get_value("sfid"));
+        sfids.emplace(tree->branch_get_value("label"), tree->branch_get_value("sfid"));
       });
       assert(!sfids.empty());
     }

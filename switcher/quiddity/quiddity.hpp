@@ -121,7 +121,7 @@ class Quiddity : public log::Logged, public SafeBoolIdiom {
 
   // Shmdata connections
   Make_consultable(Quiddity, InfoTree, connection_spec_tree_.get(), conspec);
-  Make_delegate(Quiddity, claw::Claw, &claw_, claw);
+  Make_consultable(Quiddity, claw::Claw, &claw_, claw);
 
   // user data
   Make_delegate(Quiddity, InfoTree, structured_user_data_.get(), user_data);
@@ -186,9 +186,6 @@ class Quiddity : public log::Logged, public SafeBoolIdiom {
   // methods
   method::MBag meths_;
 
-  // connections with claw
-  claw::Claw claw_;
-
   // position weight FIXME should be outside this file ?
   int position_weight_counter_{0};
 
@@ -223,6 +220,9 @@ class Quiddity : public log::Logged, public SafeBoolIdiom {
 
   // methods
   Make_delegate(Quiddity, method::MBag, &meths_, mmanage);
+
+  // connections with claw
+  claw::Claw claw_;
 
   // life management
   void self_destruct();

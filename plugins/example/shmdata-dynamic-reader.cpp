@@ -17,56 +17,33 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./shmdata-quid.hpp"
+#include "./shmdata-dynamic-reader.hpp"
 
 namespace switcher {
 namespace quiddities {
-SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataQuid,
-                                     "connection-quid",
-                                     "Example Quiddity with Shmdata connections",
+SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataDynReader,
+                                     "dyn-reader-quid",
+                                     "Example Quiddity with Dynamic Reader Shmdata",
                                      "test",
                                      "",
                                      "Dummy plugin for testing/example purpose",
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-const std::string ShmdataQuid::kConnectionSpec(R"(
+const std::string ShmdataDynReader::kConnectionSpec(R"(
 {
 "follower":
   [
     {
-      "label": "texture",
-      "description": "Texture to apply during the processing",
+      "label": "video%",
+      "description": "Video streams",
       "can_do": ["video/x-raw"]
-    },
-    {
-      "label": "mic%",
-      "description": "Audio inputs to be analysed",
-      "can_do": ["audio/x-raw", "audio/mpeg"]
-    },
-    {
-      "label": "custom",
-      "description": "Custom shmdata for my statistical analysis",
-      "can_do": []
-    }
-  ],
-"writer":
-  [
-    {
-      "label": "texture",
-      "description": "Produced rendering",
-      "can_do": ["video/x-raw"]
-    },
-    {
-      "label": "custom%",
-      "description": "Produced random buffers",
-      "can_do": []
     }
   ]
 }
 )");
 
-ShmdataQuid::ShmdataQuid(quiddity::Config&& conf)
+ShmdataDynReader::ShmdataDynReader(quiddity::Config&& conf)
     : Quiddity(std::forward<quiddity::Config>(conf),
                {kConnectionSpec,
                 [this](const std::string& shmpath, claw::sfid_t sfid) {
@@ -74,9 +51,10 @@ ShmdataQuid::ShmdataQuid(quiddity::Config&& conf)
                 },
                 [this](claw::sfid_t sfid) { return on_disconnect(sfid); }}) {}
 
-bool ShmdataQuid::on_connect(const std::string& /*shmpath*/, claw::sfid_t /*sfid*/) { return true; }
+bool ShmdataDynReader::on_connect(const std::string& /*shmpath*/, claw::sfid_t /*sfid*/) {
+  return true;
+}
 
-bool ShmdataQuid::on_disconnect(claw::sfid_t /*sfid*/) { return true; }
-
+bool ShmdataDynReader::on_disconnect(claw::sfid_t /*sfid*/) { return true; }
 }  // namespace quiddities
 }  // namespace switcher

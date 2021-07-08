@@ -90,13 +90,13 @@ Quiddity::Quiddity(quiddity::Config&& conf, claw::Config claw_conf)
             smanage<MPtr(&signal::SBag::notify)>(on_method_removed_id_,
                                                  InfoTree::make(method_name));
           }),
+      id_(conf.id_),
+      nickname_(conf.nickname_),
+      type_(conf.type_),
       claw_(this,
             claw::ConnectionSpec(claw_conf.spec),
             claw_conf.on_connect_cb,
             claw_conf.on_disconnect_cb),
-      id_(conf.id_),
-      nickname_(conf.nickname_),
-      type_(conf.type_),
       qcontainer_(conf.qc_) {
   configuration_tree_->graft(".", InfoTree::make());
   information_tree_->graft(".type", InfoTree::make(conf.type_));

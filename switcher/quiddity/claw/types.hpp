@@ -20,6 +20,8 @@
 #ifndef __SWITCHER_QUIDDITY_CLAW_TYPES_H__
 #define __SWITCHER_QUIDDITY_CLAW_TYPES_H__
 
+#include <string>
+
 #include "../../utils/ids.hpp"
 
 namespace switcher {
@@ -27,21 +29,19 @@ namespace quiddity {
 namespace claw {
 
 /**
- * \brief sfid_t is the type for unique identifier for a follower shmdata of a Quiddity.
+ * sfid_t is the type for unique identifier for a follower shmdata of a Quiddity.
  * It is allocated and maintained by in the Claw class.
- *
  */
 using sfid_t = Ids::id_t;
 
 /**
- * \brief swid_t is the type for unique identifier for a writer shmdata of a Quiddity.
+ * swid_t is the type for unique identifier for a writer shmdata of a Quiddity.
  * It is allocated and maintained by in the Claw class.
- *
  */
 using swid_t = Ids::id_t;
 
 /**
- * \brief OnConnect_t is the callback triggered by Claw when asked to connect to
+ * OnConnect_t is the callback triggered by Claw when asked to connect to
  * a shmdata writer.
  *
  * \param shmpath Path of the shmdata to connect to
@@ -50,20 +50,32 @@ using swid_t = Ids::id_t;
  * determine the specific shmdata that has been requested to connect to.
  *
  * \return Connection success
- *
  */
 using OnConnect_t = std::function<bool(const std::string& /*shmpath*/, sfid_t /*sid*/)>;
 
 /**
- * \brief OnDisconnect_t is the callback triggered by Claw when asked to disconnect
+ * OnDisconnect_t is the callback triggered by Claw when asked to disconnect
  * from a shmdata writer.
  *
  * \param sid Identificator of the shmdata to disconnect from.
  *
  * \return Disconnection success
- *
  */
 using OnDisconnect_t = std::function<bool(sfid_t /*sid*/)>;
+
+/**
+ * shm_spec_t is a data structure used for instanciation of dynamic shmdata
+ */
+using shm_spec_t = struct shm_spec_struct_t {
+  /**
+   * The label for the Shmdata
+   */
+  std::string label{};
+  /**
+   * The description for the Shmdata
+   */
+  std::string description{};
+};
 
 }  // namespace claw
 }  // namespace quiddity
