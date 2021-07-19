@@ -1,3 +1,6 @@
 # You must remove unused comment lines for the released package.
 usr/include/*
 usr/lib/pkgconfig/*.pc
+tests/*.cpp usr/share/doc/libshmdata-dev/tests
+tests/*.sh usr/share/doc/libshmdata-dev/tests
+tests/CMakeLists.txt usr/share/doc/libshmdata-dev/tests
