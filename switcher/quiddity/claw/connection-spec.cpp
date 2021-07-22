@@ -19,7 +19,6 @@
 
 #include "./connection-spec.hpp"
 
-#include <shmdata/type.hpp>
 #include <string>
 
 #include "../../infotree/json-serializer.hpp"
@@ -66,6 +65,12 @@ ConnectionSpec::ConnectionSpec(const std::string& spec)
     shmspec->vgraft("sfid", id);
     shmspec->vgraft("from_sfid", Ids::kInvalid);
     follower_ids_.emplace(std::make_pair(id, label));
+    // collect can_do in order to fill follower_can_do_
+    std::vector<::shmdata::Type> can_do;
+    shmspec->cfor_each_in_array("can_do", [&](const InfoTree* caps) {
+      can_do.emplace_back(::shmdata::Type(caps->get_value().as<std::string>()));
+    });
+    follower_can_do_.emplace(std::make_pair(id, can_do));
   });
 
   // check if errors during shm_spec_fun
@@ -96,6 +101,12 @@ ConnectionSpec::ConnectionSpec(const std::string& spec)
     shmspec->vgraft("swid", id);
     shmspec->vgraft("from_swid", Ids::kInvalid);
     writer_ids_.emplace(std::make_pair(id, label));
+    // collect can_do in order to fill writer_can_do_
+    std::vector<::shmdata::Type> can_do;
+    shmspec->cfor_each_in_array("can_do", [&](const InfoTree* caps) {
+      can_do.emplace_back(::shmdata::Type(caps->get_value().as<std::string>()));
+    });
+    writer_can_do_.emplace(std::make_pair(id, can_do));
   });
 
   // check if errors during shm_spec_fun
@@ -136,7 +147,7 @@ BoolLog ConnectionSpec::check_shmdata_spec(const InfoTree* tree) {
       caps_message = std::string("caps must be string value: ") + infotree::json::serialize(caps);
       can_do_spec_is_correct = false;
     }
-    auto type = shmdata::Type(val.as<std::string>());
+    auto type = ::shmdata::Type(val.as<std::string>());
     if (!type.get_parsing_errors().empty()) {
       caps_message = std::string("caps parsing error: ") + type.get_parsing_errors() + "(" +
                      val.as<std::string>() + ")";
@@ -219,6 +230,7 @@ sfid_t ConnectionSpec::allocate_sfid_from_meta(sfid_t sfid) const {
   }
   auto label = stringutils::replace_char(it->second, '%', std::to_string(id));
   follower_ids_.emplace(std::make_pair(id, label));
+  follower_can_do_.emplace(std::make_pair(id, follower_can_do_[sfid]));
 
   // add to the tree
   InfoTree::ptr follower_tree = InfoTree::make();
@@ -238,6 +250,7 @@ bool ConnectionSpec::deallocate_sfid_from_meta(sfid_t sfid) const {
   }
   connection_spec_->prune("follower." + std::to_string(sfid));
   follower_ids_.erase(follower_ids_.find(sfid));
+  follower_can_do_.erase(follower_can_do_.find(sfid));
   return true;
 }
 
@@ -282,6 +295,7 @@ swid_t ConnectionSpec::allocate_swid_from_meta(swid_t swid, const shm_spec_t& sp
     label = stringutils::replace_char(it->second, '%', std::to_string(id));
   }
   writer_ids_.emplace(std::make_pair(id, label));
+  writer_can_do_.emplace(std::make_pair(id, writer_can_do_[swid]));
 
   // add to the tree
   InfoTree::ptr writer_tree = InfoTree::make();
@@ -309,6 +323,7 @@ bool ConnectionSpec::deallocate_swid_from_meta(swid_t swid) {
 
   // deallocate the swid
   writer_ids_.erase(writer_ids_.find(swid));
+  writer_can_do_.erase(writer_can_do_.find(swid));
 
   // remove from the tree
   connection_spec_->prune("writer." + std::to_string(swid));
@@ -316,6 +331,18 @@ bool ConnectionSpec::deallocate_swid_from_meta(swid_t swid) {
 }
 
 InfoTree::ptr ConnectionSpec::get_tree() { return connection_spec_; }
+
+std::vector<::shmdata::Type> ConnectionSpec::get_follower_can_do(sfid_t sfid) const {
+  const auto& it = follower_can_do_.find(sfid);
+  if (follower_can_do_.cend() == it) return {};
+  return it->second;
+}
+
+std::vector<::shmdata::Type> ConnectionSpec::get_writer_can_do(swid_t swid) const {
+  const auto& it = writer_can_do_.find(swid);
+  if (writer_can_do_.cend() == it) return {};
+  return it->second;
+}
 
 }  // namespace claw
 }  // namespace quiddity

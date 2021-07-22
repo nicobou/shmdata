@@ -22,6 +22,7 @@
 
 #include <cstdint>  // uint32_t
 #include <functional>
+#include <shmdata/type.hpp>
 #include <vector>
 
 #include "../../utils/safe-bool-idiom.hpp"
@@ -206,7 +207,7 @@ class Claw : public SafeBoolIdiom {
   // // test if connection is possible
   // sid_t get_first_compatible_sid(shmdat::Type caps);
   // std::vector<sid_t> get_compatible_sids(shmdat::Type caps);
-  // bool can_sink_caps(shmdat::Type caps, sid_t local_sid);
+  bool can_sink_caps(sfid_t local_sid, const ::shmdata::Type& caps) const;
 
  private:
   Quiddity* quid_;

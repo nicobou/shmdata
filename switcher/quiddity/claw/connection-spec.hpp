@@ -21,6 +21,7 @@
 #define __SWITCHER_QUIDDITY_CLAW_CONNECTION_SPEC_H__
 
 #include <map>
+#include <shmdata/type.hpp>
 #include <string>
 
 #include "../../infotree/information-tree.hpp"
@@ -197,11 +198,16 @@ class ConnectionSpec : public BoolLog {
    */
   InfoTree::ptr get_tree();
 
+  std::vector<::shmdata::Type> get_follower_can_do(sfid_t sfid) const;
+  std::vector<::shmdata::Type> get_writer_can_do(swid_t swid) const;
+
  private:
   mutable Ids follower_id_generator_{};
   mutable std::map<sfid_t, std::string> follower_ids_{};
+  mutable std::map<sfid_t, std::vector<::shmdata::Type>> follower_can_do_{};
   Ids writer_id_generator_{};
   std::map<swid_t, std::string> writer_ids_{};
+  std::map<swid_t, std::vector<::shmdata::Type>> writer_can_do_{};
 
   /**
    * Tree with structured specifications.

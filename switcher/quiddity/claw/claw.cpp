@@ -20,6 +20,7 @@
 #include "./claw.hpp"
 
 #include "../../switcher.hpp"
+#include "../../utils/scope-exit.hpp"
 #include "../quiddity.hpp"
 
 namespace switcher {
@@ -147,6 +148,20 @@ std::vector<std::string> Claw::get_follower_labels() const {
 
 std::vector<std::string> Claw::get_writer_labels() const {
   return connection_spec_.get_writer_labels();
+}
+
+bool Claw::can_sink_caps(sfid_t sfid, const ::shmdata::Type& shmtype) const {
+  const auto& can_do = connection_spec_.get_follower_can_do(sfid);
+  auto writer_caps = gst_caps_from_string(shmtype.str().c_str());
+  On_scope_exit { gst_caps_unref(writer_caps); };
+  for (const auto& it : can_do) {
+    auto can_do_caps = gst_caps_from_string(it.str().c_str());
+    On_scope_exit { gst_caps_unref(can_do_caps); };
+    if (gst_caps_is_always_compatible(can_do_caps, writer_caps)) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace claw
