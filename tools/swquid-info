@@ -54,6 +54,7 @@ Arguments:
                       action="store_true")
     argp.add_argument("-c", "--class-doc", help="print class documentation", action="store_true")
     argp.add_argument("-d", "--debug", help="print debug log", action="store_true")
+    argp.add_argument("-v", "--version", help="print switcher version", action="store_true")
     argp.add_argument(
         'quiddity_class', help="You can add method or property or signal id for a shorter output", nargs='?')
     return argp
@@ -66,6 +67,10 @@ def main() -> None:
     # create a switcher.
     name = 'swquid-info' + str(os.getpid())
     sw = Switcher(name, debug=args.debug)
+
+    if args.version:
+        print(sw.version())
+        return
 
     if args.list_all:
         classes = sw.list_classes()
