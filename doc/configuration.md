@@ -1,8 +1,15 @@
 Configuration
 =======
 
-It is possible to configure the default behaviour of switcher quiddities for your specific instance of Scenic. Such configurations should go in a default file named `switcher.json` and saved to `$HOME/.scenic/switcher.json`.
+Switcher has the ability to load a configuration from a file in [JSON](https://www.json.org/json-en.html) format. 
 
-A specific configuration is forwarded to related quiddities at their creation. It is important to understand that this is *not* a way of setting default values for the *properties* but rather a way to define keys used by each quiddity in its own way. As of now, only the bundles, glfwin and pjsip have custom configuration keys.
+Following the [XDG Base Directory Specification](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html), a global configuration file  `global.json` for all instances of [Switcher](https://gitlab.com/sat-metalab/switcher) might be placed under the `$HOME/.config/switcher` directory.
 
-This file is also the place where bundles will be defined (see [writing-bundles.md](writing-bundles.md)). The example file [dummy-switcher.json](doc/dummy-switcher.json) shows all the possible keys used by switcher quiddities, along with an example bundle.
+Configuration keys permit to change the default behavior of [Switcher](https://gitlab.com/sat-metalab/switcher) built-in `Quiddities` and define [Custom Bundles](writing-bundles.md).
+
+At runtime, the custom configuration is passed to their respective quids upon instantiation.
+
+> Note that this is *not* a way to set defaults for the *properties* of each quiddity, but rather for specific *keys* used by each quiddities in their own way.
+> At the moment, only [Custom Bundles](writing-bundles.md), `jackserver`, `jacksink`, `jacksrc`, `glfwin` and `pjsip` have predefined configuration *keys*.
+
+A sample configuration [dummy-switcher.json](doc/dummy-switcher.json) exists to demonstrate all the possible *keys* used by [Switcher](https://gitlab.com/sat-metalab/switcher) quiddities, as well as some bundle examples.
