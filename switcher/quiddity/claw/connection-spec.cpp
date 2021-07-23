@@ -344,6 +344,22 @@ std::vector<::shmdata::Type> ConnectionSpec::get_writer_can_do(swid_t swid) cons
   return it->second;
 }
 
+std::vector<swid_t> ConnectionSpec::get_writer_swids() const {
+  std::vector<swid_t> res;
+  for (const auto& it : writer_ids_) {
+    res.emplace_back(it.first);
+  }
+  return res;
+}
+
+std::vector<sfid_t> ConnectionSpec::get_follower_sfids() const {
+  std::vector<sfid_t> res;
+  for (const auto& it : follower_ids_) {
+    res.emplace_back(it.first);
+  }
+  return res;
+}
+
 }  // namespace claw
 }  // namespace quiddity
 }  // namespace switcher

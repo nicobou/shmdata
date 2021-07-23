@@ -150,7 +150,7 @@ std::vector<std::string> Claw::get_writer_labels() const {
   return connection_spec_.get_writer_labels();
 }
 
-bool Claw::can_sink_caps(sfid_t sfid, const ::shmdata::Type& shmtype) const {
+bool Claw::can_do_shmtype(sfid_t sfid, const ::shmdata::Type& shmtype) const {
   const auto& can_do = connection_spec_.get_follower_can_do(sfid);
   auto writer_caps = gst_caps_from_string(shmtype.str().c_str());
   On_scope_exit { gst_caps_unref(writer_caps); };
@@ -162,6 +162,71 @@ bool Claw::can_sink_caps(sfid_t sfid, const ::shmdata::Type& shmtype) const {
     }
   }
   return false;
+}
+
+bool Claw::can_do_swid(sfid_t local_sfid, quiddity::qid_t writer_quid, swid_t writer_sid) const {
+  auto writer_qrox = quid_->qcontainer_->get_qrox(writer_quid);
+  if (!writer_qrox) {
+    quid_->warning("Quiddity % not found", std::to_string(writer_quid));
+    return false;
+  }
+  auto writer_can_do = writer_qrox.get()->claw_.get_writer_can_do(writer_sid);
+  for (const auto& can_do : writer_can_do) {
+    if (can_do_shmtype(local_sfid, can_do)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+std::vector<sfid_t> Claw::get_compatible_sfids(const ::shmdata::Type& type) const {
+  std::vector<sfid_t> res;
+  for (const auto& it : connection_spec_.get_follower_sfids()) {
+    if (can_do_shmtype(it, type)) {
+      res.emplace_back(it);
+    }
+  }
+  return res;
+}
+
+std::vector<swid_t> Claw::get_compatible_swids(const ::shmdata::Type& type) const {
+  std::vector<swid_t> res;
+  for (const auto& it : connection_spec_.get_writer_swids()) {
+    if (can_do_shmtype(it, type)) {
+      res.emplace_back(it);
+    }
+  }
+  return res;
+}
+
+std::vector<::shmdata::Type> Claw::get_follower_can_do(sfid_t sfid) const {
+  return connection_spec_.get_follower_can_do(sfid);
+}
+
+std::vector<::shmdata::Type> Claw::get_writer_can_do(swid_t swid) const {
+  return connection_spec_.get_writer_can_do(swid);
+}
+
+sfid_t Claw::connect_quid(sfid_t local_sfid, quiddity::qid_t writer_quid) const {
+  auto writer_qrox = quid_->qcontainer_->get_qrox(writer_quid);
+  if (!writer_qrox) {
+    quid_->warning("Quiddity % not found, connect connect", std::to_string(writer_quid));
+    return Ids::kInvalid;
+  }
+  swid_t swid = Ids::kInvalid;
+  for (const auto& it : get_follower_can_do(local_sfid)) {
+    auto swids = writer_qrox.get()->claw_.get_compatible_swids(it);
+    if (!swids.empty()) {
+      swid = swids[0];
+      break;
+    }
+  }
+  if (Ids::kInvalid == swid) {
+    quid_->warning("No compatible shmdata found, conneot connect with %",
+                   std::to_string(writer_quid));
+    return Ids::kInvalid;
+  }
+  return connect(local_sfid, writer_quid, swid);
 }
 
 }  // namespace claw

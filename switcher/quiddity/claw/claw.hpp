@@ -103,6 +103,19 @@ class Claw : public SafeBoolIdiom {
   sfid_t connect(sfid_t local_sfid, quiddity::qid_t writer_quid, swid_t writer_sid) const;
 
   /**
+   * Connect a local Shmdata follower with an other Quiddity. The method is automatically finding
+   * the shmdata of the writing Quiddity. It is dertermed search the first compatible swid.
+   *
+   * \param local_sfid the Shmdata follower identifier to connect. If it is meta, a new follower
+   * will be allocated from it. local_sfid must be allocated by the current Claw
+   * \param writer_quid the identifier of the Quiddity hosting the Shmdata writer
+   *
+   * \return the identifier of the follower. A newly allocated identifier is generated if
+   * local_sfid identifies a meta follower. If connect fails, Id::kInvalid will be returned.
+   */
+  sfid_t connect_quid(sfid_t local_sfid, quiddity::qid_t writer_quid) const;
+
+  /**
    * Connect a local Shmdata follower with a Shmdata identified by its path.
    *
    * \param local_sfid the Shmdata follower identifier to connect. If it is meta, a new follower
@@ -181,6 +194,63 @@ class Claw : public SafeBoolIdiom {
   std::string get_writer_shmpath(swid_t swid) const;
 
   /**
+   * Get shmdata follower ids compatible with a given shmdata type
+   *
+   * \param type the shmdata type
+   *
+   * \return the vector with all identifiers of compatible shmdata follower
+   */
+  std::vector<sfid_t> get_compatible_sfids(const ::shmdata::Type& type) const;
+
+  /**
+   * Get shmdata writer ids compatible with a given shmdata type
+   *
+   * \param type the shmdata type
+   *
+   * \return the vector with all identifiers of compatible shmdata writer
+   */
+  std::vector<swid_t> get_compatible_swids(const ::shmdata::Type& type) const;
+
+  /**
+   * Test if a local shmdata follower is compatible with the shmdata writer of a quiddity
+   *
+   * \param local_sfid the shmdata follower to test
+   * \param writer_quid the writer Quiddity identifier
+   * \param writer_swid the writer_quid's shmdata writer identifier
+   *
+   * \return true if compatible, false otherwise
+   */
+  bool can_do_swid(sfid_t local_sfid, quiddity::qid_t writer_quid, swid_t writer_swid) const;
+
+  /**
+   * Test if a local shmdata follower is compatible with a shmdata type
+   *
+   * \param local_sfid the shmdata follower to test
+   * \param type the shmdata type
+   *
+   * \return true if compatible, false otherwise
+   */
+  bool can_do_shmtype(sfid_t local_sfid, const ::shmdata::Type& type) const;
+
+  /**
+   * Get the list of compatible types with a given shmdata follower
+   *
+   * \param sfid the shmdata follower identifier
+   *
+   * \return the list of compatible shmdata types
+   */
+  std::vector<::shmdata::Type> get_follower_can_do(sfid_t sfid) const;
+
+  /**
+   * Get the list of compatible types with a given shmdata writer
+   *
+   * \param sfid the shmdata writer identifier
+   *
+   * \return the list of compatible shmdata types
+   */
+  std::vector<::shmdata::Type> get_writer_can_do(swid_t swid) const;
+
+  /**
    * Add a writer corresponding to a meta writer specification.
    * It updates the connection specification.
    * This method is suposed to be used from Quiddity plugins.
@@ -203,11 +273,6 @@ class Claw : public SafeBoolIdiom {
    */
   bool remove_writer_from_meta(swid_t id);
 
-  // TODO the following for a next MR
-  // // test if connection is possible
-  // sid_t get_first_compatible_sid(shmdat::Type caps);
-  // std::vector<sid_t> get_compatible_sids(shmdat::Type caps);
-  bool can_sink_caps(sfid_t local_sid, const ::shmdata::Type& caps) const;
 
  private:
   Quiddity* quid_;

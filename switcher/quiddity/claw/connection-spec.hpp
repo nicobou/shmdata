@@ -116,6 +116,20 @@ class ConnectionSpec : public BoolLog {
   std::vector<std::string> get_follower_labels() const;
 
   /**
+   * List swids of Shmdata writers.
+   *
+   * \return the swids in a vector
+   */
+  std::vector<swid_t> get_writer_swids() const;
+
+  /**
+   * List sfids of the Shmdata followers.
+   *
+   * \return the sfids in a vector
+   */
+  std::vector<sfid_t> get_follower_sfids() const;
+
+  /**
    * Test if an identifier is allocated.
    *
    * \param sfid the identifer
@@ -198,7 +212,22 @@ class ConnectionSpec : public BoolLog {
    */
   InfoTree::ptr get_tree();
 
+  /**
+   * Get the list of compatible types with a given shmdata follower
+   *
+   * \param sfid the shmdata follower identifier
+   *
+   * \return the list of compatible shmdata types
+   */
   std::vector<::shmdata::Type> get_follower_can_do(sfid_t sfid) const;
+
+  /**
+   * Get the list of compatible types with a given shmdata writer
+   *
+   * \param sfid the shmdata writer identifier
+   *
+   * \return the list of compatible shmdata types
+   */
   std::vector<::shmdata::Type> get_writer_can_do(swid_t swid) const;
 
  private:

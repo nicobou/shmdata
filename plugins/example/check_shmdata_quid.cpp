@@ -65,6 +65,37 @@ int main() {
       assert(!sfids.empty());
     }
 
+    {  // check compatibility of shmdata before trying to connect
+      const auto wtexture_id = writer->claw<MPtr(&Claw::get_swid)>("texture");
+      const auto wtypes = writer->claw<MPtr(&Claw::get_writer_can_do)>(wtexture_id);
+      assert(!wtypes.empty());
+      const auto rtexture_id = reader->claw<MPtr(&Claw::get_sfid)>("texture");
+      const auto rtypes = reader->claw<MPtr(&Claw::get_follower_can_do)>(rtexture_id);
+      assert(!rtypes.empty());
+      // test by ids
+      assert(reader->claw<MPtr(&Claw::can_do_swid)>(rtexture_id, writer->get_id(), wtexture_id));
+      // test by shmdata types
+      bool writer_is_compatible = false;
+      for (const auto& it : wtypes) {
+        if (reader->claw<MPtr(&Claw::can_do_shmtype)>(rtexture_id, it)) {
+          writer_is_compatible = true;
+        }
+      }
+      assert(writer_is_compatible);
+      // test if compatible sfids are found with writer shmdata type
+      for (const auto& it : wtypes) {
+        auto sfids = reader->claw<MPtr(&Claw::get_compatible_sfids)>(it);
+        assert(sfids.size() == 1);
+        assert(sfids[0] == rtexture_id);
+      }
+      // test if compatible swids are found with follower shmdata type
+      for (const auto& it : rtypes) {
+        auto swids = writer->claw<MPtr(&Claw::get_compatible_swids)>(it);
+        assert(swids.size() == 1);
+        assert(swids[0] == wtexture_id);
+      }
+    }
+
     // check connection of the writer "texture" with the reader "texture"
     {
       // get information from the claw + check of consitency among class and Quiddity Tree
@@ -82,6 +113,18 @@ int main() {
       // and then disconnect
       assert(reader->claw<MPtr(&Claw::disconnect)>(res_id));
     }
+
+    {
+      // check connection to quiddity without mention of a particular shmdata writer
+      auto rtexture_id = reader->claw<MPtr(&Claw::get_sfid)>("texture");
+      assert(Ids::kInvalid != rtexture_id);
+      auto res_id = reader->claw<MPtr(&Claw::connect_quid)>(rtexture_id, writer->get_id());
+      // since follower texture is not meta, we expect to obtain the same id
+      assert(res_id == rtexture_id);
+      // and then disconnect
+      assert(reader->claw<MPtr(&Claw::disconnect)>(res_id));
+    }
+
   }  // end of scope is releasing the switcher
   return 0;
 }
