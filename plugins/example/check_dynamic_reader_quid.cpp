@@ -36,6 +36,21 @@ int main() {
 
     auto reader = sw->quids<MPtr(&Container::create)>("dyn-reader-quid", "reader", nullptr).get();
     assert(reader);
+    // register to new connection spec in the tree
+    int num_added_received = 0;
+    assert(0 !=
+           reader->sig<MPtr(&signal::SBag::subscribe_by_name)>(
+               "on-connection-spec-added", [&](const InfoTree::ptr& tree) {
+                 assert(stringutils::starts_with(tree->read_data().as<std::string>(), "follower."));
+                 ++num_added_received;
+               }));
+    int num_removed_received = 0;
+    assert(0 !=
+           reader->sig<MPtr(&signal::SBag::subscribe_by_name)>(
+               "on-connection-spec-removed", [&](const InfoTree::ptr& tree) {
+                 assert(stringutils::starts_with(tree->read_data().as<std::string>(), "follower."));
+                 ++num_removed_received;
+               }));
 
     auto writer = sw->quids<MPtr(&Container::create)>("connection-quid", "writer", nullptr).get();
     assert(writer);
@@ -57,8 +72,12 @@ int main() {
       assert(res_id != rtexture_id);
       // check a follower has been created
       assert(2 == reader->claw<MPtr(&Claw::get_follower_labels)>().size());
+      // check we had a notification for addition into the connection spec
+      assert(1 == num_added_received);
       // and then disconnect
       assert(reader->claw<MPtr(&Claw::disconnect)>(res_id));
+      // check we received a notification for spec removal
+      assert(1 == num_removed_received);
       // check the created follower has been removed
       assert(1 == reader->claw<MPtr(&Claw::get_follower_labels)>().size());
     }

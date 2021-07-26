@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "switcher/quiddity/basic-test.hpp"
+#include "switcher/utils/string-utils.hpp"
 
 int main() {
   {
@@ -36,6 +37,21 @@ int main() {
 
     auto dynw = sw->quids<MPtr(&Container::create)>("dyn-writer-quid", "writer", nullptr).get();
     assert(dynw);
+    // register to new connection spec in the tree
+    int num_added_received = 0;
+    assert(0 !=
+           dynw->sig<MPtr(&signal::SBag::subscribe_by_name)>(
+               "on-connection-spec-added", [&](const InfoTree::ptr& tree) {
+                 assert(stringutils::starts_with(tree->read_data().as<std::string>(), "writer."));
+                 ++num_added_received;
+               }));
+    int num_removed_received = 0;
+    assert(0 !=
+           dynw->sig<MPtr(&signal::SBag::subscribe_by_name)>(
+               "on-connection-spec-removed", [&](const InfoTree::ptr& tree) {
+                 assert(stringutils::starts_with(tree->read_data().as<std::string>(), "writer."));
+                 ++num_removed_received;
+               }));
 
     auto reader = sw->quids<MPtr(&Container::create)>("connection-quid", "reader", nullptr).get();
     assert(reader);
@@ -56,6 +72,8 @@ int main() {
     // 2 - enable the dynamic shmdata writer and check connection success
     {
       assert(dynw->prop<MPtr(&PBag::set_str_str)>("video", "true"));
+      // check we received two notifications
+      assert(2 == num_added_received);
 
       // inspect dynw
       std::vector<swid_t> swids;
@@ -83,6 +101,11 @@ int main() {
         assert(reader->claw<MPtr(&Claw::disconnect)>(res_id));
       }
     }  // end of 2 - enable the dynamic shmdata writer and check connection success
+
+    // 3 stop these dynamic writers
+    assert(dynw->prop<MPtr(&PBag::set_str_str)>("video", "false"));
+    // check we received two notifications
+    assert(2 == num_removed_received);
 
   }  // end of scope is releasing the switcher
   return 0;

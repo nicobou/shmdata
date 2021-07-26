@@ -39,24 +39,24 @@ Claw::Claw(Quiddity* quid,
       on_disconnect_cb_(on_disconnect_cb) {
   // check specification has been parsed
   if (!static_cast<bool>(connection_spec_)) {
-    quid->warning("Connection spec error: %", connection_spec_.msg());
+    quid_->warning("Connection spec error: %", connection_spec_.msg());
     return;
   }
   // check callbacks for follower connection are installed properly
   if (!connection_spec_.get_follower_labels().empty()) {
     if (!on_connect_cb_) {
-      quid->warning(
+      quid_->warning(
           "a follower is specified in connection spec, but no connection callback is configured");
       return;
     }
     if (!on_disconnect_cb_) {
-      quid->warning(
+      quid_->warning(
           "a follower is specified in connection spec, but no disconnection callback is "
           "configured");
       return;
     }
   }
-  quid->connection_spec_tree_ = connection_spec_.get_tree();
+  quid_->connection_spec_tree_ = connection_spec_.get_tree();
 }
 
 std::string Claw::get_follower_label(sfid_t sfid) const {
@@ -103,6 +103,11 @@ sfid_t Claw::connect_raw(sfid_t sfid, const std::string& shmpath) const {
     }
     return Ids::kInvalid;
   }
+  // notify new follower
+  if (is_meta) {
+    quid_->smanage<MPtr(&signal::SBag::notify)>(quid_->on_connection_spec_grafted_id_,
+                                                InfoTree::make("follower." + std::to_string(id)));
+  }
   return id;
 }
 
@@ -115,7 +120,10 @@ bool Claw::disconnect(sfid_t sfid) const {
     return false;
   }
   // remove from connection spec if a follower is generated from a meta follower
-  connection_spec_.deallocate_sfid_from_meta(sfid);
+  if (connection_spec_.deallocate_sfid_from_meta(sfid)) {
+    quid_->smanage<MPtr(&signal::SBag::notify)>(quid_->on_connection_spec_pruned_id_,
+                                                InfoTree::make("follower." + std::to_string(sfid)));
+  }
   return true;
 }
 
@@ -134,12 +142,24 @@ std::string Claw::get_writer_shmpath(swid_t id) const {
          std::to_string(id);
 }
 
-swid_t Claw::add_writer_to_meta(swid_t id, const shm_spec_t& spec) {
-  return connection_spec_.allocate_swid_from_meta(id, spec);
+swid_t Claw::add_writer_to_meta(swid_t swid, const shm_spec_t& spec) {
+  auto id = connection_spec_.allocate_swid_from_meta(swid, spec);
+  if (Ids::kInvalid == id) {
+    return id;
+  }
+  quid_->smanage<MPtr(&signal::SBag::notify)>(quid_->on_connection_spec_grafted_id_,
+                                              InfoTree::make("writer." + std::to_string(id)));
+  return id;
 }
 
-bool Claw::remove_writer_from_meta(swid_t id) {
-  return connection_spec_.deallocate_swid_from_meta(id);
+bool Claw::remove_writer_from_meta(swid_t swid) {
+  auto id = connection_spec_.deallocate_swid_from_meta(swid);
+  if (Ids::kInvalid == id) {
+    return id;
+  }
+  quid_->smanage<MPtr(&signal::SBag::notify)>(quid_->on_connection_spec_pruned_id_,
+                                              InfoTree::make("writer." + std::to_string(id)));
+  return id;
 }
 
 std::vector<std::string> Claw::get_follower_labels() const {

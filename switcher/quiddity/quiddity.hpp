@@ -178,6 +178,8 @@ class Quiddity : public log::Logged, public SafeBoolIdiom {
   signal::sig_id_t on_user_data_grafted_id_;
   signal::sig_id_t on_user_data_pruned_id_;
   signal::sig_id_t on_nicknamed_id_;
+  signal::sig_id_t on_connection_spec_grafted_id_;
+  signal::sig_id_t on_connection_spec_pruned_id_;
 
   // properties
   property::PBag props_;

@@ -59,6 +59,12 @@ Quiddity::Quiddity(quiddity::Config&& conf, claw::Config claw_conf)
           "on-user-data-pruned", "A branch has been pruned from the quiddity's user data tree")),
       on_nicknamed_id_(smanage<MPtr(&signal::SBag::make)>(
           "on-nicknamed", "A nickname has been given to the quiddity")),
+      on_connection_spec_grafted_id_(smanage<MPtr(&signal::SBag::make)>(
+          "on-connection-spec-added",
+          "New specification has been added to the connection specification")),
+      on_connection_spec_pruned_id_(smanage<MPtr(&signal::SBag::make)>(
+          "on-connection-spec-removed",
+          "Specification has been removed from the connection specification")),
       props_(
           information_tree_,
           [this](const std::string& key) {
