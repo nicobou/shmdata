@@ -18,6 +18,7 @@
  */
 
 #include "./pyinfotree.hpp"
+
 #include <switcher/infotree/json-serializer.hpp>
 #include <switcher/utils/scope-exit.hpp>
 

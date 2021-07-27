@@ -21,9 +21,12 @@
 
 #include <chrono>
 
+#include "./pyfclaw.hpp"
 #include "./pyinfotree.hpp"
 #include "./pyswitch.hpp"
+#include "./pywclaw.hpp"
 #include "./ungiled.hpp"
+#include "switcher/quiddity/claw/claw.hpp"
 #include "switcher/utils/scope-exit.hpp"
 
 PyDoc_STRVAR(pyquiddity_set_doc,
@@ -36,8 +39,8 @@ PyObject* pyQuiddity::set(pyQuiddityObject* self, PyObject* args, PyObject* kwds
   PyObject* value = nullptr;
   static char* kwlist[] = {(char*)"property", (char*)"value", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO", kwlist, &property, &value)) {
-    Py_INCREF(Py_False);
-    return Py_False;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
   PyObject* val_str = nullptr;
   PyObject* repr = nullptr;
@@ -545,8 +548,8 @@ PyObject* pyQuiddity::get_info_tree_as_json(pyQuiddityObject* self,
   const char* path = nullptr;
   static char* kwlist[] = {(char*)"path", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, &path)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
   if (nullptr == path) path = ".";
 
@@ -668,6 +671,74 @@ void pyQuiddity::Quiddity_dealloc(pyQuiddityObject* self) {
   Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
+PyDoc_STRVAR(pyquiddity_get_writer_claws_doc,
+             "Get a list of all WriterClaw available for the Quiddity.\n"
+             "Arguments: ()\n"
+             "Returns: the list of WriterClaw objects\n");
+
+PyObject* pyQuiddity::get_writer_claws(pyQuiddityObject* self, PyObject*, PyObject*) {
+  auto labels = self->quid->claw<MPtr(&Claw::get_writer_labels)>();
+  unsigned int i = 0;
+  PyObject* result = PyList_New(labels.size());
+  for (auto& label : labels) {
+    // construct the Writer Claw object
+    PyObject* empty_tuple = PyTuple_New(0);
+    On_scope_exit { Py_XDECREF(empty_tuple); };
+    PyObject* keyworded_args = PyDict_New();
+    On_scope_exit { Py_XDECREF(keyworded_args); };
+    Py_INCREF(Py_None);
+    PyDict_SetItemString(keyworded_args, "quid", Py_None);
+    PyDict_SetItemString(keyworded_args, "label", PyUnicode_FromString(label.c_str()));
+    auto quid_capsule = PyCapsule_New(static_cast<void*>(self->quid), nullptr, nullptr);
+    On_scope_exit { Py_XDECREF(quid_capsule); };
+    PyDict_SetItemString(keyworded_args, "quid_c_ptr", quid_capsule);
+    // add the object to the result
+    PyList_SetItem(
+        result, i, PyObject_Call((PyObject*)&pyWriterClaw::pyType, empty_tuple, keyworded_args));
+    ++i;
+  }
+  return result;
+}
+
+PyDoc_STRVAR(pyquiddity_get_follower_claws_doc,
+             "Get a list of all FollowerClaw available for the Quiddity.\n"
+             "Arguments: ()\n"
+             "Returns: the list of FollowerClaw objects\n");
+
+PyObject* pyQuiddity::get_follower_claws(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
+  auto labels = self->quid->claw<MPtr(&Claw::get_follower_labels)>();
+  unsigned int i = 0;
+  PyObject* result = PyList_New(labels.size());
+  for (auto& label : labels) {
+    // construct the Writer Claw object
+    PyObject* empty_tuple = PyTuple_New(0);
+    On_scope_exit { Py_XDECREF(empty_tuple); };
+    PyObject* keyworded_args = PyDict_New();
+    On_scope_exit { Py_XDECREF(keyworded_args); };
+    Py_INCREF(Py_None);
+    PyDict_SetItemString(keyworded_args, "quid", Py_None);
+    PyDict_SetItemString(keyworded_args, "label", PyUnicode_FromString(label.c_str()));
+    auto quid_capsule = PyCapsule_New(static_cast<void*>(self->quid), nullptr, nullptr);
+    On_scope_exit { Py_XDECREF(quid_capsule); };
+    PyDict_SetItemString(keyworded_args, "quid_c_ptr", quid_capsule);
+    // add the object to the result
+    PyList_SetItem(
+        result, i, PyObject_Call((PyObject*)&pyFollowerClaw::pyType, empty_tuple, keyworded_args));
+    ++i;
+  }
+  return result;
+}
+
+PyDoc_STRVAR(pyquiddity_get_connection_specs_doc,
+             "Get connection specifications.\n"
+             "Arguments: ()\n"
+             "Returns: the connection specifications (pyquid.InfoTree)\n");
+
+PyObject* pyQuiddity::get_connection_specs(pyQuiddityObject* self, PyObject*, PyObject*) {
+  return pyInfoTree::make_pyobject_from_c_ptr(
+      self->quid->conspec<MPtr(&InfoTree::get_copy)>().get(), false);
+}
+
 PyMethodDef pyQuiddity::pyQuiddity_methods[] = {
     {"set", (PyCFunction)pyQuiddity::set, METH_VARARGS | METH_KEYWORDS, pyquiddity_set_doc},
     {"get", (PyCFunction)pyQuiddity::get, METH_VARARGS | METH_KEYWORDS, pyquiddity_get_doc},
@@ -720,6 +791,18 @@ PyMethodDef pyQuiddity::pyQuiddity_methods[] = {
      (PyCFunction)pyQuiddity::get_signal_id,
      METH_VARARGS | METH_KEYWORDS,
      pyquiddity_get_signal_id_doc},
+    {"get_writer_claws",
+     (PyCFunction)pyQuiddity::get_writer_claws,
+     METH_NOARGS,
+     pyquiddity_get_writer_claws_doc},
+    {"get_follower_claws",
+     (PyCFunction)pyQuiddity::get_follower_claws,
+     METH_NOARGS,
+     pyquiddity_get_follower_claws_doc},
+    {"get_connection_specs",
+     (PyCFunction)pyQuiddity::get_connection_specs,
+     METH_NOARGS,
+     pyquiddity_get_connection_specs_doc},
     {nullptr}};
 
 PyDoc_STRVAR(pyquid_quiddity_doc,

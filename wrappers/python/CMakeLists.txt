@@ -7,17 +7,18 @@ add_feature_info("wrapper-python" WITH_PYTHON "Python Wrapper")
 if (WITH_PYTHON)
   find_package(PythonInterp 3 REQUIRED)
   pkg_check_modules(PYTHON REQUIRED python3)
-  
   link_directories(${PYTHON_LIBRARY_DIRS})
   add_compile_options(${PYTHON_CFLAGS})
   add_compile_options("-Wno-missing-field-initializers")
 
   add_library(pyquid SHARED
+    pyfclaw.cpp
     pyinfotree.cpp
     pyquid.cpp
     pyquiddity.cpp
     pysession.cpp
     pyswitch.cpp
+    pywclaw.cpp
   )
 
   set_target_properties(pyquid PROPERTIES PREFIX "")
@@ -51,6 +52,8 @@ if (WITH_PYTHON)
   add_test(pyquid_quid_conf_and_two_jack_servers ${CMAKE_CURRENT_SOURCE_DIR}/examples/10-quid-conf-and-two-jack-servers.py)
   add_test(pyquid_switcher_signals ${CMAKE_CURRENT_SOURCE_DIR}/examples/11-switcher-signals.py)
   add_test(pyquid_switcher_session ${CMAKE_CURRENT_SOURCE_DIR}/examples/12-switcher-session.py)
+  add_test(pyquid_shmdata_connection ${CMAKE_CURRENT_SOURCE_DIR}/examples/12-shmdata-connection.py)
+  add_test(pyquid_shmdata_dynamic_claws ${CMAKE_CURRENT_SOURCE_DIR}/examples/13-shmdata-dynamic-claws.py)
 
 endif ()
 

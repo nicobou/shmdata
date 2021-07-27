@@ -29,6 +29,7 @@
 
 using namespace switcher;
 using namespace quiddity;
+using namespace claw;
 
 class pyQuiddity {
  public:
@@ -92,5 +93,9 @@ class pyQuiddity {
   static bool unsubscribe_from_property(pyQuiddityObject* self, const char* prop_name);
   // signals
   static PyObject* get_signal_id(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
+  // claw
+  static PyObject* get_connection_specs(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* get_writer_claws(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* get_follower_claws(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
 };
 #endif
