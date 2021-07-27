@@ -67,14 +67,8 @@ using OnDisconnect_t = std::function<bool(sfid_t /*sid*/)>;
  * shm_spec_t is a data structure used for instanciation of dynamic shmdata
  */
 using shm_spec_t = struct shm_spec_struct_t {
-  /**
-   * The label for the Shmdata
-   */
-  std::string label{};
-  /**
-   * The description for the Shmdata
-   */
-  std::string description{};
+  std::string label{};        //!< The label for the Shmdata
+  std::string description{};  //!< The description for the Shmdata
 };
 
 }  // namespace claw

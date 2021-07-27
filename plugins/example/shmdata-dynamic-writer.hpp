@@ -29,7 +29,7 @@ using namespace quiddity;
 /**
  * ShmdataDynamicWriter class.
  *
- * Example class that illustrates how to implement shmdata
+ * Example class that illustrates how to implement Shmdata
  * writer when the number and\or type of Shmdata is not know
  * at initialisation.
  *

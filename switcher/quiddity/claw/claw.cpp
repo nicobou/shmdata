@@ -42,7 +42,7 @@ Claw::Claw(Quiddity* quid,
     quid_->warning("Connection spec error: %", connection_spec_.msg());
     return;
   }
-  // check callbacks for follower connection are installed properly
+  // check that callbacks for follower connection are installed properly
   if (!connection_spec_.get_follower_labels().empty()) {
     if (!on_connect_cb_) {
       quid_->warning(
@@ -87,7 +87,7 @@ sfid_t Claw::connect(sfid_t local_sid, quiddity::qid_t writer_quid, swid_t write
 
 sfid_t Claw::connect_raw(sfid_t sfid, const std::string& shmpath) const {
   auto id = sfid;
-  bool is_meta = connection_spec_.is_meta_follower(sfid);
+  const bool is_meta = connection_spec_.is_meta_follower(sfid);
   if (is_meta) {
     id = connection_spec_.allocate_sfid_from_meta(sfid);
   }
@@ -201,9 +201,9 @@ bool Claw::can_do_swid(sfid_t local_sfid, quiddity::qid_t writer_quid, swid_t wr
 
 std::vector<sfid_t> Claw::get_compatible_sfids(const ::shmdata::Type& type) const {
   std::vector<sfid_t> res;
-  for (const auto& it : connection_spec_.get_follower_sfids()) {
-    if (can_do_shmtype(it, type)) {
-      res.emplace_back(it);
+  for (const auto& sfid : connection_spec_.get_follower_sfids()) {
+    if (can_do_shmtype(sfid, type)) {
+      res.push_back(sfid);
     }
   }
   return res;
@@ -211,9 +211,9 @@ std::vector<sfid_t> Claw::get_compatible_sfids(const ::shmdata::Type& type) cons
 
 std::vector<swid_t> Claw::get_compatible_swids(const ::shmdata::Type& type) const {
   std::vector<swid_t> res;
-  for (const auto& it : connection_spec_.get_writer_swids()) {
-    if (can_do_shmtype(it, type)) {
-      res.emplace_back(it);
+  for (const auto& swid : connection_spec_.get_writer_swids()) {
+    if (can_do_shmtype(swid, type)) {
+      res.push_back(swid);
     }
   }
   return res;
@@ -234,8 +234,8 @@ sfid_t Claw::connect_quid(sfid_t local_sfid, quiddity::qid_t writer_quid) const 
     return Ids::kInvalid;
   }
   swid_t swid = Ids::kInvalid;
-  for (const auto& it : get_follower_can_do(local_sfid)) {
-    auto swids = writer_qrox.get()->claw_.get_compatible_swids(it);
+  for (const auto& can_do : get_follower_can_do(local_sfid)) {
+    auto swids = writer_qrox.get()->claw_.get_compatible_swids(can_do);
     if (!swids.empty()) {
       swid = swids[0];
       break;

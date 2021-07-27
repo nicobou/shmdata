@@ -50,9 +50,9 @@ ShmdataDynWriter::ShmdataDynWriter(quiddity::Config&& conf)
           [this](bool val) {
             if (val) {
               videoA_swid_ = claw_.add_writer_to_meta(claw_.get_swid("video%"),
-                                                      {"videoA", "A is an video Shmdata"});
+                                                      {"videoA", "A is a video Shmdata"});
               videoB_swid_ = claw_.add_writer_to_meta(claw_.get_swid("video%"),
-                                                      {"videoB", "B is an video Shmdata"});
+                                                      {"videoB", "B is a video Shmdata"});
             } else {
               claw_.remove_writer_from_meta(videoA_swid_);
               claw_.remove_writer_from_meta(videoB_swid_);
@@ -61,8 +61,8 @@ ShmdataDynWriter::ShmdataDynWriter(quiddity::Config&& conf)
             return true;
           },
           [this]() { return video_; },
-          "Enable VideoA and VideoB Shmdata",
-          "VideoA and VideoB are Shmdata related to the meta Shmdata labeled video%",
+          "Enable videoA and videoB Shmdata",
+          "videoA and videoB are Shmdata related to the meta Shmdata labeled video%",
           video_)) {}
 
 }  // namespace quiddities

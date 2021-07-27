@@ -60,7 +60,7 @@ namespace claw {
  * or writer is not an actual Shmdata, but rather the description of a Shmdata generator.
  * For instance a meta writer "video%" may instantiate several video Shmdata, such as
  * "videoLeft", "videoRight", among others. While the number of generated Shmdata from
- * this meta writer is not know in advance, it is expected the actual data stream of generated
+ * this meta writer is not know in advance, it is expected the actual data streams of generated
  * Shmdata comply with meta Shmdata "can_do" description.
  *
  * While a meta writer initiates new writers from inside the Quiddity implementation,
@@ -71,7 +71,7 @@ namespace claw {
 class Claw : public SafeBoolIdiom {
  public:
   /**
-   * Claw constructor. A Claw object is desiggned to be owned and constructed by
+   * Claw constructor. A Claw object is designed to be owned and constructed by
    * the Quiddity. Its public const methods are exposed to the Quiddity user, through
    * Make_consultable. Other public methods are dedicated to Quiddity and other subclasses
    *
@@ -104,7 +104,7 @@ class Claw : public SafeBoolIdiom {
 
   /**
    * Connect a local Shmdata follower with an other Quiddity. The method is automatically finding
-   * the shmdata of the writing Quiddity. It is dertermed search the first compatible swid.
+   * the first compatible shmdata wruter available with the target Quiddity.
    *
    * \param local_sfid the Shmdata follower identifier to connect. If it is meta, a new follower
    * will be allocated from it. local_sfid must be allocated by the current Claw
@@ -125,6 +125,7 @@ class Claw : public SafeBoolIdiom {
    * \return the identifier of the follower. If connect fails, Id::kInvalid will be returned.
    */
   sfid_t connect_raw(sfid_t local_sfid, const std::string& shmpath) const;
+
   /**
    * Disconnect a Shmdata follower
    *

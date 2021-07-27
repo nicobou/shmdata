@@ -68,7 +68,7 @@ ConnectionSpec::ConnectionSpec(const std::string& spec)
     // collect can_do in order to fill follower_can_do_
     std::vector<::shmdata::Type> can_do;
     shmspec->cfor_each_in_array("can_do", [&](const InfoTree* caps) {
-      can_do.emplace_back(::shmdata::Type(caps->get_value().as<std::string>()));
+      can_do.push_back(::shmdata::Type(caps->get_value().as<std::string>()));
     });
     follower_can_do_.emplace(std::make_pair(id, can_do));
   });
@@ -104,7 +104,7 @@ ConnectionSpec::ConnectionSpec(const std::string& spec)
     // collect can_do in order to fill writer_can_do_
     std::vector<::shmdata::Type> can_do;
     shmspec->cfor_each_in_array("can_do", [&](const InfoTree* caps) {
-      can_do.emplace_back(::shmdata::Type(caps->get_value().as<std::string>()));
+      can_do.push_back(::shmdata::Type(caps->get_value().as<std::string>()));
     });
     writer_can_do_.emplace(std::make_pair(id, can_do));
   });
@@ -160,13 +160,13 @@ BoolLog ConnectionSpec::check_shmdata_spec(const InfoTree* tree) {
 
 std::vector<std::string> ConnectionSpec::get_writer_labels() const {
   std::vector<std::string> res;
-  for (const auto& it : writer_ids_) res.push_back(it.second);
+  for (const auto& writer_id : writer_ids_) res.push_back(writer_id.second);
   return res;
 }
 
 std::vector<std::string> ConnectionSpec::get_follower_labels() const {
   std::vector<std::string> res;
-  for (const auto& it : follower_ids_) res.emplace_back(it.second);
+  for (const auto& follower_id : follower_ids_) res.emplace_back(follower_id.second);
   return res;
 }
 
