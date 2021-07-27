@@ -26,41 +26,37 @@ namespace switcher {
 
 /**
  * Ids class maintains a list of unique numeric identifiers.
- *
  **/
 class Ids {
  public:
   /**
    * id_t is the type of identifiers provided.
-   *
    */
   using id_t = size_t;
   /**
    * kInvalid is the invalid identifier. It can be tester again other
    * identifiers with the operator "==".
-   *
    */
   static const id_t kInvalid;
   /**
    * kMaxNumOfIds provides the maximum number of identifiers an Ids
    * instance can manage.
-   *
    */
   static const id_t kMaxNumOfIds;
 
   /**
-   * \brief Allocate a new identifier.
+   * Allocate a new identifier.
    *
    * \return The new identifier.
    */
   id_t allocate_id();
   /**
-   * \brief Release the last allocated id.
+   * Release the last allocated id.
    *
    */
   void release_last_allocated_id();
   /**
-   * \brief Release an already allocated identifier.
+   * Release an already allocated identifier.
    *
    * \param id The identifier to release.
    *
@@ -68,13 +64,13 @@ class Ids {
    */
   bool release_id(id_t id);
   /**
-   * \brief Provide all allocated ids.
+   * Provide all allocated ids.
    *
    * \return The values allocated.
    */
   std::vector<id_t> get_ids() const;
   /**
-   * \brief Test if an identifier is allocated.
+   * Test if an identifier is allocated.
    *
    * \param id the identificator to test.
    *
