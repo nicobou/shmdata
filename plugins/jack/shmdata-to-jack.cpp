@@ -35,8 +35,25 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToJack,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
+const std::string ShmdataToJack::kConnectionSpec(R"(
+{
+"follower":
+  [
+    {
+      "label": "audio",
+      "description": "Audio stream to expose to Jack",
+      "can_do": ["audio/x-raw"]
+    }
+  ]
+}
+)");
+
 ShmdataToJack::ShmdataToJack(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
+    : Quiddity(
+          std::forward<quiddity::Config>(conf),
+          {kConnectionSpec,
+           [this](const std::string& shmpath, claw::sfid_t) { return on_shmdata_connect(shmpath); },
+           [this](claw::sfid_t sfid) { return on_shmdata_disconnect(); }}),
       client_name_(get_nickname()),
       server_name_(conf.tree_config_->branch_has_data("server_name")
                        ? conf.tree_config_->branch_get_value("server_name").copy_as<std::string>()
@@ -134,15 +151,7 @@ ShmdataToJack::ShmdataToJack(quiddity::Config&& conf)
           "Convert to Jack rate",
           "Convert to Jack rate",
           do_rate_conversion_)),
-      shmcntr_(static_cast<Quiddity*>(this)),
       gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)) {
-  shmcntr_.install_connect_method(
-      [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
-      [this](const std::string&) { return this->on_shmdata_disconnect(); },
-      [this]() { return this->on_shmdata_disconnect(); },
-      [this](const std::string& caps) { return this->can_sink_caps(caps); },
-      1);
-
   unsigned int max_number_of_channels = kMaxNumberOfChannels;
   if (config<MPtr(&InfoTree::branch_has_data)>("max_number_of_channels"))
     max_number_of_channels =
@@ -333,22 +342,21 @@ bool ShmdataToJack::start() {
 
   // Disable properties
   pmanage<MPtr(&property::PBag::disable)>(server_name_id_,
-                                          shmdata::Connector::disabledWhenConnectedMsg);
+                                          property::PBag::disabledWhenConnectedMsg);
   pmanage<MPtr(&property::PBag::disable)>(client_name_id_,
-                                          shmdata::Connector::disabledWhenConnectedMsg);
+                                          property::PBag::disabledWhenConnectedMsg);
   pmanage<MPtr(&property::PBag::disable)>(auto_connect_id_,
-                                          shmdata::Connector::disabledWhenConnectedMsg);
-  pmanage<MPtr(&property::PBag::disable)>(connect_to_id_,
-                                          shmdata::Connector::disabledWhenConnectedMsg);
-  pmanage<MPtr(&property::PBag::disable)>(index_id_, shmdata::Connector::disabledWhenConnectedMsg);
+                                          property::PBag::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(connect_to_id_, property::PBag::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(index_id_, property::PBag::disabledWhenConnectedMsg);
   pmanage<MPtr(&property::PBag::disable)>(connect_all_to_first_id_,
-                                          shmdata::Connector::disabledWhenConnectedMsg);
+                                          property::PBag::disabledWhenConnectedMsg);
   pmanage<MPtr(&property::PBag::disable)>(connect_only_first_id_,
-                                          shmdata::Connector::disabledWhenConnectedMsg);
+                                          property::PBag::disabledWhenConnectedMsg);
   pmanage<MPtr(&property::PBag::disable)>(do_format_conversion_id_,
-                                          shmdata::Connector::disabledWhenConnectedMsg);
+                                          property::PBag::disabledWhenConnectedMsg);
   pmanage<MPtr(&property::PBag::disable)>(do_rate_conversion_id_,
-                                          shmdata::Connector::disabledWhenConnectedMsg);
+                                          property::PBag::disabledWhenConnectedMsg);
 
   return true;
 }
@@ -399,10 +407,6 @@ bool ShmdataToJack::on_shmdata_connect(const std::string& shmpath) {
   }
   shmpath_ = shmpath;
   return start();
-}
-
-bool ShmdataToJack::can_sink_caps(const std::string& caps) {
-  return gst::utils::can_sink_caps("audioconvert", caps);
 }
 
 void ShmdataToJack::on_channel_update(unsigned int channels) {

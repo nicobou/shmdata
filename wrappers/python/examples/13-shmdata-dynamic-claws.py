@@ -69,7 +69,7 @@ assert(spec_added_received == 3)
 assert(len(fquid.get_follower_claws()) == 2)
 
 # now clean up everything
-fclaws[0].disconnect()
+resclaw.disconnect()
 wquid.set("video", False)
 assert(spec_removed_received == 3)
 

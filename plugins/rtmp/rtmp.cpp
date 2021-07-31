@@ -32,10 +32,31 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "LGPL",
     "Jérémie Soria/Francis Lecavalier");
 
+const std::string RTMP::kConnectionSpec(R"(
+{
+"follower":
+  [
+    {
+      "label": "video-encoded",
+      "description": "Video stream",
+      "can_do": ["video/x-h264"]
+    },
+    {
+      "label": "audio",
+      "description": "Audio stream",
+      "can_do": ["audio/x-raw"]
+    }
+}
+)");
+
 RTMP::RTMP(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
+    : Quiddity(std::forward<quiddity::Config>(conf),
+               {kConnectionSpec,
+                [this](const std::string& shmpath, claw::sfid_t sfid) {
+                  return on_shmdata_connect(shmpath, sfid);
+                },
+                [this](claw::sfid_t sfid) { return on_shmdata_disconnect(sfid); }}),
       Startable(this),
-      shmcntr_(static_cast<Quiddity*>(this)),
       stream_app_url_id_(pmanage<MPtr(&property::PBag::make_string)>(
           "stream_app_url",
           [this](const std::string& val) {
@@ -56,14 +77,7 @@ RTMP::RTMP(quiddity::Config&& conf)
           "Stream key",
           "Key to access the RTMP server",
           stream_key_)),
-      gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)) {
-  shmcntr_.install_connect_method(
-      [this](const std::string& shmpath) { return on_shmdata_connect(shmpath); },
-      [this](const std::string& shmpath) { return on_shmdata_disconnect(shmpath); },
-      [this]() { return on_shmdata_disconnect_all(); },
-      [this](const std::string& caps) { return can_sink_caps(caps); },
-      2);
-}
+      gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)) {}
 
 RTMP::~RTMP() { stop(); }
 
@@ -147,8 +161,9 @@ bool RTMP::stop() {
   return true;
 }
 
-bool RTMP::on_shmdata_connect(const std::string& shmpath) {
-  if (stringutils::ends_with(shmpath, "video-encoded")) {
+bool RTMP::on_shmdata_connect(const std::string& shmpath, claw::sfid_t sfid) {
+  auto label = claw_.get_follower_label(sfid);
+  if ("video-encoded" == label) {
     if (!video_shmpath_.empty()) follower_video_.reset();
     video_shmpath_ = shmpath;
     follower_video_ = std::make_unique<shmdata::Follower>(this,
@@ -159,7 +174,7 @@ bool RTMP::on_shmdata_connect(const std::string& shmpath) {
                                                           shmdata::Stat::kDefaultUpdateInterval,
                                                           shmdata::Follower::Direction::reader,
                                                           true);
-  } else if (stringutils::ends_with(shmpath, "audio")) {
+  } else if ("audio" == label) {
     if (!audio_shmpath_.empty()) follower_audio_.reset();
     audio_shmpath_ = shmpath;
     follower_audio_ = std::make_unique<shmdata::Follower>(this,
@@ -183,11 +198,12 @@ bool RTMP::on_shmdata_connect(const std::string& shmpath) {
   return true;
 }
 
-bool RTMP::on_shmdata_disconnect(const std::string& shmpath) {
-  if (shmpath == video_shmpath_) {
+bool RTMP::on_shmdata_disconnect(claw::sfid_t sfid) {
+  auto label = claw_.get_follower_label(sfid);
+  if ("video-encoded" == label) {
     follower_video_.reset();
     video_shmpath_.clear();
-  } else if (shmpath == audio_shmpath_) {
+  } else if ("audio" == label) {
     follower_audio_.reset();
     audio_shmpath_.clear();
   } else {
@@ -196,20 +212,6 @@ bool RTMP::on_shmdata_disconnect(const std::string& shmpath) {
 
   pmanage<MPtr(&property::PBag::set_str_str)>("started", "false");
   return true;
-}
-
-bool RTMP::on_shmdata_disconnect_all() {
-  follower_video_.reset();
-  follower_audio_.reset();
-  video_shmpath_.clear();
-  audio_shmpath_.clear();
-  pmanage<MPtr(&property::PBag::set_str_str)>("started", "false");
-  return true;
-}
-
-bool RTMP::can_sink_caps(const std::string& str_caps) {
-  return stringutils::starts_with(str_caps, "audio/x-raw") ||
-         stringutils::starts_with(str_caps, "video/x-h264");
 }
 
 }  // namespace quiddities

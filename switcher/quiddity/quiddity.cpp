@@ -116,27 +116,7 @@ qid_t Quiddity::get_id() const { return id_; }
 
 std::string Quiddity::get_type() const { return type_; }
 
-std::string Quiddity::make_shmpath(const std::string& suffix) const {
-  auto server_name = qcontainer_->get_switcher()->get_name();
-  auto name =
-      std::string(get_shmpath_prefix() + server_name + "_" + std::to_string(id_) + "_" + suffix);
 
-  // Done this way for OSX portability, there is a maximum socket path length in UNIX systems and
-  // shmdata use sockets.
-  static struct sockaddr_un s;
-  static auto max_path_size = sizeof(s.sun_path);
-
-  // We truncate
-  if (static_cast<int>(name.length() - max_path_size) > 0) {
-    return std::string(name.begin(), name.begin() + max_path_size - 1);
-  }
-
-  return name;
-}
-
-std::string Quiddity::get_shmpath_prefix() {
-  return Switcher::get_shm_dir() + "/" + Switcher::get_shm_prefix();
-}
 
 std::string Quiddity::get_manager_name() { return qcontainer_->get_switcher()->get_name(); }
 
@@ -227,10 +207,6 @@ bool Quiddity::set_nickname(const std::string& nickname) {
 }
 
 std::string Quiddity::get_nickname() const { return nickname_; }
-
-void Quiddity::register_writer_suffix(const std::string& suffix) {
-  information_tree_->graft("shmdata.writer.suffix", InfoTree::make(suffix));
-}
 
 InfoTree::ptr Quiddity::get_shm_information_template() {
   InfoTree::ptr tree = InfoTree::make();

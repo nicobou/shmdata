@@ -38,8 +38,6 @@ class PulseSrc : public Quiddity, public Startable {
  public:
   PulseSrc(quiddity::Config&&);
   ~PulseSrc();
-  PulseSrc(const PulseSrc&) = delete;
-  PulseSrc& operator=(const PulseSrc&) = delete;
 
  private:
   typedef struct {
@@ -54,6 +52,7 @@ class PulseSrc : public Quiddity, public Startable {
     std::string bus_path_{};
   } DeviceDescription;
 
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
   std::unique_ptr<gst::GlibMainLoop> mainloop_;
   std::string shmpath_{};
   gst::UGstElem pulsesrc_{"pulsesrc"};

@@ -113,6 +113,7 @@ class InfoTree {
 
   // serialize
   std::string serialize_json(const std::string& path = std::string(".")) const;
+  std::string json() const;
 
   // get child keys - returning a newly allocated list
   std::list<std::string> get_child_keys(const std::string& path) const;

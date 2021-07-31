@@ -222,18 +222,42 @@ class ConnectionSpec : public BoolLog {
   std::vector<::shmdata::Type> get_follower_can_do(sfid_t sfid) const;
 
   /**
+   * Replace a follower can_do list
+   *
+   * \param sfid the shmdata follower identifier
+   *
+   * \param can_do_array the new array to place as can_do for the sfid
+   *
+   * \return success or not
+   */
+  bool replace_follower_can_do(sfid_t sfid, const std::vector<::shmdata::Type>& types);
+
+  /**
    * Get the list of compatible types with a given shmdata writer
    *
-   * \param sfid the shmdata writer identifier
+   * \param swid the shmdata writer identifier
    *
    * \return the list of compatible shmdata types
    */
   std::vector<::shmdata::Type> get_writer_can_do(swid_t swid) const;
 
+  /**
+   * Replace a writer can_do list
+   *
+   * \param swid the shmdata writer identifier
+   *
+   * \param can_do_array the new array to place as can_do for the swid
+   *
+   * \return success or not
+   */
+  bool replace_writer_can_do(swid_t swid, const std::vector<::shmdata::Type>& types);
+
  private:
   mutable Ids follower_id_generator_{};
   mutable std::map<sfid_t, std::string> follower_ids_{};
   mutable std::map<sfid_t, std::vector<::shmdata::Type>> follower_can_do_{};
+  mutable std::vector<sfid_t> dynamic_sfids_{};
+  std::vector<swid_t> dynamic_swids_{};
   Ids writer_id_generator_{};
   std::map<swid_t, std::string> writer_ids_{};
   std::map<swid_t, std::vector<::shmdata::Type>> writer_can_do_{};

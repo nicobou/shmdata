@@ -22,7 +22,6 @@
 
 #include <ltc.h>
 #include "switcher/quiddity/quiddity.hpp"
-#include "switcher/shmdata/connector.hpp"
 #include "switcher/shmdata/follower.hpp"
 #include "switcher/shmdata/writer.hpp"
 #include "switcher/utils/periodic-task.hpp"
@@ -54,19 +53,16 @@ class LTCDiff : public Quiddity {
   };
 
   LTCDiff(quiddity::Config&& conf);
-  ~LTCDiff() = default;
 
  private:
+  bool on_shmdata_connect(const std::string& shmpath, claw::sfid_t sfid);
+  bool on_shmdata_disconnect(claw::sfid_t sfid);
 
-  bool on_shmdata_connect(const std::string& shmpath);
-  bool on_shmdata_disconnect(const std::string& shmpath);
-  bool can_sink_caps(const std::string& caps);
-
-  std::map<std::string, std::unique_ptr<LTCReader>>
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
+  std::map<claw::sfid_t, std::unique_ptr<LTCReader>>
       ltc_readers_{};  //!< Incoming sound stream optionally used for cadencing.
 
   bool do_compute_{false};
-  shmdata::Connector shmcntr_{nullptr};
   std::unique_ptr<shmdata::Follower> shm_follower_{
       nullptr};  //!< Unique, used to cadence the time difference computation
   std::unique_ptr<shmdata::Writer> shmw_{nullptr};
@@ -76,7 +72,6 @@ class LTCDiff : public Quiddity {
   double time_difference_{0};  //!< Timecode difference in milliseconds
 
   // Display of timecodes in read-only properties
-  size_t next_index_{0};  //!< Index of the next LTCReader
   std::vector<std::string> display_timecodes_{
       2};  //!< Timecode in string form for display in the inspector
   property::prop_id_t

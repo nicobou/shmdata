@@ -125,12 +125,16 @@ PyObject* pyFollowerClaw::connect(pyFollowerClawObject* self, PyObject* args, Py
     return nullptr;
   }
 
-  auto res = pyquid::ungiled(std::function([&]() {
-    return self->quid->claw<MPtr(&Claw::connect)>(
-        self->id,
-        reinterpret_cast<pyQuiddity::pyQuiddityObject*>(quid)->quid->get_id(),
-        reinterpret_cast<pyWriterClaw::pyWriterClawObject*>(wclaw)->id);
-  }));
+  const auto res = self->quid->claw<MPtr(&Claw::connect)>(
+      self->id,
+      reinterpret_cast<pyQuiddity::pyQuiddityObject*>(quid)->quid->get_id(),
+      reinterpret_cast<pyWriterClaw::pyWriterClawObject*>(wclaw)->id);
+  // const auto res = pyquid::ungiled(std::function([&]() {
+  //   return self->quid->claw<MPtr(&Claw::connect)>(
+  //       self->id,
+  //       reinterpret_cast<pyQuiddity::pyQuiddityObject*>(quid)->quid->get_id(),
+  //       reinterpret_cast<pyWriterClaw::pyWriterClawObject*>(wclaw)->id);
+  // }));
   if (Ids::kInvalid == res) {
     PyErr_Format(PyExc_RuntimeError, "failed to connect, check switcher log for more information");
     return nullptr;
@@ -173,10 +177,12 @@ PyObject* pyFollowerClaw::connect_quid(pyFollowerClawObject* self, PyObject* arg
     return nullptr;
   }
 
-  auto res = pyquid::ungiled(std::function([&]() {
-    return self->quid->claw<MPtr(&Claw::connect_quid)>(
-        self->id, reinterpret_cast<pyQuiddity::pyQuiddityObject*>(quid)->quid->get_id());
-  }));
+  const auto res = self->quid->claw<MPtr(&Claw::connect_quid)>(
+      self->id, reinterpret_cast<pyQuiddity::pyQuiddityObject*>(quid)->quid->get_id());
+  // const auto res = pyquid::ungiled(std::function([&]() {
+  //   return self->quid->claw<MPtr(&Claw::connect_quid)>(
+  //       self->id, reinterpret_cast<pyQuiddity::pyQuiddityObject*>(quid)->quid->get_id());
+  // }));
   if (Ids::kInvalid == res) {
     PyErr_Format(PyExc_RuntimeError, "failed to connect, check switcher log for more information");
     return nullptr;
@@ -215,9 +221,10 @@ PyObject* pyFollowerClaw::connect_raw(pyFollowerClawObject* self, PyObject* args
     return nullptr;
   }
 
-  const auto res = pyquid::ungiled(std::function([&]() {
-    return self->quid->claw<MPtr(&Claw::connect_raw)>(self->id, std::string(shmpath));
-  }));
+  const auto res = self->quid->claw<MPtr(&Claw::connect_raw)>(self->id, std::string(shmpath));
+  // const auto res = pyquid::ungiled(std::function([&]() {
+  //   return self->quid->claw<MPtr(&Claw::connect_raw)>(self->id, std::string(shmpath));
+  // }));
   if (Ids::kInvalid == res) {
     PyErr_Format(PyExc_RuntimeError, "failed to connect, check switcher log for more information");
     return nullptr;
@@ -271,8 +278,8 @@ PyObject* pyFollowerClaw::can_do_shmtype_str(pyFollowerClawObject* self,
     PyErr_SetString(PyExc_TypeError, "error parsing arguments");
     return nullptr;
   }
-  if (!self->quid->claw<MPtr(&Claw::can_do_shmtype)>(self->id,
-                                                     ::shmdata::Type(std::string(shmtype)))) {
+  if (!self->quid->claw<MPtr(&Claw::sfid_can_do_shmtype)>(self->id,
+                                                          ::shmdata::Type(std::string(shmtype)))) {
     Py_INCREF(Py_False);
     return Py_False;
   }

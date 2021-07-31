@@ -10,8 +10,8 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Lesser General Public License for more details.
 
-import pyquid
 import time
+import pyquid
 import assert_exit_1
 
 on_created_success = False

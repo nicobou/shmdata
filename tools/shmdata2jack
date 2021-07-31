@@ -15,7 +15,7 @@ import os
 import signal
 import sys
 import time
-from pyquid import Switcher, Quiddity, InfoTree
+from pyquid import Switcher, Quiddity, InfoTree, FollowerClaw
 from typing import Any
 
 
@@ -80,7 +80,7 @@ def main() -> None:
     if args.do_not_convert_rate:
         jackquid.set('do_rate_conversion', False)
     jackquid.set('index', args.connection_index)
-    jackquid.invoke("connect", [args.shmpath])
+    FollowerClaw(jackquid, 'audio').connect_raw(args.shmpath)
 
     if args.verbose:
         print('reading ' + args.shmpath)

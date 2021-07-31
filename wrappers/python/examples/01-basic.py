@@ -54,23 +54,19 @@ assert False == vid.get('started')
 # the video needs to be activated
 assert vid.set('started', True)
 
-# Quiddities also have methods. For instance, win has a connect method
-# connecting win to vid through its video shmpath
-# (vid is a quiddity sharing a video stream through the shmdata library, and
-# win is a quiddity that reads a video from a shmdata and displays it in a window)
-# all quiddities provide the make_shmpath method, that give the shmdata path according to a keyword
-# Usually, the keyword used is the type of media shared through the shmdata
-vidshmpath = vid.make_shmpath('video')
-assert win.invoke('connect', [vidshmpath])
+# Quiddities can connect to other through shmdata
+sfid = win.try_connect(vid)
 
 time.sleep(1)
 
 # win can disconnect from vid
-assert win.invoke('disconnect', [vidshmpath])
+assert sfid.disconnect()
 
 time.sleep(1)
-# and can reconnect, using the alternative connect-quid method
-assert win.invoke('connect-quid', [vid.id(), 'video'])
+
+# and can reconnect
+win.try_connect(vid)
+
 time.sleep(1)
 
 sw.remove(vid.id())

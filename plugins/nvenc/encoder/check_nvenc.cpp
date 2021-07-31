@@ -36,6 +36,7 @@ static std::mutex mut{};
 
 using namespace switcher;
 using namespace quiddity;
+using namespace claw;
 
 void wait_until_success() {
   // wait 3 seconds
@@ -108,7 +109,7 @@ int main() {
     auto vid = created.get();
     vid->prop<MPtr(&property::PBag::set_str_str)>("codec", "0");
     vid->prop<MPtr(&property::PBag::set_str_str)>("started", "true");
-    auto vid_shmpath = vid->make_shmpath("video");
+    auto vid_shmpath = vid->claw<MPtr(&Claw::get_shmpath_from_writer_label)>("video");
     assert(!vid_shmpath.empty());
 
     auto nvenc_created =
@@ -116,8 +117,9 @@ int main() {
     assert(nvenc_created);
     auto nvenc = nvenc_created.get();
     assert(nvenc);
-    nvenc->meth<MPtr(&method::MBag::invoke_str)>(
-        nvenc->meth<MPtr(&method::MBag::get_id)>("connect"), serialize::esc_for_tuple(vid_shmpath));
+    auto sfid = nvenc->claw<MPtr(&Claw::connect_raw)>(nvenc->claw<MPtr(&Claw::get_sfid)>("video"),
+                                                      vid_shmpath);
+    assert(Ids::kInvalid != sfid);
 
     // tracking nvenc shmdata writer byterate for evaluating success
     auto registration_id = nvenc->sig<MPtr(&signal::SBag::subscribe_by_name)>(

@@ -436,4 +436,5 @@ bool InfoTree::cfor_each_in_array(const std::string& path,
   return true;
 }
 
+std::string InfoTree::json() const { return serialize_json("."); }
 }  // namespace switcher

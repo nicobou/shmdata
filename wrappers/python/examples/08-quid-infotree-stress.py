@@ -24,7 +24,8 @@ aquids: List[pyquid.Quiddity] = []
 async def worker(queue: asyncio.Queue) -> None:
     while True:
         key, quid = await queue.get()
-        assert 'null' != quid.get_info_tree_as_json(key.strip('\"'))
+        assert key
+        assert quid
         # Notify the queue that the "work item" has been processed.
         queue.task_done()
 
@@ -37,7 +38,7 @@ async def make_switcher_scenario(sw: pyquid.Switcher) -> None:
             sw.get_quid(id).get_info_tree_as_json()
 
 
-def on_tree(key: str, quid: pyquid.Quiddity) -> None:
+def on_tree(key: pyquid.InfoTree, quid: pyquid.Quiddity) -> None:
     queue.put_nowait((key, quid))
 
 
@@ -50,14 +51,13 @@ async def main():
         vquids[-1].set('started', True)
         vquids.append(sw.create('dummysink', 'vsink' + str(i)))
         vquids[-1].subscribe('on-tree-grafted', on_tree, vquids[-1])
-        vquids[-1].invoke('connect-quid', [sw.get_quid_id('vid' + str(i)), 'video'])
+        vquids[-1].try_connect(vquids[-2])
         aquids.append(sw.create('audiotestsrc', 'aud' + str(i)))
+        aquids[-1].subscribe('on-tree-grafted', on_tree, aquids[-1])
         aquids[-1].set('started', True)
         aquids.append(sw.create('dummysink', 'asink' + str(i)))
-        aquids[-1].invoke('connect-quid', [sw.get_quid_id('vid' + str(i)), 'video'])
-
-    for q in aquids:
-        q.subscribe('on-tree-grafted', on_tree, q)
+        aquids[-1].subscribe('on-tree-grafted', on_tree, aquids[-1])
+        aquids[-1].try_connect(aquids[-2])
 
     task = asyncio.ensure_future(worker(queue))
 

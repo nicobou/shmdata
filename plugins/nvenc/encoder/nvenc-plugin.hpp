@@ -24,7 +24,6 @@
 #include <memory>
 #include "./nvenc-encode-session.hpp"
 #include "switcher/quiddity/quiddity.hpp"
-#include "switcher/shmdata/connector.hpp"
 #include "switcher/shmdata/follower.hpp"
 #include "switcher/shmdata/writer.hpp"
 #include "switcher/utils/threaded-wrapper.hpp"
@@ -41,6 +40,7 @@ class NVencPlugin : public Quiddity {
 
 
  private:
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
   property::Selection<> devices_{{"none"}, 0};
   bool bitrate_from_preset_{false};
   property::prop_id_t default_preset_id_;
@@ -65,7 +65,6 @@ class NVencPlugin : public Quiddity {
   std::unique_ptr<shmdata::Writer> shmw_{nullptr};
   std::unique_ptr<ThreadedWrapper<NVencES>> es_;
   std::unique_ptr<shmdata::Follower> shm_{nullptr};
-  shmdata::Connector shmcntr_;
   void update_device();
   void update_codec();
   void update_preset();
@@ -75,7 +74,6 @@ class NVencPlugin : public Quiddity {
 
   bool on_shmdata_disconnect();
   bool on_shmdata_connect(const std::string& shmdata_socket_path);
-  bool can_sink_caps(const std::string& caps);
   void on_shmreader_data(void* data, size_t data_size);
   void on_shmreader_server_connected(const std::string& data_descr);
 };

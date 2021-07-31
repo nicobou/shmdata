@@ -26,7 +26,6 @@
 #include "./drift-observer.hpp"
 #include "./jack-client.hpp"
 #include "switcher/gst/pipeliner.hpp"
-#include "switcher/shmdata/connector.hpp"
 #include "switcher/shmdata/gst-tree-updater.hpp"
 
 namespace switcher {
@@ -40,6 +39,7 @@ class ShmdataToJack : public Quiddity {
   ShmdataToJack& operator=(const ShmdataToJack&) = delete;
 
  private:
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
   unsigned int kMaxNumberOfChannels{128};
   bool is_constructed_{false};
 
@@ -78,9 +78,6 @@ class ShmdataToJack : public Quiddity {
   bool do_rate_conversion_{true};
   property::prop_id_t do_rate_conversion_id_;
 
-  // registering connect/disconnect/can_sink_caps:
-  shmdata::Connector shmcntr_;
-
   // gst pipeline:
   std::unique_ptr<gst::Pipeliner> gst_pipeline_;
 
@@ -102,7 +99,6 @@ class ShmdataToJack : public Quiddity {
   void on_port(jack_port_t* port);
   bool on_shmdata_disconnect();
   bool on_shmdata_connect(const std::string& shmdata_socket_path);
-  bool can_sink_caps(const std::string& caps);
   bool make_elements();
   void on_channel_update(unsigned int channels);
   void clean_output_ports();

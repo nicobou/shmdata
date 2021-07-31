@@ -32,8 +32,21 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VideoTestSource,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
+const std::string VideoTestSource::kConnectionSpec(R"(
+{
+"writer":
+  [
+    {
+      "label": "video",
+      "description": "Video test signal",
+      "can_do": ["video/x-raw"]
+    }
+  ]
+}
+)");
+
 VideoTestSource::VideoTestSource(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
+    : Quiddity(std::forward<quiddity::Config>(conf), {kConnectionSpec}),
       quiddity::Startable(this),
       resolutions_id_(pmanage<MPtr(&property::PBag::make_selection<property::Fraction>)>(
           "resolution",
@@ -57,28 +70,30 @@ VideoTestSource::VideoTestSource(quiddity::Config&& conf)
           "Resolutions",
           "Select resolutions",
           resolutions_)),
-      width_id_(pmanage<MPtr(&property::PBag::make_int)>("width",
-                                                         [this](int val) {
-                                                           width_ = val;
-                                                           return true;
-                                                         },
-                                                         [this]() { return width_; },
-                                                         "Width",
-                                                         "Set Video Width",
-                                                         width_,
-                                                         kMinWidth,
-                                                         kMaxWidth)),
-      height_id_(pmanage<MPtr(&property::PBag::make_int)>("height",
-                                                          [this](int val) {
-                                                            height_ = val;
-                                                            return true;
-                                                          },
-                                                          [this]() { return height_; },
-                                                          "Height",
-                                                          "Set Video Height",
-                                                          height_,
-                                                          kMinHeight,
-                                                          kMaxHeight)),
+      width_id_(pmanage<MPtr(&property::PBag::make_int)>(
+          "width",
+          [this](int val) {
+            width_ = val;
+            return true;
+          },
+          [this]() { return width_; },
+          "Width",
+          "Set Video Width",
+          width_,
+          kMinWidth,
+          kMaxWidth)),
+      height_id_(pmanage<MPtr(&property::PBag::make_int)>(
+          "height",
+          [this](int val) {
+            height_ = val;
+            return true;
+          },
+          [this]() { return height_; },
+          "Height",
+          "Set Video Height",
+          height_,
+          kMinHeight,
+          kMaxHeight)),
       framerates_id_(pmanage<MPtr(&property::PBag::make_selection<property::Fraction>)>(
           "framerate",
           [this](const property::IndexOrName& val) {
@@ -110,10 +125,8 @@ VideoTestSource::VideoTestSource(quiddity::Config&& conf)
     is_valid_ = false;
     return;
   }
-  // register writer suffix
-  register_writer_suffix("video");
   // compute shmpath
-  shmpath_ = make_shmpath("video");
+  shmpath_ = claw_.get_shmpath_from_writer_label("video");
   g_object_set(G_OBJECT(videotestsrc_.get_raw()), "is-live", TRUE, nullptr);
   g_object_set(G_OBJECT(shmdatasink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
 

@@ -25,7 +25,6 @@
 #include <memory>
 #include <switcher/quiddity/quiddity.hpp>
 #include <switcher/quiddity/startable.hpp>
-#include <switcher/shmdata/connector.hpp>
 #include <switcher/shmdata/follower.hpp>
 #include <switcher/utils/periodic-task.hpp>
 #include "./devices/analog-sink-device.hpp"
@@ -42,8 +41,6 @@ class VRPNSink : public Quiddity, public Startable {
  public:
   VRPNSink(quiddity::Config&&);
   ~VRPNSink() = default;
-  VRPNSink(const VRPNSink&) = delete;
-  VRPNSink& operator=(const VRPNSink&) = delete;
 
  private:
   /**
@@ -79,11 +76,10 @@ class VRPNSink : public Quiddity, public Startable {
   bool loading_{false};
 
   // SHMDATA
-  shmdata::Connector shmdataConnector_;
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
   std::unique_ptr<shmdata::Follower> shmDataFollower_{nullptr};
   bool connect(const std::string& path);
   bool disconnect();
-  bool canSinkCaps(const std::string& caps);
   void onShmReaderData(void* data, size_t data_size);
 
   // VRPN

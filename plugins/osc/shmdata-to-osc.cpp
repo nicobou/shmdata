@@ -30,55 +30,66 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToOsc,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-ShmdataToOsc::ShmdataToOsc(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
-      Startable(this),
-      shmcntr_(static_cast<Quiddity*>(this)),
-      port_id_(pmanage<MPtr(&property::PBag::make_int)>("port",
-                                                        [this](const int& val) {
-                                                          if (port_ == val) return true;
-                                                          port_ = val;
-                                                          if (!address_) return true;
-                                                          stop();
-                                                          start();
-                                                          return true;
-                                                        },
-                                                        [this]() { return port_; },
-                                                        "Port",
-                                                        "OSC destination port",
-                                                        port_,
-                                                        1,
-                                                        65536)),
-      host_id_(pmanage<MPtr(&property::PBag::make_string)>("host",
-                                                           [this](const std::string& val) {
-                                                             if (host_ == val) return true;
-                                                             host_ = val;
-                                                             if (!address_) return true;
-                                                             stop();
-                                                             start();
-                                                             return true;
-                                                           },
-                                                           [this]() { return host_; },
-                                                           "Destination Host",
-                                                           "OSC destination host",
-                                                           host_)),
-      autostart_id_(
-          pmanage<MPtr(&property::PBag::make_bool)>("autostart",
-                                                    [this](bool val) {
-                                                      autostart_ = val;
-                                                      return true;
-                                                    },
-                                                    [this]() { return autostart_; },
-                                                    "Autostart",
-                                                    "Start processing on shmdata connect or not",
-                                                    autostart_)) {
-  shmcntr_.install_connect_method(
-      [this](const std::string& shmpath) { return on_shmdata_connect(shmpath); },
-      [this](const std::string&) { return on_shmdata_disconnect(); },
-      [this]() { return on_shmdata_disconnect(); },
-      [this](const std::string& caps) { return can_sink_caps(caps); },
-      1);
+const std::string ShmdataToOsc::kConnectionSpec(R"(
+{
+"follower":
+  [
+    {
+      "label": "osc",
+      "description": "OSC stream",
+      "can_do": ["application/x-libloserialized-osc"]
+    }
+  ]
 }
+)");
+
+ShmdataToOsc::ShmdataToOsc(quiddity::Config&& conf)
+    : Quiddity(
+          std::forward<quiddity::Config>(conf),
+          {kConnectionSpec,
+           [this](const std::string& shmpath, claw::sfid_t) { return on_shmdata_connect(shmpath); },
+           [this](claw::sfid_t) { return on_shmdata_disconnect(); }}),
+      Startable(this),
+      port_id_(pmanage<MPtr(&property::PBag::make_int)>(
+          "port",
+          [this](const int& val) {
+            if (port_ == val) return true;
+            port_ = val;
+            if (!address_) return true;
+            stop();
+            start();
+            return true;
+          },
+          [this]() { return port_; },
+          "Port",
+          "OSC destination port",
+          port_,
+          1,
+          65536)),
+      host_id_(pmanage<MPtr(&property::PBag::make_string)>(
+          "host",
+          [this](const std::string& val) {
+            if (host_ == val) return true;
+            host_ = val;
+            if (!address_) return true;
+            stop();
+            start();
+            return true;
+          },
+          [this]() { return host_; },
+          "Destination Host",
+          "OSC destination host",
+          host_)),
+      autostart_id_(pmanage<MPtr(&property::PBag::make_bool)>(
+          "autostart",
+          [this](bool val) {
+            autostart_ = val;
+            return true;
+          },
+          [this]() { return autostart_; },
+          "Autostart",
+          "Start processing on shmdata connect or not",
+          autostart_)) {}
 
 ShmdataToOsc::~ShmdataToOsc() { stop(); }
 
@@ -149,10 +160,6 @@ void ShmdataToOsc::on_shmreader_data(void* data, size_t data_size) {
       lo_message_free(msg);
     }
   }
-}
-
-bool ShmdataToOsc::can_sink_caps(const std::string& caps) {
-  return (0 == caps.find("application/x-libloserialized-osc"));
 }
 
 }  // namespace quiddities

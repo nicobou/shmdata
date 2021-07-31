@@ -31,6 +31,7 @@ std::mutex mut{};
 
 using namespace switcher;
 using namespace quiddity;
+using namespace claw;
 
 void wait_until_success() {
   // wait 3 seconds
@@ -97,33 +98,39 @@ int main() {
 
     if (!ltctestsource2->prop<MPtr(&property::PBag::set_str_str)>("started", "true")) return 1;
 
-    auto connect_id = ltcdiff->meth<MPtr(&method::MBag::get_id)>("connect");
-    if (!ltcdiff->meth<MPtr(&method::MBag::invoke_str)>(
-            connect_id, serialize::esc_for_tuple(ltctestsource1->make_shmpath("audio"))))
+    if (Ids::kInvalid ==
+        ltcdiff->claw<MPtr(&Claw::connect)>(ltcdiff->claw<MPtr(&Claw::get_sfid)>("ltc1"),
+                                            ltctestsource1->get_id(),
+                                            ltctestsource1->claw<MPtr(&Claw::get_swid)>("ltc"))) {
       return 1;
-    if (!ltcdiff->meth<MPtr(&method::MBag::invoke_str)>(
-            connect_id, serialize::esc_for_tuple(ltctestsource2->make_shmpath("audio"))))
+    }
+    if (Ids::kInvalid ==
+        ltcdiff->claw<MPtr(&Claw::connect)>(ltcdiff->claw<MPtr(&Claw::get_sfid)>("ltc2"),
+                                            ltctestsource2->get_id(),
+                                            ltctestsource2->claw<MPtr(&Claw::get_swid)>("ltc"))) {
       return 1;
+    }
 
     ::shmdata::ConsoleLogger logger;
-    auto reader = std::make_unique<::shmdata::Reader>(ltcdiff->make_shmpath("ltc-diff"),
-                                                      [](void* data, size_t data_size) {
-                                                        if (data_size) {
-                                                          auto diff = *static_cast<double*>(data);
-                                                          // 1000ms in 30 frames, 50ms is between
-                                                          // one and two frames at 30 fps, we accept
-                                                          // 1 frame of error.
-                                                          if (diff - 1000 < 50) notify_success();
+    auto reader = std::make_unique<::shmdata::Reader>(
+        ltcdiff->claw<MPtr(&Claw::get_shmpath_from_writer_label)>("ltc-diff"),
+        [](void* data, size_t data_size) {
+          if (data_size) {
+            auto diff = *static_cast<double*>(data);
+            // 1000ms in 30 frames, 50ms is between
+            // one and two frames at 30 fps, we accept
+            // 1 frame of error.
+            if (diff - 1000 < 50) notify_success();
 #ifdef SWITCHER_TEST_COVERAGE
-                                                          // we tolerate more difference when
-                                                          // testing coverage
-                                                          if (diff - 1000 < 500) notify_success();
+            // we tolerate more difference when
+            // testing coverage
+            if (diff - 1000 < 500) notify_success();
 #endif
-                                                        }
-                                                      },
-                                                      nullptr,
-                                                      nullptr,
-                                                      &logger);
+          }
+        },
+        nullptr,
+        nullptr,
+        &logger);
 
     wait_until_success();
 

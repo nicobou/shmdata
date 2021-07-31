@@ -33,14 +33,25 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "LGPL",
     "François Ubald Brien");
 
-// Have to define it here, otherwise symbol not found...
+const std::string VRPNSource::kConnectionSpec(R"(
+{
+"writer":
+  [
+    {
+      "label": "vrpn",
+      "description": "VRPN stream",
+      "can_do": ["application/vrpn"]
+    }
+  ]
+}
+)");
+
 const unsigned int VRPNSource::vrpnLoopInterval{16};
 
 VRPNSource::~VRPNSource() { destroyed_ = true; }
 
 VRPNSource::VRPNSource(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)), Startable(this) {
-  register_writer_suffix("vrpn");
+    : Quiddity(std::forward<quiddity::Config>(conf), {kConnectionSpec}), Startable(this) {
   // Create the hostname property
   host_id_ = pmanage<MPtr(&property::PBag::make_string)>("host",
                                                          [this](const std::string& val) {
@@ -155,8 +166,8 @@ bool VRPNSource::start() {
   std::lock_guard<std::mutex> _(vrpnMutex_);
 
   // Initialize the shmdata writer
-  shmDataWriter_ =
-      std::make_unique<shmdata::Writer>(this, make_shmpath("vrpn"), 1, "application/vrpn");
+  shmDataWriter_ = std::make_unique<shmdata::Writer>(
+      this, claw_.get_shmpath_from_writer_label("vrpn"), 1, "application/vrpn");
   if (!shmDataWriter_.get()) {
     message("ERROR: VRPN source failed to initialize its shmdata");
     shmDataWriter_.reset(nullptr);

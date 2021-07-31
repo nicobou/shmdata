@@ -35,8 +35,25 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VideoSnapshot,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
+const std::string VideoSnapshot::kConnectionSpec(R"(
+{
+"follower":
+  [
+    {
+      "label": "video",
+      "description": "Video stream",
+      "can_do": ["video/x-raw"]
+    }
+  ]
+}
+)");
+
 VideoSnapshot::VideoSnapshot(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
+    : Quiddity(
+          std::forward<quiddity::Config>(conf),
+          {kConnectionSpec,
+           [this](const std::string& shmpath, claw::sfid_t) { return on_shmdata_connect(shmpath); },
+           [this](claw::sfid_t sfid) { return on_shmdata_disconnect(); }}),
       snap_id_(pmanage<MPtr(&property::PBag::make_bool)>(
           "shot",
           [this](bool val) {
@@ -108,7 +125,6 @@ VideoSnapshot::VideoSnapshot(quiddity::Config&& conf)
           jpg_quality_,
           0,
           100)),
-      shmcntr_(static_cast<Quiddity*>(this)),
       gst_pipeline_(std::make_unique<gst::Pipeliner>(
           [this](GstMessage* msg) {
             if (msg->type != GST_MESSAGE_ELEMENT) return;
@@ -118,14 +134,7 @@ VideoSnapshot::VideoSnapshot(quiddity::Config&& conf)
             on_new_file(gst_structure_get_string(s, "filename"));
           },
           nullptr)) {
-  pmanage<MPtr(&property::PBag::disable)>(snap_id_,
-                                          shmdata::Connector::disabledWhenDisconnectedMsg);
-  shmcntr_.install_connect_method(
-      [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
-      [this](const std::string&) { return this->on_shmdata_disconnect(); },
-      [this]() { return this->on_shmdata_disconnect(); },
-      [this](const std::string& caps) { return this->can_sink_caps(caps); },
-      std::numeric_limits<unsigned int>::max());
+  pmanage<MPtr(&property::PBag::disable)>(snap_id_, property::PBag::disabledWhenDisconnectedMsg);
 }
 
 void VideoSnapshot::make_gst_pipeline(const std::string& shmpath) {
@@ -173,8 +182,7 @@ void VideoSnapshot::on_new_file(const std::string& filename) {
 
 bool VideoSnapshot::on_shmdata_disconnect() {
   std::unique_lock<std::mutex> lock(mtx_);
-  pmanage<MPtr(&property::PBag::disable)>(snap_id_,
-                                          shmdata::Connector::disabledWhenDisconnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(snap_id_, property::PBag::disabledWhenDisconnectedMsg);
   gst_pipeline_.reset();
   return true;
 }
@@ -184,11 +192,6 @@ bool VideoSnapshot::on_shmdata_connect(const std::string& shmpath) {
   pmanage<MPtr(&property::PBag::enable)>(snap_id_);
   make_gst_pipeline(shmpath);
   return true;
-}
-
-bool VideoSnapshot::can_sink_caps(const std::string& caps) {
-  // assuming VideoSnapshot is internally using videoconvert as first caps-negotiating element:
-  return gst::utils::can_sink_caps("videoconvert", caps);
 }
 
 }  // namespace quiddities

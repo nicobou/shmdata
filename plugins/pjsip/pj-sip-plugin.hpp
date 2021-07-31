@@ -50,6 +50,7 @@ class SIPPlugin : public Quiddity {
   bool stop();
 
  private:
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
   pjsua_transport_id transport_id_{-1};
   unsigned int sip_port_{5060};
   property::prop_id_t port_id_;

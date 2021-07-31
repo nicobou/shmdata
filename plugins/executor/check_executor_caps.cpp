@@ -20,6 +20,8 @@
 #undef NDEBUG  // get assert in release mode
 
 #include <cassert>
+#include <shmdata/type.hpp>
+
 #include "switcher/quiddity/basic-test.hpp"
 #include "switcher/switcher.hpp"
 
@@ -27,6 +29,7 @@ int main() {
   {
     using namespace switcher;
     using namespace quiddity;
+    using namespace claw;
 
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
 
@@ -37,39 +40,32 @@ int main() {
     auto exec = eqrox.get();
     assert(exec);
 
-    auto meth_id = exec->meth<MPtr(&method::MBag::get_id)>("can-sink-caps");
-    assert(0 != meth_id);
-
     // should accept connection if empty
     assert("" == exec->prop<MPtr(&property::PBag::get_str_str)>("whitelist_caps"));
 
-    bool can_connect = exec->meth<MPtr(&method::MBag::invoke<std::function<bool(std::string)>>)>(
-        meth_id, std::make_tuple("test"));
+    auto sfid = exec->claw<MPtr(&Claw::get_sfid)>(std::string("custom"));
 
+    bool can_connect = exec->claw<MPtr(&Claw::sfid_can_do_shmtype)>(sfid, ::shmdata::Type("text"));
     assert(can_connect == true);
 
     // should reject connection if the caps doesn't match
     assert(exec->prop<MPtr(&property::PBag::set_str_str)>("whitelist_caps", "audio/x-raw"));
     assert("audio/x-raw" == exec->prop<MPtr(&property::PBag::get_str_str)>("whitelist_caps"));
 
-    can_connect = exec->meth<MPtr(&method::MBag::invoke<std::function<bool(std::string)>>)>(
-        meth_id, std::make_tuple("test"));
-
+    can_connect = exec->claw<MPtr(&Claw::sfid_can_do_shmtype)>(sfid, ::shmdata::Type("text"));
     assert(can_connect == false);
 
     // should accept connection if the caps match
-    can_connect = exec->meth<MPtr(&method::MBag::invoke<std::function<bool(std::string)>>)>(
-        meth_id, std::make_tuple("audio/x-raw"));
-
+    can_connect =
+        exec->claw<MPtr(&Claw::sfid_can_do_shmtype)>(sfid, ::shmdata::Type("audio/x-raw"));
     assert(can_connect == true);
 
     // should accept connection if the caps match with many whitelisted caps
     assert(exec->prop<MPtr(&property::PBag::set_str_str)>("whitelist_caps",
-                                                          "audio/x-raw, video/x-raw"));
+                                                          "audio/x-raw; video/x-raw"));
 
-    can_connect = exec->meth<MPtr(&method::MBag::invoke<std::function<bool(std::string)>>)>(
-        meth_id, std::make_tuple("video/x-raw"));
-
+    can_connect =
+        exec->claw<MPtr(&Claw::sfid_can_do_shmtype)>(sfid, ::shmdata::Type("video/x-raw"));
     assert(can_connect == true);
 
   }  // end of scope is releasing the manager

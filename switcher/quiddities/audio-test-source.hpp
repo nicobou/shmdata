@@ -35,13 +35,11 @@ using namespace quiddity;
 class AudioTestSource : public Quiddity, public Startable {
  public:
   AudioTestSource(quiddity::Config&&);
-  ~AudioTestSource() = default;
-  AudioTestSource(const AudioTestSource&) = delete;
-  AudioTestSource& operator=(const AudioTestSource&) = delete;
 
  private:
   static constexpr double kMaxFrequency = 20000.0;
   static const int kMaxChannels = 128;
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
 
   std::string shmpath_{};
   std::unique_ptr<gst::Pipeliner> gst_pipeline_;

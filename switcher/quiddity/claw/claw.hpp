@@ -33,8 +33,11 @@
 namespace switcher {
 namespace quiddity {
 class Quiddity;
-namespace claw {
+namespace bundle {
+class Bundle;
+}  // namespace bundle
 
+namespace claw {
 /**
  * Claw class provides Quiddity the ability to specify available
  * shmdata, both as writer and as follower. It is designed in
@@ -69,6 +72,7 @@ namespace claw {
  * then perform an aligned recording of these streams.
  */
 class Claw : public SafeBoolIdiom {
+  friend class bundle::Bundle;  // custom set of connection spec and callbacks
  public:
   /**
    * Claw constructor. A Claw object is designed to be owned and constructed by
@@ -104,7 +108,7 @@ class Claw : public SafeBoolIdiom {
 
   /**
    * Connect a local Shmdata follower with an other Quiddity. The method is automatically finding
-   * the first compatible shmdata wruter available with the target Quiddity.
+   * the first compatible shmdata writer available with the target Quiddity.
    *
    * \param local_sfid the Shmdata follower identifier to connect. If it is meta, a new follower
    * will be allocated from it. local_sfid must be allocated by the current Claw
@@ -114,6 +118,17 @@ class Claw : public SafeBoolIdiom {
    * local_sfid identifies a meta follower. If connect fails, Id::kInvalid will be returned.
    */
   sfid_t connect_quid(sfid_t local_sfid, quiddity::qid_t writer_quid) const;
+
+  /**
+   * Connect with an other Quiddity. The method is automatically finding
+   * the first compatible shmdata writer available with the target Quiddity.
+   *
+   * \param writer_quid the identifier of the Quiddity hosting the Shmdata writer
+   *
+   * \return the identifier of the follower. A newly allocated identifier is generated if
+   * local_sfid identifies a meta follower. If connect fails, Id::kInvalid will be returned.
+   */
+  sfid_t try_connect(quiddity::qid_t writer_quid) const;
 
   /**
    * Connect a local Shmdata follower with a Shmdata identified by its path.
@@ -161,6 +176,20 @@ class Claw : public SafeBoolIdiom {
   sfid_t get_sfid(const std::string& label) const;
 
   /**
+   * Get list of follower identifier
+   *
+   * \return the identifier list
+   */
+  std::vector<sfid_t> get_sfids() const;
+
+  /**
+   * Get list of writer identifier
+   *
+   * \return the identifier list
+   */
+  std::vector<swid_t> get_swids() const;
+
+  /**
    * Get the label of a writer from its identifier
    *
    * \param swid the writer identifier
@@ -186,13 +215,22 @@ class Claw : public SafeBoolIdiom {
   swid_t get_swid(const std::string& label) const;
 
   /**
-   * Get the Shmdata path use by the writer
+   * Get the Shmdata path used by the writer
    *
    * \param swid the writer identifier
    *
    * \return the path, or empty string if swid is not found
    */
   std::string get_writer_shmpath(swid_t swid) const;
+
+  /**
+   * Get the Shmdata path from the writer label
+   *
+   * \param swid the writer identifier
+   *
+   * \return the path, or empty string if swid is not found
+   */
+  std::string get_shmpath_from_writer_label(const std::string& label) const;
 
   /**
    * Get shmdata follower ids compatible with a given shmdata type
@@ -231,7 +269,17 @@ class Claw : public SafeBoolIdiom {
    *
    * \return true if compatible, false otherwise
    */
-  bool can_do_shmtype(sfid_t local_sfid, const ::shmdata::Type& type) const;
+  bool sfid_can_do_shmtype(sfid_t local_sfid, const ::shmdata::Type& type) const;
+
+  /**
+   * Test if a local shmdata writer is compatible with a shmdata type
+   *
+   * \param local_swid the shmdata follower to test
+   * \param type the shmdata type
+   *
+   * \return true if compatible, false otherwise
+   */
+  bool swid_can_do_shmtype(swid_t local_swid, const ::shmdata::Type& type) const;
 
   /**
    * Get the list of compatible types with a given shmdata follower
@@ -252,12 +300,23 @@ class Claw : public SafeBoolIdiom {
   std::vector<::shmdata::Type> get_writer_can_do(swid_t swid) const;
 
   /**
+   * Get the shmdata path a follower is connected to
+   *
+   * \param the shmdata follower identifier
+   *
+   * \return The shmdata path or empty string if not connected
+   */
+  std::string get_follower_shmpath(sfid_t sfid) const;
+
+  /**
    * Add a writer corresponding to a meta writer specification.
    * It updates the connection specification.
    * This method is suposed to be used from Quiddity plugins.
    *
    * \param id the id of the meta Shmdata writer
-   * \param label, the label of the new shmdata writer.
+   * \param spec the writer description (label + description).
+   *        if the label field of the argument is is empty, then
+   *        the claw will generate one
    *
    * \return the new Shmdata writer id
    */
@@ -274,15 +333,35 @@ class Claw : public SafeBoolIdiom {
    */
   bool remove_writer_from_meta(swid_t id);
 
+  /**
+   * Replace the follower can_do entry.
+   *
+   * \param sfid the follower identifier
+   * \param types the shmdata types to apply
+   *
+   * \return applied or not
+   */
+  bool replace_follower_can_do(sfid_t sfid, const std::vector<::shmdata::Type>& types);
+
+  /**
+   * Replace the writer can_do entry.
+   *
+   * \param swid the writer identifier
+   * \param types the shmdata types to apply
+   *
+   * \return applied or not
+   */
+  bool replace_writer_can_do(swid_t swid, const std::vector<::shmdata::Type>& types);
 
  private:
   Quiddity* quid_;
   ConnectionSpec connection_spec_{};
   OnConnect_t on_connect_cb_{};
   OnDisconnect_t on_disconnect_cb_{};
-
+  mutable std::map<sfid_t, std::string> follower_shmpaths_{};
+  std::map<swid_t, std::string> forced_writer_shmpaths_{};  //!< for use by bundle (friend class)
   /**
-   * \brief Implementation of the safe bool idioms. The Claw
+   * Implementation of the safe bool idioms. The Claw
    * is considered as valid if the Connection Spec has been
    * parsed with success
    *

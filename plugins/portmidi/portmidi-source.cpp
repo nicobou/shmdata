@@ -35,14 +35,25 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PortMidiSource,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
+const std::string PortMidiSource::kConnectionSpec(R"(
+{
+"writer":
+  [
+    {
+      "label": "midi",
+      "description": "Midi Stream",
+      "can_do": ["audio/midi"]
+    }
+}
+)");
+
 PortMidiSource::PortMidiSource(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)), Startable(this) {
+    : Quiddity(std::forward<quiddity::Config>(conf), {kConnectionSpec}), Startable(this) {
   if (input_devices_enum_.empty()) {
     message("ERROR:No MIDI capture device detected.");
     is_valid_ = false;
     return;
   }
-  register_writer_suffix("midi");
   devices_id_ = pmanage<MPtr(&property::PBag::make_selection<>)>(
       "device",
       [this](const quiddity::property::IndexOrName& val) {
@@ -136,8 +147,8 @@ PortMidiSource::PortMidiSource(quiddity::Config&& conf)
 }
 
 bool PortMidiSource::start() {
-  shm_ =
-      std::make_unique<shmdata::Writer>(this, make_shmpath("midi"), sizeof(PmEvent), "audio/midi");
+  shm_ = std::make_unique<shmdata::Writer>(
+      this, claw_.get_shmpath_from_writer_label("midi"), sizeof(PmEvent), "audio/midi");
   if (!shm_.get()) {
     message("ERROR:Midi failed to start");
     shm_.reset(nullptr);

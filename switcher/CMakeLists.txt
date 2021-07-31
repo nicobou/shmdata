@@ -66,7 +66,6 @@ add_library(${SWITCHER_LIBRARY} SHARED
   session/session.cpp
   shmdata/caps/audio-caps.cpp
   shmdata/caps/utils.cpp
-  shmdata/connector.cpp
   shmdata/follower.cpp
   shmdata/gst-subscriber.cpp
   shmdata/gst-tree-updater.cpp

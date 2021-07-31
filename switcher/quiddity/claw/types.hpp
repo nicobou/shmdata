@@ -69,6 +69,7 @@ using OnDisconnect_t = std::function<bool(sfid_t /*sid*/)>;
 using shm_spec_t = struct shm_spec_struct_t {
   std::string label{};        //!< The label for the Shmdata
   std::string description{};  //!< The description for the Shmdata
+  std::vector<std::string> can_dos{};  //!< The can do specific to the new writer
 };
 
 }  // namespace claw

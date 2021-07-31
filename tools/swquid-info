@@ -50,6 +50,8 @@ Arguments:
                       help="list class methods after initialization", action="store_true")
     argp.add_argument("-s", "--signals",
                       help="list class signals after initialization", action="store_true")
+    argp.add_argument("-w", "--claws",
+                      help="list information about shmdata possible connection", action="store_true")
     argp.add_argument("-l", "--short-list", help="print only the list of properties, methods or signals.",
                       action="store_true")
     argp.add_argument("-c", "--class-doc", help="print class documentation", action="store_true")
@@ -123,6 +125,8 @@ def main() -> None:
         doc = InfoTree(quid.get_info_tree_as_json('.method.' + path))
     elif (args.signals):
         doc = InfoTree(quid.get_info_tree_as_json('.signal.' + path))
+    elif (args.claws):
+        doc = quid.get_connection_specs()
 
     # print the doc
     parsed = json.loads(doc.json())

@@ -67,19 +67,15 @@ assert None != dummy1
 dummy2 = sw.create(type='dummysink', nickname='dummy2')
 assert None != dummy2
 
-# connect audio and video through their shmpaths to the webrtc quids
-vidshmpath = vid.make_shmpath('video')
-audioshmpath = audio.make_shmpath('audio')
+assert web1.try_connect(vid)
+assert web1.try_connect(audio)
 
-assert web1.invoke('connect', [vidshmpath])
-assert web1.invoke('connect', [audioshmpath])
-
-assert web2.invoke('connect', [vidshmpath])
-assert web2.invoke('connect', [audioshmpath])
+assert web2.try_connect(vid)
+assert web2.try_connect(audio)
 
 # connect the dummysink to the webrtc quids
-assert dummy1.invoke('connect-quid', [web1.id(), 'webrtc'])
-assert dummy2.invoke('connect-quid', [web2.id(), 'webrtc'])
+assert dummy1.try_connect(web1)
+assert dummy2.try_connect(web2)
 
 # subscribe to the 'frame-received' property of the dummysinks
 assert dummy1.subscribe('frame-received', on_frame_received, vid)

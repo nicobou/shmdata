@@ -287,22 +287,6 @@ int controlService::get_property(const std::string& quiddity_nickname,
   return SOAP_OK;
 }
 
-int controlService::make_shmpath(const std::string& quiddity_nickname,
-                                 const std::string& suffix,
-                                 std::string* result) {
-  using namespace switcher;
-  quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
-  Switcher* manager = ctrl_server->get_switcher();
-
-  auto qid = manager->quids<MPtr(&quiddity::Container::get_id)>(quiddity_nickname);
-  auto qrox = manager->quids<MPtr(&quiddity::Container::get_qrox)>(qid);
-  if (!qrox)
-    *result = std::string();
-  else
-    *result = qrox.get()->make_shmpath(suffix);
-  return SOAP_OK;
-}
-
 int controlService::create_named_quiddity(const std::string& quiddity_class,
                                           const std::string& nick_name,
                                           std::string* result) {

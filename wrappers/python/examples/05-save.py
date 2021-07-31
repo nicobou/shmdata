@@ -25,9 +25,11 @@ except RuntimeError:
     win = sw.create(type='dummysink', nickname='win')
 
 vid = sw.create('videotestsrc', 'vid')
-assert win.invoke('connect-quid', [vid.id(), 'video'])
-assert win.invoke('disconnect-all')
-assert win.invoke('connect', [vid.make_shmpath('video')])
+connection = win.try_connect(vid)
+assert connection.disconnect()
+
+connection = win.try_connect(vid)
+
 assert vid.set('started', True)
 
 time.sleep(1)

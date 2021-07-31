@@ -464,6 +464,9 @@ class PBag {
         std::forward<const std::tuple<T...>&>(default_value));
   }
 
+  static const std::string disabledWhenConnectedMsg;
+  static const std::string disabledWhenDisconnectedMsg;
+
  private:
   prop_id_t counter_{0};
   // props_ and actual_props_ are maintained together: props_ is an indirection for methods using

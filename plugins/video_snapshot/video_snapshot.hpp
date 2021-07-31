@@ -22,7 +22,6 @@
 
 #include "switcher/gst/pipeliner.hpp"
 #include "switcher/quiddity/quiddity.hpp"
-#include "switcher/shmdata/connector.hpp"
 
 namespace switcher {
 namespace quiddities {
@@ -33,8 +32,9 @@ class VideoSnapshot : public Quiddity {
   VideoSnapshot(quiddity::Config&&);
 
  private:
-  // Take Snaphot property
-  property::prop_id_t snap_id_;
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
+
+  property::prop_id_t snap_id_;  //!< Take Snaphot property
 
   // last image
   std::string last_image_{};
@@ -54,9 +54,6 @@ class VideoSnapshot : public Quiddity {
   unsigned int jpg_quality_{85};
   property::prop_id_t jpg_quality_id_;
 
-  // registering connect/disconnect/can_sink_caps:
-  shmdata::Connector shmcntr_;
-
   // gst pipeline
   std::mutex mtx_{};
   std::unique_ptr<gst::Pipeliner> gst_pipeline_;
@@ -66,7 +63,6 @@ class VideoSnapshot : public Quiddity {
   void on_new_file(const std::string& filename);
   bool on_shmdata_disconnect();
   bool on_shmdata_connect(const std::string& shmdata_socket_path);
-  bool can_sink_caps(const std::string& caps);
 };
 
 SWITCHER_DECLARE_PLUGIN(VideoSnapshot);

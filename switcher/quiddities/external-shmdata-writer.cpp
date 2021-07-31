@@ -31,8 +31,21 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ExternalWriter,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
+const std::string ExternalWriter::kConnectionSpec(R"(
+{
+"writer":
+  [
+    {
+      "label": "custom",
+      "description": "Video streams",
+      "can_do": ["all"]
+    }
+  ]
+}
+)");
+
 ExternalWriter::ExternalWriter(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)) {
+    : Quiddity(std::forward<quiddity::Config>(conf), {kConnectionSpec}) {
   pmanage<MPtr(&property::PBag::make_string)>(
       "shmdata-path",
       [this](const std::string& val) {

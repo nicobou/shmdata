@@ -42,13 +42,29 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(V4L2Src,
                                      "GPL",
                                      "Nicolas Bouillot");
 
+const std::string V4L2Src::kConnectionSpec(R"(
+{
+"writer":
+  [
+    {
+      "label": "video",
+      "description": "Video stream",
+      "can_do": ["video/x-raw"]
+    },
+    {
+      "label": "video-encoded",
+      "description": "Encoded video stream",
+      "can_do": [ "video/x-h264", "video/x-h265", "video/mpeg", "image/jpeg" ]
+    }
+  ]
+}
+)");
+
 void V4L2Src::set_shm_suffix() {
   if (is_current_pixel_format_raw_video()) {
-    shmpath_ = make_shmpath(raw_suffix_);
-    register_writer_suffix(raw_suffix_);
+    shmpath_ = claw_.get_shmpath_from_writer_label("video");
   } else {
-    shmpath_ = make_shmpath(enc_suffix_);
-    register_writer_suffix(enc_suffix_);
+    shmpath_ = claw_.get_shmpath_from_writer_label("video-encoded");
   }
   g_object_set(G_OBJECT(shmsink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
   auto extra_caps = get_quiddity_caps();

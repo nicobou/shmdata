@@ -45,7 +45,7 @@ int main() {
         {
           "label": "custom",
           "description": "Custom shmdata for my statistical analysis",
-          "can_do": [ "any" ]
+          "can_do": [ "all" ]
         }
       ],
     "writer":

@@ -30,6 +30,8 @@ std::condition_variable cond_var{};
 std::mutex mut{};
 
 using namespace switcher;
+using namespace quiddity;
+using namespace claw;
 
 void wait_until_success() {
   // wait 3 seconds
@@ -74,10 +76,10 @@ int main() {
 
     if (!videotest->prop<MPtr(&quiddity::property::PBag::set_str_str)>("started", "true")) return 1;
 
-    if (!shmdelaytest
-             ->meth<MPtr(&quiddity::method::MBag::invoke<std::function<bool(std::string)>>)>(
-                 shmdelaytest->meth<MPtr(&quiddity::method::MBag::get_id)>("connect"),
-                 std::make_tuple(videotest->make_shmpath("video"))))
+    if (!shmdelaytest->claw<MPtr(&quiddity::claw::Claw::connect)>(
+            shmdelaytest->claw<MPtr(&quiddity::claw::Claw::get_sfid)>("shm"),
+            videotest->get_id(),
+            videotest->claw<MPtr(&quiddity::claw::Claw::get_swid)>("video")))
       return 1;
 
     auto start_time = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -86,7 +88,8 @@ int main() {
 
     ::shmdata::ConsoleLogger logger;
     auto reader = std::make_unique<::shmdata::Follower>(
-        shmdelaytest->make_shmpath("delayed-shm"),
+        shmdelaytest->claw<MPtr(&Claw::get_writer_shmpath)>(
+            shmdelaytest->claw<MPtr(&Claw::get_swid)>("delayed-shm")),
         [&start_time](void*, size_t data_size) {
           if (!data_size) return;
           auto reception_time = std::chrono::duration_cast<std::chrono::milliseconds>(
@@ -102,10 +105,8 @@ int main() {
 
     wait_until_success();
 
-    if (!shmdelaytest
-             ->meth<MPtr(&quiddity::method::MBag::invoke<std::function<bool(std::string)>>)>(
-                 shmdelaytest->meth<MPtr(&quiddity::method::MBag::get_id)>("disconnect"),
-                 std::make_tuple(videotest->make_shmpath("video"))))
+    if (!shmdelaytest->claw<MPtr(&quiddity::claw::Claw::disconnect)>(
+            shmdelaytest->claw<MPtr(&quiddity::claw::Claw::get_sfid)>("shm")))
       return 1;
 
     videotest->prop<MPtr(&quiddity::property::PBag::set_str_str)>("started", "false");

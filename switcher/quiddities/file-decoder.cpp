@@ -33,8 +33,21 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(FileDecoder,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
+const std::string FileDecoder::kConnectionSpec(R"(
+{
+"writer":
+  [
+    {
+      "label": "custom%",
+      "description": "Produced random buffers",
+      "can_do": [ "video/x-raw", "audio/x-raw", "text/x-raw" ]
+    }
+  ]
+}
+)");
+
 FileDecoder::FileDecoder(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
+    : Quiddity(std::forward<quiddity::Config>(conf), {kConnectionSpec}),
       location_id_(pmanage<MPtr(&property::PBag::make_string)>(
           "location",
           [this](const std::string& val) {
@@ -99,9 +112,7 @@ FileDecoder::FileDecoder(quiddity::Config&& conf)
           "Negatives values means backwards playback.",
           speed_,
           0,
-          10.0)) {
-  register_writer_suffix(".*");
-}
+          10.0)) {}
 
 bool FileDecoder::load_file(const std::string& path) {
   {
@@ -216,10 +227,13 @@ void FileDecoder::configure_shmdatasink(GstElement* element,
   std::string media_name = media_type;
   if (count != 0) media_name.append("-" + std::to_string(count));
   std::string shmpath;
-  if (media_label.empty())
-    shmpath = make_shmpath(media_name);
-  else
-    shmpath = make_shmpath(media_label + "-" + media_name);
+  if (media_label.empty()) {
+    shmpath = claw_.get_writer_shmpath(
+        claw_.add_writer_to_meta(claw_.get_swid("custom%"), {media_name, media_name}));
+  } else {
+    shmpath = claw_.get_writer_shmpath(claw_.add_writer_to_meta(
+        claw_.get_swid("custom%"), {media_label + "-" + media_name, media_label}));
+  }
 
   g_object_set(G_OBJECT(element), "socket-path", shmpath.c_str(), nullptr);
   auto extra_caps = get_quiddity_caps();

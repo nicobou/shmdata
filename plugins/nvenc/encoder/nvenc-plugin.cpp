@@ -35,9 +35,33 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(NVencPlugin,
                                      "CUDA-based video encoder",
                                      "LGPL",
                                      "Nicolas Bouillot");
+const std::string NVencPlugin::kConnectionSpec(R"(
+{
+"follower":
+  [
+    {
+      "label": "video",
+      "description": "Video stream ro encode",
+      "can_do": ["video/x-raw"]
+    }
+  ],
+"writer":
+  [
+    {
+      "label": "video-encoded",
+      "description": "Encoded video stream",
+      "can_do": ["video/x-h264", "video/x-h265"]
+    }
+  ]
+}
+)");
 
 NVencPlugin::NVencPlugin(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
+    : Quiddity(
+          std::forward<quiddity::Config>(conf),
+          {kConnectionSpec,
+           [this](const std::string& shmpath, claw::sfid_t) { return on_shmdata_connect(shmpath); },
+           [this](claw::sfid_t) { return on_shmdata_disconnect(); }}),
       default_preset_id_(pmanage<MPtr(&property::PBag::make_bool)>(
           "bitrate_from_preset",
           [this](bool value) {
@@ -54,21 +78,19 @@ NVencPlugin::NVencPlugin(quiddity::Config&& conf)
           "Default preset configuration",
           "Use default preset configuration.",
           bitrate_from_preset_)),
-      bitrate_id_(
-          pmanage<MPtr(&property::PBag::make_unsigned_int)>("bitrate",
-                                                            [this](const uint32_t& value) {
-                                                              bitrate_ = value;
-                                                              return true;
-                                                            },
-                                                            [this]() { return bitrate_; },
-                                                            "Desired bitrate",
-                                                            "Value of the desired average bitrate.",
-                                                            bitrate_,
-                                                            1000000,
-                                                            20000000)),
-      es_(std::make_unique<ThreadedWrapper<NVencES>>(get_log_ptr())),
-      shmcntr_(static_cast<Quiddity*>(this)) {
-  register_writer_suffix("video-encoded");
+      bitrate_id_(pmanage<MPtr(&property::PBag::make_unsigned_int)>(
+          "bitrate",
+          [this](const uint32_t& value) {
+            bitrate_ = value;
+            return true;
+          },
+          [this]() { return bitrate_; },
+          "Desired bitrate",
+          "Value of the desired average bitrate.",
+          bitrate_,
+          1000000,
+          20000000)),
+      es_(std::make_unique<ThreadedWrapper<NVencES>>(get_log_ptr())) {
   auto devices = CudaContext::get_devices();
   std::vector<std::string> names;
   for (auto& it : devices) {
@@ -100,12 +122,6 @@ NVencPlugin::NVencPlugin(quiddity::Config&& conf)
     is_valid_ = false;
     return;
   }
-  shmcntr_.install_connect_method(
-      [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
-      [this](const std::string&) { return this->on_shmdata_disconnect(); },
-      [this]() { return this->on_shmdata_disconnect(); },
-      [this](const std::string& caps) { return this->can_sink_caps(caps); },
-      1);
   is_valid_ = es_.get()->invoke<bool>([](NVencES* ctx) { return ctx->safe_bool_idiom(); });
 }
 
@@ -315,40 +331,17 @@ bool NVencPlugin::on_shmdata_connect(const std::string& shmpath) {
       [this](void* data, size_t size) { this->on_shmreader_data(data, size); },
       [this](const std::string& data_descr) { this->on_shmreader_server_connected(data_descr); }));
 
-  pmanage<MPtr(&property::PBag::disable)>(devices_id_,
-                                          shmdata::Connector::disabledWhenConnectedMsg);
-  pmanage<MPtr(&property::PBag::disable)>(presets_id_,
-                                          shmdata::Connector::disabledWhenConnectedMsg);
-  pmanage<MPtr(&property::PBag::disable)>(profiles_id_,
-                                          shmdata::Connector::disabledWhenConnectedMsg);
-  pmanage<MPtr(&property::PBag::disable)>(codecs_id_, shmdata::Connector::disabledWhenConnectedMsg);
-  pmanage<MPtr(&property::PBag::disable)>(max_width_id_,
-                                          shmdata::Connector::disabledWhenConnectedMsg);
-  pmanage<MPtr(&property::PBag::disable)>(max_height_id_,
-                                          shmdata::Connector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(devices_id_, property::PBag::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(presets_id_, property::PBag::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(profiles_id_, property::PBag::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(codecs_id_, property::PBag::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(max_width_id_, property::PBag::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(max_height_id_, property::PBag::disabledWhenConnectedMsg);
   pmanage<MPtr(&property::PBag::disable)>(default_preset_id_,
-                                          shmdata::Connector::disabledWhenConnectedMsg);
-  pmanage<MPtr(&property::PBag::disable)>(bitrate_id_,
-                                          shmdata::Connector::disabledWhenConnectedMsg);
+                                          property::PBag::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(bitrate_id_, property::PBag::disabledWhenConnectedMsg);
 
   return true;
-}
-
-bool NVencPlugin::can_sink_caps(const std::string& strcaps) {
-  GstCaps* caps = gst_caps_from_string(strcaps.c_str());
-  On_scope_exit {
-    if (nullptr != caps) gst_caps_unref(caps);
-  };
-  return video_formats_.end() !=
-         std::find_if(video_formats_.begin(),
-                      video_formats_.end(),
-                      [&](const std::pair<std::string, NV_ENC_BUFFER_FORMAT>& caps_iter) {
-                        GstCaps* curcaps = gst_caps_from_string(caps_iter.first.c_str());
-                        On_scope_exit {
-                          if (nullptr != curcaps) gst_caps_unref(curcaps);
-                        };
-                        return gst_caps_can_intersect(curcaps, caps);
-                      });
 }
 
 void NVencPlugin::on_shmreader_data(void* data, size_t size) {
@@ -448,7 +441,7 @@ void NVencPlugin::on_shmreader_server_connected(const std::string& data_descr) {
 
   shmw_ = std::make_unique<shmdata::Writer>(
       this,
-      make_shmpath("video-encoded"),
+      claw_.get_shmpath_from_writer_label("video-encoded"),
       1,
       std::string(
           "video/" + codec +

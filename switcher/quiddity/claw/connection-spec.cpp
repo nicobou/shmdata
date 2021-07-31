@@ -62,6 +62,7 @@ ConnectionSpec::ConnectionSpec(const std::string& spec)
       msg_ = "to many followers, no more ids";
       return;
     }
+    
     shmspec->vgraft("sfid", id);
     shmspec->vgraft("from_sfid", Ids::kInvalid);
     follower_ids_.emplace(std::make_pair(id, label));
@@ -141,7 +142,9 @@ BoolLog ConnectionSpec::check_shmdata_spec(const InfoTree* tree) {
                    "can_do entry must be an array of caps in " + infotree::json::serialize(tree));
   auto can_do_spec_is_correct = true;
   std::string caps_message;
+  int num_can_do = 0;
   tree->cfor_each_in_array("can_do", [&](const InfoTree* caps) {
+    ++num_can_do;
     auto val = caps->get_value();
     if (!val.is<std::string>()) {
       caps_message = std::string("caps must be string value: ") + infotree::json::serialize(caps);
@@ -154,6 +157,11 @@ BoolLog ConnectionSpec::check_shmdata_spec(const InfoTree* tree) {
       can_do_spec_is_correct = false;
     }
   });
+  if (0 == num_can_do) {
+    return BoolLog(
+        false,
+        "can_do must contain at least one entry, please use \"all\" is anything is accepted");
+  }
   if (!can_do_spec_is_correct) return BoolLog(false, caps_message);
   return BoolLog(true);
 }
@@ -231,7 +239,7 @@ sfid_t ConnectionSpec::allocate_sfid_from_meta(sfid_t sfid) const {
   auto label = stringutils::replace_char(it->second, '%', std::to_string(id));
   follower_ids_.emplace(std::make_pair(id, label));
   follower_can_do_.emplace(std::make_pair(id, follower_can_do_[sfid]));
-
+  dynamic_sfids_.emplace_back(id);
   // add to the tree
   InfoTree::ptr follower_tree = InfoTree::make();
   follower_tree->vgraft("label", label);
@@ -243,14 +251,14 @@ sfid_t ConnectionSpec::allocate_sfid_from_meta(sfid_t sfid) const {
 
 bool ConnectionSpec::deallocate_sfid_from_meta(sfid_t sfid) const {
   // check sfid is a dynamic
-  if (Ids::kInvalid ==
-      connection_spec_->branch_get_value("follower." + std::to_string(sfid) + ".from_sfid")
-          .as<sfid_t>()) {
+  auto dynamic_sfid = std::find(dynamic_sfids_.begin(), dynamic_sfids_.end(), sfid);
+  if (dynamic_sfids_.end() == dynamic_sfid) {
     return false;
   }
   connection_spec_->prune("follower." + std::to_string(sfid));
   follower_ids_.erase(follower_ids_.find(sfid));
   follower_can_do_.erase(follower_can_do_.find(sfid));
+  dynamic_sfids_.erase(dynamic_sfid);
   return true;
 }
 
@@ -267,7 +275,7 @@ bool ConnectionSpec::is_meta_writer(swid_t swid) const {
   if (writer_ids_.cend() == it) {
     return false;
   }
-  if (std::string::npos != it->second.find('%')) {
+  if (std::string::npos == it->second.find('%')) {
     return false;
   }
   return true;
@@ -296,6 +304,7 @@ swid_t ConnectionSpec::allocate_swid_from_meta(swid_t swid, const shm_spec_t& sp
   }
   writer_ids_.emplace(std::make_pair(id, label));
   writer_can_do_.emplace(std::make_pair(id, writer_can_do_[swid]));
+  dynamic_swids_.emplace_back(id);
 
   // add to the tree
   InfoTree::ptr writer_tree = InfoTree::make();
@@ -303,31 +312,40 @@ swid_t ConnectionSpec::allocate_swid_from_meta(swid_t swid, const shm_spec_t& sp
   writer_tree->vgraft("swid", id);
   writer_tree->vgraft("description", spec.label);
   writer_tree->vgraft("from_swid", swid);
+  if (spec.can_dos.empty()) {
+    const auto& it = writer_can_do_.find(swid);
+    int i = 0;
+    for (const auto& can_do : it->second) {
+      writer_tree->vgraft("can_do." + std::to_string(i), can_do.str());
+      ++i;
+    }
+  } else {
+    int i = 0;
+    for (const auto& can_do : spec.can_dos) {
+      writer_tree->vgraft("can_do." + std::to_string(i), can_do);
+      ++i;
+    }
+  }
+  writer_tree->tag_as_array("can_do", true);
   connection_spec_->graft("writer." + std::to_string(id), writer_tree);
   return id;
 }
 
 bool ConnectionSpec::deallocate_swid_from_meta(swid_t swid) {
-  // check if swid is allocated
-  const auto& it = writer_ids_.find(swid);
-  if (writer_ids_.cend() == it) {
-    return false;
-  }
-
   // check if swid is genreated from an other swid
-  if (Ids::kInvalid ==
-      connection_spec_->branch_get_value("writer." + std::to_string(swid) + ".from_swid")
-          .as<swid_t>()) {
+  auto dynamic_swid = std::find(dynamic_swids_.begin(), dynamic_swids_.end(), swid);
+  if (dynamic_swids_.end() == dynamic_swid) {
     return false;
   }
 
   // deallocate the swid
   writer_ids_.erase(writer_ids_.find(swid));
   writer_can_do_.erase(writer_can_do_.find(swid));
+  dynamic_swids_.erase(dynamic_swid);
 
   // remove from the tree
   connection_spec_->prune("writer." + std::to_string(swid));
-  return swid;
+  return true;
 }
 
 InfoTree::ptr ConnectionSpec::get_tree() { return connection_spec_; }
@@ -358,6 +376,45 @@ std::vector<sfid_t> ConnectionSpec::get_follower_sfids() const {
     res.emplace_back(it.first);
   }
   return res;
+}
+
+bool ConnectionSpec::replace_follower_can_do(sfid_t sfid,
+                                             const std::vector<::shmdata::Type>& types) {
+  if (types.empty() || !is_allocated_follower(sfid)) {
+    return false;
+  }
+  auto tree = InfoTree::make();
+  int i = 0;
+  for (const auto& type : types) {
+    tree->vgraft(std::to_string(i), type.str());
+  }
+  connection_spec_->for_each_in_array("follower", [&](InfoTree* element) {
+    if (element->branch_get_value("sfid").as<decltype(sfid)>() == sfid) {
+      element->graft("can_do", tree);
+      element->tag_as_array("can_do", true);
+    }
+  });
+  follower_can_do_[sfid] = types;
+  return true;
+}
+
+bool ConnectionSpec::replace_writer_can_do(swid_t swid, const std::vector<::shmdata::Type>& types) {
+  if (types.empty() || !is_allocated_writer(swid)) {
+    return false;
+  }
+  auto tree = InfoTree::make();
+  int i = 0;
+  for (const auto& type : types) {
+    tree->vgraft(std::to_string(i), type.str());
+  }
+  connection_spec_->for_each_in_array("writer", [&](InfoTree* element) {
+    if (element->branch_get_value("swid").as<decltype(swid)>() == swid) {
+      element->graft("can_do", tree);
+      element->tag_as_array("can_do", true);
+    }
+  });
+  writer_can_do_[swid] = types;
+  return true;
 }
 
 }  // namespace claw

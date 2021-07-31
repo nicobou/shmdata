@@ -53,7 +53,6 @@ class ProtocolOsc;
 class ProtocolReader;
 }  // namespace quiddities
 namespace shmdata {
-class Connector;
 class Follower;
 class GstTreeUpdater;
 class ShmdataDecoder;
@@ -79,7 +78,6 @@ class Quiddity : public log::Logged, public SafeBoolIdiom {
   friend class quiddities::ProtocolCurl;
   friend class quiddities::ProtocolOsc;
   friend class quiddities::ProtocolReader;
-  friend class shmdata::Connector;
   friend class shmdata::Follower;
   friend class shmdata::GstTreeUpdater;
   friend class shmdata::ShmdataDecoder;
@@ -134,11 +132,8 @@ class Quiddity : public log::Logged, public SafeBoolIdiom {
                  &InfoTree::prune,
                  &Quiddity::user_data_prune_hook);
 
-  // use a consistent naming for shmdatas
-  virtual std::string make_shmpath(const std::string& suffix) const;
   std::string get_manager_name();
   std::string get_quiddity_caps();
-  static std::string get_shmpath_prefix();
 
  private:
   // safe bool idiom implementation
@@ -207,9 +202,6 @@ class Quiddity : public log::Logged, public SafeBoolIdiom {
   InfoTree::ptr prune_tree(const std::string& path, bool do_signal = true);
   InfoTree::ptr get_tree(const std::string& path);
   static InfoTree::ptr get_shm_information_template();
-  // register suffix exposed by this quiddity in the information tree, under the
-  // shmdata.writer.suffix. 'suffix' value can be expressed as a regular expression
-  void register_writer_suffix(const std::string& suffix);
 
   // property
   Make_delegate(Quiddity, property::PBag, &props_, pmanage);

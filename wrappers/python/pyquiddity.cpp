@@ -234,7 +234,9 @@ PyObject* pyQuiddity::invoke_async(pyQuiddityObject* self, PyObject* args, PyObj
           arglist = Py_BuildValue("(O)", res_object);
         PyObject* pyobjresult = PyEval_CallObject(cb, arglist);
         PyObject* pyerr = PyErr_Occurred();
-        if (pyerr != nullptr) PyErr_Print();
+        if (pyerr != nullptr) {
+          PyErr_Print();
+        }
         Py_DECREF(cb);
         Py_DECREF(user_data);
         Py_DECREF(res_object);
@@ -255,21 +257,6 @@ PyObject* pyQuiddity::invoke_async(pyQuiddityObject* self, PyObject* args, PyObj
 
   Py_INCREF(Py_None);
   return Py_None;
-}
-
-PyDoc_STRVAR(pyquiddity_make_shmpath_doc,
-             "Get the shmdata path the quiddity will generate internally for the given suffix.\n"
-             "Arguments: (suffix)\n"
-             "Returns: the shmdata path (string)\n");
-
-PyObject* pyQuiddity::make_shmpath(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
-  const char* suffix = nullptr;
-  static char* kwlist[] = {(char*)"suffix", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &suffix)) {
-    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
-    return nullptr;
-  }
-  return PyUnicode_FromString(self->quid->make_shmpath(suffix).c_str());
 }
 
 PyDoc_STRVAR(pyquiddity_get_user_tree_doc,
@@ -509,6 +496,48 @@ bool pyQuiddity::unsubscribe_from_signal(pyQuiddityObject* self, const char* sig
   return true;
 }
 
+PyDoc_STRVAR(pyquiddity_try_connect_doc,
+             "Try to connect one of the follower to a writer of the quiddity.\n"
+             "Arguments: (quid)\n"
+             "Returns: a follower claw (FollowerClaw)\n");
+
+PyObject* pyQuiddity::try_connect(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
+  PyObject* quid = nullptr;
+  static char* kwlist[] = {(char*)"quid", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &quid)) {
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
+  }
+  if (quid && !PyObject_IsInstance(quid, reinterpret_cast<PyObject*>(&pyQuiddity::pyType))) {
+    PyErr_SetString(PyExc_TypeError, "error quid argument is not a pyquid.Quiddidy instance");
+    return nullptr;
+  }
+
+  const auto res = pyquid::ungiled(std::function([&]() {
+    return self->quid->claw<MPtr(&Claw::try_connect)>(
+        reinterpret_cast<pyQuiddity::pyQuiddityObject*>(quid)->quid->get_id());
+  }));
+  if (Ids::kInvalid == res) {
+    PyErr_Format(PyExc_RuntimeError, "failed to connect, check switcher log for more information");
+    return nullptr;
+  }
+
+  PyObject* empty_tuple = PyTuple_New(0);
+  On_scope_exit { Py_XDECREF(empty_tuple); };
+  PyObject* keyworded_args = PyDict_New();
+  On_scope_exit { Py_XDECREF(keyworded_args); };
+  Py_INCREF(Py_None);
+  PyDict_SetItemString(keyworded_args, "quid", Py_None);
+  PyDict_SetItemString(
+      keyworded_args,
+      "label",
+      PyUnicode_FromString(self->quid->claw<MPtr(&Claw::get_follower_label)>(res).c_str()));
+  auto quid_capsule = PyCapsule_New(static_cast<void*>(self->quid), nullptr, nullptr);
+  On_scope_exit { Py_XDECREF(quid_capsule); };
+  PyDict_SetItemString(keyworded_args, "quid_c_ptr", quid_capsule);
+  return PyObject_Call((PyObject*)&pyFollowerClaw::pyType, empty_tuple, keyworded_args);
+}
+
 PyDoc_STRVAR(pyquiddity_unsubscribe_doc,
              "Unsubscribe from a signal or a property.\n"
              "Arguments: (name)\n"
@@ -735,8 +764,8 @@ PyDoc_STRVAR(pyquiddity_get_connection_specs_doc,
              "Returns: the connection specifications (pyquid.InfoTree)\n");
 
 PyObject* pyQuiddity::get_connection_specs(pyQuiddityObject* self, PyObject*, PyObject*) {
-  return pyInfoTree::make_pyobject_from_c_ptr(
-      self->quid->conspec<MPtr(&InfoTree::get_copy)>().get(), false);
+  self->connnection_spec_keep_alive_ = self->quid->conspec<MPtr(&InfoTree::get_copy)>();
+  return pyInfoTree::make_pyobject_from_c_ptr(self->connnection_spec_keep_alive_.get(), false);
 }
 
 PyMethodDef pyQuiddity::pyQuiddity_methods[] = {
@@ -750,10 +779,6 @@ PyMethodDef pyQuiddity::pyQuiddity_methods[] = {
      (PyCFunction)pyQuiddity::invoke_async,
      METH_VARARGS | METH_KEYWORDS,
      pyquiddity_invoke_async_doc},
-    {"make_shmpath",
-     (PyCFunction)pyQuiddity::make_shmpath,
-     METH_VARARGS | METH_KEYWORDS,
-     pyquiddity_make_shmpath_doc},
     {"get_user_tree",
      (PyCFunction)pyQuiddity::get_user_tree,
      METH_VARARGS | METH_KEYWORDS,
@@ -791,6 +816,10 @@ PyMethodDef pyQuiddity::pyQuiddity_methods[] = {
      (PyCFunction)pyQuiddity::get_signal_id,
      METH_VARARGS | METH_KEYWORDS,
      pyquiddity_get_signal_id_doc},
+    {"try_connect",
+     (PyCFunction)pyQuiddity::try_connect,
+     METH_VARARGS | METH_KEYWORDS,
+     pyquiddity_try_connect_doc},
     {"get_writer_claws",
      (PyCFunction)pyQuiddity::get_writer_claws,
      METH_NOARGS,

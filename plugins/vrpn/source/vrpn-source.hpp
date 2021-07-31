@@ -47,6 +47,7 @@ class VRPNSource : public Quiddity, public Startable {
   VRPNSource& operator=(const VRPNSource&) = delete;
 
  private:
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
   /**
    * FIXME: Hack to stop handling messages when quiddity is being destroyed
    */

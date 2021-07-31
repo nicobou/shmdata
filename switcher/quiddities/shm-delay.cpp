@@ -31,9 +31,39 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmDelay,
                                      "LGPL",
                                      "Jérémie Soria");
 
+const std::string ShmDelay::kConnectionSpec(R"(
+{
+"follower":
+  [
+    {
+      "label": "shm",
+      "description": "Stream to add delay to. This stream can be however limited to audio or video only with the restrict_caps property",
+      "can_do": ["all"]
+    },
+    {
+      "label": "ltf-diff",
+      "description": "Stream from ltf-diff quiddity, used to control de delay to apply",
+      "can_do": ["audio/ltc-diff"]
+    }
+  ],
+"writer":
+  [
+    {
+      "label": "delayed-shm",
+      "description": "Stream with delay",
+      "can_do": ["all"]
+    }
+  ]
+}
+)");
+
 ShmDelay::ShmDelay(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
-      shmcntr_(static_cast<Quiddity*>(this)),
+    : Quiddity(std::forward<quiddity::Config>(conf),
+               {kConnectionSpec,
+                [this](const std::string& shmpath, claw::sfid_t sfid) {
+                  return on_shmdata_connect(shmpath, sfid);
+                },
+                [this](claw::sfid_t sfid) { return on_shmdata_disconnect(sfid); }}),
       time_delay_id_(pmanage<MPtr(&property::PBag::make_double)>(
           "time_delay",
           [this](const double& val) {
@@ -63,25 +93,30 @@ ShmDelay::ShmDelay(quiddity::Config&& conf)
           "restrict_caps",
           [this](const quiddity::property::IndexOrName& val) {
             restrict_caps_.select(val);
+            auto index = restrict_caps_.get_current_index();
+            if (index == 0) {
+              claw_.replace_follower_can_do(claw_.get_sfid("shm"), {::shmdata::Type("all")});
+            } else if (index == 1) {
+              claw_.replace_follower_can_do(claw_.get_sfid("shm"),
+                                            {::shmdata::Type("audio/x-raw")});
+            } else if (index == 2) {
+              claw_.replace_follower_can_do(claw_.get_sfid("shm"),
+                                            {::shmdata::Type("video/x-raw")});
+            } else if (index == 3) {
+              claw_.replace_follower_can_do(
+                  claw_.get_sfid("shm"),
+                  {::shmdata::Type("audio/x-raw"), ::shmdata::Type("video/x-raw")});
+            }
             return true;
           },
           [this]() { return restrict_caps_.get(); },
           "Restrict authorized caps",
           "Input data capabilities must comply with the selected caps type (None means any)",
-          restrict_caps_)) {
-  shmcntr_.install_connect_method(
-      [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
-      [this](const std::string& shmpath) { return this->on_shmdata_disconnect(shmpath); },
-      [this]() { return on_shmdata_disconnect_all(); },
-      [this](const std::string& caps) { return can_sink_caps(caps); },
-      2);
+          restrict_caps_)) {}
 
-  register_writer_suffix("delayed-shm");
-}
-
-bool ShmDelay::on_shmdata_connect(const std::string& shmpath) {
+bool ShmDelay::on_shmdata_connect(const std::string& shmpath, claw::sfid_t sfid) {
   // Get the value of the delay from a shmdata
-  if (stringutils::ends_with(shmpath, "ltc-diff")) {
+  if (claw_.get_follower_label(sfid) == "ltc-diff") {
     if (diff_follower_) diff_follower_.reset();
     diff_follower_ = std::make_unique<shmdata::Follower>(
         this,
@@ -125,7 +160,8 @@ bool ShmDelay::on_shmdata_connect(const std::string& shmpath) {
           };
 
           // We are only delaying so the caps will be identical to the received shmdata
-          shmw_ = std::make_unique<shmdata::Writer>(this, make_shmpath("delayed-shm"), 1, str_caps);
+          shmw_ = std::make_unique<shmdata::Writer>(
+              this, claw_.get_shmpath_from_writer_label("delayed-shm"), 1, str_caps);
 
           // Task checking if a previously recorded shmdata is a candidate to be written.
           writing_task_ = std::make_unique<PeriodicTask<std::chrono::microseconds>>(
@@ -159,8 +195,8 @@ bool ShmDelay::on_shmdata_connect(const std::string& shmpath) {
   return true;
 }
 
-bool ShmDelay::on_shmdata_disconnect(const std::string& shmpath) {
-  if (stringutils::ends_with(shmpath, "ltc-diff")) {
+bool ShmDelay::on_shmdata_disconnect(claw::sfid_t sfid) {
+  if (claw_.get_follower_label(sfid) == "ltc-diff") {
     diff_follower_.reset();
     pmanage<MPtr(&property::PBag::enable)>(time_delay_id_);
   } else {
@@ -168,44 +204,7 @@ bool ShmDelay::on_shmdata_disconnect(const std::string& shmpath) {
     shmw_.reset();
     shm_follower_.reset();
   }
-
   return true;
-}
-
-bool ShmDelay::on_shmdata_disconnect_all() {
-  diff_follower_.reset();
-  writing_task_.reset();
-  shmw_.reset();
-  shm_follower_.reset();
-  pmanage<MPtr(&property::PBag::enable)>(time_delay_id_);
-  return true;
-}
-
-bool ShmDelay::can_sink_caps(const std::string& str_caps) {
-  auto index = restrict_caps_.get_current_index();
-  // by default, it accepts all caps if `restrict_caps_` is None
-  if (index == 0) return true;
-
-  GstCaps* user_caps = gst_caps_from_string(str_caps.c_str());
-  GstCaps* audio_caps = gst_caps_from_string("audio/x-raw");
-  GstCaps* video_caps = gst_caps_from_string("video/x-raw");
-  On_scope_exit {
-    if (nullptr != user_caps) gst_caps_unref(user_caps);
-    if (nullptr != audio_caps) gst_caps_unref(audio_caps);
-    if (nullptr != video_caps) gst_caps_unref(video_caps);
-  };
-
-  bool result = false;
-  if (index == 1) {
-    result = gst_caps_can_intersect(user_caps, audio_caps);
-  } else if (index == 2) {
-    result = gst_caps_can_intersect(user_caps, video_caps);
-  } else {
-    result = (gst_caps_can_intersect(user_caps, audio_caps) ||
-              gst_caps_can_intersect(user_caps, video_caps));
-  }
-
-  return result;
 }
 
 ShmDelay::ShmContent::ShmContent(double timestamp, void* content, size_t data_size)

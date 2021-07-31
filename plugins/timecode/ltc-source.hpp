@@ -27,7 +27,6 @@
 #include <switcher/quiddity/startable.hpp>
 #include "switcher/gst/unique-gst-element.hpp"
 #include "switcher/quiddity/quiddity.hpp"
-#include "switcher/shmdata/connector.hpp"
 #include "switcher/shmdata/follower.hpp"
 #include "switcher/shmdata/gst-subscriber.hpp"
 #include "switcher/shmdata/writer.hpp"
@@ -52,16 +51,15 @@ class LTCSource : public Quiddity, public Startable {
 
   bool on_shmdata_connect(const std::string& shmpath);
   bool on_shmdata_disconnect();
-  bool can_sink_caps(const std::string& caps);
 
   void tick_callback(jack_nframes_t nframes);
   void write_samples_to_shmdata(const unsigned int& nb_samples);
   void generate_ltc_frames(int nb_frames);
 
+  static const std::string kConnectionSpec;     //!< Shmdata specifications
   std::deque<ltcsnd_sample_t> samples_{};       //!< Pool of samples to send to shmdata
   std::atomic<bool> generating_frames_{false};  //!< Flag to prevent infinite generation of samples.
   std::unique_ptr<shmdata::Writer> shmw_{};     //!< Shmdata writer.
-  shmdata::Connector shmcntr_{nullptr};
   bool external_sync_source_{false};  //!< Is a shmdata connected to use a cadencing source.
   size_t format_size_{0};
   std::unique_ptr<shmdata::Follower> shm_follower_{

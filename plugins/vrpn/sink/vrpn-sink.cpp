@@ -32,20 +32,27 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VRPNSink,
                                      "LGPL",
                                      "François Ubald Brien");
 
-// Have to define it here, otherwise symbol not found...
 const unsigned int VRPNSink::vrpnLoopInterval{16};
 
-VRPNSink::VRPNSink(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
-      Startable(this),
-      shmdataConnector_(static_cast<Quiddity*>(this)) {
-  shmdataConnector_.install_connect_method(
-      [this](const std::string& shmPath) { return this->connect(shmPath); },
-      [this](const std::string&) { return this->disconnect(); },
-      [this]() { return this->disconnect(); },
-      [this](const std::string& caps) { return this->canSinkCaps(caps); },
-      1);
+const std::string VRPNSink::kConnectionSpec(R"(
+{
+"follower":
+  [
+    {
+      "label": "vrpn",
+      "description": "VRNP stream",
+      "can_do": ["application/vrpn"]
+    }
+  ]
+}
+)");
 
+VRPNSink::VRPNSink(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf),
+               {kConnectionSpec,
+                [this](const std::string& shmpath, claw::sfid_t) { return connect(shmpath); },
+                [this](claw::sfid_t) { return disconnect(); }}),
+      Startable(this) {
   port_id_ = pmanage<MPtr(&property::PBag::make_int)>("port",
                                                       [this](int val) {
                                                         port_ = val;
@@ -611,11 +618,6 @@ bool VRPNSink::disconnect() {
   shmDataFollower_.reset(nullptr);
   return true;
 }
-
-/**
- * @thread switcher
- */
-bool VRPNSink::canSinkCaps(const std::string& caps) { return (0 == caps.find("application/vrpn")); }
 
 /**
  * @thread vrpn

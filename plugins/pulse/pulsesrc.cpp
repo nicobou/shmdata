@@ -35,12 +35,24 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PulseSrc,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
+const std::string PulseSrc::kConnectionSpec(R"(
+{
+"writer":
+  [
+    {
+      "label": "audio",
+      "description": "Audio Stream",
+      "can_do": ["audio/x-raw"]
+    }
+  ]
+}
+)");
+
 PulseSrc::PulseSrc(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
+    : Quiddity(std::forward<quiddity::Config>(conf), {kConnectionSpec}),
       Startable(this),
       mainloop_(std::make_unique<gst::GlibMainLoop>()),
       gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)) {
-  register_writer_suffix("audio");
   pmanage<MPtr(&property::PBag::make_group)>(
       "advanced", "Advanced configuration", "Advanced configuration");
   pmanage<MPtr(&property::PBag::make_parented_selection<>)>(
@@ -58,7 +70,7 @@ PulseSrc::PulseSrc(quiddity::Config&& conf)
     is_valid_ = false;
     return;
   }
-  shmpath_ = make_shmpath("audio");
+  shmpath_ = claw_.get_shmpath_from_writer_label("audio");
   g_object_set(G_OBJECT(pulsesrc_.get_raw()), "client-name", get_nickname().c_str(), nullptr);
   g_object_set(G_OBJECT(shmsink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
 

@@ -30,41 +30,40 @@ int main() {
   {
     using namespace switcher;
     using namespace quiddity;
+    using namespace claw;
 
     Switcher::ptr manager = Switcher::make_switcher("glfwtest");
 
+    // // creating a video source quiddity
+    // auto vqrox = manager->quids<MPtr(&quiddity::Container::create)>("videotestsrc", "vid",
+    // nullptr); auto vid = vqrox.get(); assert(vid);
 
-    // creating a video source quiddity
-    auto vqrox = manager->quids<MPtr(&quiddity::Container::create)>("videotestsrc", "vid", nullptr);
-    auto vid = vqrox.get();
-    assert(vid);
+    // assert(vid->prop<MPtr(&property::PBag::set_str_str)>("started", "true"));
 
-    assert(vid->prop<MPtr(&property::PBag::set_str_str)>("started", "true"));
+    // // creating a "glfwin" quiddity
+    // auto wqrox = manager->quids<MPtr(&quiddity::Container::create)>("glfwin", "win", nullptr);
+    // auto win = wqrox.get();
+    // assert(win);
 
-    // creating a "glfwin" quiddity
-    auto wqrox = manager->quids<MPtr(&quiddity::Container::create)>("glfwin", "win", nullptr);
-    auto win = wqrox.get();
-    assert(win);
+    // // connecting
 
-    // connecting
-    auto connect_id = win->meth<MPtr(&method::MBag::get_id)>("connect");
-    assert(0 != connect_id);
-    auto disconnect_id = win->meth<MPtr(&method::MBag::get_id)>("disconnect");
-    assert(0 != disconnect_id);
-    assert(win->meth<MPtr(&method::MBag::invoke_str)>(
-        connect_id, serialize::esc_for_tuple(vid->make_shmpath("video"))));
-    usleep(100000);
-    assert(win->meth<MPtr(&method::MBag::invoke_str)>(
-        disconnect_id, serialize::esc_for_tuple(vid->make_shmpath("video"))));
+    // auto sfid = win->claw<MPtr(&Claw::connect)>(win->claw<MPtr(&Claw::get_sfid)>("video"),
+    //                                             vid->get_id(),
+    //                                             vid->claw<MPtr(&Claw::get_swid)>("video"));
+    // assert(Ids::kInvalid != sfid);
+    // usleep(100000);
+    // assert(win->claw<MPtr(&Claw::disconnect)>(sfid));
 
-    // We destroy it while connected to catch pipeline crashes.
-    assert(win->meth<MPtr(&method::MBag::invoke_str)>(
-        connect_id, serialize::esc_for_tuple(vid->make_shmpath("video"))));
+    // // We destroy it while connected to catch pipeline crashes.
+    // sfid = win->claw<MPtr(&Claw::connect)>(win->claw<MPtr(&Claw::get_sfid)>("video"),
+    //                                        vid->get_id(),
+    //                                        vid->claw<MPtr(&Claw::get_swid)>("video"));
+    // assert(Ids::kInvalid != sfid);
 
-    usleep(1000000);
+    // usleep(1000000);
 
-    assert(manager->quids<MPtr(&quiddity::Container::remove)>(wqrox.get_id()));
-    assert(manager->quids<MPtr(&quiddity::Container::remove)>(vqrox.get_id()));
+    // assert(manager->quids<MPtr(&quiddity::Container::remove)>(wqrox.get_id()));
+    // assert(manager->quids<MPtr(&quiddity::Container::remove)>(vqrox.get_id()));
     assert(quiddity::test::full(manager, "glfwin"));
   }  // end of scope is releasing the manager
 

@@ -77,7 +77,7 @@ int main() {
       // test by shmdata types
       bool writer_is_compatible = false;
       for (const auto& it : wtypes) {
-        if (reader->claw<MPtr(&Claw::can_do_shmtype)>(rtexture_id, it)) {
+        if (reader->claw<MPtr(&Claw::swid_can_do_shmtype)>(rtexture_id, it)) {
           writer_is_compatible = true;
         }
       }
@@ -85,7 +85,7 @@ int main() {
       // test if compatible sfids are found with writer shmdata type
       for (const auto& it : wtypes) {
         auto sfids = reader->claw<MPtr(&Claw::get_compatible_sfids)>(it);
-        assert(sfids.size() == 1);
+        assert(sfids.size() == 2);
         assert(sfids[0] == rtexture_id);
       }
       // test if compatible swids are found with follower shmdata type

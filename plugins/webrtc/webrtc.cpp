@@ -30,11 +30,46 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Webrtc,
                                      "LGPL",
                                      "Hantz-Carly F. Vius");
 
+const std::string Webrtc::kConnectionSpec(R"(
+{
+"follower":
+  [
+    {
+      "label": "audio",
+      "description": "Audio stream for participation in the Webrtc session",
+      "can_do": ["audio/x-raw"]
+    },
+    {
+      "label": "video",
+      "description": "Video stream for participation in the Webrtc session",
+      "can_do": ["video/x-raw"]
+    }
+  ],
+"writer":
+  [
+    {
+      "label": "audio",
+      "description": "Audio stream received from the Webrtc session",
+      "can_do": ["audio/x-raw"]
+    },
+    {
+      "label": "video",
+      "description": "Video stream received from the Webrtc session",
+      "can_do": [ "video/x-raw" ]
+    }
+  ]
+}
+)");
+
 Webrtc::Webrtc(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
+    : Quiddity(std::forward<quiddity::Config>(conf),
+               {kConnectionSpec,
+                [this](const std::string& shmpath, claw::sfid_t sfid) {
+                  return on_shmdata_connect(shmpath, sfid);
+                },
+                [this](claw::sfid_t sfid) { return on_shmdata_disconnect(sfid); }}),
       quiddity::Startable(this),
       pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)),
-      connector_(static_cast<Quiddity*>(this)),
       signaling_server_id_(pmanage<MPtr(&property::PBag::make_string)>(
           "signaling_server",
           [this](const std::string& val) {
@@ -45,65 +80,26 @@ Webrtc::Webrtc(quiddity::Config&& conf)
           "WebSocket Signaling Server",
           "Address of the signaling server,  e.g. wss://1.1.1.1:8443",
           signaling_server_)),
-      room_id_(pmanage<MPtr(&property::PBag::make_string)>("room",
-                                                           [this](const std::string& val) {
-                                                             room_ = val;
-                                                             return true;
-                                                           },
-                                                           [this]() { return room_; },
-                                                           "Room",
-                                                           "Room to join on the signaling server",
-                                                           room_)),
-      username_id_(pmanage<MPtr(&property::PBag::make_string)>("username",
-                                                               [this](const std::string& val) {
-                                                                 username_ = val;
-                                                                 return true;
-                                                               },
-                                                               [this]() { return username_; },
-                                                               "Username",
-                                                               "Username to use on the server",
-                                                               username_)) {
-  auto get_shm_type = [](const std::string& path) -> std::optional<ShmType> {
-    if (stringutils::ends_with(path, "video")) {
-      return std::optional<ShmType>{ShmType::Video};
-    } else if (stringutils::ends_with(path, "audio")) {
-      return std::optional<ShmType>{ShmType::Audio};
-    } else {
-      return {};
-    }
-  };
-
-  connector_.install_connect_method(
-      [this, get_shm_type](const std::string& shmpath) {
-        if (auto type = get_shm_type(shmpath); type) {
-          return on_shmdata_connect(shmpath, *type);
-        } else {
-          warning(
-              "Webrtc::shmdata_connection::on_connect::Connection of shmdata <%> of unknown type",
-              shmpath);
-          return false;
-        }
-      },
-      [this, get_shm_type](const std::string& shmpath) {
-        if (auto type = get_shm_type(shmpath); type) {
-          return on_shmdata_disconnect(*type);
-        } else {
-          warning(
-              "Webrtc::shmdata_connection::on_disconnect::Disconnection of shmdata <%> of unknown "
-              "type",
-              shmpath);
-          return false;
-        }
-      },
-      [this]() {
-        return on_shmdata_disconnect(ShmType::Video) && on_shmdata_disconnect(ShmType::Audio);
-      },
-      [this](const std::string& caps) { return can_sink_caps(caps); },
-      2);
-
-  register_writer_suffix("video");
-  register_writer_suffix("audio");
-}
+      room_id_(pmanage<MPtr(&property::PBag::make_string)>(
+          "room",
+          [this](const std::string& val) {
+            room_ = val;
+            return true;
+          },
+          [this]() { return room_; },
+          "Room",
+          "Room to join on the signaling server",
+          room_)),
+      username_id_(pmanage<MPtr(&property::PBag::make_string)>(
+          "username",
+          [this](const std::string& val) {
+            username_ = val;
+            return true;
+          },
+          [this]() { return username_; },
+          "Username",
+          "Username to use on the server",
+          username_)) {}
 
 Webrtc::~Webrtc() {
   connection_closed();
@@ -1156,7 +1152,10 @@ void Webrtc::decodebin_pad_added(GstPad* pad, bundle_t* data) {
     return;
   }
 
-  g_object_set(G_OBJECT(sink.get_raw()), "socket-path", make_shmpath(suffix).c_str(), nullptr);
+  g_object_set(G_OBJECT(sink.get_raw()),
+               "socket-path",
+               claw_.get_shmpath_from_writer_label(suffix).c_str(),
+               nullptr);
   auto extra_caps = get_quiddity_caps();
   g_object_set(G_OBJECT(sink.get_raw()), "extra-caps-properties", extra_caps.c_str(), nullptr);
 
@@ -1317,97 +1316,73 @@ std::string Webrtc::json_to_string(JsonObject* object) {
   return json_generator_to_data(generator.get(), nullptr);
 }
 
-bool Webrtc::on_shmdata_connect(const std::string& shmpath, ShmType type) {
+bool Webrtc::on_shmdata_connect(const std::string& shmpath, claw::sfid_t sfid) {
   debug("Webrtc::on_shmdata_connect");
 
-  if (shmpath.empty()) {
-    error("Webrtc::on_shmdata_connect::Path is empty");
+  auto label = claw_.get_follower_label(sfid);
+
+  if ("video" == label) {
+    video_shmpath_ = shmpath;
+    // video_shmsub_.reset();
+    // video_shmsub_ = std::make_unique<shmdata::Follower>(
+    //     this,
+    //     video_shmpath_,
+    //     nullptr,
+    //     nullptr,
+    //     //[this](const std::string& caps) {
+    //     //  if (!video_caps_.empty() && video_caps_ != caps) {
+    //     //    video_caps_ = caps;
+    //     //    async_this_.run_async([this]() { on_shmdata_connect(video_caps_, ShmType::Video);
+    //     });
+    //     //    return;
+    //     //  }
+    //     //  video_caps_ = caps;
+    //     //},
+    //     nullptr,
+    //     shmdata::Stat::kDefaultUpdateInterval,
+    //     shmdata::Follower::Direction::reader,
+    //     true);
+  } else if ("audio" == label) {
+    audio_shmpath_ = shmpath;
+    // audio_shmsub_.reset();
+    // audio_shmsub_ = std::make_unique<shmdata::Follower>(
+    //     this,
+    //     audio_shmpath_,
+    //     nullptr,
+    //     nullptr,
+    //     //[this](const std::string& caps) {
+    //     //  if (!audio_caps_.empty() && audio_caps_ != caps) {
+    //     //    audio_caps_ = caps;
+    //     //    async_this_.run_async([this]() { on_shmdata_connect(audio_caps_, ShmType::Audio);
+    //     });
+    //     //    return;
+    //     //  }
+    //     //  audio_caps_ = caps;
+    //     //},
+    //     nullptr,
+    //     shmdata::Stat::kDefaultUpdateInterval,
+    //     shmdata::Follower::Direction::reader,
+    //     true);
+  } else {
     return false;
   }
 
-  switch (type) {
-    case ShmType::Video:
-      video_shmpath_ = shmpath;
-      // video_shmsub_.reset();
-      // video_shmsub_ = std::make_unique<shmdata::Follower>(
-      //     this,
-      //     video_shmpath_,
-      //     nullptr,
-      //     nullptr,
-      //     //[this](const std::string& caps) {
-      //     //  if (!video_caps_.empty() && video_caps_ != caps) {
-      //     //    video_caps_ = caps;
-      //     //    async_this_.run_async([this]() { on_shmdata_connect(video_caps_, ShmType::Video);
-      //     });
-      //     //    return;
-      //     //  }
-      //     //  video_caps_ = caps;
-      //     //},
-      //     nullptr,
-      //     shmdata::Stat::kDefaultUpdateInterval,
-      //     shmdata::Follower::Direction::reader,
-      //     true);
-      break;
-    case ShmType::Audio:
-      audio_shmpath_ = shmpath;
-      // audio_shmsub_.reset();
-      // audio_shmsub_ = std::make_unique<shmdata::Follower>(
-      //     this,
-      //     audio_shmpath_,
-      //     nullptr,
-      //     nullptr,
-      //     //[this](const std::string& caps) {
-      //     //  if (!audio_caps_.empty() && audio_caps_ != caps) {
-      //     //    audio_caps_ = caps;
-      //     //    async_this_.run_async([this]() { on_shmdata_connect(audio_caps_, ShmType::Audio);
-      //     });
-      //     //    return;
-      //     //  }
-      //     //  audio_caps_ = caps;
-      //     //},
-      //     nullptr,
-      //     shmdata::Stat::kDefaultUpdateInterval,
-      //     shmdata::Follower::Direction::reader,
-      //     true);
-      break;
-    default:
-      warning("Webrtc::on_shmdata_connect::Unknown shmdata type");
-      return false;
-  }
-
   return true;
 }
 
-bool Webrtc::on_shmdata_disconnect(ShmType type) {
+bool Webrtc::on_shmdata_disconnect(claw::sfid_t sfid) {
   debug("Webrtc::on_shmdata_disconnect");
-
-  switch (type) {
-    case ShmType::Video:
-      if (video_shmpath_.empty()) {
-        return false;
-      }
-      video_shmsub_.reset();
-      video_shmpath_.clear();
-      break;
-    case ShmType::Audio:
-      if (audio_shmpath_.empty()) {
-        return false;
-      }
-      audio_shmsub_.reset();
-      audio_shmpath_.clear();
-      break;
-    default:
-      warning("Webrtc::on_shmdata_disconnect::Unsupported shmdata type");
-      return false;
-      break;
+  auto label = claw_.get_follower_label(sfid);
+  if ("video" == label) {
+    video_shmsub_.reset();
+    video_shmpath_.clear();
+  } else if ("audio" == label) {
+    audio_shmsub_.reset();
+    audio_shmpath_.clear();
+  } else {
+    return false;
   }
-
   return true;
-}
-
-bool Webrtc::can_sink_caps(const std::string& str_caps) {
-  return stringutils::starts_with(str_caps, "audio/x-raw") ||
-         stringutils::starts_with(str_caps, "video/x-raw");
 }
 
 }  // namespace quiddities

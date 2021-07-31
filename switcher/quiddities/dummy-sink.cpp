@@ -30,23 +30,31 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(DummySink,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-DummySink::DummySink(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
-      frame_received_id_(
-          pmanage<MPtr(&property::PBag::make_bool)>("frame-received",
-                                                    nullptr,
-                                                    [this]() { return frame_received_; },
-                                                    "Frame Received",
-                                                    "A Frame has been receivedon the shmdata",
-                                                    frame_received_)),
-      shmcntr_(static_cast<Quiddity*>(this)) {
-  shmcntr_.install_connect_method(
-      [this](const std::string& shmpath) { return this->connect(shmpath); },
-      [this](const std::string&) { return this->disconnect(); },
-      [this]() { return this->disconnect(); },
-      [this](const std::string& caps) { return this->can_sink_caps(caps); },
-      1);
+const std::string DummySink::kConnectionSpec(R"(
+{
+"follower":
+  [
+    {
+      "label": "default",
+      "description": "Read all shmdata for monitoring purpose",
+      "can_do": [ "all" ]
+    }
+  ]
 }
+)");
+
+DummySink::DummySink(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf),
+               {kConnectionSpec,
+                [this](const std::string& shmpath, claw::sfid_t) { return connect(shmpath); },
+                [this](claw::sfid_t) { return disconnect(); }}),
+      frame_received_id_(pmanage<MPtr(&property::PBag::make_bool)>(
+          "frame-received",
+          nullptr,
+          [this]() { return frame_received_; },
+          "Frame Received",
+          "A Frame has been received on the shmdata",
+          frame_received_)) {}
 
 bool DummySink::connect(const std::string& path) {
   shm_.reset();
@@ -63,11 +71,9 @@ bool DummySink::connect(const std::string& path) {
 }
 
 bool DummySink::disconnect() {
-  shm_.reset(nullptr);
+  shm_.reset();
   return true;
 }
-
-bool DummySink::can_sink_caps(const std::string&) { return true; }
 
 }  // namespace quiddities
 }  // namespace switcher

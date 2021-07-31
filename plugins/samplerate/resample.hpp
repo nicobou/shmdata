@@ -21,7 +21,6 @@
 #include <samplerate.h>
 #include "switcher/quiddity/quiddity.hpp"
 #include "switcher/shmdata/caps/audio-caps.hpp"
-#include "switcher/shmdata/connector.hpp"
 #include "switcher/shmdata/follower.hpp"
 #include "switcher/shmdata/writer.hpp"
 
@@ -35,20 +34,19 @@ class Resample : public Quiddity {
  private:
   bool connect(const std::string& path);
   bool disconnect();
-  bool can_sink_caps(const std::string&);
 
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
   // resampling
   size_t resampled_size_{0};
-  std::vector<float> resampled_{};  // buffer of resampled data
+  std::vector<float> resampled_{};  //!< buffer of resampled data
   size_t in_converted_size_{0};
-  std::vector<float> in_converted_{};   // depth converted input buffer
+  std::vector<float> in_converted_{};  //!< depth converted input buffer
   SRC_STATE* resampler_config_{nullptr};
   std::unique_ptr<SRC_DATA> resampler_data_{};
   // shmdata
   std::unique_ptr<shmdata::caps::AudioCaps> incaps_{};
   std::unique_ptr<shmdata::Writer> shmw_{};
   std::unique_ptr<shmdata::Follower> shmr_{nullptr};
-  shmdata::Connector cntr_;
   // properties
   unsigned int samplerate_{44100};
   property::prop_id_t samplerate_id_;

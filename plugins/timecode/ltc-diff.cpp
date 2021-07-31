@@ -31,9 +31,39 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(LTCDiff,
                                      "LGPL",
                                      "Jérémie Soria");
 
+const std::string LTCDiff::kConnectionSpec(R"(
+{
+"follower":
+  [
+    {
+      "label": "ltc1",
+      "description": "LTC stream",
+      "can_do": ["audio/x-raw"]
+    },
+    {
+      "label": "ltc2",
+      "description": "LTC stream",
+      "can_do": ["audio/x-raw"]
+    }
+  ],
+"writer":
+  [
+    {
+      "label": "ltc-diff",
+      "description": "LTC stream",
+      "can_do": ["audio/ltc-diff"]
+    }
+  ]
+}
+)");
+
 LTCDiff::LTCDiff(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
-  register_writer_suffix("ltc-diff");
+    : Quiddity(std::forward<quiddity::Config>(conf),
+               {kConnectionSpec,
+                [this](const std::string& shmpath, claw::sfid_t sfid) {
+                  return on_shmdata_connect(shmpath, sfid);
+                },
+                [this](claw::sfid_t sfid) { return on_shmdata_disconnect(sfid); }}) {
   display_timecode1_id_ =
       pmanage<MPtr(&property::PBag::make_string)>("first_timecode",
                                                   nullptr,
@@ -58,21 +88,15 @@ LTCDiff::LTCDiff(quiddity::Config&& conf)
         pmanage<MPtr(&property::PBag::notify)>(display_timecode2_id_);
       },
       std::chrono::milliseconds(500));
-
-  shmcntr_.install_connect_method(
-      [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
-      [this](const std::string& shmpath) { return this->on_shmdata_disconnect(shmpath); },
-      nullptr,
-      [this](const std::string& caps) { return this->can_sink_caps(caps); },
-      2);
 }
 
-bool LTCDiff::on_shmdata_connect(const std::string& shmpath) {
-  ltc_readers_[shmpath] = std::make_unique<LTCReader>(this, shmpath, next_index_);
-  next_index_ = next_index_ ? 0 : 1;
+bool LTCDiff::on_shmdata_connect(const std::string& shmpath, claw::sfid_t sfid) {
+  ltc_readers_[sfid] =
+      std::make_unique<LTCReader>(this, shmpath, claw_.get_follower_label(sfid) == "ltc1" ? 0 : 1);
 
   if (!shm_follower_) {
-    shmw_ = std::make_unique<shmdata::Writer>(this, make_shmpath("ltc-diff"), 1, "audio/ltc-diff");
+    shmw_ = std::make_unique<shmdata::Writer>(
+        this, claw_.get_shmpath_from_writer_label("ltc-diff"), 1, "audio/ltc-diff");
     shm_follower_ = std::make_unique<shmdata::Follower>(
         this,
         shmpath,
@@ -112,19 +136,14 @@ bool LTCDiff::on_shmdata_connect(const std::string& shmpath) {
   return true;
 }
 
-bool LTCDiff::on_shmdata_disconnect(const std::string& shmpath) {
+bool LTCDiff::on_shmdata_disconnect(claw::sfid_t sfid) {
   std::lock_guard<std::mutex> lock(timecode_m_);
-  auto reader = ltc_readers_.find(shmpath);
+  auto reader = ltc_readers_.find(sfid);
   if (reader != ltc_readers_.end()) {
     ltc_readers_.erase(reader);
     do_compute_ = false;
   }
-
   return true;
-}
-
-bool LTCDiff::can_sink_caps(const std::string& str_caps) {
-  return gst::utils::can_sink_caps("audioconvert", str_caps);
 }
 
 LTCDiff::LTCReader::LTCReader(LTCDiff* quid, const std::string& shmpath, size_t index)

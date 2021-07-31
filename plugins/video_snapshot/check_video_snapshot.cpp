@@ -50,6 +50,8 @@ int main() {
   using namespace switcher;
   using namespace quiddity;
   using namespace property;
+  using namespace claw;
+
   Switcher::ptr switcher = Switcher::make_switcher("vsnap");
 
   // performing default tests
@@ -72,9 +74,7 @@ int main() {
   vtestsrc->prop<MPtr(&property::PBag::set_str_str)>("started", "true");
 
   // connect VideoSnapshot to the videotestsrc
-  assert(snap->meth<MPtr(&method::MBag::invoke_str)>(
-      snap->meth<MPtr(&method::MBag::get_id)>("connect"),
-      serialize::esc_for_tuple(vtestsrc->make_shmpath("video"))));
+  assert(Ids::kInvalid != snap->claw<MPtr(&Claw::try_connect)>(vtestsrc->get_id()));
 
   // subscribe to last_image in order to notify success stop after first successful shot
   auto last_image_id = snap->prop<MPtr(&PBag::get_id)>("last_image");

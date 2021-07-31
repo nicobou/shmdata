@@ -32,8 +32,6 @@ class V4L2Src : public Quiddity, public Startable {
  public:
   V4L2Src(quiddity::Config&&);
   ~V4L2Src() = default;
-  V4L2Src(const V4L2Src&) = delete;
-  V4L2Src& operator=(const V4L2Src&) = delete;
 
   // use "NONE" for used arguments
   /* bool capture_full (const char *device_file_path,  */
@@ -78,6 +76,8 @@ class V4L2Src : public Quiddity, public Startable {
     gint frame_interval_stepwise_step_denominator_{0};
   } CaptureDescription;
 
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
+
   gst::UGstElem v4l2src_{"v4l2src"};
   gst::UGstElem videorate_{"videorate"};
   gst::UGstElem capsfilter_{"capsfilter"};
@@ -85,8 +85,6 @@ class V4L2Src : public Quiddity, public Startable {
   gst::UGstElem videoconvert_{"videoconvert"};
   gst::UGstElem deinterlace_{"deinterlace"};
   std::string shmpath_{};
-  const std::string raw_suffix_{"video"};
-  const std::string enc_suffix_{"video-encoded"};
   std::unique_ptr<gst::Pipeliner> gst_pipeline_;
   std::unique_ptr<shmdata::GstTreeUpdater> shm_sub_{nullptr};
 

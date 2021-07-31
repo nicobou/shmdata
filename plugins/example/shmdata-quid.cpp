@@ -47,7 +47,7 @@ const std::string ShmdataQuid::kConnectionSpec(R"(
     {
       "label": "custom",
       "description": "Custom shmdata for my statistical analysis",
-      "can_do": []
+      "can_do": [ "all" ]
     }
   ],
 "writer":
@@ -60,7 +60,7 @@ const std::string ShmdataQuid::kConnectionSpec(R"(
     {
       "label": "custom%",
       "description": "Produced random buffers",
-      "can_do": []
+      "can_do": [ "all" ]
     }
   ]
 }

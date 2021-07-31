@@ -32,11 +32,34 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     "LGPL",
     "Jérémie Soria");
 
+const std::string LTCSource::kConnectionSpec(R"(
+{
+"follower":
+  [
+    {
+      "label": "audio",
+      "description": "Audio stream for cadencing",
+      "can_do": ["audio/x-raw"]
+    }
+  ],
+"writer":
+  [
+    {
+      "label": "ltc",
+      "description": "LTC stream",
+      "can_do": ["audio/x-raw"]
+    }
+  ]
+}
+)");
+
 LTCSource::LTCSource(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
-      Startable(this),
-      shmcntr_(static_cast<Quiddity*>(this)) {
-  register_writer_suffix("audio");
+    : Quiddity(
+          std::forward<quiddity::Config>(conf),
+          {kConnectionSpec,
+           [this](const std::string& shmpath, claw::sfid_t) { return on_shmdata_connect(shmpath); },
+           [this](claw::sfid_t) { return on_shmdata_disconnect(); }}),
+      Startable(this) {
   jack_client_ = jack_client_open(
       std::string(std::string("genLTC_") + get_nickname()).c_str(), JackNullOption, nullptr);
 
@@ -89,13 +112,6 @@ LTCSource::LTCSource(quiddity::Config&& conf)
       timeshift_fw_,
       0,
       1000);
-
-  shmcntr_.install_connect_method(
-      [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
-      [this](const std::string&) { return this->on_shmdata_disconnect(); },
-      [this]() { return this->on_shmdata_disconnect(); },
-      [this](const std::string& caps) { return this->can_sink_caps(caps); },
-      1);
 }
 
 LTCSource::~LTCSource() {
@@ -114,7 +130,7 @@ void LTCSource::tick_callback(jack_nframes_t nframes) {
 bool LTCSource::start() {
   shmw_ = std::make_unique<shmdata::Writer>(
       this,
-      make_shmpath("audio"),
+      claw_.get_shmpath_from_writer_label("ltc"),
       1,
       std::string(
           "audio/"
@@ -288,10 +304,6 @@ bool LTCSource::on_shmdata_disconnect() {
   external_sync_source_ = false;
 
   return true;
-}
-
-bool LTCSource::can_sink_caps(const std::string& str_caps) {
-  return gst::utils::can_sink_caps("audioconvert", str_caps);
 }
 
 void LTCSource::write_samples_to_shmdata(const unsigned int& nb_samples) {

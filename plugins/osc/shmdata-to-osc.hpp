@@ -25,7 +25,6 @@
 #include <mutex>
 #include "switcher/quiddity/quiddity.hpp"
 #include "switcher/quiddity/startable.hpp"
-#include "switcher/shmdata/connector.hpp"
 #include "switcher/shmdata/follower.hpp"
 
 namespace switcher {
@@ -43,12 +42,11 @@ class ShmdataToOsc : public Quiddity, public Startable {
   bool stop() final;
   bool on_shmdata_connect(const std::string& shmdata_path);
   bool on_shmdata_disconnect();
-  bool can_sink_caps(const std::string& caps);
   void on_shmreader_data(void* data, size_t data_size);
 
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
   lo_address address_{nullptr};
   std::mutex address_mutex_{};
-  shmdata::Connector shmcntr_;
   std::unique_ptr<shmdata::Follower> shm_{nullptr};
 
   int port_{1056};

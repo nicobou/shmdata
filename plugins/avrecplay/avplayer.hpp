@@ -22,7 +22,6 @@
 
 #include "switcher/gst/pipeliner.hpp"
 #include "switcher/quiddity/startable.hpp"
-#include "switcher/shmdata/connector.hpp"
 #include "switcher/shmdata/follower.hpp"
 #include "switcher/shmdata/gst-tree-updater.hpp"
 #include "switcher/shmdata/writer.hpp"
@@ -38,7 +37,7 @@ class AVPlayer : public Quiddity, public Startable {
   bool stop() final;
 
  private:
-  static const std::string kShmDestPath;
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
 
   struct ShmFile {
     ShmFile(const std::string& shmpath, const std::string& filepath, const std::string& sink_name)
@@ -53,7 +52,6 @@ class AVPlayer : public Quiddity, public Startable {
   //! Shmdata methods
   GstBusSyncReply bus_async(GstMessage* msg);
 
-  shmdata::Connector shmcntr_;  //!< Shmdata connector to connect into the quiddity.
   std::vector<std::unique_ptr<ShmFile>> files_list_{};
   GstElement* avplay_bin_{nullptr};  //!< Full recording pipeline
   std::unique_ptr<gst::Pipeliner> gst_pipeline_{nullptr};

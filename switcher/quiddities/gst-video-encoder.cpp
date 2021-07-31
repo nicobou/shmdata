@@ -30,31 +30,43 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstVideoEncoder,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-GstVideoEncoder::GstVideoEncoder(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
-  auto suffix = std::string("video-encoded");
-  codecs_ = std::make_unique<gst::VideoCodec>(
-      static_cast<Quiddity*>(this), std::string(), make_shmpath(suffix));
-  shmcntr_.install_connect_method(
-      [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
-      [this](const std::string&) { return this->on_shmdata_disconnect(); },
-      [this]() { return this->on_shmdata_disconnect(); },
-      [this](const std::string& caps) { return this->can_sink_caps(caps); },
-      1);
-  register_writer_suffix(suffix);
+const std::string GstVideoEncoder::kConnectionSpec(R"(
+{
+"follower":
+  [
+    {
+      "label": "video",
+      "description": "Video stream to encode",
+      "can_do": ["video/x-raw"]
+    }
+  ],
+"writer":
+  [
+    {
+      "label": "video-encoded",
+      "description": "Produced rendering",
+      "can_do": ["any"]
+    }
+  ]
 }
+)");
+
+GstVideoEncoder::GstVideoEncoder(quiddity::Config&& conf)
+    : Quiddity(
+          std::forward<quiddity::Config>(conf),
+          {kConnectionSpec,
+           [this](const std::string& shmpath, claw::sfid_t) { return on_shmdata_connect(shmpath); },
+           [this](claw::sfid_t) { return on_shmdata_disconnect(); }}),
+      codecs_(std::make_unique<gst::VideoCodec>(
+          static_cast<Quiddity*>(this),
+          std::string(),
+          claw_.get_shmpath_from_writer_label("video-encoded"))) {}
 
 bool GstVideoEncoder::on_shmdata_disconnect() { return codecs_->stop(); }
 
 bool GstVideoEncoder::on_shmdata_connect(const std::string& shmpath) {
   codecs_->set_shm(shmpath);
   return codecs_->start();
-}
-
-bool GstVideoEncoder::can_sink_caps(const std::string& caps) {
-  // assuming codecs_ is internally using videoconvert as first caps negotiating
-  // gst element:
-  return gst::utils::can_sink_caps("videoconvert", caps);
 }
 
 }  // namespace quiddities

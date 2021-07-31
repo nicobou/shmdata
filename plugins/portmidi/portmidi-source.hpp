@@ -41,6 +41,7 @@ class PortMidiSource : public Quiddity, public Startable, public PortMidi {
     std::string property_long_name_{};
   } MidiPropertyContext;
 
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
   std::unique_ptr<shmdata::Writer> shm_{nullptr};
   int last_status_{-1};
   int last_data1_{-1};

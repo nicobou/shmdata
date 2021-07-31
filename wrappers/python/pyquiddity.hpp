@@ -45,6 +45,7 @@ class pyQuiddity {
   };
   using pyQuiddityObject = struct {
     PyObject_HEAD Quiddity* quid{nullptr};
+    InfoTree::ptr connnection_spec_keep_alive_{};
     std::unique_ptr<sig_registering_t> sig_reg{};
     std::unique_ptr<prop_registering_t> prop_reg{};
     // async invocations
@@ -67,7 +68,6 @@ class pyQuiddity {
   static PyObject* get(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* invoke(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* invoke_async(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
-  static PyObject* make_shmpath(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   // access to user tree
   static PyObject* get_user_tree(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   // access to quiddity InfoTree
@@ -94,6 +94,7 @@ class pyQuiddity {
   // signals
   static PyObject* get_signal_id(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   // claw
+  static PyObject* try_connect(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* get_connection_specs(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* get_writer_claws(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* get_follower_claws(pyQuiddityObject* self, PyObject* args, PyObject* kwds);

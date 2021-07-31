@@ -32,8 +32,26 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Timelapse,
                                      "LGPL",
                                      "Nicolas Bouillot");
 
+const std::string Timelapse::kConnectionSpec(R"(
+{
+"follower":
+  [
+    {
+      "label": "video%",
+      "description": "Video streams to timelapse",
+      "can_do": ["video/x-raw"]
+    }
+  ]
+}
+)");
+
 Timelapse::Timelapse(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
+    : Quiddity(std::forward<quiddity::Config>(conf),
+               {kConnectionSpec,
+                [this](const std::string& shmpath, claw::sfid_t sfid) {
+                  return on_shmdata_connect(shmpath, sfid);
+                },
+                [this](claw::sfid_t sfid) { return on_shmdata_disconnect(sfid); }}),
       img_dir_id_(pmanage<MPtr(&property::PBag::make_string)>(
           "imgdir",
           [this](const std::string& val) {
@@ -165,58 +183,42 @@ Timelapse::Timelapse(quiddity::Config&& conf)
           [this]() {
             if (updated_config_.exchange(false)) {
               std::unique_lock<std::mutex> lock(timelapse_mtx_);
-              std::vector<std::string> shmdatas;
+              std::vector<claw::sfid_t> shmdatas;
               for (auto& it : timelapse_) shmdatas.push_back(it.first);
               timelapse_.clear();
-              for (auto& it : shmdatas) start_timelapse(it);
+              for (auto& it : shmdatas) start_timelapse(claw_.get_follower_shmpath(it), it);
             }
           },
           std::chrono::milliseconds(200)),
-      shmcntr_(static_cast<Quiddity*>(this)),
-      timelapse_config_{std::string(), std::string()} {
-  shmcntr_.install_connect_method(
-      [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
-      [this](const std::string& shmpath) { return this->on_shmdata_disconnect(shmpath); },
-      [this]() { return this->on_shmdata_disconnect_all(); },
-      [this](const std::string& caps) { return this->can_sink_caps(caps); },
-      std::numeric_limits<unsigned int>::max());
-}
+      timelapse_config_{std::string(), std::string()} {}
 
-bool Timelapse::on_shmdata_disconnect(const std::string& shmpath) {
+bool Timelapse::on_shmdata_disconnect(claw::sfid_t sfid) {
   std::unique_lock<std::mutex> lock(timelapse_mtx_);
   pmanage<MPtr(&property::PBag::enable)>(img_name_id_);
-  if (!stop_timelapse(shmpath)) return false;
+  if (!stop_timelapse(sfid)) return false;
   if (timelapse_.size() == 1) pmanage<MPtr(&property::PBag::enable)>(img_name_id_);
   return true;
 }
 
-bool Timelapse::on_shmdata_disconnect_all() {
-  std::unique_lock<std::mutex> lock(timelapse_mtx_);
-  pmanage<MPtr(&property::PBag::enable)>(img_name_id_);
-  timelapse_.clear();
-  return true;
-}
-
-bool Timelapse::on_shmdata_connect(const std::string& shmpath) {
+bool Timelapse::on_shmdata_connect(const std::string& shmpath, claw::sfid_t sfid) {
   std::unique_lock<std::mutex> lock(timelapse_mtx_);
   if (timelapse_.size() == 1) {
-    pmanage<MPtr(&property::PBag::disable)>(img_name_id_,
-                                            shmdata::Connector::disabledWhenConnectedMsg);
+    pmanage<MPtr(&property::PBag::disable)>(img_name_id_, property::PBag::disabledWhenConnectedMsg);
     img_name_.clear();
   }
-  return start_timelapse(shmpath);
+  return start_timelapse(shmpath, sfid);
 }
 
-bool Timelapse::stop_timelapse(const std::string& shmpath) {
-  auto timelapse = timelapse_.find(shmpath);
+bool Timelapse::stop_timelapse(claw::sfid_t sfid) {
+  auto timelapse = timelapse_.find(sfid);
   if (timelapse_.end() == timelapse) return true;
   timelapse_.erase(timelapse);
   return true;
 }
 
-bool Timelapse::start_timelapse(const std::string& shmpath) {
+bool Timelapse::start_timelapse(const std::string& shmpath, claw::sfid_t sfid) {
   {
-    auto timelapse = timelapse_.find(shmpath);
+    auto timelapse = timelapse_.find(sfid);
     if (timelapse_.end() != timelapse) timelapse_.erase(timelapse);
   }
   auto img_path = img_dir_;
@@ -244,14 +246,8 @@ bool Timelapse::start_timelapse(const std::string& shmpath) {
         pmanage<MPtr(&property::PBag::notify)>(last_image_id_);
       });
   if (!new_timelapse.get()) return false;
-  timelapse_[shmpath] = std::move(new_timelapse);
+  timelapse_[sfid] = std::move(new_timelapse);
   return true;
-}
-
-bool Timelapse::can_sink_caps(const std::string& caps) {
-  // assuming timelapse_ is internally using videoconvert as first caps
-  // negotiating gst element:
-  return gst::utils::can_sink_caps("videoconvert", caps);
 }
 
 }  // namespace quiddities

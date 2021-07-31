@@ -35,13 +35,10 @@ using namespace quiddity;
 class VideoTestSource : public Quiddity, public quiddity::Startable {
  public:
   VideoTestSource(quiddity::Config&&);
-  ~VideoTestSource() = default;
-  VideoTestSource(const VideoTestSource&) = delete;
-  VideoTestSource& operator=(const VideoTestSource&) = delete;
 
  private:
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
   std::string shmpath_{};
-  // width height
   property::Selection<property::Fraction> resolutions_{
       {"3840x2160", "1920x1080", "1280x720", "800x600", "640x480", "320x240", "Custom"},
       {property::Fraction(3840, 2160),
@@ -51,7 +48,7 @@ class VideoTestSource : public Quiddity, public quiddity::Startable {
        property::Fraction(640, 480),
        property::Fraction(320, 240),
        property::Fraction(-1, -1)},
-      1};
+      1};  //!< width height
   property::prop_id_t resolutions_id_;
   int width_{1920};
   static const int kMaxWidth{4096};
@@ -61,7 +58,6 @@ class VideoTestSource : public Quiddity, public quiddity::Startable {
   static const int kMaxHeight{4096};
   static const int kMinHeight{1};
   property::prop_id_t height_id_;
-  // framerate
   property::Selection<property::Fraction> framerates_{
       {"60", "59.94", "50", "30", "29.97", "25", "24", "23.976"},
       {property::Fraction(60, 1),
@@ -72,17 +68,14 @@ class VideoTestSource : public Quiddity, public quiddity::Startable {
        property::Fraction(25, 1),
        property::Fraction(24, 1),
        property::Fraction(23976, 1000)},  // or 2997/125
-      3};                                 // default to 30 fps
+      3};                                 //!< frameratedefault to 30 fps
   property::prop_id_t framerates_id_;
-  // formats
   property::Selection<> formats_;
   property::prop_id_t formats_id_;
-  // gst elements
   gst::UGstElem videotestsrc_{"videotestsrc"};
   gst::UGstElem capsfilter_{"capsfilter"};
   gst::UGstElem shmdatasink_{"shmdatasink"};
   std::unique_ptr<gst::Pipeliner> gst_pipeline_;
-  // Shmdata tree updater
   std::unique_ptr<shmdata::GstTreeUpdater> shm_sub_{nullptr};
   bool start() final;
   bool stop() final;
