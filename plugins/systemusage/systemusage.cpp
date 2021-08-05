@@ -18,11 +18,20 @@
  */
 
 #include "./systemusage.hpp"
+
+#include <arpa/inet.h>
+#include <net/if.h>  // IFNAMSIZ
+#include <string.h>  // strncpy
+#include <sys/ioctl.h>
+#include <sys/socket.h>  // socket
+#include <unistd.h>      // close
+
 #include <chrono>
 #include <fstream>
 #include <iostream>
 #include <map>
 #include <string>
+
 #include "switcher/infotree/key-val-serializer.hpp"
 
 #define PROCSTATFILE "/proc/stat"
@@ -69,8 +78,9 @@ SystemUsage::SystemUsage(quiddity::Config&& conf)
 }
 
 bool SystemUsage::init_tree() {
-  // Trying to reach the /proc files
+  // file stream for /proc files
   ifstream file;
+
   // init cpu
   file.open(PROCSTATFILE);
   if (!file.is_open()) return false;
@@ -88,6 +98,7 @@ bool SystemUsage::init_tree() {
     }
   }
   file.close();
+
   // init mem
   file.open(PROCMEMINFOFILE);
   if (!file.is_open()) return false;
@@ -100,7 +111,9 @@ bool SystemUsage::init_tree() {
     tree_->graft(".mem.swap_free", InfoTree::make());
   }
   file.close();
+
   // init net
+
   file.open(PROCNETDEVFILE);
   if (!file.is_open()) return false;
   for (string line; getline(file, line);) {
@@ -114,6 +127,7 @@ bool SystemUsage::init_tree() {
     if (netI.find("Inter") == string::npos && netI.find("face") == string::npos) {
       string netName;
       netName = netI.substr(0, netI.find(":"));
+      tree_->graft(".net." + netName + ".ip_address", InfoTree::make());
       tree_->graft(".net." + netName + ".rx_rate", InfoTree::make());
       tree_->graft(".net." + netName + ".rx_bytes", InfoTree::make());
       tree_->graft(".net." + netName + ".rx_packets", InfoTree::make());
@@ -226,6 +240,26 @@ void SystemUsage::pollState() {
         tree_->branch_set_value(".net." + netName + ".rx_rate", _net[netName].rx_rate);
         tree_->branch_set_value(".net." + netName + ".tx_rate", _net[netName].tx_rate);
       }
+
+      // Low-level access to Linux network devices (see `man netdevice`)
+      struct ifreq ifr;
+      // set IPv4 Internet protocols lookup
+      ifr.ifr_addr.sa_family = AF_INET;
+      // copy null-terminated string pointed by netName, into the buffer pointed by ifr.ifr_name 
+      strncpy(ifr.ifr_name, netName.c_str(), IFNAMSIZ-1);
+      // create tcp socket file descriptor
+      int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+      // search address of the device using ifr_addr
+      ioctl(sockfd, SIOCGIFADDR, &ifr);
+      // close socket file descriptor
+      close(sockfd);
+
+      // set ip address
+      _net[netName].ip_address =
+          inet_ntoa(reinterpret_cast<struct sockaddr_in*>(&ifr.ifr_addr)->sin_addr);
+      tree_->branch_set_value(".net." + netName + ".ip_address", _net[netName].ip_address);
+
+      // set interface statistics
       _net[netName].rx_bytes = rBytes;
       _net[netName].rx_packets = rPackets;
       _net[netName].rx_errors = rErrs;
