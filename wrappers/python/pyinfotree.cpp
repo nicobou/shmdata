@@ -198,18 +198,18 @@ PyObject* pyInfoTree::any_to_pyobject(const Any& any) {
 }
 
 PyDoc_STRVAR(pyinfotree_get_doc,
-             "Get value at path.\n"
+             "Get value at path. No argument is interpreted as '.' (root node).\n"
              "Arguments: (path)\n"
              "Returns: value\n");
 
 PyObject* pyInfoTree::get(pyInfoTreeObject* self, PyObject* args, PyObject* kwds) {
   const char* path = nullptr;
   static char* kwlist[] = {(char*)"path", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &path)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, &path)) {
     PyErr_SetString(PyExc_TypeError, "error parsing arguments");
     return nullptr;
   }
-  return any_to_pyobject(self->tree->branch_get_value(path));
+  return any_to_pyobject(self->tree->branch_get_value(path ? path : "."));
 }
 
 PyDoc_STRVAR(pyinfotree_tag_as_array_doc,

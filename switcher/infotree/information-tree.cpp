@@ -62,7 +62,11 @@ InfoTree::ptr InfoTree::copy(InfoTree::ptrc tree) {
   auto res = InfoTree::make();
   std::list<std::string> path;
 
-  if (tree)
+  if (tree) {
+    auto root_value = tree->get_value();
+    if (root_value.not_null()) {
+      res->set_value(root_value);
+    }
     preorder_tree_walk(tree,
                        [&](const std::string& name, InfoTree::ptrc tree, bool is_array_element) {
                          std::string key{"."};
@@ -85,6 +89,7 @@ InfoTree::ptr InfoTree::copy(InfoTree::ptrc tree) {
                          path.pop_back();
                          return true;
                        });
+  }
   return res;
 }
 

@@ -348,10 +348,13 @@ bool pyQuiddity::subscribe_to_signal(pyQuiddityObject* self,
           PyEval_RestoreThread(m_state);
         }
         PyObject* arglist;
+        auto tmp_tree = tree->get_copy();
         if (user_data)
-          arglist = Py_BuildValue("(sO)", (char*)tree->serialize_json(".").c_str(), user_data);
+          arglist = Py_BuildValue(
+              "(OO)", pyInfoTree::make_pyobject_from_c_ptr(tmp_tree.get(), false), user_data);
         else
-          arglist = Py_BuildValue("(s)", (char*)tree->serialize_json(".").c_str());
+          arglist =
+              Py_BuildValue("(O)", pyInfoTree::make_pyobject_from_c_ptr(tmp_tree.get(), false));
         PyObject* pyobjresult = PyEval_CallObject(cb, arglist);
         PyObject* pyerr = PyErr_Occurred();
         if (pyerr != nullptr) PyErr_Print();

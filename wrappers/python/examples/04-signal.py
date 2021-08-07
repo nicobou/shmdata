@@ -22,7 +22,8 @@ success2 = False
 def on_nicknamed(data, user_data):
     global success2
     assert user_data == my_user_data2
-    assert 'null' != data
+    print(data.get())
+    assert data.get() == 'vid2'
     # success
     success2 = True
 
@@ -30,11 +31,7 @@ def on_nicknamed(data, user_data):
 def on_tree_grafted(data, user_data):
     global success
     assert user_data == my_user_data
-    assert 'null' != data
-    # switcher signals provide "data" as a json serialized InfoTree,
-    # so we need to strip 'data' in order to get the tree key
-    # without double quotes at the end and at the begining
-    assert 'null' != user_data.get_info_tree_as_json(data.strip('\"'))
+    assert not data.empty()
     # success
     success = True
 
