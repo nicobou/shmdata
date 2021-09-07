@@ -342,7 +342,7 @@ bool pyQuiddity::subscribe_to_signal(pyQuiddityObject* self,
   auto reg_id = self->quid->sig<MPtr(&signal::SBag::subscribe)>(
       sig_id, [cb, user_data, self](const InfoTree::ptr& tree) {
         bool has_gil = (1 == PyGILState_Check()) ? true : false;
-        PyThreadState* m_state;
+        PyThreadState* m_state = nullptr;
         if (!has_gil) {
           m_state = PyThreadState_New(self->interpreter_state);
           PyEval_RestoreThread(m_state);

@@ -129,12 +129,6 @@ PyObject* pyFollowerClaw::connect(pyFollowerClawObject* self, PyObject* args, Py
       self->id,
       reinterpret_cast<pyQuiddity::pyQuiddityObject*>(quid)->quid->get_id(),
       reinterpret_cast<pyWriterClaw::pyWriterClawObject*>(wclaw)->id);
-  // const auto res = pyquid::ungiled(std::function([&]() {
-  //   return self->quid->claw<MPtr(&Claw::connect)>(
-  //       self->id,
-  //       reinterpret_cast<pyQuiddity::pyQuiddityObject*>(quid)->quid->get_id(),
-  //       reinterpret_cast<pyWriterClaw::pyWriterClawObject*>(wclaw)->id);
-  // }));
   if (Ids::kInvalid == res) {
     PyErr_Format(PyExc_RuntimeError, "failed to connect, check switcher log for more information");
     return nullptr;
@@ -179,10 +173,6 @@ PyObject* pyFollowerClaw::connect_quid(pyFollowerClawObject* self, PyObject* arg
 
   const auto res = self->quid->claw<MPtr(&Claw::connect_quid)>(
       self->id, reinterpret_cast<pyQuiddity::pyQuiddityObject*>(quid)->quid->get_id());
-  // const auto res = pyquid::ungiled(std::function([&]() {
-  //   return self->quid->claw<MPtr(&Claw::connect_quid)>(
-  //       self->id, reinterpret_cast<pyQuiddity::pyQuiddityObject*>(quid)->quid->get_id());
-  // }));
   if (Ids::kInvalid == res) {
     PyErr_Format(PyExc_RuntimeError, "failed to connect, check switcher log for more information");
     return nullptr;
@@ -331,7 +321,7 @@ PyMethodDef pyFollowerClaw::pyFollowerClaw_methods[] = {
     {"can_do_shmtype_str",
      (PyCFunction)pyFollowerClaw::can_do_shmtype_str,
      METH_VARARGS | METH_KEYWORDS,
-     pyfollowerclaw_get_can_do_str_doc},
+     pyfollowerclaw_can_do_shmtype_str_doc},
     {"can_do_writer_claw",
      (PyCFunction)pyFollowerClaw::can_do_writer_claw,
      METH_VARARGS | METH_KEYWORDS,

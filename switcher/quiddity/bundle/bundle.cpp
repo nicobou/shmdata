@@ -79,7 +79,7 @@ Bundle::Bundle(quiddity::Config&& conf)
   for (const auto& quid_nick : exposed_writer_quids_) {
     auto quid = manager_->qcontainer_->get_quiddity(manager_->qcontainer_->get_id(quid_nick));
     quid->connection_spec_tree_->cfor_each_in_array("writer", [&](const InfoTree* tree) {
-      auto label = tree->branch_get_value("label").as<std::string>();
+      const auto label = tree->branch_get_value("label").as<std::string>();
       auto writer_tree = tree->get_copy();
       writer_tree->prune("swid");
       writer_tree->prune("from_swid");
@@ -96,7 +96,7 @@ Bundle::Bundle(quiddity::Config&& conf)
     auto quid = manager_->qcontainer_->get_quiddity(manager_->qcontainer_->get_id(reader_quid_));
     claw::sfid_t quid_sfid;
     quid->connection_spec_tree_->cfor_each_in_array("follower", [&](const InfoTree* tree) {
-      auto label = tree->branch_get_value("label").as<std::string>();
+      const auto label = tree->branch_get_value("label").as<std::string>();
       auto follower_tree = tree->get_copy();
       quid_sfid = tree->branch_get_value("sfid").as<claw::sfid_t>();
       follower_tree->prune("sfid");
@@ -122,9 +122,9 @@ Bundle::Bundle(quiddity::Config&& conf)
   for (const auto& quid_nick : exposed_writer_quids_) {
     auto quid = manager_->qcontainer_->get_quiddity(manager_->qcontainer_->get_id(quid_nick));
     quid->connection_spec_tree_->cfor_each_in_array("writer", [&](const InfoTree* tree) {
-      auto label = tree->branch_get_value("label").as<std::string>();
-      auto quid_swid = tree->branch_get_value("swid").as<claw::swid_t>();
-      auto bundle_swid = claw_.get_swid(quid_nick + "/" + label);
+      const auto label = tree->branch_get_value("label").as<std::string>();
+      const auto quid_swid = tree->branch_get_value("swid").as<claw::swid_t>();
+      const auto bundle_swid = claw_.get_swid(quid_nick + "/" + label);
       claw_.forced_writer_shmpaths_.emplace(bundle_swid, quid->claw_.get_writer_shmpath(quid_swid));
     });
   }
@@ -399,7 +399,7 @@ void Bundle::on_tree_pruned(const std::string& key, void* user_data) {
         if (!quid) continue;
         // WARNING disconnecting the first sfid only because specification of which sfid to connect
         // is missing
-        auto sfids = quid->claw<MPtr(&quiddity::claw::Claw::get_sfids)>();
+        const auto sfids = quid->claw<MPtr(&quiddity::claw::Claw::get_sfids)>();
         if (sfids.empty()) {
           quid->warning("BUG in bundle, no follower available when disconnecting from quiddity %",
                         quid->get_nickname());

@@ -176,16 +176,16 @@ class Claw : public SafeBoolIdiom {
   sfid_t get_sfid(const std::string& label) const;
 
   /**
-   * Get list of follower identifier
+   * Get list of follower identifiers
    *
-   * \return the identifier list
+   * \return the identifiers list
    */
   std::vector<sfid_t> get_sfids() const;
 
   /**
-   * Get list of writer identifier
+   * Get list of writers identifier
    *
-   * \return the identifier list
+   * \return the identifiers list
    */
   std::vector<swid_t> get_swids() const;
 

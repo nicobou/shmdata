@@ -44,7 +44,7 @@ const std::string GstVideoConverter::kConnectionSpec(R"(
   [
     {
       "label": "video",
-      "description": "Video stream converted",
+      "description": "Converted video stream",
       "can_do": ["video/x-raw"]
     }
   ]

@@ -44,7 +44,7 @@ const std::string GstVideoEncoder::kConnectionSpec(R"(
   [
     {
       "label": "video-encoded",
-      "description": "Produced rendering",
+      "description": "Encoded video stream",
       "can_do": ["any"]
     }
   ]
