@@ -16,9 +16,10 @@
  * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
-
 #include "./pyswitch.hpp"
 
+#include <sstream>
+#include <string>
 #include <switcher/infotree/information-tree.hpp>
 #include <switcher/logger/console.hpp>
 #include <switcher/logger/silent.hpp>
@@ -32,7 +33,8 @@ PyObject* pySwitch::Switcher_new(PyTypeObject* type, PyObject* /*args*/, PyObjec
   self = (pySwitchObject*)type->tp_alloc(type, 0);
   if (self != nullptr) {
     self->name = PyUnicode_FromString("default");
-    if (self->name == nullptr) {
+    self->quiddities = PyList_New(0);
+    if (self->name == nullptr || self->quiddities == nullptr) {
       Py_XDECREF(self);
       return nullptr;
     }
@@ -88,6 +90,7 @@ void pySwitch::Switcher_dealloc(pySwitchObject* self) {
   self->sig_reg.reset();
 
   Py_XDECREF(self->name);
+  Py_XDECREF(self->quiddities);
   Switcher::ptr empty;
   self->switcher.swap(empty);
   Py_TYPE(self)->tp_free((PyObject*)self);
@@ -170,6 +173,7 @@ PyObject* pySwitch::create(pySwitchObject* self, PyObject* args, PyObject* kwds)
 
   PyObject* obj = PyObject_CallObject((PyObject*)&pyQuiddity::pyType, argList);
   Py_XDECREF(argList);
+
   return obj;
 }
 
@@ -199,23 +203,30 @@ PyDoc_STRVAR(pyswitch_get_quid_doc,
              "Returns: a Quiddity object (pyquid.Quiddity), or None.\n");
 
 PyObject* pySwitch::get_quid(pySwitchObject* self, PyObject* args, PyObject* kwds) {
-  long int id = 0;
+  long unsigned int id = 0;
   static char* kwlist[] = {(char*)"id", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "l", kwlist, &id)) {
     PyErr_SetString(PyExc_TypeError, "error parsing arguments");
     return nullptr;
   }
-  auto qrox = self->switcher->quids<MPtr(&quiddity::Container::get_qrox)>(id);
-  if (!qrox) {
-    Py_INCREF(Py_None);
-    return Py_None;
+
+  auto size = PyList_Size(self->quiddities);
+  for (auto i = 0; i < size; i++) {
+    PyObject* item = PyList_GetItem(self->quiddities, i);
+    if (item && PyObject_TypeCheck(item, &pyQuiddity::pyType)) {
+      auto quid = reinterpret_cast<pyQuiddity::pyQuiddityObject*>(item)->quid;
+      if (quid->get_id() == id) {
+        Py_INCREF(item);
+        return item;
+      }
+    }
   }
-  auto quid_capsule = PyCapsule_New(static_cast<void*>(qrox.get()), nullptr, nullptr);
-  PyObject* argList = Py_BuildValue("(O)", quid_capsule);
-  PyObject* obj = PyObject_CallObject((PyObject*)&pyQuiddity::pyType, argList);
-  Py_XDECREF(argList);
-  Py_XDECREF(quid_capsule);
-  return obj;
+
+  // no quiddity found for id
+  std::ostringstream str;
+  str << "No quiddity found for id `" << id << "`";
+  PyErr_SetString(PyExc_ValueError, str.str().c_str());
+  return nullptr;
 }
 
 PyDoc_STRVAR(pyswitch_get_quid_id_doc,
@@ -583,48 +594,27 @@ PyMethodDef pySwitch::pySwitch_methods[] = {
      (PyCFunction)pySwitch::unsubscribe,
      METH_VARARGS | METH_KEYWORDS,
      pyswitch_unsubscribe_doc},
-    {nullptr}};
+    {nullptr} // Sentinel
+};
 
 PyDoc_STRVAR(pyquid_switcher_doc,
              "Switcher objects.\n"
              "Entry point for creating, removing and accessing quiddities.\n");
 
+PyMemberDef pySwitch::pySwitch_members[] = {{(char*)"quiddities",
+                                             T_OBJECT_EX,
+                                             offsetof(pySwitch::pySwitchObject, quiddities),
+                                             READONLY,
+                                             (char*)"The list of existing Quiddity objects."},
+                                            {nullptr}};
+
 PyTypeObject pySwitch::pyType = {
-    PyVarObject_HEAD_INIT(nullptr, 0)(char*) "pyquid.Switcher", /* tp_name */
-    sizeof(pySwitchObject),                                     /* tp_basicsize */
-    0,                                                          /* tp_itemsize */
-    (destructor)Switcher_dealloc,                               /* tp_dealloc */
-    0,                                                          /* tp_print */
-    0,                                                          /* tp_getattr */
-    0,                                                          /* tp_setattr */
-    0,                                                          /* tp_reserved */
-    0,                                                          /* tp_repr */
-    0,                                                          /* tp_as_number */
-    0,                                                          /* tp_as_sequence */
-    0,                                                          /* tp_as_mapping */
-    0,                                                          /* tp_hash  */
-    0,                                                          /* tp_call */
-    0,                                                          /* tp_str */
-    0,                                                          /* tp_getattro */
-    0,                                                          /* tp_setattro */
-    0,                                                          /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,                   /* tp_flags */
-    pyquid_switcher_doc,                                        /* tp_doc */
-    0,                                                          /* tp_traverse */
-    0,                                                          /* tp_clear */
-    0,                                                          /* tp_richcompare */
-    0,                                                          /* tp_weaklistoffset */
-    0,                                                          /* tp_iter */
-    0,                                                          /* tp_iternext */
-    pySwitch_methods,                                           /* tp_methods */
-    0,                                                          /* tp_members */
-    0,                                                          /* tp_getset */
-    0,                                                          /* tp_base */
-    0,                                                          /* tp_dict */
-    0,                                                          /* tp_descr_get */
-    0,                                                          /* tp_descr_set */
-    0,                                                          /* tp_dictoffset */
-    (initproc)Switcher_init,                                    /* tp_init */
-    0,                                                          /* tp_alloc */
-    Switcher_new                                                /* tp_new */
-};
+    PyVarObject_HEAD_INIT(nullptr, 0).tp_name = "pyquid.Switcher",
+    .tp_basicsize = sizeof(pySwitchObject),
+    .tp_dealloc = (destructor)Switcher_dealloc,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = pyquid_switcher_doc,
+    .tp_methods = pySwitch_methods,
+    .tp_members = pySwitch_members,
+    .tp_init = (initproc)Switcher_init,
+    .tp_new = Switcher_new};

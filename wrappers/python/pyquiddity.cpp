@@ -605,24 +605,41 @@ int pyQuiddity::Quiddity_init(pyQuiddityObject* self, PyObject* args, PyObject* 
                     "error config argument is not an instance of a pyquid.InfoTree");
     return -1;
   }
-  auto qrox = reinterpret_cast<pySwitch::pySwitchObject*>(pyswitch)
-                  ->switcher->quids<MPtr(&quiddity::Container::create)>(
-                      type,
-                      name ? name : std::string(),
-                      pyinfotree ? reinterpret_cast<pyInfoTree::pyInfoTreeObject*>(pyinfotree)->tree
-                                 : nullptr);
-  if (!qrox.get()) {
+
+  // retrieve switcher instance
+  auto pyswitchobj = reinterpret_cast<pySwitch::pySwitchObject*>(pyswitch);
+  auto switcher = pyswitchobj->switcher;
+
+  // create a quiddity without calling creation callbacks
+  auto qrox = switcher->quids<MPtr(&quiddity::Container::quiet_create)>(
+      type,
+      name ? name : std::string(),
+      pyinfotree ? reinterpret_cast<pyInfoTree::pyInfoTreeObject*>(pyinfotree)->tree : nullptr);
+
+  // try to retrieve a pointer to quiddity
+  auto quid = qrox.get();
+
+  // check for pointer to quiddity
+  if (!quid) {
     PyErr_Format(PyExc_RuntimeError, "%s", qrox.msg().c_str());
     return -1;
   }
 
-  self->quid = qrox.get();
+  self->quid = quid;
   self->sig_reg = std::make_unique<sig_registering_t>();
   self->prop_reg = std::make_unique<prop_registering_t>();
   self->async_invocations = std::make_unique<std::list<std::future<void>>>();
+
+  // append quiddity into quiddities list
+  PyObject* obj = reinterpret_cast<PyObject*>(self);
+  PyList_Append(pyswitchobj->quiddities, obj);
+
   self->interpreter_state = PyThreadState_Get()->interp;
   PyEval_InitThreads();
-  return 0;
+
+  switcher->quids<MPtr(&quiddity::Container::notify_quiddity_created)>(quid);
+
+  return 0; 
 }
 
 void pyQuiddity::Quiddity_dealloc(pyQuiddityObject* self) {
@@ -762,3 +779,4 @@ PyTypeObject pyQuiddity::pyType = {
     0,                                                          /* tp_alloc */
     Quiddity_new                                                /* tp_new */
 };
+

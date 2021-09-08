@@ -21,6 +21,7 @@
 #define __SWITCHER_PYSWITCH_H__
 
 #include <Python.h>  // according to python doc, this *must* be the first include
+#include <structmember.h>
 
 #include <map>
 
@@ -36,12 +37,14 @@ class pySwitch {
     std::map<std::string, PyObject*> user_data{};
   };
   using pySwitchObject = struct {
-    PyObject_HEAD PyObject* name{nullptr};
-    Switcher::ptr switcher{};
+    PyObject_HEAD Switcher::ptr switcher{};
+    PyObject* name{nullptr};
+    PyObject* quiddities{nullptr};
     std::unique_ptr<sig_registering_t> sig_reg{};
     PyInterpreterState* interpreter_state{nullptr};
   };
 
+  static PyMemberDef pySwitch_members[];
   static PyMethodDef pySwitch_methods[];
   static PyTypeObject pyType;
 
