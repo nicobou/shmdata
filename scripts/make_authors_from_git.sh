@@ -21,6 +21,9 @@ git log --format='%aN' | \
     sed 's/nicolas/Nicolas Bouillot/' | \
     sed 's/ubald/François Ubald Brien/' | \
     sed 's/vlaurent/Valentin Laurent/' | \
+    sed 's/Michal Seta/Michał Seta/' | \
+    sed 's/OpSocket$/Aurélien Perronneau (OpSocket)/' | \
+    sed 's/Aurélien$/Aurélien Perronneau (OpSocket)/' | \
     grep -v metalab | \
     grep -v 4d3d3d3 | \
     sort | \
