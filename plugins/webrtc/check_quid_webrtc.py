@@ -45,26 +45,26 @@ assert 'Webrtc' == sw.name()
 #         ------videoquid-------
 
 # create a videotest quiddity
-vid = sw.create(type='videotestsrc', name='vid')
+vid = sw.create(type='videotestsrc', nickname='vid')
 assert None != vid
 
 # create an audiotest quiddity
-audio = sw.create(type='audiotestsrc', name='audio')
+audio = sw.create(type='audiotestsrc', nickname='audio')
 assert None != audio
 
 # create a webrtc quiddity that manages a webrtcclient
-web1 = sw.create(type='webrtc', name='webrtcclient1')
+web1 = sw.create(type='webrtc', nickname='webrtcclient1')
 assert None != web1
 
 # create a second webrtc quiddity
-web2 = sw.create(type='webrtc', name='webrtcclient2')
+web2 = sw.create(type='webrtc', nickname='webrtcclient2')
 assert None != web2
 
 # create dummysinks for each webrtcclients
-dummy1 = sw.create(type='dummysink', name='dummy1')
+dummy1 = sw.create(type='dummysink', nickname='dummy1')
 assert None != dummy1
 
-dummy2 = sw.create(type='dummysink', name='dummy2')
+dummy2 = sw.create(type='dummysink', nickname='dummy2')
 assert None != dummy2
 
 # connect audio and video through their shmpaths to the webrtc quids

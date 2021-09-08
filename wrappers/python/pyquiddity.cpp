@@ -580,16 +580,13 @@ PyObject* pyQuiddity::Quiddity_new(PyTypeObject* type, PyObject* /*args*/, PyObj
 int pyQuiddity::Quiddity_init(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
   PyObject* pyswitch = nullptr;
   char* type = nullptr;
-  char* name = nullptr;
+  char* nickname = nullptr;
   PyObject* pyinfotree = nullptr;
 
-  static char* kwlist[] = {(char*)"switcher",
-                           (char*)"type",
-                           (char*)"name",
-                           (char*)"config",
-                           nullptr};
+  static char* kwlist[] = {
+      (char*)"switcher", (char*)"type", (char*)"nickname", (char*)"config", nullptr};
   if (!PyArg_ParseTupleAndKeywords(
-          args, kwds, "Os|sO", kwlist, &pyswitch, &type, &name, &pyinfotree)) {
+          args, kwds, "Os|sO", kwlist, &pyswitch, &type, &nickname, &pyinfotree)) {
     PyErr_SetString(PyExc_TypeError, "error parsing arguments");
     return -1;
   }
@@ -613,7 +610,7 @@ int pyQuiddity::Quiddity_init(pyQuiddityObject* self, PyObject* args, PyObject* 
   // create a quiddity without calling creation callbacks
   auto qrox = switcher->quids<MPtr(&quiddity::Container::quiet_create)>(
       type,
-      name ? name : std::string(),
+      nickname ? nickname : std::string(),
       pyinfotree ? reinterpret_cast<pyInfoTree::pyInfoTreeObject*>(pyinfotree)->tree : nullptr);
 
   // try to retrieve a pointer to quiddity

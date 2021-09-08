@@ -25,12 +25,12 @@ assert '' != sw.version()
 # with switcher, you can create different types of named Quiddities.
 # In this case, glfwin is a quiddity type that manage video window
 try:
-    win = Quiddity(switcher=sw, type='glfwin', name='win')
+    win = Quiddity(switcher=sw, type='glfwin', nickname='win')
 except RuntimeError:
     # The following replace the glfwin quiddity by a dummy quiddity if glfwin is not available
     # note here the quiddity is constructed from the switcher create method. This is equivalent
     # to creation from the pyquid.Quiddity constructor
-    win = sw.create(type='dummysink', name='win')
+    win = sw.create(type='dummysink', nickname='win')
 
 # creating a video source that will eventually be connected to the video window
 vid = Quiddity(sw, 'videotestsrc', 'vid')

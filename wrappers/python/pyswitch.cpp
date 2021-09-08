@@ -142,15 +142,15 @@ PyObject* pySwitch::load_bundles(pySwitchObject* self, PyObject* args, PyObject*
 PyDoc_STRVAR(pyswitch_create_doc,
              "Create a quiddity. The name and the config are optional."
              "The config (an InfoTree) overrides the switcher configuration file  \n"
-             "Arguments: (type, name, config)\n"
+             "Arguments: (type, nickname, config)\n"
              "Returns: the created quiddity object (pyquid.Quiddity), or None\n");
 
 PyObject* pySwitch::create(pySwitchObject* self, PyObject* args, PyObject* kwds) {
   const char* type = nullptr;
-  const char* name = nullptr;
+  const char* nickname = nullptr;
   PyObject* pyinfotree = nullptr;
-  static char* kwlist[] = {(char*)"type", (char*)"name", (char*)"config", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|sO", kwlist, &type, &name, &pyinfotree)) {
+  static char* kwlist[] = {(char*)"type", (char*)"nickname", (char*)"config", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|sO", kwlist, &type, &nickname, &pyinfotree)) {
     PyErr_SetString(PyExc_TypeError, "error parsing arguments");
     return nullptr;
   }
@@ -162,14 +162,14 @@ PyObject* pySwitch::create(pySwitchObject* self, PyObject* args, PyObject* kwds)
   }
 
   PyObject* argList = nullptr;
-  if (!name && !pyinfotree)
+  if (!nickname && !pyinfotree)
     argList = Py_BuildValue("(Os)", (PyObject*)self, type);
-  else if (name && !pyinfotree)
-    argList = Py_BuildValue("(Oss)", (PyObject*)self, type, name);
-  else if (!name && pyinfotree)
+  else if (nickname && !pyinfotree)
+    argList = Py_BuildValue("(Oss)", (PyObject*)self, type, nickname);
+  else if (!nickname && pyinfotree)
     argList = Py_BuildValue("(Oss)", (PyObject*)self, type, "", pyinfotree);
-  else if (name && pyinfotree)
-    argList = Py_BuildValue("(OssO)", (PyObject*)self, type, name, pyinfotree);
+  else if (nickname && pyinfotree)
+    argList = Py_BuildValue("(OssO)", (PyObject*)self, type, nickname, pyinfotree);
 
   PyObject* obj = PyObject_CallObject((PyObject*)&pyQuiddity::pyType, argList);
   Py_XDECREF(argList);

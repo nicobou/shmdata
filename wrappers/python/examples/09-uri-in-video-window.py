@@ -20,16 +20,16 @@ sw = pyquid.Switcher('urivid', debug=True)
 
 # creating the window
 try:
-    win = sw.create(type='glfwin', name='win')
+    win = sw.create(type='glfwin', nickname='win')
 except RuntimeError:
-    win = sw.create(type='dummysink', name='win')
+    win = sw.create(type='dummysink', nickname='win')
 try:
-    win2 = sw.create(type='glfwin', name='win2')
+    win2 = sw.create(type='glfwin', nickname='win2')
 except RuntimeError:
-    win2 = sw.create(type='dummysink', name='win2')
+    win2 = sw.create(type='dummysink', nickname='win2')
 
 # creating a dummysink for audio
-a = sw.create(type='dummysink', name='asink')
+a = sw.create(type='dummysink', nickname='asink')
 
 # creating the uri decoder
 uri = sw.create('urisrc', 'uri')
