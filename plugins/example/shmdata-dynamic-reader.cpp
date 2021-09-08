@@ -24,8 +24,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataDynReader,
                                      "dyn-reader-quid",
                                      "Example Quiddity with Dynamic Reader Shmdata",
-                                     "test",
-                                     "",
                                      "Dummy plugin for testing/example purpose",
                                      "LGPL",
                                      "Nicolas Bouillot");

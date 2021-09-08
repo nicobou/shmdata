@@ -24,8 +24,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(CustomSavePlugin,
                                      "custom-save",
                                      "Custom Save Plugin",
-                                     "test",
-                                     "",
                                      "Custom Save plugin for testing/example purpose",
                                      "LGPL",
                                      "Nicolas Bouillot");

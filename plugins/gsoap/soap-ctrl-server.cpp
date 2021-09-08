@@ -34,8 +34,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SoapCtrlServer,
                                      "SOAPcontrolServer",
                                      "Switcher Web Controler (SOAP)",
-                                     "control",
-                                     "",
                                      "Control switcher through SOAP webservices",
                                      "GPL",
                                      "Nicolas Bouillot");

@@ -236,9 +236,9 @@ class Quiddity : public log::Logged, public SafeBoolIdiom {
 }  // namespace switcher
 
 #define SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(                                                      \
-    cpp_quiddity_class, class_name, name, category, tags, description, license, author)            \
+    cpp_quiddity_class, class_name, name, description, license, author)                            \
   bool cpp_quiddity_class##_doc_registered = quiddity::DocumentationRegistry::get()->register_doc( \
-      class_name, quiddity::Doc(class_name, name, category, tags, description, license, author));  \
+      class_name, quiddity::Doc(class_name, name, description, license, author));                  \
   bool cpp_quiddity_class##_class_registered =                                                     \
       quiddity::DocumentationRegistry::get()->register_type_from_class_name(                       \
           std::string(#cpp_quiddity_class), class_name);

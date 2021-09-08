@@ -25,8 +25,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmDelay,
                                      "shmdelay",
                                      "Shmdata delay line",
-                                     "other",
-                                     "reader/writer",
                                      "Takes an input shmdata and delays it by a fixed amount",
                                      "LGPL",
                                      "Jérémie Soria");

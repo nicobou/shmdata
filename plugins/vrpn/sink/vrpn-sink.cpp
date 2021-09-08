@@ -26,8 +26,6 @@ namespace vrpn {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VRPNSink,
                                      "vrpnsink",
                                      "VRPN Sink Server",
-                                     "vrpn",
-                                     "reader/device",
                                      "Plugin to create a local VRPN server from shmdata sources.",
                                      "LGPL",
                                      "François Ubald Brien");

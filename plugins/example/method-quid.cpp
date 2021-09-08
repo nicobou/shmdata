@@ -25,8 +25,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(MethodQuid,
                                      "methodquid",
                                      "Example Method Plugin",
-                                     "test",
-                                     "",
                                      "Dummy plugin for testing/example purpose",
                                      "LGPL",
                                      "Nicolas Bouillot");

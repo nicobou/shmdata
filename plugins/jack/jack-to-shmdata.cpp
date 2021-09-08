@@ -26,8 +26,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackToShmdata,
                                      "jacksrc",
                                      "Jack Audio Device",
-                                     "audio",
-                                     "writer/device",
                                      "Get audio from jack",
                                      "LGPL",
                                      "Nicolas Bouillot");

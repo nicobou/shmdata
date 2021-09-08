@@ -24,8 +24,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(LTCToJack,
                                      "ltctojack",
                                      "LTC to Jack Transport",
-                                     "audio",
-                                     "reader",
                                      "Control Jack Transport from an incoming LTC stream",
                                      "LGPL",
                                      "Jérémie Soria");

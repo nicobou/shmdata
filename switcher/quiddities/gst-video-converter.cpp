@@ -24,8 +24,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstVideoConverter,
                                      "videoconvert",
                                      "Video converter",
-                                     "video",
-                                     "writer/reader",
                                      "Convert pixel format of raw video stream",
                                      "LGPL",
                                      "Nicolas Bouillot");

@@ -25,8 +25,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(LTCDiff,
                                      "ltcdiff",
                                      "LTC timecode difference",
-                                     "time",
-                                     "reader/writer",
                                      "Computes the absolute time between two timecode shmdata",
                                      "LGPL",
                                      "Jérémie Soria");

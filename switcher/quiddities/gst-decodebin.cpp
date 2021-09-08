@@ -24,8 +24,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstDecodebin,
                                      "decoder",
                                      "Decoder",
-                                     "other",
-                                     "writer/reader",
                                      "Generic shmdata decoder",
                                      "LGPL",
                                      "Nicolas Bouillot");

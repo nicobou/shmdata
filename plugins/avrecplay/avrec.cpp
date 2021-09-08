@@ -32,8 +32,6 @@ SWITCHER_DECLARE_PLUGIN(AVRecorder);
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AVRecorder,
                                      "avrec",
                                      "Audio/Video shmdata recorder",
-                                     "audio/video",
-                                     "reader",
                                      "Records connected audio/video shmdata",
                                      "LGPL",
                                      "Jérémie Soria");

@@ -26,8 +26,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Timelapse,
                                      "timelapse",
                                      "Timelapse",
-                                     "video",
-                                     "reader",
                                      "Make an image timelapse from raw video stream",
                                      "LGPL",
                                      "Nicolas Bouillot");

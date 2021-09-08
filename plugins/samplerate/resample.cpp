@@ -22,8 +22,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Resample,
                                      "resample",
                                      "Audio resampler",
-                                     "audio",
-                                     "reader/writer",
                                      "Audio resampling with libsamplerate",
                                      "GPL",
                                      "Nicolas Bouillot");

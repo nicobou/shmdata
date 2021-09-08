@@ -24,8 +24,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataDynWriter,
                                      "dyn-writer-quid",
                                      "Example Quiddity with Dynamic Writer Shmdata",
-                                     "test",
-                                     "",
                                      "Dummy plugin for testing/example purpose",
                                      "LGPL",
                                      "Nicolas Bouillot");

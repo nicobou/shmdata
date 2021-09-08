@@ -25,8 +25,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SignalQuid,
                                      "signal",
                                      "Signal Quiddity",
-                                     "test",
-                                     "",
                                      "Dummy quiddity for testing of signals",
                                      "LGPL",
                                      "Jérémie Soria");

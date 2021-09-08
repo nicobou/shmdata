@@ -27,8 +27,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AudioTestSource,
                                      "audiotestsrc",
                                      "Audio Test Source",
-                                     "audio",
-                                     "writer",
                                      "Creates audio test signals",
                                      "LGPL",
                                      "Nicolas Bouillot");

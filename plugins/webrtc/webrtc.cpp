@@ -24,8 +24,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Webrtc,
                                      "webrtc",
                                      "WebRTC Client",
-                                     "audio/video",
-                                     "reader/writer",
                                      "Plugin implementing a simple WebRTC client",
                                      "LGPL",
                                      "Hantz-Carly F. Vius");

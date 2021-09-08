@@ -25,8 +25,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ExternalWriter,
                                      "extshmsrc",
                                      "Raw Shmdata",
-                                     "other",
-                                     "writer",
                                      "Import an external shmdata writer",
                                      "LGPL",
                                      "Nicolas Bouillot");

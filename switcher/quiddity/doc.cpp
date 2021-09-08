@@ -25,25 +25,14 @@ namespace switcher {
 namespace quiddity {
 quiddity::Doc::Doc(const std::string& long_name,
                    const std::string& class_name,
-                   const std::string& category,
-                   const std::string& tags,
                    const std::string& short_description,
                    const std::string& license,
                    const std::string& author)
-    : category_(category),
-      class_name_(class_name),
+    : class_name_(class_name),
       description_(short_description),
       long_name_(long_name),
       author_(author),
-      license_(license) {
-  // parsing tags since vector initialization like {"writer", "reader"} does
-  // not pass MACRO arguments:
-  std::istringstream ss(tags);  // Turn the string into a stream
-  std::string tok;
-  while (std::getline(ss, tok, '/')) tags_.push_back(tok);
-}
-
-std::string quiddity::Doc::get_category() const { return category_; }
+      license_(license) {}
 
 std::string quiddity::Doc::get_class_name() const { return class_name_; }
 
@@ -54,8 +43,6 @@ std::string quiddity::Doc::get_long_name() const { return long_name_; }
 std::string quiddity::Doc::get_author() const { return author_; }
 
 std::string quiddity::Doc::get_license() const { return license_; }
-
-std::vector<std::string> quiddity::Doc::get_tags() const { return tags_; };
 
 }  // namespace quiddity
 }  // namespace switcher

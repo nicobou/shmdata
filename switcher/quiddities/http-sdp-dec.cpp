@@ -32,8 +32,6 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     HTTPSDPDec,
     "httpsdpdec",
     "HTTP/SDP Player",
-    "network",
-    "writer",
     "Decode an SDP-described stream delivered through http and make shmdata",
     "LGPL",
     "Nicolas Bouillot");

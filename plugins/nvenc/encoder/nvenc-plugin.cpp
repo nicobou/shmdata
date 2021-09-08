@@ -30,8 +30,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(NVencPlugin,
                                      "nvenc",
                                      "Hardware video encoder (NVenc)",
-                                     "video",
-                                     "writer/reader",
                                      "CUDA-based video encoder",
                                      "LGPL",
                                      "Nicolas Bouillot");

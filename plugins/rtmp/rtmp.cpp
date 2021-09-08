@@ -26,8 +26,6 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     RTMP,
     "rtmp",
     "RTMP broadcaster",
-    "audio/video",
-    "reader",
     "Plugin for streaming audio/video to an RTMP server (Youtube, Twitch, etc.)",
     "LGPL",
     "Jérémie Soria/Francis Lecavalier");

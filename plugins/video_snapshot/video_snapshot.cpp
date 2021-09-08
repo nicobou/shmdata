@@ -29,8 +29,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VideoSnapshot,
                                      "videosnapshot",
                                      "Video Snapshot",
-                                     "video",
-                                     "reader",
                                      "Take snapshot from a video shmdata",
                                      "LGPL",
                                      "Nicolas Bouillot");

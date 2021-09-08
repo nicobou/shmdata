@@ -30,8 +30,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VncClientSrc,
                                      "vncclientsrc",
                                      "VNC client",
-                                     "video",
-                                     "writer/reader",
                                      "Connects to a VNC server and outputs the video to a shmdata",
                                      "LGPL",
                                      "Emmanuel Durand");

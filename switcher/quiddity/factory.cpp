@@ -122,11 +122,6 @@ InfoTree::ptr quiddity::Factory::get_classes_doc() const {
     auto subtree = res->get_tree(classes_str + class_name);
     subtree->graft(".class", InfoTree::make(class_name));
     subtree->graft(".name", InfoTree::make(class_doc.get_long_name()));
-    subtree->graft(".category", InfoTree::make(class_doc.get_category()));
-    auto tags = class_doc.get_tags();
-    subtree->graft(".tags", InfoTree::make());
-    subtree->tag_as_array(".tags", true);
-    for (auto& tag : tags) subtree->graft(".tags." + tag, InfoTree::make(tag));
     subtree->graft(".description", InfoTree::make(class_doc.get_description()));
     subtree->graft(".license", InfoTree::make(class_doc.get_license()));
     subtree->graft(".author", InfoTree::make(class_doc.get_author()));

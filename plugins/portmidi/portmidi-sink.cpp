@@ -24,8 +24,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PortMidiSink,
                                      "midisink",
                                      "Midi (Port Midi)",
-                                     "midi",
-                                     "reader/device",
                                      "Shmdata to midi",
                                      "LGPL",
                                      "Nicolas Bouillot");

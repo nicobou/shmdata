@@ -24,8 +24,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Cropper,
                                      "cropper",
                                      "Video Cropper",
-                                     "video",
-                                     "reader/writer",
                                      "Plugin for cropping video sources",
                                      "LGPL",
                                      "Francis Lecavalier");

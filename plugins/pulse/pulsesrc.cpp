@@ -29,8 +29,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PulseSrc,
                                      "pulsesrc",
                                      "Pulse Audio Device",
-                                     "audio",
-                                     "writer/device",
                                      "Audio From Pulse audio driver",
                                      "LGPL",
                                      "Nicolas Bouillot");

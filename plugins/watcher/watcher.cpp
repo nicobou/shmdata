@@ -26,8 +26,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Watcher,
                                      "watcher",
                                      "Directory watcher",
-                                     "utils",
-                                     "writer",
                                      "Watch a directory for shmdatas",
                                      "LGPL",
                                      "Francis Lecavalier");

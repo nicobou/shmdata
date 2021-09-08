@@ -32,8 +32,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PulseSink,
                                      "pulsesink",
                                      "Audio Display (Pulse)",
-                                     "audio",
-                                     "reader/device",
                                      "Inspecting Devices And Playing Audio To Outputs",
                                      "LGPL",
                                      "Nicolas Bouillot");

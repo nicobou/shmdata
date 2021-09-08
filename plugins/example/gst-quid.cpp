@@ -24,8 +24,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstQuid,
                                      "gst",
                                      "Gst Quid",
-                                     "video",
-                                     "",
                                      "Plugin implementing a simple Gst pipeline",
                                      "LGPL",
                                      "Hantz-Carly F. Vius");

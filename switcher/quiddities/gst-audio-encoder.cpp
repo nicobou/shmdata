@@ -24,8 +24,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstAudioEncoder,
                                      "audioenc",
                                      "Audio Encoder",
-                                     "audio",
-                                     "writer/reader",
                                      "Encode raw audio stream",
                                      "LGPL",
                                      "Nicolas Bouillot");

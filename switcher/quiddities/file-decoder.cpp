@@ -27,8 +27,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(FileDecoder,
                                      "filesrc",
                                      "file Player",
-                                     "file",
-                                     "writer",
                                      "File decoding to one or more shmdata",
                                      "LGPL",
                                      "Nicolas Bouillot");

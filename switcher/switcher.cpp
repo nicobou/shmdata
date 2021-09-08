@@ -328,14 +328,10 @@ void Switcher::register_bundle_from_configuration() {
       continue;
     }
     std::string long_name = configuration->branch_get_value("bundle." + it + ".doc.long_name");
-    std::string category = configuration->branch_get_value("bundle." + it + ".doc.category");
-    std::string tags = configuration->branch_get_value("bundle." + it + ".doc.tags");
     std::string description = configuration->branch_get_value("bundle." + it + ".doc.description");
     std::string pipeline = configuration->branch_get_value("bundle." + it + ".pipeline");
     std::string is_missing;
     if (long_name.empty()) is_missing = "long_name";
-    if (category.empty()) is_missing = "category";
-    if (tags.empty()) is_missing = "tags";
     if (description.empty()) is_missing = "description";
     if (pipeline.empty()) is_missing = "pipeline";
     if (!is_missing.empty()) {
@@ -351,7 +347,7 @@ void Switcher::register_bundle_from_configuration() {
     // ok, bundle can be added
     // Bundle names must be unique
     if (!quiddity::DocumentationRegistry::get()->register_doc(
-            it, quiddity::Doc(long_name, it, category, tags, description, "n/a", "n/a"))) {
+            it, quiddity::Doc(long_name, it, description, "n/a", "n/a"))) {
       log_->warning("bundle '%' already exists. Skipping.", it);
       continue;
     }

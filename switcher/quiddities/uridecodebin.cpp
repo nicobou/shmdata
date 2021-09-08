@@ -26,8 +26,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Uridecodebin,
                                      "urisrc",
                                      "URI/URL Player",
-                                     "network",
-                                     "writer",
                                      "URI decoding to one or more shmdata",
                                      "LGPL",
                                      "Nicolas Bouillot");

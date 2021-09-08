@@ -24,8 +24,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(DummySink,
                                      "dummysink",
                                      "Dummy Sink Quiddity",
-                                     "utils",
-                                     "",
                                      "Quiddity for testing the reading of shmdata",
                                      "LGPL",
                                      "Nicolas Bouillot");

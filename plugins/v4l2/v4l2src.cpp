@@ -36,8 +36,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(V4L2Src,
                                      "v4l2src",
                                      "v4l2 Video Capture",
-                                     "video",
-                                     "writer/device",
                                      "Discover and use v4l2 supported capture cards and cameras",
                                      "GPL",
                                      "Nicolas Bouillot");

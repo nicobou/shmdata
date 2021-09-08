@@ -30,8 +30,6 @@ extern "C" void signal_cb(int signal_number) { child_dead = 1; }
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Executor,
                                      "executor",
                                      "Command line launcher",
-                                     "utils",
-                                     "reader",
                                      "Plugin for launching command lines",
                                      "LGPL",
                                      "Francis Lecavalier");

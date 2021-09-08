@@ -27,8 +27,6 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     VRPNSource,
     "vrpnsrc",
     "VRPN Source Client",
-    "vrpn",
-    "writer/hid/device",
     "Plugin to connect to a VRPN server and share its controls through shmdata and/or properties.",
     "LGPL",
     "François Ubald Brien");

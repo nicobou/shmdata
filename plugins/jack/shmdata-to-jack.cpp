@@ -29,8 +29,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataToJack,
                                      "jacksink",
                                      "Audio Display (Jack)",
-                                     "audio",
-                                     "reader/device",
                                      "Audio display",
                                      "LGPL",
                                      "Nicolas Bouillot");

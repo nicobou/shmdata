@@ -26,8 +26,6 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     LTCSource,
     "ltcsource",
     "LTC timecode source",
-    "audio",
-    "reader/writer",
     "Generate an LTC timecode audio track (can be cadenced by external sound shmdata)",
     "LGPL",
     "Jérémie Soria");

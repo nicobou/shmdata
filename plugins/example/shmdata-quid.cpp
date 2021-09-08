@@ -24,8 +24,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ShmdataQuid,
                                      "connection-quid",
                                      "Example Quiddity with Shmdata connections",
-                                     "test",
-                                     "",
                                      "Dummy plugin for testing/example purpose",
                                      "LGPL",
                                      "Nicolas Bouillot");

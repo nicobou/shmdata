@@ -27,8 +27,6 @@ SWITCHER_DECLARE_PLUGIN(LADSPA);
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(LADSPA,
                                      "ladspa",
                                      "LADSPA plugin",
-                                     "audio",
-                                     "reader/writer",
                                      "Choice of LADSPA plugins",
                                      "LGPL",
                                      "Jérémie Soria");

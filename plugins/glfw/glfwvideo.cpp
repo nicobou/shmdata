@@ -31,8 +31,6 @@ SWITCHER_DECLARE_PLUGIN(GLFWVideo);
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GLFWVideo,
                                      "glfwin",
                                      "OpenGL Video Display (configurable)",
-                                     "video",
-                                     "reader/device/occasional-writer",
                                      "Video window with fullscreen",
                                      "LGPL",
                                      "Jérémie Soria");

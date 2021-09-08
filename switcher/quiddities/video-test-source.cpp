@@ -26,8 +26,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VideoTestSource,
                                      "videotestsrc",
                                      "Video Pattern",
-                                     "video",
-                                     "writer",
                                      "Creates a test video stream",
                                      "LGPL",
                                      "Nicolas Bouillot");

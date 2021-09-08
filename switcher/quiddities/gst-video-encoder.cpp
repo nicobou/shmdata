@@ -24,8 +24,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstVideoEncoder,
                                      "videnc",
                                      "Video Encoder",
-                                     "video",
-                                     "writer/reader",
                                      "Encode raw video stream",
                                      "LGPL",
                                      "Nicolas Bouillot");

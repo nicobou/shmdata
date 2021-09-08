@@ -31,8 +31,6 @@ SWITCHER_DECLARE_PLUGIN(AVPlayer);
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AVPlayer,
                                      "avplayer",
                                      "Audio/video shmdata player",
-                                     "audio/video",
-                                     "writer",
                                      "Replays and controls a recorded shmdata audio/video file",
                                      "LGPL",
                                      "Jérémie Soria");

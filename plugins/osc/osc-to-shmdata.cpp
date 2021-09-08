@@ -24,8 +24,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(OscToShmdata,
                                      "OSCsrc",
                                      "OSC Receiver",
-                                     "network",
-                                     "writer",
                                      "Receive OSC messages and write to shmdata",
                                      "LGPL",
                                      "Nicolas Bouillot");
