@@ -38,18 +38,19 @@ void leave(int sig) {
 }
 
 void usage(const char *prog_name){
-  printf("usage: %s [-d] [-f] shmpath\n", prog_name);
+  printf("usage: %s [-d] [-f] [-v] shmpath\n", prog_name);
   exit(1);
 }
 
 int main (int argc, char *argv[]) {
   bool debug = false;
   bool show_frame_timings = false;
+  bool show_version = false;
   char *shmpath = nullptr;
 
   opterr = 0;
   int c = 0;
-  while ((c = getopt (argc, argv, "df")) != -1)
+  while ((c = getopt (argc, argv, "dfv")) != -1)
     switch (c)
       {
         case 'd':
@@ -58,12 +59,20 @@ int main (int argc, char *argv[]) {
         case 'f':
           show_frame_timings = true;
           break;
+        case 'v':
+          show_version = true;
+          break;
         case '?':
           break;
         default:
           usage(argv[0]);
       }
 
+  if (show_version) {
+    std::printf("%s\n", SHMDATA_VERSION_STRING);
+    exit(1);
+  }
+    
   if (nullptr == shmpath && optind + 1 == argc)
     shmpath = argv[optind];
   if (nullptr == shmpath)

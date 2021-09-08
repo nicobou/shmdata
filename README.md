@@ -43,7 +43,7 @@ The following command sequence will let you check your shmdata installation. It 
 Create a shmdata in which raw video will be sent. The path to the shmdata will be `/tmp/video_shmdata`.
 ```
 # generate a video test signal into a shmdata
-gst-launch --gst-plugin-path=/usr/lib/gstreamer-1.0/ videotestsrc ! shmdatasink socket-path=/tmp/video_shmdata
+gst-launch-1.0 --gst-plugin-path=/usr/lib/gstreamer-1.0/ videotestsrc ! shmdatasink socket-path=/tmp/video_shmdata
 ```
 Note: The command `gst-launch` allows for running [GStreamer pipeline](https://gstreamer.freedesktop.org/documentation/tools/gst-launch.html) from command line. Here the pipeline is composed of two elements: `videotestsrc` that transmits its video stream to the `shmdatasink` element. The parameter `socket-path` indicates to the `shmdatasink` where the shmdata must be located. Finally, the `--gst-plugin-path` option tells `gst-launch` where it can find the `shmdata` GStreamer elements (by default, shmdata GStreamer plugins are installed in `/usr/lib/gstreamer-1.0/`).
 
@@ -65,8 +65,15 @@ Note that you can [monitor a shmadata framerate using pv and sdflow](doc/monitor
 With the video transmission still running (and optionally, the `sdflow` monitoring), open a new terminal window and display the video using the following command:
 ```
 # read the video shmdata and display its content into a window
-gst-launch --gst-plugin-path=/usr/lib/gstreamer-1.0/ shmdatasrc socket-path=/tmp/video_shmdata ! xvimagesink
+gst-launch-1.0 --gst-plugin-path=/usr/lib/gstreamer-1.0/ shmdatasrc socket-path=/tmp/video_shmdata ! xvimagesink
 ```
+
+Xvimagesink does not work in some remote server scenarios, however aasink provides a way to monitor a video feed using only ascii, even on an headless server instance via ssh.:
+```
+# read the video shmdata and display its content into a terminal
+gst-launch-1.0 --gst-plugin-path=/usr/lib/gstreamer-1.0/ shmdatasrc socket-path=/tmp/video_shmdata ! aasink
+```
+
 ![Shmdata principle diagram](doc/shmdata-principle-Diagram.png)
 
 ### Use shmdata in your code
