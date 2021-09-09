@@ -90,12 +90,10 @@ Arguments:
 
 
 def on_image_exit(value, shot):
-    global cv
     global second_shot
     if (second_shot):
         print(value + " saved")
-        with cv:
-            cv.notifyAll()
+        quit(0)
     else:
         second_shot = True
         shot.set('shot', True)
@@ -160,12 +158,11 @@ def main() -> None:
 
     # non-interactive mode
     if (not args.interactive):
-        with cv:
-            shot.subscribe("last_image", on_image_exit, shot)
-            shot.set('shot', True)
-            cv.wait()
-        sw.remove(shot.id())
-        exit(0)
+        shot.subscribe("last_image", on_image_exit, shot)
+        shot.set('shot', True)
+        # wait for on_image_exit to quit
+        while True:
+            time.sleep(1)
 
     # interactive mode video preview (capture from stdin)
     orig_settings = termios.tcgetattr(sys.stdin)
