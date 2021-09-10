@@ -7,6 +7,10 @@ In this page you will find instruction about:
 * How to run scenic and switcher in a Raspi with docker
 * How to build your own scenic, switcher and shmdata images
 
+This document need to be updated for Ubuntu 20.04.
+{: .alert .alert-gitlab-orange}
+
+
 ## Install the [nvidia docker runtime](https://developer.nvidia.com/nvidia-container-runtime) in ubuntu 18.04
 
 The minimum nvidia drivers version on the host is **418**.
