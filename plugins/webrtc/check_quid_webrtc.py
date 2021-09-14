@@ -127,35 +127,12 @@ cert.generate_certificate(key_file=os.path.join(file_dir, 'key.pem'),
 server_process = Process(target=launch_server)
 server_process.start()
 
+time.sleep(0.2)
+
 assert web1.set('started', True)
 assert web2.set('started', True)
 
-# unsubcribe
-dummy1.unsubscribe('frame-received')
-dummy2.unsubscribe('frame-received')
-
-# disconnect
-vid.set('started', False)
-audio.set('started', False)
-
-web1.invoke('disconnect', [vidshmpath])
-web1.invoke('disconnect', [audioshmpath])
-
-web2.invoke('disconnect', [vidshmpath])
-web2.invoke('disconnect', [audioshmpath])
-
-dummy1.invoke('disconnect', ['webrtcclient1'])
-dummy2.invoke('disconnect', ['webrtcclient2'])
-
-# remove
-sw.remove(vid.id())
-sw.remove(audio.id())
-
-sw.remove(web1.id())
-sw.remove(web2.id())
-
-sw.remove(dummy1.id())
-sw.remove(dummy2.id())
+time.sleep(0.2)
 
 server_process.terminate()
 
