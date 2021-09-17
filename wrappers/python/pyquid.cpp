@@ -18,8 +18,10 @@
  */
 
 #include "./pyquid.hpp"
+
 #include "./pyinfotree.hpp"
 #include "./pyquiddity.hpp"
+#include "./pysession.hpp"
 #include "./pyswitch.hpp"
 
 PyMODINIT_FUNC PyInit_pyquid(void) {
@@ -28,6 +30,7 @@ PyMODINIT_FUNC PyInit_pyquid(void) {
   if (PyType_Ready(&pySwitch::pyType) < 0) return nullptr;
   if (PyType_Ready(&pyQuiddity::pyType) < 0) return nullptr;
   if (PyType_Ready(&pyInfoTree::pyType) < 0) return nullptr;
+  if (PyType_Ready(&pySession::pyType) < 0) return nullptr;
 
   m = PyModule_Create(&pyquid_quidmodule);
   if (m == nullptr) return nullptr;

@@ -12,11 +12,11 @@ if (WITH_PYTHON)
   add_compile_options(${PYTHON_CFLAGS})
   add_compile_options("-Wno-missing-field-initializers")
 
-
   add_library(pyquid SHARED
     pyinfotree.cpp
     pyquid.cpp
     pyquiddity.cpp
+    pysession.cpp
     pyswitch.cpp
   )
 
@@ -32,13 +32,13 @@ if (WITH_PYTHON)
     PRIVATE ${PYTHON_LIBRARIES}
   )
 
+  # COMPUTE INSTALL PATH FOR PYQUID
   execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sysconfig; print(sysconfig.get_config_var('DESTSHARED'))" OUTPUT_VARIABLE DESTSHARED OUTPUT_STRIP_TRAILING_WHITESPACE) 
 
   # INSTALL
-
   install(TARGETS pyquid LIBRARY DESTINATION ${DESTSHARED})
 
-  # TEST
+  # TESTS
   add_test(pyquid_basic ${CMAKE_CURRENT_SOURCE_DIR}/examples/01-basic.py)
   add_test(pyquid_introspection ${CMAKE_CURRENT_SOURCE_DIR}/examples/02-introspection.py)
   add_test(pyquid_infotree ${CMAKE_CURRENT_SOURCE_DIR}/examples/03-infotree.py)
@@ -50,6 +50,7 @@ if (WITH_PYTHON)
   add_test(pyquid_uri_in_video_window ${CMAKE_CURRENT_SOURCE_DIR}/examples/09-uri-in-video-window.py)
   add_test(pyquid_quid_conf_and_two_jack_servers ${CMAKE_CURRENT_SOURCE_DIR}/examples/10-quid-conf-and-two-jack-servers.py)
   add_test(pyquid_switcher_signals ${CMAKE_CURRENT_SOURCE_DIR}/examples/11-switcher-signals.py)
+  add_test(pyquid_switcher_session ${CMAKE_CURRENT_SOURCE_DIR}/examples/12-switcher-session.py)
 
 endif ()
 

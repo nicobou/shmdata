@@ -1,5 +1,5 @@
 /*
- * This file is part of switcher python wrapper.
+ * This file is part of libswitcher.
  *
  * libswitcher is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -15,6 +15,7 @@
  * Public License along with this library; if not, write to the
  * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
+ *
  */
 
 #ifndef __SWITCHER_PYSWITCH_H__
@@ -25,6 +26,8 @@
 
 #include <map>
 
+#include "./pysession.hpp"
+#include "switcher/session/session.hpp"
 #include "switcher/switcher.hpp"
 
 using namespace switcher;
@@ -37,15 +40,18 @@ class pySwitch {
     std::map<std::string, PyObject*> user_data{};
   };
   using pySwitchObject = struct {
-    PyObject_HEAD Switcher::ptr switcher{};
-    PyObject* name{nullptr};
+    PyObject_HEAD PyObject* name{nullptr};
+    Switcher::ptr switcher{};
     PyObject* quiddities{nullptr};
+    PyObject* session{nullptr};
     std::unique_ptr<sig_registering_t> sig_reg{};
     PyInterpreterState* interpreter_state{nullptr};
   };
 
   static PyMemberDef pySwitch_members[];
   static PyMethodDef pySwitch_methods[];
+
+  // type
   static PyTypeObject pyType;
 
  private:

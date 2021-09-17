@@ -73,8 +73,22 @@ int pySwitch::Switcher_init(pySwitchObject* self, PyObject* args, PyObject* kwds
     }
   }
 
-  self->interpreter_state = PyThreadState_Get()->interp;
+  // Initialize session by calling the class object with a pyswitch instance as a unique argument
+  self->session = PyObject_CallFunction((PyObject*)&pySession::pyType, "O", self);
+  // @NOTE: This is pretty much like doing the following in Python:
+  //
+  // class Session:
+  //   def __init__(self, instance):
+  //     self.instance = instance;
+  //
+  // class Switcher:
+  //   def __init__(self):
+  //     self.session = Session(self);
+  //
+  // Anytime a Switcher instance is initialized, another Session instance is also created.
+  // For convenience, both instances might keep a reference to each other.
 
+  self->interpreter_state = PyThreadState_Get()->interp;
   return 0;
 }
 
@@ -91,6 +105,7 @@ void pySwitch::Switcher_dealloc(pySwitchObject* self) {
 
   Py_XDECREF(self->name);
   Py_XDECREF(self->quiddities);
+  Py_XDECREF(self->session);
   Switcher::ptr empty;
   self->switcher.swap(empty);
   Py_TYPE(self)->tp_free((PyObject*)self);
@@ -598,15 +613,15 @@ PyMethodDef pySwitch::pySwitch_methods[] = {
 };
 
 PyDoc_STRVAR(pyquid_switcher_doc,
-             "Switcher objects.\n"
-             "Entry point for creating, removing and accessing quiddities.\n");
+             "The Switcher class.\n"
+             "When called, it accepts a `name`, a `config` filepath and a `debug` optional keyword arguments.\n"
+             "It returns a new instance of Switcher which has a `quiddities` attribute listing the initialized\n"
+             "quiddities and a `session` attribute allowing session management.\n");
 
-PyMemberDef pySwitch::pySwitch_members[] = {{(char*)"quiddities",
-                                             T_OBJECT_EX,
-                                             offsetof(pySwitch::pySwitchObject, quiddities),
-                                             READONLY,
-                                             (char*)"The list of existing Quiddity objects."},
-                                            {nullptr}};
+PyMemberDef pySwitch::pySwitch_members[] = {
+    {(char*)"quiddities", T_OBJECT_EX, offsetof(pySwitch::pySwitchObject, quiddities), READONLY},
+    {(char*)"session", T_OBJECT_EX, offsetof(pySwitch::pySwitchObject, session), READONLY},
+    {nullptr}};
 
 PyTypeObject pySwitch::pyType = {
     PyVarObject_HEAD_INIT(nullptr, 0).tp_name = "pyquid.Switcher",
