@@ -29,6 +29,11 @@ Switcher has several issue types:
 - Feature request: ask for a new feature in switcher.
 - Request For Comment: propose a significant change in switcher, such as code refactoring, CI deployment, or any change in the repository that impacts the switcher community. See a more detailled description of the [RFC process](./rfc.md).
 
+Migration
+---------
+
+Breaking changes applied to the Switcher API are documented in our [migration file](MIGRATIONS.md). 
+
 Coding style
 ------------
 
