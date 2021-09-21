@@ -18,7 +18,6 @@
 #ifndef __GST_SHMDATA_LOGGER_H__
 #define __GST_SHMDATA_LOGGER_H__
 
-
 static void gst_shmdata_on_error(void *self, const char *msg) {
   GST_ERROR_OBJECT(G_OBJECT(self), "%s", msg);
 }

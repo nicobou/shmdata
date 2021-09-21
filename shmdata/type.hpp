@@ -19,6 +19,9 @@
 
 namespace shmdata {
 
+/** \addtogroup  cppapi
+ *  @{
+ */
 class Type {
   template <typename T>
   struct empty_t {
@@ -56,5 +59,6 @@ class Type {
   mutable std::string serialization_errors_{};
 };
 
+/** @}*/
 }  // namespace shmdata
 #endif

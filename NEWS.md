@@ -2,6 +2,25 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.3.56 (2021-09-08)
+---------------------------
+This is an official release in the 1.3 stable series.
+
+* 📝 Fix and improve readme
+* ✨ add shmdata version information in sdflow
+
+shmdata 1.3.54 (2021-05-17)
+---------------------------
+This is an official release in the 1.3 stable series.
+
+* ✏️  typo in contributing.md
+
+shmdata 1.3.52 (2021-05-03)
+---------------------------
+This is an official release in the 1.3 stable series.
+
+* 📝 Doxygen group for C API, C++ and Python API, with some documentation and code examples
+
 shmdata 1.3.50 (2021-04-19)
 ---------------------------
 This is an official release in the 1.3 stable series.
