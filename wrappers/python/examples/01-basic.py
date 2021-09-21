@@ -11,12 +11,12 @@
 # GNU Lesser General Public License for more details.
 
 import sys
-import pyquid
+from pyquid import Switcher, Quiddity, InfoTree
 import time
 import assert_exit_1
 
 # create a switcher.
-sw = pyquid.Switcher('pyquid', debug=True)
+sw = Switcher('pyquid', debug=True)
 # the switcher instance has a name
 assert 'pyquid' == sw.name()
 # it has a version
@@ -24,19 +24,16 @@ assert '' != sw.version()
 
 # with switcher, you can create different types of named Quiddities.
 # In this case, glfwin is a quiddity type that manage video window
-win = sw.create(type='glfwin', name='win')
-
-# The following replace the glfwin quiddity by a dummy quiddity if glfwin is not available
-if None == win:
-    win = sw.create(type='dummysink', name='win')
-
-# we need our win in order to comsume the video stream
-assert None != win
+try:
+    win = Quiddity(switcher=sw, type='glfwin', nickname='win')
+except RuntimeError:
+    # The following replace the glfwin quiddity by a dummy quiddity if glfwin is not available
+    # note here the quiddity is constructed from the switcher create method. This is equivalent
+    # to creation from the pyquid.Quiddity constructor
+    win = sw.create(type='dummysink', nickname='win')
 
 # creating a video source that will eventually be connected to the video window
-vid = sw.create('videotestsrc', 'vid')
-assert None != vid
-
+vid = Quiddity(sw, 'videotestsrc', 'vid')
 
 # Quiddities have nicknames & types
 assert None != vid.nickname()
@@ -49,7 +46,7 @@ assert nick == vid.nickname()
 # Before action, you can get property information from the quiddity information tree
 assert None != vid.get_info_tree_as_json('.property')
 # you can save a copy into a InfoTree (see the infotree.py example for more details about this object)
-propdoc = pyquid.InfoTree(vid.get_info_tree_as_json('.property'))
+propdoc = InfoTree(vid.get_info_tree_as_json('.property'))
 assert not propdoc.empty()
 # and ensure the win quiddity has a property with an id "started"
 assert 'started' in propdoc.get_key_values("id", False)

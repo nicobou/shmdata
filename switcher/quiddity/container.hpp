@@ -69,6 +69,16 @@ class Container : public log::Logged {
   Qrox quiet_create(const std::string& quiddity_class,
                     const std::string& nickname,
                     InfoTree::ptrc tree);
+
+  
+  /**
+  * @brief Send confirmation signal for quiddity creation.
+  *        Use after a Container::quiet_create call.
+  *
+  * @param quid The quiddity instance returned by Container::quiet_create.
+  */
+  void notify_quiddity_created(Quiddity *quid);
+
   BoolLog remove(qid_t id);
   BoolLog quiet_remove(qid_t id);
   std::shared_ptr<Quiddity> get_quiddity(qid_t id);
@@ -167,3 +177,4 @@ class Container : public log::Logged {
 }  // namespace quiddity
 }  // namespace switcher
 #endif
+

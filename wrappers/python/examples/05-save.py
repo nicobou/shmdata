@@ -18,25 +18,22 @@ import assert_exit_1
 sw = pyquid.Switcher('save_example', debug=True)
 
 # instantiate and use some quiddities
-win = sw.create(type='glfwin', name='win')
-# The following replace the glfwin quiddity by a dummy quiddity if glfwin is not available
-if None == win:
-    win = sw.create(type='dummysink', name='win')
+try:
+    win = sw.create(type='glfwin', nickname='win')
+except RuntimeError:
+    # The following replace the glfwin quiddity by a dummy quiddity if glfwin is not available
+    win = sw.create(type='dummysink', nickname='win')
 
 vid = sw.create('videotestsrc', 'vid')
 assert win.invoke('connect-quid', [vid.id(), 'video'])
 assert win.invoke('disconnect-all')
-
 assert win.invoke('connect', [vid.make_shmpath('video')])
 assert vid.set('started', True)
 
 time.sleep(1)
 
 # save the switcher state
-state = sw.get_state()
-assert not state.empty()
-with open('save.switcher', 'w') as save_file:
-    assert 0 < save_file.write(state.json())
+sw.session.save_as("test_state")
 
 # make another switcher
 sw2 = pyquid.Switcher('pyQuidSave2')
@@ -48,9 +45,7 @@ usage = sw2.create('systemusage')
 sw2.reset_state(False)
 
 # load the save file
-with open('save.switcher', 'r') as save_file:
-    content = save_file.read()
-sw2.load_state(pyquid.InfoTree(content))
+sw.session.read("test_state")
 
 # check win and vid exist
 assert 0 != sw.get_quid_id('win')
@@ -59,5 +54,9 @@ assert 0 != sw.get_quid_id('vid')
 time.sleep(1)
 
 total_mem = usage.get_info('top.mem.total')
+
 # system usage is still here
 assert total_mem.isalnum()
+
+# remove test session file
+sw.session.remove("test_state")

@@ -113,7 +113,11 @@ def main() -> None:
 
     # create a switcher and a videosnapshot quiddity:
     sw = Switcher('shmshot' + str(os.getpid()), debug=args.debug)
-    shot = sw.create('videosnapshot', 'shot')
+    try:
+        shot = sw.create('videosnapshot', 'shot')
+    except RuntimeError:
+        print('Failed to create videosnapshot')
+        exit(1)
 
     # configure before connect
     if (args.interactive):
@@ -131,10 +135,11 @@ def main() -> None:
 
     # configure v4l2 capture
     if (not args.shmpath):
-        cam = sw.create('v4l2src', 'cam')
-        if (not cam):
+        try:
+            cam = sw.create('v4l2src', 'cam')
+        except RuntimeError:
             print('sorry, no device found')
-            return
+            exit(1)
         if (args.list_camera):
             devices = InfoTree(cam.get_info_tree_as_json('.property.device.values'))
             for id, label in zip(devices.get_key_values('id'), devices.get_key_values('label')):
@@ -160,7 +165,7 @@ def main() -> None:
             shot.set('shot', True)
             cv.wait()
         sw.remove(shot.id())
-        sys.exit(0)
+        exit(0)
 
     # interactive mode video preview (capture from stdin)
     orig_settings = termios.tcgetattr(sys.stdin)
@@ -179,7 +184,7 @@ def main() -> None:
     x = 0
     while x != chr(27):  # ESC
         x = sys.stdin.read(1)[0]
-        if (x is ' '):
+        if (x == ' '):
             shot.set('shot', True)
     shot.unsubscribe("last_image")
     termios.tcsetattr(sys.stdin, termios.TCSADRAIN, orig_settings)
@@ -190,7 +195,7 @@ def sigint_handler(signum: Any, frame: Any) -> None:
     if (args and args.interactive):
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, orig_settings)
     print('')  # avoid having the prompt back
-    sys.exit(0)
+    exit(0)
 
 
 if __name__ == "__main__":

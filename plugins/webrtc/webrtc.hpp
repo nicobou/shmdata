@@ -57,9 +57,7 @@ using namespace quiddity;
 class Webrtc : public Quiddity, public Startable {
  public:
   Webrtc(quiddity::Config&&);
-  ~Webrtc() = default;
-  Webrtc(const Webrtc&) = delete;
-  Webrtc& operator=(const Webrtc&) = delete;
+  ~Webrtc();
 
   //! Generate a random username.
   static std::string make_username();
@@ -121,11 +119,11 @@ class Webrtc : public Quiddity, public Startable {
   using handler_tuple_t = std::tuple<signal_handler_t, signal_handler_t>;
   using peer_data_t = std::tuple<handler_tuple_t, unique_bundle_p>;
 
+  std::unique_ptr<gst::Pipeliner> pipeline_;
+  std::mutex pipeline_mutex_{};  // <! avoid concurent access among start/stop and wss messages
   unique_gobject<SoupWebsocketConnection> connection_;
   std::unique_ptr<gst::GlibMainLoop> loop_;
   std::map<const std::string, peer_data_t> peers_;
-
-  std::unique_ptr<gst::Pipeliner> pipeline_;
 
   std::string audio_caps_{};
   std::string video_caps_{};

@@ -25,51 +25,13 @@ Build and Deploy dependency images:
     - git clone --single-branch --branch develop https://gitlab.com/sat-metalab/switcher.git switcher-dev
     - mkdir -p switcher-dev/deps
     - "if [ 0 -eq $(diff switcher-dev/deps/ deps/ | wc -l) ]; then echo new image build not required; exit 0; fi"
-    - docker build -t $CONTAINER_TAG_PREFIX-ubuntu1804 -f dockerfiles/Dockerfile-deps-Ubuntu-18.04 --target build .
     - echo $CI_DEPLOY_PASSWORD | docker login -u $CI_DEPLOY_USER --password-stdin $CI_REGISTRY
-    - docker push $CONTAINER_TAG_PREFIX-ubuntu1804
     - docker build -t $CONTAINER_TAG_PREFIX-ubuntu2004 -f dockerfiles/Dockerfile-deps-Ubuntu-20.04 --target build .
     - docker push $CONTAINER_TAG_PREFIX-ubuntu2004
   except:
     - develop
     - master
 
-#
-# Docker image for Scenic CI
-#
-Build and Deploy Ubuntu for Scenic:
-  stage: deploy
-  image: docker:18
-  variables:
-    CONTAINER_TAG: $CI_REGISTRY/sat-metalab/switcher:$CI_COMMIT_REF_NAME
-    GIT_SUBMODULE_STRATEGY: recursive
-  script:
-    - docker build -t $CONTAINER_TAG --build-arg SWITCHER_TAG=$CI_COMMIT_REF_NAME -f dockerfiles/Dockerfile-Ubuntu-18.04 --target build .
-    - echo $CI_DEPLOY_PASSWORD | docker login -u $CI_DEPLOY_USER --password-stdin $CI_REGISTRY
-    - docker push $CONTAINER_TAG
-  only:
-    - develop
-    - master
-    - test-switcher-ci
-
-#
-# Test distributions
-#
-Test Ubuntu 18.04:
-  stage: test
-  image: $CI_REGISTRY/sat-metalab/switcher:deps-ubuntu1804
-  variables:
-    CTEST_OUTPUT_ON_FAILURE: 1
-    GIT_SUBMODULE_STRATEGY: recursive
-  script:
-    - mkdir -p build && cd build 
-    - CC="gcc-8" CXX="g++-8" cmake -DENABLE_GPL="ON" -DCMAKE_BUILD_TYPE="Release" ..
-    - make -j"$(nproc)" && make install && ldconfig
-    - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y xvfb
-    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make test
-  except:
-    - develop
-    - master
 
 Test Ubuntu 20.04:
   stage: test

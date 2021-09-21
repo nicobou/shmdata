@@ -74,6 +74,15 @@
         "tags" : "reader",
         "description" : "Raw audio signal to pulse"
       }
+    },
+    "dboxer" : {
+      "pipeline" : "resample <shmr <shmw name=resampler samplerate=400 ! executor name=dboxer autostart=true command_line=dboxer\\ _shmpath_audio_",
+      "doc" : {
+        "long_name" : "Executor Bundle for DBoxer",
+        "category" : "audio",
+        "tags" : "reader",
+        "description" : "Resample an audio signal to 400 Hz and pipe the output to an executor quiddity for dboxer"
+      }
     }
   },
   "gstreamer" : {

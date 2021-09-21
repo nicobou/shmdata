@@ -32,8 +32,10 @@ int pyInfoTree::InfoTree_init(pyInfoTreeObject* self, PyObject* args, PyObject* 
   int copy = 0;
   const char* json_descr = nullptr;
   static char* kwlist[] = {(char*)"json", (char*)"infotree_c_ptr", (char*)"copy", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|sOp", kwlist, &json_descr, &pyinfotree, &copy))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|sOp", kwlist, &json_descr, &pyinfotree, &copy)) {
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
     return -1;
+  }
   if (!pyinfotree && !json_descr) json_descr = "null";
   if (nullptr != json_descr) {  // build a tree from the json description
     self->keepAlive = infotree::json::deserialize(json_descr);
@@ -78,8 +80,8 @@ PyObject* pyInfoTree::prune(pyInfoTreeObject* self, PyObject* args, PyObject* kw
   const char* path = nullptr;
   static char* kwlist[] = {(char*)"path", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &path)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
   auto res = self->tree->prune(path);
   if (res->empty()) {
@@ -99,8 +101,8 @@ PyObject* pyInfoTree::copy(pyInfoTreeObject* self, PyObject* args, PyObject* kwd
   const char* path = nullptr;
   static char* kwlist[] = {(char*)"path", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, &path)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
   if (nullptr == path) path = ".";
   auto tree = self->tree->get_tree(path);
@@ -117,8 +119,8 @@ PyObject* pyInfoTree::graft(pyInfoTreeObject* self, PyObject* args, PyObject* kw
   PyObject* val = 0;
   static char* kwlist[] = {(char*)"path", (char*)"value", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO", kwlist, &path, &val)) {
-    Py_INCREF(Py_False);
-    return Py_False;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
   if (PyBool_Check(val)) {
     if (!self->tree->graft(path, InfoTree::make(PyObject_IsTrue(val) ? true : false))) {
@@ -163,8 +165,8 @@ PyObject* pyInfoTree::json(pyInfoTreeObject* self, PyObject* args, PyObject* kwd
   const char* path = nullptr;
   static char* kwlist[] = {(char*)"path", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, &path)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
   if (nullptr == path) path = ".";
   return PyUnicode_FromString(infotree::json::serialize(self->tree->get_tree(path).get()).c_str());
@@ -203,8 +205,8 @@ PyObject* pyInfoTree::get(pyInfoTreeObject* self, PyObject* args, PyObject* kwds
   const char* path = nullptr;
   static char* kwlist[] = {(char*)"path", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &path)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
   return any_to_pyobject(self->tree->branch_get_value(path));
 }
@@ -220,8 +222,8 @@ PyObject* pyInfoTree::tag_as_array(pyInfoTreeObject* self, PyObject* args, PyObj
   int is_array = 1;
   static char* kwlist[] = {(char*)"path", (char*)"is_array", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|p", kwlist, &path, &is_array)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
   if (!self->tree->tag_as_array(path, is_array ? true : false)) {
     Py_INCREF(Py_False);
@@ -240,8 +242,8 @@ PyObject* pyInfoTree::get_child_keys(pyInfoTreeObject* self, PyObject* args, PyO
   const char* path = nullptr;
   static char* kwlist[] = {(char*)"path", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, &path)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
   if (nullptr == path) path = ".";
   auto keys = self->tree->get_child_keys(path);
@@ -265,8 +267,8 @@ PyObject* pyInfoTree::get_key_values(pyInfoTreeObject* self, PyObject* args, PyO
   int sibling = 1;
   static char* kwlist[] = {(char*)"key", (char*)"sibling", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|i", kwlist, &key, &sibling)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
   auto collected = InfoTree::collect_values(
       self->tree,

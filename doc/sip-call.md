@@ -13,7 +13,7 @@ You need two SIP credentials in order to connect to the SIP/STUN/TURN servers:
 In the following example, the callee SIP user will be shmdata@mondomaine.com.
 
 Note that you can install your own server following the documentation here:
-https://gitlab.com/sat-metalab/scenic-server
+https://gitlab.com/sat-mtl/telepresence/sip-server
 
 ## Prepare the receiver
 
@@ -39,7 +39,7 @@ switcher-ctrl -t sip buddies.0
 In a terminal run switcher:
 ```
 switcher -d -p 15432 -n caller
-```
+
 switcher-ctrl --server http://localhost:15432 -C sip sip
 switcher-ctrl --server http://localhost:15432 -s sip port 5061
 switcher-ctrl --server http://localhost:15432 -i sip register switcher@mondomaine.com ilovedogs

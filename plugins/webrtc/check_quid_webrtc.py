@@ -45,26 +45,26 @@ assert 'Webrtc' == sw.name()
 #         ------videoquid-------
 
 # create a videotest quiddity
-vid = sw.create(type='videotestsrc', name='vid')
+vid = sw.create(type='videotestsrc', nickname='vid')
 assert None != vid
 
 # create an audiotest quiddity
-audio = sw.create(type='audiotestsrc', name='audio')
+audio = sw.create(type='audiotestsrc', nickname='audio')
 assert None != audio
 
 # create a webrtc quiddity that manages a webrtcclient
-web1 = sw.create(type='webrtc', name='webrtcclient1')
+web1 = sw.create(type='webrtc', nickname='webrtcclient1')
 assert None != web1
 
 # create a second webrtc quiddity
-web2 = sw.create(type='webrtc', name='webrtcclient2')
+web2 = sw.create(type='webrtc', nickname='webrtcclient2')
 assert None != web2
 
 # create dummysinks for each webrtcclients
-dummy1 = sw.create(type='dummysink', name='dummy1')
+dummy1 = sw.create(type='dummysink', nickname='dummy1')
 assert None != dummy1
 
-dummy2 = sw.create(type='dummysink', name='dummy2')
+dummy2 = sw.create(type='dummysink', nickname='dummy2')
 assert None != dummy2
 
 # connect audio and video through their shmpaths to the webrtc quids
@@ -127,35 +127,12 @@ cert.generate_certificate(key_file=os.path.join(file_dir, 'key.pem'),
 server_process = Process(target=launch_server)
 server_process.start()
 
+time.sleep(0.2)
+
 assert web1.set('started', True)
 assert web2.set('started', True)
 
-# unsubcribe
-dummy1.unsubscribe('frame-received')
-dummy2.unsubscribe('frame-received')
-
-# disconnect
-vid.set('started', False)
-audio.set('started', False)
-
-web1.invoke('disconnect', [vidshmpath])
-web1.invoke('disconnect', [audioshmpath])
-
-web2.invoke('disconnect', [vidshmpath])
-web2.invoke('disconnect', [audioshmpath])
-
-dummy1.invoke('disconnect', ['webrtcclient1'])
-dummy2.invoke('disconnect', ['webrtcclient2'])
-
-# remove
-sw.remove(vid.id())
-sw.remove(audio.id())
-
-sw.remove(web1.id())
-sw.remove(web2.id())
-
-sw.remove(dummy1.id())
-sw.remove(dummy2.id())
+time.sleep(0.2)
 
 server_process.terminate()
 

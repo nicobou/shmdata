@@ -12,7 +12,7 @@ Switcher provides managing of several instances of services (called Quiddities).
 
 Most Quiddities expose and/or consume live streams of data frames using the [shmdata](https://gitlab.com/sat-metalab/shmdata), a library for sharing data streams among processes with zero copy through POSIX shared memory. Note shmdata has [GStreamer](https://gstreamer.freedesktop.org/) elements.
 
-For instance, the camera (v4l2src) Quiddity provides the video stream from a camera that can be connected simultaneously to several other Quiddities, including a local display (glfwin), a file recorder (avrec), a low-latency streamer (SIP) or more, including another shmdata enabled software. Note that the SIP quiddity supports NAT traversal through STUN/TURN and a companion repository is available for deployment of a SIP server compatible with Switcher: [scenic-server](https://gitlab.com/sat-metalab/scenic-server).
+For instance, the camera (v4l2src) Quiddity provides the video stream from a camera that can be connected simultaneously to several other Quiddities, including a local display (glfwin), a file recorder (avrec), a low-latency streamer (SIP) or more, including another shmdata enabled software. Note that the SIP quiddity supports NAT traversal through STUN/TURN and a companion repository is available for deployment of a SIP server compatible with Switcher: [sip-server](https://gitlab.com/sat-mtl/telepresence/sip-server).
 
 [Scenic](https://gitlab.com/sat-metalab/scenic) provides a web interface for Switcher. It emphasizes routing of audio, video and data signals and multichannel transmission over the network.
 

@@ -38,7 +38,6 @@ sw = pyquid.Switcher("prop-sub", debug=True)
 
 # create a quiddity
 vid = sw.create("videotestsrc", "vid")
-assert None != vid
 
 # check if the "width" property is available with this quiddity
 assert "width" in pyquid.InfoTree(

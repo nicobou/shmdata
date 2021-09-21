@@ -1,6 +1,39 @@
 CONTRIBUTING
 ======
 
+Welcome! We'd love for you to contribute to Switcher.
+
+Switcher is currently being maintained by a small team of developers working for the [Société des arts technologiques [SAT]](https://sat.qc.ca/), a non-profit art centre based in Montreal, Canada for which this software was originally developed. This core team adds features and bug fixes according to the SAT's interests and needs; however, community contributions on this project are more than welcome! There are many ways to contribute, including submitting bug reports, improving documentation, adding unit tests, adding support for a new language, submitting feature requests, reviewing new submissions, or contributing code that can be incorporated into the project.
+
+This document describes this project's development process. Please do your best to follow these guidelines, as doing so will ensure a better contributing experience for you, and for other contributors and maintainers of this project.
+
+Code of Conduct
+---------------
+
+By participating in this project, you agree to abide by the Switcher [Code of Conduct](./code-of-conduct.md). We expect all contributors to follow the [Code of Conduct](./code-of-conduct.md) and to treat fellow humans with respect. It must be followed in all your interactions with the project.
+
+
+Contributing
+------------
+
+Contributing to switcher is achieved through Gitlab's Merge Request (MR) system. This include contribution by the core team. We also welcome external contributions through the contribution process described here.
+
+Please send your merge request to [switcher repository](https://gitlab.com/sat-metalab/switcher). If you do not know how to make a merge request, gitlab provides some [help about creating a merge request](https://docs.gitlab.com/ee/gitlab-basics/add-merge-request.html).
+
+Merge request must refer to a gitlab issue in the [switcher issues list](https://gitlab.com/sat-metalab/switcher/-/issues). If your merge request does not refer to a gitlab issue, you may be asked to fill an issue before a decision is made. 
+
+Switcher has several issue types:
+
+- Default issue: for all issues that do not match with following issue types.
+- Bug report: inform of a newly discovered bug.
+- Feature request: ask for a new feature in switcher.
+- Request For Comment: propose a significant change in switcher, such as code refactoring, CI deployment, or any change in the repository that impacts the switcher community. See a more detailled description of the [RFC process](./rfc.md).
+
+Migration
+---------
+
+Breaking changes applied to the Switcher API are documented in our [migration file](MIGRATIONS.md). 
+
 Coding style
 ------------
 
@@ -19,12 +52,6 @@ sudo apt-get install clang-format python3-autopep8
 #Then in switcher's .git folder:
 rm -rf hooks && ln -s ../.hooks hooks
 ```
-
-
-Contributing
-------------
-
-Please send your merge request at the [sat-metalab' gitlab account](https://gitlab.com/sat-metalab/switcher). If you do not know how to make a merge request, gitlab provides some [help about creating a merge request](https://docs.gitlab.com/ee/gitlab-basics/add-merge-request.html).
 
 Branching Strategy With Git
 ---------------------------

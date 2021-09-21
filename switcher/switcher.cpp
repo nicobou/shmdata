@@ -17,9 +17,11 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include "./switcher.hpp"
 #include <string.h>
+#include <filesystem>
 #include <fstream>
+#include "./switcher.hpp"
+#include "./session/session.hpp"
 #include "./gst/utils.hpp"
 #include "./infotree/json-serializer.hpp"
 #include "./quiddity/bundle/bundle.hpp"
@@ -29,11 +31,11 @@
 
 namespace switcher {
 
+namespace fs = std::filesystem;
 
 std::string Switcher::get_name() const { return name_; }
 
 std::string Switcher::get_switcher_version() const { return SWITCHER_VERSION_STRING; }
-
 void Switcher::set_control_port(const int port) { control_port_ = port; }
 
 int Switcher::get_control_port() const { return control_port_; }

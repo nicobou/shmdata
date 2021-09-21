@@ -18,7 +18,9 @@
 #include <locale.h>
 #include <signal.h>
 #include <time.h>
+
 #include <vector>
+
 #include "switcher/infotree/json-serializer.hpp"
 #include "switcher/logger/console.hpp"
 #include "switcher/logger/silent.hpp"
@@ -188,7 +190,7 @@ int main(int argc, char* argv[]) {
       !manager->load_state(infotree::json::deserialize(fileutils::get_content(load_file)).get())) {
     std::cerr << "could not load file " << load_file << '\n';
   }
-
+  
   // waiting for end of life
   timespec delay;
   delay.tv_sec = 1;

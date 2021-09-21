@@ -18,8 +18,11 @@
  */
 
 #include "./pyquiddity.hpp"
+
 #include <chrono>
+
 #include "./pyinfotree.hpp"
+#include "./pyswitch.hpp"
 #include "./ungiled.hpp"
 #include "switcher/utils/scope-exit.hpp"
 
@@ -94,15 +97,16 @@ PyObject* pyQuiddity::get(pyQuiddityObject* self, PyObject* args, PyObject* kwds
 PyDoc_STRVAR(pyquiddity_invoke_doc,
              "Invoke a method with its names and arguments.\n"
              "Arguments: (method, args=[])\n"
-             "Returns: the value returned by the method\n");
+             "Returns: the value returned by the method\n"
+             "Exception: RuntimeException\n");
 
 PyObject* pyQuiddity::invoke(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
   const char* method = nullptr;
   PyObject* inv_args = nullptr;
   static char* kwlist[] = {(char*)"method", (char*)"args", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|O", kwlist, &method, &inv_args)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
   Py_ssize_t list_size = 0;
   if (nullptr != inv_args) {
@@ -111,7 +115,7 @@ PyObject* pyQuiddity::invoke(pyQuiddityObject* self, PyObject* args, PyObject* k
     } else {  // something else is given as argument
       PyErr_SetString(PyExc_TypeError,
                       "pyQuiddity invoke method expects a List containing arguments");
-      return static_cast<PyObject*>(nullptr);
+      return nullptr;
     }
   }
   auto tuple_args = std::string();
@@ -143,8 +147,8 @@ PyObject* pyQuiddity::invoke(pyQuiddityObject* self, PyObject* args, PyObject* k
   }));
 
   if (!res) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_Format(PyExc_RuntimeError, "%s", res.msg().c_str());
+    return nullptr;
   }
   return pyInfoTree::any_to_pyobject(res.any());
 }
@@ -164,8 +168,8 @@ PyObject* pyQuiddity::invoke_async(pyQuiddityObject* self, PyObject* args, PyObj
       (char*)"method", (char*)"args", (char*)"cb", (char*)"user_data", nullptr};
   if (!PyArg_ParseTupleAndKeywords(
           args, kwds, "s|OOO", kwlist, &method, &inv_args, &cb, &user_data)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
   Py_ssize_t list_size = 0;
   if (nullptr != inv_args) {
@@ -174,7 +178,7 @@ PyObject* pyQuiddity::invoke_async(pyQuiddityObject* self, PyObject* args, PyObj
     } else {  // something else is given as argument
       PyErr_SetString(PyExc_TypeError,
                       "pyQuiddity invoke_async method expects a List containing arguments");
-      return static_cast<PyObject*>(nullptr);
+      return nullptr;
     }
   }
   auto tuple_args = std::string();
@@ -204,7 +208,7 @@ PyObject* pyQuiddity::invoke_async(pyQuiddityObject* self, PyObject* args, PyObj
     PyErr_SetString(
         PyExc_TypeError,
         "pyQuiddity invoke_async method expects a callable object for the on_done_cb argument");
-    return static_cast<PyObject*>(nullptr);
+    return nullptr;
   }
 
   Py_INCREF(cb);
@@ -259,8 +263,8 @@ PyObject* pyQuiddity::make_shmpath(pyQuiddityObject* self, PyObject* args, PyObj
   const char* suffix = nullptr;
   static char* kwlist[] = {(char*)"suffix", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &suffix)) {
-    Py_INCREF(Py_False);
-    return Py_False;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
   return PyUnicode_FromString(self->quid->make_shmpath(suffix).c_str());
 }
@@ -285,10 +289,9 @@ PyObject* pyQuiddity::get_info(pyQuiddityObject* self, PyObject* args, PyObject*
   const char* path = nullptr;
   static char* kwlist[] = {(char*)"path", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &path)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
-
   return pyInfoTree::any_to_pyobject(self->quid->tree<MPtr(&InfoTree::branch_get_value)>(path));
 }
 
@@ -310,8 +313,8 @@ PyObject* pyQuiddity::set_nickname(pyQuiddityObject* self, PyObject* args, PyObj
   const char* nickname = nullptr;
   static char* kwlist[] = {(char*)"nickname", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &nickname)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
 
   if (!self->quid->set_nickname(nickname)) {
@@ -442,12 +445,12 @@ PyObject* pyQuiddity::subscribe(pyQuiddityObject* self, PyObject* args, PyObject
 
   static char* kwlist[] = {(char*)"name", (char*)"cb", (char*)"user_data", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO|O", kwlist, &name, &cb, &user_data)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
   if (!PyCallable_Check(cb)) {
     PyErr_SetString(PyExc_TypeError, "pyQuiddity callback argument must be callable");
-    return static_cast<PyObject*>(nullptr);
+    return nullptr;
   }
 
   if (subscribe_to_property(self, name, cb, user_data)) {
@@ -512,8 +515,8 @@ PyObject* pyQuiddity::unsubscribe(pyQuiddityObject* self, PyObject* args, PyObje
   const char* name = nullptr;
   static char* kwlist[] = {(char*)"name", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &name)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
 
   if (unsubscribe_from_property(self, name)) {
@@ -562,8 +565,8 @@ PyObject* pyQuiddity::get_signal_id(pyQuiddityObject* self, PyObject* args, PyOb
   const char* signal = nullptr;
   static char* kwlist[] = {(char*)"name", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &signal)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
   return PyLong_FromLong(self->quid->sig<MPtr(&signal::SBag::get_id)>(signal));
 }
@@ -575,43 +578,92 @@ PyObject* pyQuiddity::Quiddity_new(PyTypeObject* type, PyObject* /*args*/, PyObj
 }
 
 int pyQuiddity::Quiddity_init(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
-  PyObject* pyquid;
-  static char* kwlist[] = {(char*)"quid_c_ptr", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &pyquid)) return -1;
-  auto* quid = static_cast<Quiddity*>(PyCapsule_GetPointer(pyquid, nullptr));
+  PyObject* pyswitch = nullptr;
+  char* type = nullptr;
+  char* nickname = nullptr;
+  PyObject* pyinfotree = nullptr;
+
+  static char* kwlist[] = {
+      (char*)"switcher", (char*)"type", (char*)"nickname", (char*)"config", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(
+          args, kwds, "Os|sO", kwlist, &pyswitch, &type, &nickname, &pyinfotree)) {
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return -1;
+  }
+  if (pyswitch && !PyObject_IsInstance(pyswitch, reinterpret_cast<PyObject*>(&pySwitch::pyType))) {
+    PyErr_SetString(PyExc_TypeError,
+                    "error switcher argument is not an instance of a pyquid.Switcher");
+    return -1;
+  }
+
+  if (pyinfotree &&
+      !PyObject_IsInstance(pyinfotree, reinterpret_cast<PyObject*>(&pyInfoTree::pyType))) {
+    PyErr_SetString(PyExc_TypeError,
+                    "error config argument is not an instance of a pyquid.InfoTree");
+    return -1;
+  }
+
+  // retrieve switcher instance
+  auto pyswitchobj = reinterpret_cast<pySwitch::pySwitchObject*>(pyswitch);
+  auto switcher = pyswitchobj->switcher;
+
+  // create a quiddity without calling creation callbacks
+  auto qrox = switcher->quids<MPtr(&quiddity::Container::quiet_create)>(
+      type,
+      nickname ? nickname : std::string(),
+      pyinfotree ? reinterpret_cast<pyInfoTree::pyInfoTreeObject*>(pyinfotree)->tree : nullptr);
+
+  // try to retrieve a pointer to quiddity
+  auto quid = qrox.get();
+
+  // check for pointer to quiddity
+  if (!quid) {
+    PyErr_Format(PyExc_RuntimeError, "%s", qrox.msg().c_str());
+    return -1;
+  }
+
   self->quid = quid;
   self->sig_reg = std::make_unique<sig_registering_t>();
   self->prop_reg = std::make_unique<prop_registering_t>();
   self->async_invocations = std::make_unique<std::list<std::future<void>>>();
+
+  // append quiddity into quiddities list
+  PyObject* obj = reinterpret_cast<PyObject*>(self);
+  PyList_Append(pyswitchobj->quiddities, obj);
+
   self->interpreter_state = PyThreadState_Get()->interp;
   PyEval_InitThreads();
-  return 0;
+
+  switcher->quids<MPtr(&quiddity::Container::notify_quiddity_created)>(quid);
+
+  return 0; 
 }
 
 void pyQuiddity::Quiddity_dealloc(pyQuiddityObject* self) {
-  // cleaning signal subscription
-  for (const auto& it : self->sig_reg->callbacks) {
-    auto found = self->sig_reg->signals.find(it.first);
-    self->quid->sig<MPtr(&signal::SBag::unsubscribe)>(found->first, found->second);
-    Py_XDECREF(it.second);
-  }
-  for (auto& it : self->sig_reg->user_data) {
-    Py_XDECREF(it.second);
-  }
-  self->sig_reg.reset();
+  if (self->quid) {
+    // cleaning signal subscription
+    for (const auto& it : self->sig_reg->callbacks) {
+      const auto found = self->sig_reg->signals.find(it.first);
+      self->quid->sig<MPtr(&signal::SBag::unsubscribe)>(found->first, found->second);
+      Py_XDECREF(it.second);
+    }
+    for (auto& it : self->sig_reg->user_data) {
+      Py_XDECREF(it.second);
+    }
+    self->sig_reg.reset();
 
-  // cleaning prop subscription
-  for (const auto& it : self->prop_reg->callbacks) {
-    auto found = self->prop_reg->props.find(it.first);
-    self->quid->prop<MPtr(&property::PBag::unsubscribe)>(found->first, found->second);
-    Py_XDECREF(it.second);
+    // cleaning prop subscription
+    for (const auto& it : self->prop_reg->callbacks) {
+      auto found = self->prop_reg->props.find(it.first);
+      self->quid->prop<MPtr(&property::PBag::unsubscribe)>(found->first, found->second);
+      Py_XDECREF(it.second);
+    }
+    for (auto& it : self->prop_reg->user_data) {
+      Py_XDECREF(it.second);
+    }
+    self->prop_reg.reset();
+    self->async_invocations.reset();
   }
-  for (auto& it : self->prop_reg->user_data) {
-    Py_XDECREF(it.second);
-  }
-  self->prop_reg.reset();
-  self->async_invocations.reset();
-
   // cleaning self
   Py_TYPE(self)->tp_free((PyObject*)self);
 }
@@ -677,7 +729,13 @@ PyDoc_STRVAR(pyquid_quiddity_doc,
              "   - property set, get and subscribe\n"
              "   - method invocation\n"
              "   - InfoTree request\n"
-             "   - specific configuration");
+             "   - specific configuration\n\n"
+             "Construct a Quiddity object:\n"
+             "Arguments: (switcher, type, name, config), where switcher is a pyquid.Switcher object"
+             ", type is a quiddity type (string), name is a nickname for the Quiddity (string)"
+             "and config is an InfoTree that overrides the switcher configuration file for this "
+             "Quiddity type.\n"
+             "Note: switcher and type are mandatory arguments during construction of q Quiddity\n");
 
 PyTypeObject pyQuiddity::pyType = {
     PyVarObject_HEAD_INIT(nullptr, 0)(char*) "pyquid.Quiddity", /* tp_name */
@@ -718,3 +776,4 @@ PyTypeObject pyQuiddity::pyType = {
     0,                                                          /* tp_alloc */
     Quiddity_new                                                /* tp_new */
 };
+

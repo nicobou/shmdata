@@ -1,5 +1,8 @@
 # Using the nvdec GStreamer plugin
 
+This document need to be updated for Ubuntu 20.04.
+{: .alert .alert-gitlab-orange}
+
 _Install and build instructions for Ubuntu 18.04._
 
 Nvidia's nvenc and nvdec plugins enable GPU-accelerated H264 video encoding and decoding with GStreamer pipelines. Currently, GPU encoding is already included in Switcher, but decoding is not. To enable GPU decoding with the GStreamer nvdec plugin, you will need to i) build the nvdec plugin from source and ii) raise its prioritization as primary among the h264 decoders.

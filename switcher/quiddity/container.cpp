@@ -55,7 +55,7 @@ Qrox Container::quiet_create(const std::string& quiddity_class,
                              InfoTree::ptrc override_config) {
   // checks before creation
   if (!switcher_->factory<MPtr(&Factory::exists)>(quiddity_class)) {
-    return Qrox(false, "unknown class");
+    return Qrox(false, "unknown Quiddity type");
   }
 
   // searching for a free id
@@ -113,6 +113,22 @@ Qrox Container::quiet_create(const std::string& quiddity_class,
 
   return Qrox(true, nick, cur_id_, quiddity.get());
 }
+
+/**
+* @brief Send confirmation signal for quiddity creation.
+*        Use after a Container::quiet_create call.
+*
+* @param quid The quiddity instance returned by Container::quiet_create.
+*/
+void Container::notify_quiddity_created(Quiddity *quid) {
+  // We work on a copy in case a callback modifies the map of registered callbacks
+  auto cbs_map = on_created_cbs_;
+  for (auto& pair : cbs_map) {
+    auto callback = pair.second;
+    callback(quid->get_id());
+    if (on_created_cbs_.empty()) break;  // In case the map gets reset in the callback, e.g bundle
+  }
+};
 
 BoolLog Container::remove(qid_t id) {
   // We work on a copy in case a callback modifies the map of registered callbacks
@@ -231,3 +247,4 @@ Qrox Container::get_qrox(qid_t id) {
 
 }  // namespace quiddity
 }  // namespace switcher
+

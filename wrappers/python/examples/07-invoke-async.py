@@ -30,7 +30,6 @@ sw = pyquid.Switcher('pyquid', debug=True)
 
 # creating a video source that will eventually be connected to the dummysink quiddity
 vid = sw.create('videotestsrc', 'vid')
-assert None != vid
 
 # the video needs to be activated
 assert vid.set('started', True)

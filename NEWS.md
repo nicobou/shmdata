@@ -2,6 +2,45 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 2.3.0 (2021-09-20)
+---------------------------
+This is an official release in the 2.3 stable series.
+
+Documentation:
+* 📝 Add MIGRATIONS.md
+* 📝 Update author script
+* 📝 Update configuration and bundle documentation
+
+New features:
+* ✨ Add Session API to Python wrapper
+* ✨ Add IP address for each interface in systemusage's InfoTree
+* ✨ Add print switcher version to swquid-info
+* ✨ Add possibility to construct Quiddity object in python wrapper
+
+Bug fixes:
+* 🐛 Fix webrtc deadlock
+* 🐛 Fix `pyquid.Switcher.get_quid` for Quiddity initialization
+* 📝 Fix and improve doc
+* 🐛 Fix defaul SIP port is applied before the one requested in configuration
+
+
+Breaking changes:
+* 🔥 Remove the syphon plugin
+* 🔥 Remove Ubuntu 18.04 related files
+* 💥 For consistency with the CPP API, refactor Quiddity.init and create in pyquid with name arg reworded as nickname
+* add PyErr in pyquid.Quiddity
+
+Improvements:
+* 🚨 Reduce noise for pyquid at compile time
+
+switcher 2.2.6 (2021-05-17)
+---------------------------
+This is an official release in the 2.2 stable series.
+
+Improvements:
+* ⬆️  upgrade dependency to nvidia driver version 460
+* 📝 add gitlab issues template, code of conduct and RFC process
+
 switcher 2.2.4 (2021-05-03)
 ---------------------------
 This is an official release in the 2.2 stable series.

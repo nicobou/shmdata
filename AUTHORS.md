@@ -4,8 +4,9 @@
 * Francis Lecavalier
 * François Ubald Brien
 * Ludovic Schreiber
-* Michal Seta
+* Michał Seta
 * Hantz-Carly F. Vius
+* Aurélien Perronneau (OpSocket)
 * Valentin Laurent
 * Sebastien Paquet
 * Mike Wozniewski
@@ -16,5 +17,5 @@
 * Thomas Piquet
 * Rostom Mesli
 * Patrick Keroulas
-* Michał Seta
+* Olivier Gauthier
 * Marc Lavallée
