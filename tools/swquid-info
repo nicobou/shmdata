@@ -54,6 +54,7 @@ Arguments:
                       action="store_true")
     argp.add_argument("-c", "--class-doc", help="print class documentation", action="store_true")
     argp.add_argument("-d", "--debug", help="print debug log", action="store_true")
+    argp.add_argument("-v", "--version", help="print switcher version", action="store_true")
     argp.add_argument(
         'quiddity_class', help="You can add method or property or signal id for a shorter output", nargs='?')
     return argp
@@ -67,6 +68,10 @@ def main() -> None:
     name = 'swquid-info' + str(os.getpid())
     sw = Switcher(name, debug=args.debug)
 
+    if args.version:
+        print(sw.version())
+        return
+
     if args.list_all:
         classes = sw.list_classes()
         for it in classes:
@@ -79,8 +84,9 @@ def main() -> None:
 
     user_request = args.quiddity_class.split('.', 1)
     doc = InfoTree()
-    quid = sw.create(user_request[0], config=InfoTree('{ "server_name" : "'+name+'" }'))
-    if (not quid):
+    try:
+        quid = sw.create(user_request[0], config=InfoTree('{ "server_name" : "'+name+'" }'))
+    except RuntimeError:
         print('quiddity class "' + user_request[0] + '" could not be inspected', file=sys.stderr)
         exit(0)
 

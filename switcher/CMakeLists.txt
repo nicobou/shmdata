@@ -61,6 +61,7 @@ add_library(${SWITCHER_LIBRARY} SHARED
   quiddity/signal/sbag.cpp
   quiddity/signal/sig.cpp
   quiddity/startable.cpp
+  session/session.cpp
   shmdata/caps/audio-caps.cpp
   shmdata/caps/utils.cpp
   shmdata/connector.cpp
@@ -88,6 +89,7 @@ set(HEADER_DIR_INCLUDES
   logger
   quiddities
   quiddity
+  session
   shmdata
   utils
   )

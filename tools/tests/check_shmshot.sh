@@ -3,8 +3,10 @@
 # the script will fail if one command fails
 set -e
 
-gst-launch-1.0 -e --gst-plugin-path=/usr/local/lib/gstreamer-1.0/ videotestsrc pattern=18 ! shmdatasink socket-path=/tmp/check_shmshot &
+gst-launch-1.0 -e --gst-plugin-path=/usr/local/lib/gstreamer-1.0/:/usr/lib/gstreamer-1.0/ videotestsrc pattern=18 ! shmdatasink socket-path=/tmp/check_shmshot &
 gstpipe=$!
+
+sleep 0.1
 
 # non interactive mode
 shmshot --shmpath /tmp/check_shmshot --folder /tmp/ --name check_shmshot_file

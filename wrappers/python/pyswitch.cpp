@@ -16,9 +16,10 @@
  * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
  * Boston, MA 02111-1307, USA.
  */
-
 #include "./pyswitch.hpp"
 
+#include <sstream>
+#include <string>
 #include <switcher/infotree/information-tree.hpp>
 #include <switcher/logger/console.hpp>
 #include <switcher/logger/silent.hpp>
@@ -32,7 +33,8 @@ PyObject* pySwitch::Switcher_new(PyTypeObject* type, PyObject* /*args*/, PyObjec
   self = (pySwitchObject*)type->tp_alloc(type, 0);
   if (self != nullptr) {
     self->name = PyUnicode_FromString("default");
-    if (self->name == nullptr) {
+    self->quiddities = PyList_New(0);
+    if (self->name == nullptr || self->quiddities == nullptr) {
       Py_XDECREF(self);
       return nullptr;
     }
@@ -46,9 +48,10 @@ int pySwitch::Switcher_init(pySwitchObject* self, PyObject* args, PyObject* kwds
   PyObject* showDebug = nullptr;
 
   static char* kwlist[] = {(char*)"name", (char*)"config", (char*)"debug", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OO", kwlist, &name, &configFile, &showDebug))
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OO", kwlist, &name, &configFile, &showDebug)) {
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
     return -1;
-
+  }
   self->name = name;
   if (showDebug && PyBool_Check(showDebug) && showDebug==Py_True) {
     self->switcher = Switcher::make_switcher<log::Console>(PyUnicode_AsUTF8(self->name));
@@ -57,18 +60,35 @@ int pySwitch::Switcher_init(pySwitchObject* self, PyObject* args, PyObject* kwds
   }
 
   if (!self->switcher) {
+    PyErr_SetString(PyExc_RuntimeError, "Switcher instance could not be created");
     return -1;
   }
 
   self->sig_reg = std::make_unique<sig_registering_t>();
 
   if (configFile) {
-    if (!self->switcher->conf<MPtr(&Configuration::from_file)>(PyUnicode_AsUTF8(configFile)))
+    if (!self->switcher->conf<MPtr(&Configuration::from_file)>(PyUnicode_AsUTF8(configFile))) {
+      PyErr_SetString(PyExc_RuntimeError, "Switcher could not load configuration file");
       return -1;
+    }
   }
 
-  self->interpreter_state = PyThreadState_Get()->interp;
+  // Initialize session by calling the class object with a pyswitch instance as a unique argument
+  self->session = PyObject_CallFunction((PyObject*)&pySession::pyType, "O", self);
+  // @NOTE: This is pretty much like doing the following in Python:
+  //
+  // class Session:
+  //   def __init__(self, instance):
+  //     self.instance = instance;
+  //
+  // class Switcher:
+  //   def __init__(self):
+  //     self.session = Session(self);
+  //
+  // Anytime a Switcher instance is initialized, another Session instance is also created.
+  // For convenience, both instances might keep a reference to each other.
 
+  self->interpreter_state = PyThreadState_Get()->interp;
   return 0;
 }
 
@@ -84,6 +104,8 @@ void pySwitch::Switcher_dealloc(pySwitchObject* self) {
   self->sig_reg.reset();
 
   Py_XDECREF(self->name);
+  Py_XDECREF(self->quiddities);
+  Py_XDECREF(self->session);
   Switcher::ptr empty;
   self->switcher.swap(empty);
   Py_TYPE(self)->tp_free((PyObject*)self);
@@ -119,8 +141,8 @@ PyObject* pySwitch::load_bundles(pySwitchObject* self, PyObject* args, PyObject*
   const char* description = nullptr;
   static char* kwlist[] = {(char*)"description", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &description)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
 
   if (!self->switcher.get()->load_bundle_from_config(description)) {
@@ -135,37 +157,38 @@ PyObject* pySwitch::load_bundles(pySwitchObject* self, PyObject* args, PyObject*
 PyDoc_STRVAR(pyswitch_create_doc,
              "Create a quiddity. The name and the config are optional."
              "The config (an InfoTree) overrides the switcher configuration file  \n"
-             "Arguments: (type, name, config)\n"
+             "Arguments: (type, nickname, config)\n"
              "Returns: the created quiddity object (pyquid.Quiddity), or None\n");
 
 PyObject* pySwitch::create(pySwitchObject* self, PyObject* args, PyObject* kwds) {
   const char* type = nullptr;
-  const char* name = nullptr;
+  const char* nickname = nullptr;
   PyObject* pyinfotree = nullptr;
-  static char* kwlist[] = {(char*)"type", (char*)"name", (char*)"config", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|sO", kwlist, &type, &name, &pyinfotree)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+  static char* kwlist[] = {(char*)"type", (char*)"nickname", (char*)"config", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|sO", kwlist, &type, &nickname, &pyinfotree)) {
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
   if (pyinfotree &&
       !PyObject_IsInstance(pyinfotree, reinterpret_cast<PyObject*>(&pyInfoTree::pyType))) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError,
+                    "error config argument is not an instance of a pyquid.InfoTree");
+    return nullptr;
   }
 
-  auto qrox = self->switcher->quids<MPtr(&quiddity::Container::create)>(
-      type,
-      name ? name : std::string(),
-      pyinfotree ? reinterpret_cast<pyInfoTree::pyInfoTreeObject*>(pyinfotree)->tree : nullptr);
-  if (!qrox) {
-    Py_INCREF(Py_None);
-    return Py_None;
-  }
-  auto quid_capsule = PyCapsule_New(static_cast<void*>(qrox.get()), nullptr, nullptr);
-  PyObject* argList = Py_BuildValue("(O)", quid_capsule);
+  PyObject* argList = nullptr;
+  if (!nickname && !pyinfotree)
+    argList = Py_BuildValue("(Os)", (PyObject*)self, type);
+  else if (nickname && !pyinfotree)
+    argList = Py_BuildValue("(Oss)", (PyObject*)self, type, nickname);
+  else if (!nickname && pyinfotree)
+    argList = Py_BuildValue("(Oss)", (PyObject*)self, type, "", pyinfotree);
+  else if (nickname && pyinfotree)
+    argList = Py_BuildValue("(OssO)", (PyObject*)self, type, nickname, pyinfotree);
+
   PyObject* obj = PyObject_CallObject((PyObject*)&pyQuiddity::pyType, argList);
   Py_XDECREF(argList);
-  Py_XDECREF(quid_capsule);
+
   return obj;
 }
 
@@ -178,8 +201,8 @@ PyObject* pySwitch::remove(pySwitchObject* self, PyObject* args, PyObject* kwds)
   long int id = 0;
   static char* kwlist[] = {(char*)"id", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "l", kwlist, &id)) {
-    Py_INCREF(Py_False);
-    return Py_False;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
   if (!self->switcher->quids<MPtr(&quiddity::Container::remove)>(id)) {
     Py_INCREF(Py_False);
@@ -195,23 +218,30 @@ PyDoc_STRVAR(pyswitch_get_quid_doc,
              "Returns: a Quiddity object (pyquid.Quiddity), or None.\n");
 
 PyObject* pySwitch::get_quid(pySwitchObject* self, PyObject* args, PyObject* kwds) {
-  long int id = 0;
+  long unsigned int id = 0;
   static char* kwlist[] = {(char*)"id", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "l", kwlist, &id)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
-  auto qrox = self->switcher->quids<MPtr(&quiddity::Container::get_qrox)>(id);
-  if (!qrox) {
-    Py_INCREF(Py_None);
-    return Py_None;
+
+  auto size = PyList_Size(self->quiddities);
+  for (auto i = 0; i < size; i++) {
+    PyObject* item = PyList_GetItem(self->quiddities, i);
+    if (item && PyObject_TypeCheck(item, &pyQuiddity::pyType)) {
+      auto quid = reinterpret_cast<pyQuiddity::pyQuiddityObject*>(item)->quid;
+      if (quid->get_id() == id) {
+        Py_INCREF(item);
+        return item;
+      }
+    }
   }
-  auto quid_capsule = PyCapsule_New(static_cast<void*>(qrox.get()), nullptr, nullptr);
-  PyObject* argList = Py_BuildValue("(O)", quid_capsule);
-  PyObject* obj = PyObject_CallObject((PyObject*)&pyQuiddity::pyType, argList);
-  Py_XDECREF(argList);
-  Py_XDECREF(quid_capsule);
-  return obj;
+
+  // no quiddity found for id
+  std::ostringstream str;
+  str << "No quiddity found for id `" << id << "`";
+  PyErr_SetString(PyExc_ValueError, str.str().c_str());
+  return nullptr;
 }
 
 PyDoc_STRVAR(pyswitch_get_quid_id_doc,
@@ -223,8 +253,8 @@ PyObject* pySwitch::get_quid_id(pySwitchObject* self, PyObject* args, PyObject* 
   const char* nickname = nullptr;
   static char* kwlist[] = {(char*)"nickname", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &nickname)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
   return PyLong_FromSize_t(self->switcher->quids<MPtr(&quiddity::Container::get_id)>(nickname));
 }
@@ -251,8 +281,8 @@ PyObject* pySwitch::reset_state(pySwitchObject* self, PyObject* args, PyObject* 
   int clear = 1;
   static char* kwlist[] = {(char*)"clear", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|p", kwlist, &clear)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
   self->switcher->reset_state(clear ? true : false);
   Py_INCREF(Py_None);
@@ -268,12 +298,13 @@ PyObject* pySwitch::load_state(pySwitchObject* self, PyObject* args, PyObject* k
   PyObject* pyinfotree;
   static char* kwlist[] = {(char*)"state", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &pyinfotree)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
   if (!PyObject_IsInstance(pyinfotree, reinterpret_cast<PyObject*>(&pyInfoTree::pyType))) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError,
+                    "error: state argument is not an instance of a pyquid.InfoTree");
+    return nullptr;
   }
   if (!self->switcher->load_state(
           reinterpret_cast<pyInfoTree::pyInfoTreeObject*>(pyinfotree)->tree)) {
@@ -379,8 +410,8 @@ PyObject* pySwitch::quid_descr(pySwitchObject* self, PyObject* args, PyObject* k
   int id = 0;
   static char* kwlist[] = {(char*)"id", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "i", kwlist, &id) && 0 != id) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
   return PyUnicode_FromString(
       infotree::json::serialize(
@@ -454,8 +485,8 @@ PyObject* pySwitch::subscribe(pySwitchObject* self, PyObject* args, PyObject* kw
 
   static char* kwlist[] = {(char*)"name", (char*)"cb", (char*)"user_data", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO|O", kwlist, &name, &cb, &user_data)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
   if (!PyCallable_Check(cb)) {
     PyErr_SetString(PyExc_TypeError, "pySwitch callback argument must be callable");
@@ -502,8 +533,8 @@ PyObject* pySwitch::unsubscribe(pySwitchObject* self, PyObject* args, PyObject* 
   const char* name = nullptr;
   static char* kwlist[] = {(char*)"name", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &name)) {
-    Py_INCREF(Py_None);
-    return Py_None;
+    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+    return nullptr;
   }
 
   if (unsubscribe_from_signal(self, name)) {
@@ -578,48 +609,27 @@ PyMethodDef pySwitch::pySwitch_methods[] = {
      (PyCFunction)pySwitch::unsubscribe,
      METH_VARARGS | METH_KEYWORDS,
      pyswitch_unsubscribe_doc},
-    {nullptr}};
+    {nullptr} // Sentinel
+};
 
 PyDoc_STRVAR(pyquid_switcher_doc,
-             "Switcher objects.\n"
-             "Entry point for creating, removing and accessing quiddities.\n");
+             "The Switcher class.\n"
+             "When called, it accepts a `name`, a `config` filepath and a `debug` optional keyword arguments.\n"
+             "It returns a new instance of Switcher which has a `quiddities` attribute listing the initialized\n"
+             "quiddities and a `session` attribute allowing session management.\n");
+
+PyMemberDef pySwitch::pySwitch_members[] = {
+    {(char*)"quiddities", T_OBJECT_EX, offsetof(pySwitch::pySwitchObject, quiddities), READONLY},
+    {(char*)"session", T_OBJECT_EX, offsetof(pySwitch::pySwitchObject, session), READONLY},
+    {nullptr}};
 
 PyTypeObject pySwitch::pyType = {
-    PyVarObject_HEAD_INIT(nullptr, 0)(char*) "pyquid.Switcher", /* tp_name */
-    sizeof(pySwitchObject),                                     /* tp_basicsize */
-    0,                                                          /* tp_itemsize */
-    (destructor)Switcher_dealloc,                               /* tp_dealloc */
-    0,                                                          /* tp_print */
-    0,                                                          /* tp_getattr */
-    0,                                                          /* tp_setattr */
-    0,                                                          /* tp_reserved */
-    0,                                                          /* tp_repr */
-    0,                                                          /* tp_as_number */
-    0,                                                          /* tp_as_sequence */
-    0,                                                          /* tp_as_mapping */
-    0,                                                          /* tp_hash  */
-    0,                                                          /* tp_call */
-    0,                                                          /* tp_str */
-    0,                                                          /* tp_getattro */
-    0,                                                          /* tp_setattro */
-    0,                                                          /* tp_as_buffer */
-    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,                   /* tp_flags */
-    pyquid_switcher_doc,                                        /* tp_doc */
-    0,                                                          /* tp_traverse */
-    0,                                                          /* tp_clear */
-    0,                                                          /* tp_richcompare */
-    0,                                                          /* tp_weaklistoffset */
-    0,                                                          /* tp_iter */
-    0,                                                          /* tp_iternext */
-    pySwitch_methods,                                           /* tp_methods */
-    0,                                                          /* tp_members */
-    0,                                                          /* tp_getset */
-    0,                                                          /* tp_base */
-    0,                                                          /* tp_dict */
-    0,                                                          /* tp_descr_get */
-    0,                                                          /* tp_descr_set */
-    0,                                                          /* tp_dictoffset */
-    (initproc)Switcher_init,                                    /* tp_init */
-    0,                                                          /* tp_alloc */
-    Switcher_new                                                /* tp_new */
-};
+    PyVarObject_HEAD_INIT(nullptr, 0).tp_name = "pyquid.Switcher",
+    .tp_basicsize = sizeof(pySwitchObject),
+    .tp_dealloc = (destructor)Switcher_dealloc,
+    .tp_flags = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,
+    .tp_doc = pyquid_switcher_doc,
+    .tp_methods = pySwitch_methods,
+    .tp_members = pySwitch_members,
+    .tp_init = (initproc)Switcher_init,
+    .tp_new = Switcher_new};

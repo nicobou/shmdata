@@ -25,6 +25,7 @@
 #include <regex>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "./configuration/configuration.hpp"
 #include "./gst/initialized.hpp"
@@ -36,13 +37,24 @@
 #include "./quiddity/quid-id-t.hpp"
 #include "./utils/make-consultable.hpp"
 #include "./utils/string-utils.hpp"
+#include "./session/session.hpp"
+
+namespace fs = std::filesystem;
 
 namespace switcher {
+
 namespace quiddity {
-namespace bundle {
-class Bundle;
-}  // namespace bundle
+  namespace bundle {
+    class Bundle;
+  }  // namespace bundle
 }  // namespace quiddity
+
+namespace session {
+  class Session;
+} // namespace session
+
+using namespace session;
+
 class Switcher : public gst::Initialized {
   friend class quiddity::bundle::Bundle;  // access to qcontainer_ and qfactory_
  public:
@@ -89,6 +101,9 @@ class Switcher : public gst::Initialized {
   // Bundles
   bool load_bundle_from_config(const std::string& bundle_description);
 
+  // Session
+  std::shared_ptr<Session> session;
+
  private:
   Switcher() = delete;
   template <typename L>  // unique_ptr<LOG_TYPE>
@@ -104,6 +119,8 @@ class Switcher : public gst::Initialized {
         name_(std::regex_replace(name, std::regex("[^[:alnum:]| ]"), "-")) {
     remove_shm_zombies();
 
+    this->session = std::make_shared<Session>(this);
+
     // loading plugin located in the SWITCHER_PLUGIN_PATH environment variable
     const auto path = std::getenv("SWITCHER_PLUGIN_PATH");
     if (path) {
@@ -111,7 +128,7 @@ class Switcher : public gst::Initialized {
         // scanning directory
         qfactory_.scan_dir(it);
         // scanning sub-directories
-        for (const auto& dir_entry : std::filesystem::recursive_directory_iterator(it)) {
+        for (const auto& dir_entry : fs::recursive_directory_iterator(it)) {
           if (dir_entry.is_directory()) qfactory_.scan_dir(dir_entry.path());
         }
       }
@@ -121,10 +138,11 @@ class Switcher : public gst::Initialized {
     const auto default_plugin_dir = qfactory_.get_default_plugin_dir();
     qfactory_.scan_dir(default_plugin_dir);
     for (const auto& dir_entry :
-         std::filesystem::recursive_directory_iterator(default_plugin_dir)) {
+         fs::recursive_directory_iterator(default_plugin_dir)) {
       if (dir_entry.is_directory()) qfactory_.scan_dir(dir_entry.path());
     }
   }
+
   void apply_gst_configuration();
   void register_bundle_from_configuration();
   void remove_shm_zombies() const;

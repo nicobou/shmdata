@@ -8,8 +8,8 @@ project(switcher)
 # Project Variables
 set(SWITCHER_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(SWITCHER_VERSION_MAJOR 2)
-set(SWITCHER_VERSION_MINOR 2)
-set(SWITCHER_VERSION_PATCH 6)
+set(SWITCHER_VERSION_MINOR 3)
+set(SWITCHER_VERSION_PATCH 0)
 set(SWITCHER_VERSION_STRING ${SWITCHER_VERSION_MAJOR}.${SWITCHER_VERSION_MINOR}.${SWITCHER_VERSION_PATCH})
 set(SWITCHER_API_VERSION ${SWITCHER_VERSION_MAJOR}.${SWITCHER_VERSION_MINOR})
 set(SWITCHER_LIBRARY switcher-${SWITCHER_API_VERSION})
@@ -154,11 +154,9 @@ if(CMAKE_BUILD_TYPE EQUAL "Debug")
 endif()
 
 # WARNINGS
-add_definitions(-Wall)
-add_definitions(-Wextra)
-add_definitions(-Werror)
-add_definitions(-Wno-error=unused-parameter)
-add_definitions(-Wno-error=cast-function-type)
+add_compile_options(-Wall -Wextra -Werror)
+add_compile_options(-Wno-unused-parameter)
+add_compile_options(-Wno-cast-function-type)
 add_definitions("-DDATADIR=\"${DATADIR}\"")
 
 # OSX
@@ -207,3 +205,4 @@ add_custom_target(uninstall COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_D
 
 # Report
 feature_summary(WHAT ALL)
+

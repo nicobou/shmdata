@@ -105,6 +105,12 @@ Webrtc::Webrtc(quiddity::Config&& conf)
   register_writer_suffix("audio");
 }
 
+Webrtc::~Webrtc() {
+  connection_closed();
+  std::lock_guard<std::mutex> pipe_lock(pipeline_mutex_);
+  pipeline_->play(false);
+}
+
 std::string Webrtc::make_username() {
   static std::random_device rdevice_;
   static std::mt19937 generator_(rdevice_());
@@ -118,6 +124,7 @@ bool Webrtc::stop() {
   debug("Webrtc::stop");
   using namespace std::chrono_literals;
 
+  std::lock_guard<std::mutex> pipe_lock(pipeline_mutex_);
   if (stopping_) {
     warning("Webrtc::stop::Already stopping. Skipping");
     return true;
@@ -137,9 +144,7 @@ bool Webrtc::stop() {
       return false;
     }
 
-    if (pipeline_) {
-      gst_element_set_state(GST_ELEMENT(pipeline_->get_pipeline()), GST_STATE_NULL);
-    }
+    pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, nullptr);
 
     std::unique_ptr<GSource, decltype(&g_source_unref)> source(g_idle_source_new(), g_source_unref);
 
@@ -187,6 +192,8 @@ int Webrtc::stop_source_cb(void* self) {
 void Webrtc::async_disconnect_from_wss() {
   debug("Webrtc::async_disconnect_from_wss");
 
+  std::lock_guard<std::mutex> pipe_lock(pipeline_mutex_);
+
   if (!connection_) {
     debug("Webrtc::disconnect::Connection is uninitialized. Nothing to do");
     return;
@@ -196,7 +203,7 @@ void Webrtc::async_disconnect_from_wss() {
     remove_peer_from_pipeline(peer.first);
   }
   pipeline_->play(false);
-  pipeline_.reset(nullptr);
+  pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, nullptr);
   soup_websocket_connection_close(connection_.get(), 1000, "");
 }
 
@@ -703,6 +710,14 @@ bool Webrtc::start_pipeline() {
     return false;
   }
 
+  std::lock_guard<std::mutex> pipe_lock(pipeline_mutex_);
+
+  pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, nullptr);
+  if (!pipeline_) {
+    error("Webrtc::start_pipeline::Failed to create pipeline object");
+    return false;
+  }
+
   g_object_set(G_OBJECT(pipeline_->get_pipeline()), "async-handling", true, nullptr);
   g_object_set(G_OBJECT(el), "async-handling", true, nullptr);
 
@@ -717,11 +732,6 @@ bool Webrtc::start_pipeline() {
   }
 
 
-  pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, nullptr);
-  if (!pipeline_) {
-    error("Webrtc::start_pipeline::Failed to create pipeline object");
-    return false;
-  }
 
   if (auto added = gst_bin_add(GST_BIN(pipeline_->get_pipeline()), el); added) {
     debug("Webrtc::start_pipeline::Added streams to pipeline");

@@ -3,6 +3,22 @@ INSTALL
 
 > **Note**: Ensure **[Shmdata](https://gitlab.com/sat-metalab/shmdata)** is already installed before proceeding.
 
+## Install package
+
+```
+sudo add-apt-repository ppa:sat-metalab/metalab
+sudo apt-get update
+sudo apt install switcher python3-switcher
+```
+
+You may want to install some of the following packages:
+
+```
+sudo apt install switcher-dev # using libswitcher or writing you own Quiddity
+sudo apt install switcher-doc # documentation
+sudo apt install switcher-plugins-nvidia # install the nvidia video encoding Quiddity
+```
+
 ## Quick build and installation (Ubuntu 20.04)
 
 Build and install **switcher** from the command line:
@@ -11,6 +27,9 @@ Build and install **switcher** from the command line:
 # Clone all code from master branch
 sudo apt install git
 git clone https://gitlab.com/sat-metalab/switcher.git
+
+# uncomment next line if you want to build a specific version
+# git checkout 2.1.38
 
 cd switcher
 # Install all dependencies
@@ -31,37 +50,6 @@ cmake .. -DENABLE_GPL=ON -DCMAKE_BUILD_TYPE=Release # replace "Release" with "De
 make -j"$(nproc)"
 sudo make install && sudo ldconfig
 ```
-
-## Quick build and installation (Ubuntu 18.04)
-
-Build and install **switcher** from the command line:
-
-```bash
-# Clone all code from master branch
-sudo apt install git
-git clone https://gitlab.com/sat-metalab/switcher.git
-
-cd switcher
-# Install all dependencies
-sudo apt install $(cat ./deps/apt-build-ubuntu-18.04) $(cat ./deps/apt-runtime-ubuntu-18.04)
-# uncomment next line if you have you want to build video encoding with the nvidia graphics card
-# sudo apt install $(cat ./deps/apt-build-nvidia-deps-ubuntu-18.04) $(cat ./deps/apt-runtime-nvidia-deps-ubuntu-18.04)
-# install python dependencies
-pip3 install -r ./deps/pip3-ubuntu18.04
-
-# Configure build folder
-git submodule update --init --recursive
-mkdir build && cd build
-
-# Generate make recipes
-CC="gcc-8" CXX="g++-8" cmake .. -DENABLE_GPL=ON -DCMAKE_BUILD_TYPE=Release # replace "Release" with "Debug" when coding
-
-# Build and install switcher on your system
-make -j"$(nproc)"
-sudo make install && sudo ldconfig
-```
-
-> The inline environment variables `CC` and `CXX` are set in order to force the usage of **gcc-8** and **g++-8** without polluting your system environment. All following instructions assume you are using **gcc-8** and **g++-8** as C/C++ compilers.
 
 ## Custom compilation
 

@@ -1,6 +1,6 @@
 # Switcher quiddity plugins 
 
-Most Quiddities are compiled as shared object files and loaded by switcher during instantiation. When the switcher library is loaded plugins are loaded from the default plugin path, where switcher installation copies these shared object files. These files are usually located at `/usr/local/switcher-<major>.<minor>/plugins/`, where major and minor  depends on the switcher version. For instance, with switcher version 2.1.23, major is 2 and minor is 1.
+Most Quiddities are compiled as shared object files and loaded by switcher during instantiation. When the switcher library is loaded, plugins are loaded from the default plugin path, where switcher installation copies these shared object files. These files are usually located at `/usr/local/switcher-<major>.<minor>/plugins/`, where major and minor  depends on the switcher version. For instance, with switcher version 2.1.23, major is 2 and minor is 1.
 
 # Loading quiddity plugins from custom path
 

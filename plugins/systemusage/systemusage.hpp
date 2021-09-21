@@ -21,6 +21,8 @@
 #define __SWITCHER_SYSTEM_USAGE_H__
 
 #include <memory>
+#include <string>
+
 #include "switcher/quiddity/quiddity.hpp"
 #include "switcher/quiddity/startable.hpp"
 #include "switcher/utils/periodic-task.hpp"
@@ -41,6 +43,7 @@ struct Cpu {
 };
 
 struct Net {
+  std::string ip_address;
   long rx_rate{0};
   long rx_bytes{0};
   long rx_packets{0};
