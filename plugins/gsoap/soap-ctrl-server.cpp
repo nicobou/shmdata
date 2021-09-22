@@ -496,3 +496,43 @@ int controlService::tag_as_array_user_data(const std::string& quiddity_nickname,
             : "false";
   return SOAP_OK;
 }
+
+int controlService::try_connect(const std::string& reader_quiddity,
+                                const std::string& writer_quiddity,
+                                std::string* result) {
+  using namespace switcher;
+
+  quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
+  Switcher* manager = ctrl_server->get_switcher();
+  bool success = false;
+  auto qid = manager->quids<MPtr(&quiddity::Container::get_id)>(reader_quiddity);
+  if (qid != Ids::kInvalid) {
+    auto qrox = manager->quids<MPtr(&quiddity::Container::get_qrox)>(qid);
+    auto wqid = manager->quids<MPtr(&quiddity::Container::get_id)>(writer_quiddity);
+    if (qrox && wqid != Ids::kInvalid) {
+      *result = qrox.get()->claw<MPtr(&quiddity::claw::Claw::try_connect)>(wqid) != Ids::kInvalid
+                    ? "true"
+                    : "false";
+      success = true;
+    }
+  }
+
+  if (!success) {
+    char* s = reinterpret_cast<char*>(soap_malloc(this, 1024));
+    sprintf(
+        s, "%s (reader) cannot connect to %s", reader_quiddity.c_str(), writer_quiddity.c_str());
+    return soap_senderfault("Quiddity connection error", s);
+  }
+  return SOAP_OK;
+}
+
+int controlService::get_connection_spec(const std::string& quiddity_nickname, std::string* result) {
+  using namespace switcher;
+  quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
+  Switcher* manager = ctrl_server->get_switcher();
+
+  auto qid = manager->quids<MPtr(&quiddity::Container::get_id)>(quiddity_nickname);
+  auto qrox = manager->quids<MPtr(&quiddity::Container::get_qrox)>(qid);
+  if (qrox) *result = qrox.get()->conspec<MPtr(&InfoTree::serialize_json)>(".");
+  return SOAP_OK;
+}

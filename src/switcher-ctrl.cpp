@@ -45,6 +45,8 @@ static gboolean prune_user_data = FALSE;
 static gboolean graft_user_data = FALSE;
 static gboolean tag_as_array_user_data = FALSE;
 static gboolean invokemethod = FALSE;
+static gboolean try_connect = FALSE;
+static gboolean con_spec = FALSE;
 static gchar** remaining_args = nullptr;
 
 static GOptionEntry entries[25] = {
@@ -63,8 +65,6 @@ static GOptionEntry entries[25] = {
      &load,
      "load state from history file (--load filename)",
      nullptr},
-    // FIXME make this working { "run", nullptr, 0, G_OPTION_ARG_NONE, &run,
-    // "run history to file (--run filename)", nullptr },
     {"create-quiddity",
      'C',
      0,
@@ -100,6 +100,20 @@ static GOptionEntry entries[25] = {
      G_OPTION_ARG_NONE,
      &getprop,
      "get property value (-g quiddity_name prop_name)",
+     nullptr},
+    {"try-connect",
+     'o',
+     0,
+     G_OPTION_ARG_NONE,
+     &try_connect,
+     "try to connect two quiddities using nicknames (-o reader_quiddity writer_qwuiddity)",
+     nullptr},
+    {"con-spec",
+     'O',
+     0,
+     G_OPTION_ARG_NONE,
+     &con_spec,
+     "print current shmdata connection specification in json format (-O quiddity_nickname)",
      nullptr},
     {"print-tree",
      't',
@@ -197,8 +211,8 @@ int main(int argc, char* argv[]) {
 
   if (!(save ^ load ^ run ^ listclasses ^ classesdoc ^ classdoc ^ listquiddities ^ quidditydescr ^
         quidditiesdescr ^ setprop ^ getprop ^ createquiddity ^ deletequiddity ^ invokemethod ^
-        print_tree ^ print_user_data ^ prune_user_data ^ graft_user_data ^
-        tag_as_array_user_data)) {
+        print_tree ^ print_user_data ^ prune_user_data ^ graft_user_data ^ tag_as_array_user_data ^
+        try_connect ^ con_spec)) {
     g_printerr(
         "I am very sorry for the inconvenience, "
         "but I am able to process only exactly one command at a time. \n");
@@ -280,6 +294,22 @@ int main(int argc, char* argv[]) {
       switcher_control.get_information_tree(remaining_args[0], ".", &resultlist);
     else
       switcher_control.get_information_tree(remaining_args[0], remaining_args[1], &resultlist);
+    std::cout << resultlist << std::endl;
+  } else if (try_connect) {
+    std::string resultlist;
+    if (!remaining_args || !remaining_args[1]) {
+      g_printerr("try-connect requires two quiddity names, at least one is missing\n");
+      return false;
+    }
+    switcher_control.try_connect(remaining_args[0], remaining_args[1], &resultlist);
+    std::cout << resultlist << std::endl;
+  } else if (con_spec) {
+    std::string resultlist;
+    if (remaining_args == nullptr) {
+      g_printerr("quiddity name missing for printing the shmdata connection specification\n");
+      return false;
+    }
+    switcher_control.get_connection_spec(remaining_args[0], &resultlist);
     std::cout << resultlist << std::endl;
   } else if (print_user_data) {
     std::string resultlist;

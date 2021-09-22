@@ -85,6 +85,15 @@ int switcher__get_information_tree(std::string quiddity_name,
                                    std::string path,
                                    std::string *result);
 
+//gsoap switcher service try_connect quiddities
+int switcher__try_connect(std::string reader_quiddity,
+                          std::string writer_wuiddity,
+                          std::string *result);
+
+//gsoap switcher service get shmdata connection specification
+int switcher__get_connection_spec(std::string quiddity,
+                                  std::string *result);
+
 //gsoap switcher service read user data
 int switcher__get_user_data(std::string quiddity_name,
                             std::string path,
