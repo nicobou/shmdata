@@ -285,13 +285,13 @@ PyObject* pyQuiddity::get_info(pyQuiddityObject* self, PyObject* args, PyObject*
   return pyInfoTree::any_to_pyobject(self->quid->tree<MPtr(&InfoTree::branch_get_value)>(path));
 }
 
-PyDoc_STRVAR(pyquiddity_get_type_doc,
-             "Get the quiddity type as string.\n"
+PyDoc_STRVAR(pyquiddity_get_kind_doc,
+             "Get the quiddity kind (a string).\n"
              "Arguments: none\n"
              "Returns: the value\n");
 
-PyObject* pyQuiddity::get_type(pyQuiddityObject* self, PyObject*, PyObject*) {
-  return PyUnicode_FromString(self->quid->get_type().c_str());
+PyObject* pyQuiddity::get_kind(pyQuiddityObject* self, PyObject*, PyObject*) {
+  return PyUnicode_FromString(self->quid->get_kind().c_str());
 }
 
 PyDoc_STRVAR(pyquiddity_set_nickname_doc,
@@ -614,14 +614,14 @@ PyObject* pyQuiddity::Quiddity_new(PyTypeObject* type, PyObject* /*args*/, PyObj
 
 int pyQuiddity::Quiddity_init(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
   PyObject* pyswitch = nullptr;
-  char* type = nullptr;
+  char* kind = nullptr;
   char* nickname = nullptr;
   PyObject* pyinfotree = nullptr;
 
   static char* kwlist[] = {
-      (char*)"switcher", (char*)"type", (char*)"nickname", (char*)"config", nullptr};
+      (char*)"switcher", (char*)"kind", (char*)"nickname", (char*)"config", nullptr};
   if (!PyArg_ParseTupleAndKeywords(
-          args, kwds, "Os|sO", kwlist, &pyswitch, &type, &nickname, &pyinfotree)) {
+          args, kwds, "Os|sO", kwlist, &pyswitch, &kind, &nickname, &pyinfotree)) {
     PyErr_SetString(PyExc_TypeError, "error parsing arguments");
     return -1;
   }
@@ -644,7 +644,7 @@ int pyQuiddity::Quiddity_init(pyQuiddityObject* self, PyObject* args, PyObject* 
 
   // create a quiddity without calling creation callbacks
   auto qrox = switcher->quids<MPtr(&quiddity::Container::quiet_create)>(
-      type,
+      kind,
       nickname ? nickname : std::string(),
       pyinfotree ? reinterpret_cast<pyInfoTree::pyInfoTreeObject*>(pyinfotree)->tree : nullptr);
 
@@ -795,10 +795,10 @@ PyMethodDef pyQuiddity::pyQuiddity_methods[] = {
      METH_VARARGS | METH_KEYWORDS,
      pyquiddity_nickname_doc},
     {"id", (PyCFunction)pyQuiddity::id, METH_VARARGS | METH_KEYWORDS, pyquiddity_id_doc},
-    {"get_type",
-     (PyCFunction)pyQuiddity::get_type,
+    {"get_kind",
+     (PyCFunction)pyQuiddity::get_kind,
      METH_VARARGS | METH_KEYWORDS,
-     pyquiddity_get_type_doc},
+     pyquiddity_get_kind_doc},
     {"set_nickname",
      (PyCFunction)pyQuiddity::set_nickname,
      METH_VARARGS | METH_KEYWORDS,
@@ -846,11 +846,11 @@ PyDoc_STRVAR(pyquid_quiddity_doc,
              "   - InfoTree request\n"
              "   - specific configuration\n\n"
              "Construct a Quiddity object:\n"
-             "Arguments: (switcher, type, name, config), where switcher is a pyquid.Switcher object"
-             ", type is a quiddity type (string), name is a nickname for the Quiddity (string)"
+             "Arguments: (switcher, kind, name, config), where switcher is a pyquid.Switcher object"
+             ", kind is a quiddity type (string), name is a nickname for the Quiddity (string)"
              "and config is an InfoTree that overrides the switcher configuration file for this "
-             "Quiddity type.\n"
-             "Note: switcher and type are mandatory arguments during construction of q Quiddity\n");
+             "Quiddity kind.\n"
+             "Note: switcher and kind are mandatory arguments during construction of q Quiddity\n");
 
 PyTypeObject pyQuiddity::pyType = {
     PyVarObject_HEAD_INIT(nullptr, 0)(char*) "pyquid.Quiddity", /* tp_name */

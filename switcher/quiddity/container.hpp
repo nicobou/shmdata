@@ -64,14 +64,13 @@ class Container : public log::Logged {
   std::vector<qid_t> get_ids() const;
 
   // **** creation/remove/get and notification
-  Qrox create(const std::string& quiddity_class,
+  Qrox create(const std::string& quiddity_kind,
               const std::string& nickname,
               InfoTree::ptrc override_config);
-  Qrox quiet_create(const std::string& quiddity_class,
+  Qrox quiet_create(const std::string& quiddity_kind,
                     const std::string& nickname,
                     InfoTree::ptrc tree);
 
-  
   /**
   * @brief Send confirmation signal for quiddity creation.
   *        Use after a Container::quiet_create call.

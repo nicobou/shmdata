@@ -28,10 +28,10 @@
 //gsoap switcher schema namespace:	urn:control
 
 //gsoap switcher service method-documentation: get available names
-int switcher__get_classes(std::vector<std::string> *result);
+int switcher__get_kinds(std::vector<std::string> *result);
 
 //gsoap switcher service method-documentation: get available json doc *without* props and methods
-int switcher__get_classes_doc(std::string *result);
+int switcher__get_kinds_doc(std::string *result);
 
 //gsoap switcher service method-documentation: get available json doc *without* props and methods
 int switcher__get_quiddity_description(std::string quiddity_name, std::string *result);
@@ -54,7 +54,7 @@ int switcher__get_property(std::string quiddity_name,
 			   std::string *result);
 
 //gsoap switcher service method-documentation: create an quiddity instance and return its name
-int switcher__create_named_quiddity(std::string quiddity_class,
+int switcher__create_named_quiddity(std::string quiddity_kind,
                                     std::string nick_name,
                                     std::string *result);
 

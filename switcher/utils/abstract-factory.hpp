@@ -37,11 +37,11 @@ class AbstractFactory {
   ~AbstractFactory();
 
   template <class U>
-  void register_class(Key Id);
-  void register_class_with_custom_factory(Key Id,
-                                          T* (*custom_create)(ATs...),
-                                          void (*custom_destroy)(T*));
-  bool unregister_class(Key Id);
+  void register_kind(Key Id);
+  void register_kind_with_custom_factory(Key Id,
+                                         T* (*custom_create)(ATs...),
+                                         void (*custom_destroy)(T*));
+  bool unregister_kind(Key Id);
   std::vector<Key> get_keys() const;
   std::shared_ptr<T> create(Key Id, ATs... args);
   bool key_exists(Key Id) const;

@@ -30,10 +30,10 @@ namespace switcher {
 namespace quiddity {
 class Quiddity;
 
-// the types of the class factories for quiddity plugins
+// the kinds of the class factories for quiddity plugins
 using create_t = Quiddity*(quiddity::Config&&);
 using destroy_t = void(Quiddity*);
-using get_type_t = const char*();
+using get_kind_t = const char*();
 
 class PluginLoader : public BoolLog {
  public:
@@ -41,15 +41,15 @@ class PluginLoader : public BoolLog {
   PluginLoader(const std::string& filename);
   ~PluginLoader();
 
-  std::string get_class_name() const;
+  std::string get_kind() const;
 
   create_t* create_{nullptr};
   destroy_t* destroy_{nullptr};
-  get_type_t* get_type_{nullptr};
+  get_kind_t* get_kind_{nullptr};
 
  private:
   void* module_{nullptr};
-  std::string class_name_{};
+  std::string kind_{};
 };
 }  // namespace quiddity
 }  // namespace switcher

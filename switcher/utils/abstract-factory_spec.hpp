@@ -27,12 +27,12 @@
 namespace switcher {
 template <typename T, typename Key, typename... ATs>
 template <class U>
-void AbstractFactory<T, Key, ATs...>::register_class(Key Id) {
+void AbstractFactory<T, Key, ATs...>::register_kind(Key Id) {
   constructor_map_[Id] = (Creator<T, ATs...>*)new DerivedCreator<U, ATs...>();
 }
 
 template <typename T, typename Key, typename... ATs>
-void AbstractFactory<T, Key, ATs...>::register_class_with_custom_factory(
+void AbstractFactory<T, Key, ATs...>::register_kind_with_custom_factory(
     Key Id, T* (*custom_create)(ATs...), void (*custom_destroy)(T*)) {
   CustomDerivedCreator<T, ATs...>* creator = new CustomDerivedCreator<T, ATs...>();
   creator->custom_create_ = custom_create;
@@ -53,7 +53,7 @@ bool AbstractFactory<T, Key, ATs...>::key_exists(Key Id) const {
 }
 
 template <typename T, typename Key, typename... ATs>
-bool AbstractFactory<T, Key, ATs...>::unregister_class(Key Id) {
+bool AbstractFactory<T, Key, ATs...>::unregister_kind(Key Id) {
   auto constructor_it = constructor_map_.find(Id);
   if (constructor_it == constructor_map_.end())
     return false;

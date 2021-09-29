@@ -41,13 +41,13 @@ def on_con_spec_removed(data, user_data):
 
 # creating the window
 try:
-    win = sw.create(type='glfwin', nickname='win')
+    win = sw.create(kind='glfwin', nickname='win')
 except RuntimeError:
-    win = sw.create(type='dummysink', nickname='win')
+    win = sw.create(kind='dummysink', nickname='win')
 
 
 # creating a dummysink for audio
-a = sw.create(type='dummysink', nickname='asink')
+a = sw.create(kind='dummysink', nickname='asink')
 
 # creating the uri decoder
 uri = sw.create('urisrc', 'uri')

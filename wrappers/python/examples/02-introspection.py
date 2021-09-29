@@ -16,11 +16,11 @@ import assert_exit_1
 
 sw = pyquid.Switcher("introspection", debug=True)
 
-# list of classes names
-class_list = sw.list_classes()
-assert 0 < len(class_list)
+# list of kinds names
+kind_list = sw.list_kinds()
+assert 0 < len(kind_list)
 
-# load custom classes (bundles)
+# load custom kinds (bundles)
 description = '''{
     "bundle": {
         "testBundle" : {
@@ -36,15 +36,15 @@ description = '''{
 }'''
 
 sw.load_bundles(description)
-classes = sw.list_classes()
-assert "testBundle" in classes
+kinds = sw.list_kinds()
+assert "testBundle" in kinds
 
-# classes doc (JSON)
-assert 0 < len(sw.classes_doc())
+# kinds doc (JSON)
+assert 0 < len(sw.kinds_doc())
 
-# list class doc per class
-for class_name in class_list:
-    assert 0 < len(sw.class_doc(class_name))
+# list kind doc per kind
+for kind_name in kind_list:
+    assert 0 < len(sw.kind_doc(kind_name))
 
 # quiddity introspection
 sw.create("videotestsrc")

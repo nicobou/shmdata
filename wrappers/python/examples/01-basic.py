@@ -22,22 +22,22 @@ assert 'pyquid' == sw.name()
 # it has a version
 assert '' != sw.version()
 
-# with switcher, you can create different types of named Quiddities.
-# In this case, glfwin is a quiddity type that manage video window
+# with switcher, you can create different kinds of named Quiddities.
+# In this case, glfwin is a quiddity kind that manage video window
 try:
-    win = Quiddity(switcher=sw, type='glfwin', nickname='win')
+    win = Quiddity(switcher=sw, kind='glfwin', nickname='win')
 except RuntimeError:
     # The following replace the glfwin quiddity by a dummy quiddity if glfwin is not available
     # note here the quiddity is constructed from the switcher create method. This is equivalent
     # to creation from the pyquid.Quiddity constructor
-    win = sw.create(type='dummysink', nickname='win')
+    win = sw.create(kind='dummysink', nickname='win')
 
 # creating a video source that will eventually be connected to the video window
 vid = Quiddity(sw, 'videotestsrc', 'vid')
 
-# Quiddities have nicknames & types
+# Quiddities have nicknames & kinds
 assert None != vid.nickname()
-assert None != vid.get_type()
+assert None != vid.get_kind()
 nick = 'my vid'
 assert vid.set_nickname(nick)
 assert nick == vid.nickname()

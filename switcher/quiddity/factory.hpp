@@ -24,11 +24,12 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+
 #include "../infotree/information-tree.hpp"
 #include "../logger/logged.hpp"
 #include "../utils/abstract-factory.hpp"
-#include "./plugin-loader.hpp"
 #include "./config.hpp"
+#include "./plugin-loader.hpp"
 
 namespace switcher {
 namespace quiddity {
@@ -39,19 +40,19 @@ class Factory : public log::Logged {
   Factory(log::Base* log);
   std::vector<std::string> get_plugin_dirs() const;
   std::string get_default_plugin_dir() const;
-  std::vector<std::string> get_class_list() const;
-  InfoTree::ptr get_classes_doc() const;
-  bool exists(const std::string& class_name) const;
+  std::vector<std::string> get_kinds() const;
+  InfoTree::ptr get_kinds_doc() const;
+  bool exists(const std::string& kind) const;
   bool scan_dir(const std::string& directory_path);
-  void register_class_with_custom_factory(const std::string& class_name,
-                                          Quiddity* (*custom_create)(quiddity::Config&&),
-                                          void (*custom_destroy)(Quiddity*));
+  void register_kind_with_custom_factory(const std::string& kind,
+                                         Quiddity* (*custom_create)(quiddity::Config&&),
+                                         void (*custom_destroy)(Quiddity*));
 
  private:
   // create is private because it must be called from quiddity container only
-  std::shared_ptr<Quiddity> create(const std::string& class_name, quiddity::Config&& config);
+  std::shared_ptr<Quiddity> create(const std::string& kind, quiddity::Config&& config);
   bool load_plugin(const std::string& filename);
-  void close_plugin(const std::string& class_name);
+  void close_plugin(const std::string& kind);
 
   std::vector<std::string> plugin_dirs_{};
   AbstractFactory<Quiddity, std::string, quiddity::Config&&> abstract_factory_{};

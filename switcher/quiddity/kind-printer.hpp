@@ -17,17 +17,17 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_INFORMATION_TREE_QUIDDITY_CLASS_PRINTER_H__
-#define __SWITCHER_INFORMATION_TREE_QUIDDITY_CLASS_PRINTER_H__
+#ifndef __SWITCHER_INFORMATION_TREE_QUIDDITY_KIND_PRINTER_H__
+#define __SWITCHER_INFORMATION_TREE_QUIDDITY_KIND_PRINTER_H__
 
 #include <string>
 #include "../infotree/information-tree.hpp"
 
 namespace switcher {
 namespace quiddity {
-namespace classprinter {
+namespace kindprinter {
 std::string print(InfoTree::ptrc);
-}  // namespace classprinter
+}  // namespace kindprinter
 }  // namespace quiddity
 }  // namespace switcher
 #endif

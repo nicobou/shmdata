@@ -157,15 +157,15 @@ PyObject* pySwitch::load_bundles(pySwitchObject* self, PyObject* args, PyObject*
 PyDoc_STRVAR(pyswitch_create_doc,
              "Create a quiddity. The name and the config are optional."
              "The config (an InfoTree) overrides the switcher configuration file  \n"
-             "Arguments: (type, nickname, config)\n"
+             "Arguments: (kind, nickname, config)\n"
              "Returns: the created quiddity object (pyquid.Quiddity), or None\n");
 
 PyObject* pySwitch::create(pySwitchObject* self, PyObject* args, PyObject* kwds) {
-  const char* type = nullptr;
+  const char* kind = nullptr;
   const char* nickname = nullptr;
   PyObject* pyinfotree = nullptr;
-  static char* kwlist[] = {(char*)"type", (char*)"nickname", (char*)"config", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|sO", kwlist, &type, &nickname, &pyinfotree)) {
+  static char* kwlist[] = {(char*)"kind", (char*)"nickname", (char*)"config", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s|sO", kwlist, &kind, &nickname, &pyinfotree)) {
     PyErr_SetString(PyExc_TypeError, "error parsing arguments");
     return nullptr;
   }
@@ -178,13 +178,13 @@ PyObject* pySwitch::create(pySwitchObject* self, PyObject* args, PyObject* kwds)
 
   PyObject* argList = nullptr;
   if (!nickname && !pyinfotree)
-    argList = Py_BuildValue("(Os)", (PyObject*)self, type);
+    argList = Py_BuildValue("(Os)", (PyObject*)self, kind);
   else if (nickname && !pyinfotree)
-    argList = Py_BuildValue("(Oss)", (PyObject*)self, type, nickname);
+    argList = Py_BuildValue("(Oss)", (PyObject*)self, kind, nickname);
   else if (!nickname && pyinfotree)
-    argList = Py_BuildValue("(Oss)", (PyObject*)self, type, "", pyinfotree);
+    argList = Py_BuildValue("(Oss)", (PyObject*)self, kind, "", pyinfotree);
   else if (nickname && pyinfotree)
-    argList = Py_BuildValue("(OssO)", (PyObject*)self, type, nickname, pyinfotree);
+    argList = Py_BuildValue("(OssO)", (PyObject*)self, kind, nickname, pyinfotree);
 
   PyObject* obj = PyObject_CallObject((PyObject*)&pyQuiddity::pyType, argList);
   Py_XDECREF(argList);
@@ -315,47 +315,47 @@ PyObject* pySwitch::load_state(pySwitchObject* self, PyObject* args, PyObject* k
   return Py_True;
 }
 
-PyDoc_STRVAR(pyswitch_list_classes_doc,
-             "Get the list of available type of quiddity.\n"
+PyDoc_STRVAR(pyswitch_list_kinds_doc,
+             "Get the list of available kind of quiddity.\n"
              "Arguments: (None)\n"
-             "Returns: A list a of class name.\n");
+             "Returns: A list a of string with the kind.\n");
 
-PyObject* pySwitch::list_classes(pySwitchObject* self, PyObject* args, PyObject* kwds) {
-  auto class_list = self->switcher->factory<MPtr(&quiddity::Factory::get_class_list)>();
-  PyObject* result = PyList_New(class_list.size());
-  for (unsigned int i = 0; i < class_list.size(); ++i) {
-    PyList_SetItem(result, i, Py_BuildValue("s", class_list[i].c_str()));
+PyObject* pySwitch::list_kinds(pySwitchObject* self, PyObject* args, PyObject* kwds) {
+  auto kind_list = self->switcher->factory<MPtr(&quiddity::Factory::get_kinds)>();
+  PyObject* result = PyList_New(kind_list.size());
+  for (unsigned int i = 0; i < kind_list.size(); ++i) {
+    PyList_SetItem(result, i, Py_BuildValue("s", kind_list[i].c_str()));
   }
   return result;
 }
 
-PyDoc_STRVAR(pyswitch_classes_doc_doc,
-             "Get a JSON documentation of all classes.\n"
+PyDoc_STRVAR(pyswitch_kinds_doc_doc,
+             "Get a JSON documentation of all kinds.\n"
              "Arguments: (None)\n"
-             "Returns: JSON-formated documentation of all classes available.\n");
+             "Returns: JSON-formated documentation of all kinds available.\n");
 
-PyObject* pySwitch::classes_doc(pySwitchObject* self, PyObject* args, PyObject* kwds) {
+PyObject* pySwitch::kinds_doc(pySwitchObject* self, PyObject* args, PyObject* kwds) {
   return PyUnicode_FromString(
       infotree::json::serialize(
-          self->switcher->factory<MPtr(&quiddity::Factory::get_classes_doc)>().get())
+          self->switcher->factory<MPtr(&quiddity::Factory::get_kinds_doc)>().get())
           .c_str());
 }
 
-PyDoc_STRVAR(pyswitch_class_doc_doc,
-             "Get a JSON documentation of a given classes.\n"
-             "Arguments: (class)\n"
-             "Returns: JSON-formated documentation of the class.\n");
+PyDoc_STRVAR(pyswitch_kind_doc_doc,
+             "Get a JSON documentation of a given kinds.\n"
+             "Arguments: (kind)\n"
+             "Returns: JSON-formated documentation of the kind.\n");
 
-PyObject* pySwitch::class_doc(pySwitchObject* self, PyObject* args, PyObject* kwds) {
-  const char* class_name = nullptr;
-  static char* kwlist[] = {(char*)"class", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &class_name)) {
+PyObject* pySwitch::kind_doc(pySwitchObject* self, PyObject* args, PyObject* kwds) {
+  const char* kind_name = nullptr;
+  static char* kwlist[] = {(char*)"kind", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &kind_name)) {
     Py_INCREF(Py_None);
     return Py_None;
   }
   return PyUnicode_FromString(
-      infotree::json::serialize(self->switcher->factory<MPtr(&quiddity::Factory::get_classes_doc)>()
-                                    ->get_tree(std::string(".classes.") + class_name)
+      infotree::json::serialize(self->switcher->factory<MPtr(&quiddity::Factory::get_kinds_doc)>()
+                                    ->get_tree(std::string(".kinds.") + kind_name)
                                     .get())
           .c_str());
 }
@@ -573,18 +573,18 @@ PyMethodDef pySwitch::pySwitch_methods[] = {
      (PyCFunction)pySwitch::reset_state,
      METH_VARARGS | METH_KEYWORDS,
      pyswitch_reset_state_doc},
-    {"list_classes",
-     (PyCFunction)pySwitch::list_classes,
+    {"list_kinds",
+     (PyCFunction)pySwitch::list_kinds,
      METH_VARARGS | METH_KEYWORDS,
-     pyswitch_list_classes_doc},
-    {"classes_doc",
-     (PyCFunction)pySwitch::classes_doc,
+     pyswitch_list_kinds_doc},
+    {"kinds_doc",
+     (PyCFunction)pySwitch::kinds_doc,
      METH_VARARGS | METH_KEYWORDS,
-     pyswitch_classes_doc_doc},
-    {"class_doc",
-     (PyCFunction)pySwitch::class_doc,
+     pyswitch_kinds_doc_doc},
+    {"kind_doc",
+     (PyCFunction)pySwitch::kind_doc,
      METH_VARARGS | METH_KEYWORDS,
-     pyswitch_class_doc_doc},
+     pyswitch_kind_doc_doc},
     {"list_quids",
      (PyCFunction)pySwitch::list_quids,
      METH_VARARGS | METH_KEYWORDS,
@@ -609,7 +609,7 @@ PyMethodDef pySwitch::pySwitch_methods[] = {
      (PyCFunction)pySwitch::unsubscribe,
      METH_VARARGS | METH_KEYWORDS,
      pyswitch_unsubscribe_doc},
-    {nullptr} // Sentinel
+    {nullptr}  // Sentinel
 };
 
 PyDoc_STRVAR(pyquid_switcher_doc,

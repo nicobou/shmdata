@@ -43,22 +43,22 @@ Arguments:
 =========
 """, formatter_class=argparse.RawTextHelpFormatter)
     argp.add_argument("-a", "--list-all",
-                      help="list all quiddity classes", action="store_true")
+                      help="list all quiddity kinds", action="store_true")
     argp.add_argument("-p", "--properties",
-                      help="list class properties after initialization", action="store_true")
+                      help="list kind properties after initialization", action="store_true")
     argp.add_argument("-m", "--methods",
-                      help="list class methods after initialization", action="store_true")
+                      help="list kind methods after initialization", action="store_true")
     argp.add_argument("-s", "--signals",
-                      help="list class signals after initialization", action="store_true")
+                      help="list kind signals after initialization", action="store_true")
     argp.add_argument("-w", "--claws",
                       help="list information about shmdata possible connection", action="store_true")
     argp.add_argument("-l", "--short-list", help="print only the list of properties, methods or signals.",
                       action="store_true")
-    argp.add_argument("-c", "--class-doc", help="print class documentation", action="store_true")
+    argp.add_argument("-k", "--kind-doc", help="print kind documentation", action="store_true")
     argp.add_argument("-d", "--debug", help="print debug log", action="store_true")
     argp.add_argument("-v", "--version", help="print switcher version", action="store_true")
     argp.add_argument(
-        'quiddity_class', help="You can add method or property or signal id for a shorter output", nargs='?')
+        'quiddity_kind', help="You can add method or property or signal id for a shorter output", nargs='?')
     return argp
 
 
@@ -75,21 +75,21 @@ def main() -> None:
         return
 
     if args.list_all:
-        classes = sw.list_classes()
-        for it in classes:
+        kinds = sw.list_kinds()
+        for it in kinds:
             print(it)
         return
 
-    if not args.quiddity_class:
+    if not args.quiddity_kind:
         argp.print_help(sys.stderr)
         return
 
-    user_request = args.quiddity_class.split('.', 1)
+    user_request = args.quiddity_kind.split('.', 1)
     doc = InfoTree()
     try:
         quid = sw.create(user_request[0], config=InfoTree('{ "server_name" : "'+name+'" }'))
     except RuntimeError:
-        print('quiddity class "' + user_request[0] + '" could not be inspected', file=sys.stderr)
+        print('quiddity kind "' + user_request[0] + '" could not be inspected', file=sys.stderr)
         exit(0)
 
     if (args.short_list and (args.properties or args.methods or args.signals)):
@@ -113,11 +113,11 @@ def main() -> None:
         path = user_request[1]
     else:
         path = ''
-    if (args.class_doc):
+    if (args.kind_doc):
         if (path):
-            doc = InfoTree(sw.class_doc(user_request[0] + '.' + user_request[1]))
+            doc = InfoTree(sw.kind_doc(user_request[0] + '.' + user_request[1]))
         else:
-            doc = InfoTree(sw.class_doc(user_request[0]))
+            doc = InfoTree(sw.kind_doc(user_request[0]))
     elif (args.properties):
         print(path)
         doc = InfoTree(quid.get_info_tree_as_json('.property.' + path))

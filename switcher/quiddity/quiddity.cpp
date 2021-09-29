@@ -98,14 +98,14 @@ Quiddity::Quiddity(quiddity::Config&& conf, claw::Config claw_conf)
           }),
       id_(conf.id_),
       nickname_(conf.nickname_),
-      type_(conf.type_),
+      kind_(conf.kind_),
       claw_(this,
             claw::ConnectionSpec(claw_conf.spec),
             claw_conf.on_connect_cb,
             claw_conf.on_disconnect_cb),
       qcontainer_(conf.qc_) {
   configuration_tree_->graft(".", InfoTree::make());
-  information_tree_->graft(".type", InfoTree::make(conf.type_));
+  information_tree_->graft(".kind", InfoTree::make(conf.kind_));
 }
 
 Quiddity::~Quiddity() {
@@ -114,9 +114,7 @@ Quiddity::~Quiddity() {
 
 qid_t Quiddity::get_id() const { return id_; }
 
-std::string Quiddity::get_type() const { return type_; }
-
-
+std::string Quiddity::get_kind() const { return kind_; }
 
 std::string Quiddity::get_manager_name() { return qcontainer_->get_switcher()->get_name(); }
 

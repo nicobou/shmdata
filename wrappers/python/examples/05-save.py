@@ -19,10 +19,10 @@ sw = pyquid.Switcher('save_example', debug=True)
 
 # instantiate and use some quiddities
 try:
-    win = sw.create(type='glfwin', nickname='win')
+    win = sw.create(kind='glfwin', nickname='win')
 except RuntimeError:
     # The following replace the glfwin quiddity by a dummy quiddity if glfwin is not available
-    win = sw.create(type='dummysink', nickname='win')
+    win = sw.create(kind='dummysink', nickname='win')
 
 vid = sw.create('videotestsrc', 'vid')
 connection = win.try_connect(vid)

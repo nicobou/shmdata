@@ -55,21 +55,21 @@ PluginLoader::PluginLoader(const std::string& filename)
     return;
   }
 
-  *(void**)(&get_type_) = dlsym(module_, "get_quiddity_type");
-  if (!get_type_) {
+  *(void**)(&get_kind_) = dlsym(module_, "get_quiddity_kind");
+  if (!get_kind_) {
     is_valid_ = false;
-    msg_ = std::string("loading ") + filename + ": " + ": get_quiddity_type symbol not found";
+    msg_ = std::string("loading ") + filename + ": " + ": get_quiddity_kind symbol not found";
     return;
   }
 
   dlerror();  // clear any existing error
 
-  class_name_ = get_type_();
+  kind_ = get_kind_();
 }
 
-std::string PluginLoader::get_class_name() const {
+std::string PluginLoader::get_kind() const {
   if (module_ == nullptr) return std::string();
-  return class_name_;
+  return kind_;
 }
 
 }  // namespace quiddity

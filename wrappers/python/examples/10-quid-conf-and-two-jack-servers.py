@@ -24,12 +24,12 @@ import assert_exit_1
 sw = pyquid.Switcher('pyquid', debug=True)
 
 # first dummy jack server
-src_serv = pyquid.Quiddity(switcher=sw, type='jackserver', config=pyquid.InfoTree(
+src_serv = pyquid.Quiddity(switcher=sw, kind='jackserver', config=pyquid.InfoTree(
     '{ "driver" : "dummy", "name": "swcapture" }'))
 src_serv.set('started', True)
 
 # second dummy jack server
-sink_serv = pyquid.Quiddity(switcher=sw, type='jackserver', config=pyquid.InfoTree(
+sink_serv = pyquid.Quiddity(switcher=sw, kind='jackserver', config=pyquid.InfoTree(
     '{ "driver" : "dummy", "name": "swcard" }'))
 sink_serv.set('started', True)
 

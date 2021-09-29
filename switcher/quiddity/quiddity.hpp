@@ -101,7 +101,7 @@ class Quiddity : public log::Logged, public SafeBoolIdiom {
 
   // instance identification
   qid_t get_id() const;
-  std::string get_type() const;
+  std::string get_kind() const;
   bool set_nickname(const std::string& nickname);
   std::string get_nickname() const;
 
@@ -159,7 +159,7 @@ class Quiddity : public log::Logged, public SafeBoolIdiom {
   InfoTree::ptr structured_user_data_;
 
   // configuration tree. When manager is loaded with a config file,
-  // the branch of the tree corresponding to the quiddity type
+  // the branch of the tree corresponding to the quiddity kind
   // is given to the quiddity. There is no constrain about how quiddity
   // should use this configuration
   InfoTree::ptr configuration_tree_;
@@ -189,7 +189,7 @@ class Quiddity : public log::Logged, public SafeBoolIdiom {
   // naming
   const qid_t id_;
   std::string nickname_;
-  std::string type_;
+  std::string kind_;
 
   // life management
   std::mutex self_destruct_mtx_{};
@@ -235,26 +235,26 @@ class Quiddity : public log::Logged, public SafeBoolIdiom {
 }  // namespace quiddity
 }  // namespace switcher
 
-#define SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(                                                      \
-    cpp_quiddity_class, class_name, name, description, license, author)                            \
-  bool cpp_quiddity_class##_doc_registered = quiddity::DocumentationRegistry::get()->register_doc( \
-      class_name, quiddity::Doc(class_name, name, description, license, author));                  \
-  bool cpp_quiddity_class##_class_registered =                                                     \
-      quiddity::DocumentationRegistry::get()->register_type_from_class_name(                       \
-          std::string(#cpp_quiddity_class), class_name);
+#define SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(                                                     \
+    cpp_quiddity_kind, kind, name, description, license, author)                                  \
+  bool cpp_quiddity_kind##_doc_registered = quiddity::DocumentationRegistry::get()->register_doc( \
+      kind, quiddity::Doc(kind, name, description, license, author));                             \
+  bool cpp_quiddity_kind##_kind_registered =                                                      \
+      quiddity::DocumentationRegistry::get()->register_type_from_kind(                            \
+          std::string(#cpp_quiddity_kind), kind);
 
-#define SWITCHER_DECLARE_PLUGIN(cpp_quiddity_class)                         \
-  extern "C" quiddity::Quiddity* create(quiddity::Config&& conf) {          \
-    return new cpp_quiddity_class(std::forward<quiddity::Config>(conf));    \
-  }                                                                         \
-  extern "C" void destroy(Quiddity* quiddity) { delete quiddity; }          \
-  extern "C" const char* get_quiddity_type() {                              \
-    static char type[64];                                                   \
-    strcpy(type,                                                            \
-           quiddity::DocumentationRegistry::get()                           \
-               ->get_type_from_class_name(std::string(#cpp_quiddity_class)) \
-               .c_str());                                                   \
-    return static_cast<const char*>(type);                                  \
+#define SWITCHER_DECLARE_PLUGIN(cpp_quiddity_kind)                      \
+  extern "C" quiddity::Quiddity* create(quiddity::Config&& conf) {      \
+    return new cpp_quiddity_kind(std::forward<quiddity::Config>(conf)); \
+  }                                                                     \
+  extern "C" void destroy(Quiddity* quiddity) { delete quiddity; }      \
+  extern "C" const char* get_quiddity_kind() {                          \
+    static char type[64];                                               \
+    strcpy(type,                                                        \
+           quiddity::DocumentationRegistry::get()                       \
+               ->get_type_from_kind(std::string(#cpp_quiddity_kind))    \
+               .c_str());                                               \
+    return static_cast<const char*>(type);                              \
   }
 
 #endif

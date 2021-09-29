@@ -9,10 +9,10 @@ ret=$!
 sleep 3
 
 # query information to the switcher
-switcher-ctrl --list-classes
+switcher-ctrl --list-kinds
 switcher-ctrl --list-quiddities
-switcher-ctrl --classes-doc
-switcher-ctrl --class-doc dummy
+switcher-ctrl --kinds-doc
+switcher-ctrl --kind-doc dummy
 
 # add a quiddity named foo 
 switcher-ctrl --create-quiddity dummy foo

@@ -33,14 +33,14 @@ struct Config {
   Config() = delete;
   Config(qid_t id,
          const std::string& nickname,
-         const std::string& type,
+         const std::string& kind,
          const InfoTree::ptrc tree_config,
          Container* qc,
          log::Base* log)
-      : id_(id), nickname_(nickname), type_(type), tree_config_(tree_config), qc_(qc), log_(log) {}
+      : id_(id), nickname_(nickname), kind_(kind), tree_config_(tree_config), qc_(qc), log_(log) {}
   qid_t id_;
   std::string nickname_;
-  std::string type_;
+  std::string kind_;
   InfoTree::ptrc tree_config_;
   Container* qc_;
   log::Base* log_;

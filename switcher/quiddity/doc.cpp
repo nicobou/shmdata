@@ -24,17 +24,17 @@
 namespace switcher {
 namespace quiddity {
 quiddity::Doc::Doc(const std::string& long_name,
-                   const std::string& class_name,
+                   const std::string& kind,
                    const std::string& short_description,
                    const std::string& license,
                    const std::string& author)
-    : class_name_(class_name),
+    : kind_(kind),
       description_(short_description),
       long_name_(long_name),
       author_(author),
       license_(license) {}
 
-std::string quiddity::Doc::get_class_name() const { return class_name_; }
+std::string quiddity::Doc::get_kind() const { return kind_; }
 
 std::string quiddity::Doc::get_description() const { return description_; }
 

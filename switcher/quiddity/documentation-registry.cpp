@@ -30,15 +30,15 @@ bool DocumentationRegistry::register_doc(const std::string& quiddity_type,
   return res.second;
 }
 
-bool DocumentationRegistry::register_type_from_class_name(const std::string& class_name,
-                                                          const std::string& quiddity_type) {
-  type_from_class_registry_.emplace(std::make_pair<>(class_name, quiddity_type));
+bool DocumentationRegistry::register_type_from_kind(const std::string& kind,
+                                                    const std::string& quiddity_type) {
+  type_from_kind_registry_.emplace(std::make_pair<>(kind, quiddity_type));
   return true;
 }
 
-std::string DocumentationRegistry::get_type_from_class_name(const std::string& class_name) const {
-  auto quiddity_type = type_from_class_registry_.find(class_name);
-  if (quiddity_type != type_from_class_registry_.end()) return quiddity_type->second;
+std::string DocumentationRegistry::get_type_from_kind(const std::string& kind) const {
+  auto quiddity_type = type_from_kind_registry_.find(kind);
+  if (quiddity_type != type_from_kind_registry_.end()) return quiddity_type->second;
   return std::string();
 }
 

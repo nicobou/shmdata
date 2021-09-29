@@ -76,12 +76,11 @@ bool Switcher::load_state(InfoTree* state) {
     auto quids = quiddities->get_child_keys(".");
     // creating quiddities
     for (auto& it : quids) {
-      std::string quid_class = quiddities->branch_get_value(it);
-      auto created = qcontainer_->create(quid_class, it, nullptr);
+      std::string quid_kind = quiddities->branch_get_value(it);
+      auto created = qcontainer_->create(quid_kind, it, nullptr);
       if (!created) {
-        log_->message(
-            "ERROR:error creating quiddity % (of type %): ", it, quid_class, created.msg());
-        log_->warning("error creating quiddity % (of type %): ", it, quid_class, created.msg());
+        log_->message("ERROR:error creating quiddity % (kind %): ", it, quid_kind, created.msg());
+        log_->warning("error creating quiddity % (kind %): ", it, quid_kind, created.msg());
       }
     }
 
@@ -216,11 +215,11 @@ InfoTree::ptr Switcher::get_state() const {
     if (custom_tree && !custom_tree->empty())
       tree->graft(".custom_states." + nick, std::move(custom_tree));
 
-    // name and class
+    // name and kind
     if (quiddities_at_reset_.cend() ==
         std::find(quiddities_at_reset_.cbegin(), quiddities_at_reset_.cend(), quid_id)) {
       tree->graft(".quiddities." + nick,
-                  InfoTree::make(qcontainer_->get_quiddity(quid_id)->get_type()));
+                  InfoTree::make(qcontainer_->get_quiddity(quid_id)->get_kind()));
     }
 
     // nicknames
@@ -319,12 +318,12 @@ bool Switcher::load_bundle_from_config(const std::string& bundle_description) {
 }
 
 void Switcher::register_bundle_from_configuration() {
-  // registering bundle(s) as creatable class
-  auto quid_types = qfactory_.get_class_list();
+  // registering bundle(s) as creatable kind
+  auto quid_kinds = qfactory_.get_kinds();
   auto configuration = conf_.get();
   for (auto& it : configuration->get_child_keys("bundle")) {
     if (std::string::npos != it.find('_')) {
-      log_->warning("underscores are not allowed for quiddity types (bundle name %)", it);
+      log_->warning("underscores are not allowed for quiddity kinds (bundle name %)", it);
       continue;
     }
     std::string long_name = configuration->branch_get_value("bundle." + it + ".doc.long_name");
@@ -335,11 +334,11 @@ void Switcher::register_bundle_from_configuration() {
     if (description.empty()) is_missing = "description";
     if (pipeline.empty()) is_missing = "pipeline";
     if (!is_missing.empty()) {
-      log_->warning("% : % field is missing, cannot create new quiddity type", it, is_missing);
+      log_->warning("% : % field is missing, cannot create new quiddity kind", it, is_missing);
       continue;
     }
     // check if the pipeline description is correct
-    auto spec = quiddity::bundle::DescriptionParser(pipeline, quid_types);
+    auto spec = quiddity::bundle::DescriptionParser(pipeline, quid_kinds);
     if (!spec) {
       log_->warning("% : error parsing the pipeline (%)", it, spec.get_parsing_error());
       continue;
@@ -352,10 +351,10 @@ void Switcher::register_bundle_from_configuration() {
       continue;
     }
 
-    qfactory_.register_class_with_custom_factory(
+    qfactory_.register_kind_with_custom_factory(
         it, &quiddity::bundle::create, &quiddity::bundle::destroy);
-    // making the new bundle type available for next bundle definition:
-    quid_types.push_back(it);
+    // making the new bundle kind available for next bundle definition:
+    quid_kinds.push_back(it);
   }
 }
 

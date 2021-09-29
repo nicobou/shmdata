@@ -34,10 +34,10 @@ Container::ptr Container::make_container(Switcher* switcher, Factory* factory, l
 Container::Container(Switcher* switcher, Factory* factory, log::Base* log)
     : log::Logged(log), factory_(factory), switcher_(switcher) {}
 
-Qrox Container::create(const std::string& quiddity_class,
+Qrox Container::create(const std::string& quiddity_kind,
                        const std::string& nickname,
                        InfoTree::ptrc override_config) {
-  auto res = quiet_create(quiddity_class, nickname, override_config);
+  auto res = quiet_create(quiddity_kind, nickname, override_config);
   if (!res) return res;
   // We work on a copy in case a callback modifies the map of registered callbacks
   auto tmp_created_cbs = on_created_cbs_;
@@ -48,12 +48,12 @@ Qrox Container::create(const std::string& quiddity_class,
   return res;
 }
 
-Qrox Container::quiet_create(const std::string& quiddity_class,
+Qrox Container::quiet_create(const std::string& quiddity_kind,
                              const std::string& raw_nickname,
                              InfoTree::ptrc override_config) {
   // checks before creation
-  if (!switcher_->factory<MPtr(&Factory::exists)>(quiddity_class)) {
-    return Qrox(false, "unknown Quiddity type");
+  if (!switcher_->factory<MPtr(&Factory::exists)>(quiddity_kind)) {
+    return Qrox(false, "unknown Quiddity kind");
   }
 
   // searching for a free id
@@ -67,7 +67,7 @@ Qrox Container::quiet_create(const std::string& quiddity_class,
   // nickname
   std::string nick;
   if (raw_nickname.empty()) {
-    nick = quiddity_class + std::to_string(cur_id);
+    nick = quiddity_kind + std::to_string(cur_id);
   } else {
     nick = raw_nickname;
     for (const auto& it : quiddities_) {
@@ -79,16 +79,16 @@ Qrox Container::quiet_create(const std::string& quiddity_class,
   InfoTree::ptr tree;
   auto conf = switcher_->conf<MPtr(&Configuration::get)>();
   if (conf) {
-    tree = conf->get_tree(quiddity_class);
-    if (tree->empty()) tree = conf->get_tree("bundle." + quiddity_class);
+    tree = conf->get_tree(quiddity_kind);
+    if (tree->empty()) tree = conf->get_tree("bundle." + quiddity_kind);
   }
 
   // creation
   Quiddity::ptr quiddity =
-      factory_->create(quiddity_class,
+      factory_->create(quiddity_kind,
                        Config(cur_id,
                               nick,
-                              quiddity_class,
+                              quiddity_kind,
                               InfoTree::merge(tree.get(), override_config).get(),
                               this,
                               get_log_ptr()));
@@ -158,7 +158,7 @@ InfoTree::ptr Container::get_quiddities_description() {
       auto quid = it.second;
       const auto id = std::to_string(quid->get_id());
       subtree->graft(id + ".id", InfoTree::make(quid->get_id()));
-      subtree->graft(id + ".class", InfoTree::make(quid->get_type()));
+      subtree->graft(id + ".kind", InfoTree::make(quid->get_kind()));
     }
   }
   return tree;
@@ -169,7 +169,7 @@ InfoTree::ptr Container::get_quiddity_description(qid_t id) {
   if (quiddities_.end() == it) return InfoTree::make();
   auto tree = InfoTree::make();
   tree->graft(".id", InfoTree::make(it->second->get_id()));
-  tree->graft(".class", InfoTree::make(it->second->get_type()));
+  tree->graft(".kind", InfoTree::make(it->second->get_kind()));
   return tree;
 }
 

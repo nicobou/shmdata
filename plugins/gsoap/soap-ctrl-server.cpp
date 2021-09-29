@@ -166,35 +166,35 @@ void SoapCtrlServer::server_thread() {
  * below is the implementation of the service *
  **********************************************/
 
-int controlService::get_classes(std::vector<std::string>* result) {
+int controlService::get_kinds(std::vector<std::string>* result) {
   using namespace switcher;
   quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
 
   if (ctrl_server == nullptr || !(bool)manager) {
     char* s = reinterpret_cast<char*>(soap_malloc(this, 1024));
-    sprintf(s, "controlService::get_classes: cannot get manager (nullptr)");
-    return soap_senderfault("error in get_classes", s);
+    sprintf(s, "controlService::get_kinds: cannot get manager (nullptr)");
+    return soap_senderfault("error in get_kinds", s);
   }
 
-  *result = manager->factory<MPtr(&quiddity::Factory::get_class_list)>();
+  *result = manager->factory<MPtr(&quiddity::Factory::get_kinds)>();
 
   return SOAP_OK;
 }
 
-int controlService::get_classes_doc(std::string* result) {
+int controlService::get_kinds_doc(std::string* result) {
   using namespace switcher;
   quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
   Switcher* manager = ctrl_server->get_switcher();
 
   if (ctrl_server == nullptr || !(bool)manager) {
     char* s = reinterpret_cast<char*>(soap_malloc(this, 1024));
-    sprintf(s, "controlService::get_classes: cannot get manager (nullptr)");
-    return soap_senderfault("error in get_classes_doc", s);
+    sprintf(s, "controlService::get_kinds: cannot get manager (nullptr)");
+    return soap_senderfault("error in get_kinds_doc", s);
   }
 
-  *result = infotree::json::serialize(
-      manager->factory<MPtr(&quiddity::Factory::get_classes_doc)>().get());
+  *result =
+      infotree::json::serialize(manager->factory<MPtr(&quiddity::Factory::get_kinds_doc)>().get());
 
   return SOAP_OK;
 }
@@ -207,7 +207,7 @@ int controlService::get_quiddity_description(const std::string& quiddity_nicknam
 
   if (ctrl_server == nullptr || !(bool)manager) {
     char* s = reinterpret_cast<char*>(soap_malloc(this, 1024));
-    sprintf(s, "controlService::get_classes: cannot get manager (nullptr)");
+    sprintf(s, "controlService::get_kinds: cannot get manager (nullptr)");
     return soap_senderfault("error in get_quiddity_description", s);
   }
 
@@ -230,7 +230,7 @@ int controlService::get_quiddities_description(std::string* result) {
     sprintf(s,
             "controlService::get_quiddities_description: cannot get manager "
             "(nullptr)");
-    return soap_senderfault("error in get_classes_doc", s);
+    return soap_senderfault("error in get_kinds_doc", s);
   }
 
   *result = infotree::json::serialize(
@@ -285,7 +285,7 @@ int controlService::get_property(const std::string& quiddity_nickname,
   return SOAP_OK;
 }
 
-int controlService::create_named_quiddity(const std::string& quiddity_class,
+int controlService::create_named_quiddity(const std::string& quiddity_kind,
                                           const std::string& nick_name,
                                           std::string* result) {
   using namespace switcher;
@@ -294,12 +294,12 @@ int controlService::create_named_quiddity(const std::string& quiddity_class,
   Switcher* manager = ctrl_server->get_switcher();
 
   auto created =
-      manager->quids<MPtr(&quiddity::Container::create)>(quiddity_class, nick_name, nullptr);
+      manager->quids<MPtr(&quiddity::Container::create)>(quiddity_kind, nick_name, nullptr);
   if (created) {
     *result = std::to_string(created.get_id());
   } else {
     char* s = reinterpret_cast<char*>(soap_malloc(this, 1024));
-    sprintf(s, "%s cannot be created: %s", quiddity_class.c_str(), created.msg().c_str());
+    sprintf(s, "%s cannot be created: %s", quiddity_kind.c_str(), created.msg().c_str());
     return soap_senderfault("Quiddity creation error", s);
   }
   return SOAP_OK;
@@ -468,7 +468,7 @@ int controlService::graft_user_data(const std::string& quiddity_nickname,
   } else {
     char* s = reinterpret_cast<char*>(soap_malloc(this, 1024));
     sprintf(s, "type not handled with soap");
-    return soap_senderfault("error in get_classes", s);
+    return soap_senderfault("error in get_kinds", s);
   }
 
   if (res)

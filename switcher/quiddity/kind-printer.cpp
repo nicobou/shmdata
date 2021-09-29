@@ -15,12 +15,12 @@
  * along with switcher.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "./class-printer.hpp"
+#include "./kind-printer.hpp"
 #include <string>
 
 namespace switcher {
 namespace quiddity {
-namespace classprinter {
+namespace kindprinter {
 
 typedef struct {
   std::string result_{};
@@ -29,7 +29,7 @@ typedef struct {
 bool on_visiting_node(std::string key, const InfoTree::ptrc node, bool, Data* data) {
   auto value = node->read_data();
   if (value.not_null()) {
-    if (key == "class")
+    if (key == "kind")
       data->result_.append("\n \n" + Any::to_string(value) + '\n');
     else if (key == "name" || key == "category" || key == "description" || key == "license" ||
              key == "author")
@@ -43,12 +43,12 @@ bool on_node_visited(std::string, const InfoTree::ptrc, bool, Data*) { return tr
 std::string print(InfoTree::ptrc tree) {
   Data data;
   InfoTree::preorder_tree_walk(tree,
-                               std::bind(classprinter::on_visiting_node,
+                               std::bind(kindprinter::on_visiting_node,
                                          std::placeholders::_1,
                                          std::placeholders::_2,
                                          std::placeholders::_3,
                                          &data),
-                               std::bind(classprinter::on_node_visited,
+                               std::bind(kindprinter::on_node_visited,
                                          std::placeholders::_1,
                                          std::placeholders::_2,
                                          std::placeholders::_3,
@@ -56,6 +56,6 @@ std::string print(InfoTree::ptrc tree) {
   return data.result_;
 }
 
-}  // namespace classprinter
+}  // namespace kindprinter
 }  // namespace quiddity
 }  // namespace switcher
