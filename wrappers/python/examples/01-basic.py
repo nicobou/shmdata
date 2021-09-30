@@ -13,7 +13,7 @@
 import sys
 from pyquid import Switcher, Quiddity, InfoTree
 import time
-import assert_exit_1
+
 
 # create a switcher.
 sw = Switcher('pyquid', debug=True)

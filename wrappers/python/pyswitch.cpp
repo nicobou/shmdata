@@ -74,7 +74,7 @@ int pySwitch::Switcher_init(pySwitchObject* self, PyObject* args, PyObject* kwds
   }
 
   // Initialize session by calling the class object with a pyswitch instance as a unique argument
-  self->session = PyObject_CallFunction((PyObject*)&pySession::pyType, "O", self);
+  self->session = PyObject_CallFunction(reinterpret_cast<PyObject*>(&pySession::pyType), "O", self);
   // @NOTE: This is pretty much like doing the following in Python:
   //
   // class Session:
@@ -103,11 +103,12 @@ void pySwitch::Switcher_dealloc(pySwitchObject* self) {
   }
   self->sig_reg.reset();
 
-  Py_XDECREF(self->name);
-  Py_XDECREF(self->quiddities);
-  Py_XDECREF(self->session);
+  // decrement refcounts
+  for (auto& o : {self->name, self->quiddities, self->session}) Py_XDECREF(o);
+
   Switcher::ptr empty;
   self->switcher.swap(empty);
+
   Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
@@ -330,34 +331,47 @@ PyObject* pySwitch::list_kinds(pySwitchObject* self, PyObject* args, PyObject* k
 }
 
 PyDoc_STRVAR(pyswitch_kinds_doc_doc,
-             "Get a JSON documentation of all kinds.\n"
+             "Get a documentation of all kinds.\n"
              "Arguments: (None)\n"
-             "Returns: JSON-formated documentation of all kinds available.\n");
+             "Returns: The documentation of all kinds available.\n");
 
 PyObject* pySwitch::kinds_doc(pySwitchObject* self, PyObject* args, PyObject* kwds) {
-  return PyUnicode_FromString(
-      infotree::json::serialize(
-          self->switcher->factory<MPtr(&quiddity::Factory::get_kinds_doc)>().get())
-          .c_str());
+  auto str = infotree::json::serialize(
+      self->switcher->factory<MPtr(&quiddity::Factory::get_kinds_doc)>().get());
+  // call options
+  PyObject *obj = PyImport_ImportModule("json"), *method = PyUnicode_FromString("loads"),
+           *arg = PyUnicode_FromString(str.c_str());
+  // call function
+  PyObject* res = PyObject_CallMethodObjArgs(obj, method, arg, nullptr);
+  // decrement refcounts
+  for (auto& o : {obj, method, arg}) Py_XDECREF(o);
+  // return serialized object
+  return res;
 }
 
 PyDoc_STRVAR(pyswitch_kind_doc_doc,
-             "Get a JSON documentation of a given kinds.\n"
+             "Get a documentation of a given kinds.\n"
              "Arguments: (kind)\n"
-             "Returns: JSON-formated documentation of the kind.\n");
+             "Returns: The documentation of the kind.\n");
 
 PyObject* pySwitch::kind_doc(pySwitchObject* self, PyObject* args, PyObject* kwds) {
   const char* kind_name = nullptr;
   static char* kwlist[] = {(char*)"kind", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &kind_name)) {
-    Py_INCREF(Py_None);
-    return Py_None;
-  }
-  return PyUnicode_FromString(
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &kind_name)) return nullptr;
+  // get doc as json string
+  auto str =
       infotree::json::serialize(self->switcher->factory<MPtr(&quiddity::Factory::get_kinds_doc)>()
                                     ->get_tree(std::string(".kinds.") + kind_name)
-                                    .get())
-          .c_str());
+                                    .get());
+  // call options
+  PyObject *obj = PyImport_ImportModule("json"), *method = PyUnicode_FromString("loads"),
+           *arg = PyUnicode_FromString(str.c_str());
+  // call function
+  PyObject* res = PyObject_CallMethodObjArgs(obj, method, arg, nullptr);
+  // decrement refcounts
+  for (auto& o : {obj, method, arg}) Py_XDECREF(o);
+  // return serialized object
+  return res;
 }
 
 PyDoc_STRVAR(pyswitch_list_quids_doc,
@@ -395,10 +409,21 @@ PyDoc_STRVAR(pyswitch_quids_descr_doc,
              "Returns: the JSON-formated description.\n");
 
 PyObject* pySwitch::quids_descr(pySwitchObject* self, PyObject* args, PyObject* kwds) {
-  return PyUnicode_FromString(
-      infotree::json::serialize(
-          self->switcher->quids<MPtr(&quiddity::Container::get_quiddities_description)>().get())
-          .c_str());
+  // serialize infotree to json string
+  auto desc = infotree::json::serialize(
+      self->switcher->quids<MPtr(&quiddity::Container::get_quiddities_description)>().get());
+
+  if (!desc.c_str()) return nullptr;
+
+  // call options
+  PyObject *obj = PyImport_ImportModule("json"), *method = PyUnicode_FromString("loads"),
+           *arg = PyUnicode_FromString(desc.c_str());
+  // call function
+  PyObject* res = PyObject_CallMethodObjArgs(obj, method, arg, nullptr);
+  // decrement refcounts
+  for (auto& o : {obj, method, arg}) Py_XDECREF(o);
+  // return serialized object
+  return res;
 }
 
 PyDoc_STRVAR(pyswitch_quid_descr_doc,
@@ -409,14 +434,18 @@ PyDoc_STRVAR(pyswitch_quid_descr_doc,
 PyObject* pySwitch::quid_descr(pySwitchObject* self, PyObject* args, PyObject* kwds) {
   int id = 0;
   static char* kwlist[] = {(char*)"id", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "i", kwlist, &id) && 0 != id) {
-    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
-    return nullptr;
-  }
-  return PyUnicode_FromString(
-      infotree::json::serialize(
-          self->switcher->quids<MPtr(&quiddity::Container::get_quiddity_description)>(id).get())
-          .c_str());
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "i", kwlist, &id) && 0 != id) return nullptr;
+  auto desc = infotree::json::serialize(
+      self->switcher->quids<MPtr(&quiddity::Container::get_quiddity_description)>(id).get());
+  // call options
+  PyObject *obj = PyImport_ImportModule("json"), *method = PyUnicode_FromString("loads"),
+           *arg = PyUnicode_FromString(desc.c_str());
+  // call function
+  PyObject* res = PyObject_CallMethodObjArgs(obj, method, arg, nullptr);
+  // decrement refcounts
+  for (auto& o : {obj, method, arg}) Py_XDECREF(o);
+  // return serialized object
+  return res;
 }
 
 bool pySwitch::subscribe_to_signal(pySwitchObject* self,

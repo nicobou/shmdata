@@ -23,35 +23,64 @@
 #include <switcher/utils/scope-exit.hpp>
 
 PyObject* pyInfoTree::InfoTree_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /*kwds*/) {
-  pyInfoTreeObject* self;
-  self = (pyInfoTreeObject*)type->tp_alloc(type, 0);
-  return (PyObject*)self;
+  pyInfoTreeObject* self = reinterpret_cast<pyInfoTreeObject*>(type->tp_alloc(type, 0));
+  return reinterpret_cast<PyObject*>(self);
 }
 
 int pyInfoTree::InfoTree_init(pyInfoTreeObject* self, PyObject* args, PyObject* kwds) {
-  PyObject* pyinfotree = nullptr;
-  int copy = 0;
-  const char* json_descr = nullptr;
-  static char* kwlist[] = {(char*)"json", (char*)"infotree_c_ptr", (char*)"copy", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|sOp", kwlist, &json_descr, &pyinfotree, &copy)) {
-    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
-    return -1;
-  }
-  if (!pyinfotree && !json_descr) json_descr = "null";
-  if (nullptr != json_descr) {  // build a tree from the json description
-    self->keepAlive = infotree::json::deserialize(json_descr);
+  // initialize default values for params
+  PyObject* initial = nullptr;
+  // define keyword params list
+  static char* kwlist[] = {(char*)"initial", nullptr};
+  // parse params
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|O", kwlist, &initial)) return -1;
+
+  // init from empty args
+  if (initial == nullptr) {
+    self->keepAlive = infotree::json::deserialize("{}");
     self->tree = self->keepAlive.get();
     return 0;
   }
-  if (copy) {
-    self->keepAlive =
-        InfoTree::copy(static_cast<InfoTree*>(PyCapsule_GetPointer(pyinfotree, nullptr)));
+
+  // function call objects
+  PyObject *obj = PyImport_ImportModule("json"), *method = nullptr, *res = nullptr;
+
+  // init from dict
+  if (PyDict_Check(initial)) {
+    // call options
+    method = PyUnicode_FromString("dumps");
+    // call function
+    res = PyObject_CallMethodObjArgs(obj, method, initial, NULL);
+    // deserialize json string and get a shared pointer
+    self->keepAlive = infotree::json::deserialize(PyUnicode_AsUTF8(res));
     self->tree = self->keepAlive.get();
-  } else {
-    self->tree = static_cast<InfoTree*>(PyCapsule_GetPointer(pyinfotree, nullptr));
+    // decrement refcounts
+    for (auto& o : {obj, method, res}) Py_XDECREF(o);
+    return 0;
   }
 
-  return 0;
+  // init from json string
+  if (PyUnicode_Check(initial)) {
+    // call options
+    method = PyUnicode_FromString("loads");
+    // call function
+    res = PyObject_CallMethodObjArgs(obj, method, initial, NULL);
+    // init infotree from json string
+    self->keepAlive = infotree::json::deserialize(initial ? PyUnicode_AsUTF8(initial) : "{}");
+    self->tree = self->keepAlive.get();
+    // decrement refcounts
+    for (auto& o : {obj, method, res}) Py_XDECREF(o);
+    return 0;
+  };
+
+  // raise type error
+  PyErr_SetString(PyExc_TypeError,
+                  "function takes either a dictionary or a json string as its first optional "
+                  "argument `initial`.");
+
+  // decrement refcount
+  Py_XDECREF(obj);
+  return -1;
 }
 
 void pyInfoTree::InfoTree_dealloc(pyInfoTreeObject* self) {
@@ -64,12 +93,10 @@ PyDoc_STRVAR(pyinfotree_empty_doc,
              "Returns: True or False\n");
 
 PyObject* pyInfoTree::empty(pyInfoTreeObject* self, PyObject* args, PyObject* kwds) {
-  if (!self->tree->empty()) {
-    Py_INCREF(Py_False);
-    return Py_False;
-  }
-  Py_INCREF(Py_True);
-  return Py_True;
+  if (!self->tree->empty())
+    Py_RETURN_FALSE;
+  else
+    Py_RETURN_TRUE;
 }
 
 PyDoc_STRVAR(pyinfotree_prune_doc,
@@ -111,7 +138,7 @@ PyObject* pyInfoTree::copy(pyInfoTreeObject* self, PyObject* args, PyObject* kwd
 }
 
 PyDoc_STRVAR(pyinfotree_graft_doc,
-             "Graft a value (Integer or float or bool or string) or another InfoTree.\n"
+             "Graft a value or another InfoTree instance.\n"
              "Arguments: (path, value)\n"
              "Returns: True or False\n");
 
@@ -119,72 +146,72 @@ PyObject* pyInfoTree::graft(pyInfoTreeObject* self, PyObject* args, PyObject* kw
   const char* path = nullptr;
   PyObject* val = 0;
   static char* kwlist[] = {(char*)"path", (char*)"value", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO", kwlist, &path, &val)) {
-    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
-    return nullptr;
-  }
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO", kwlist, &path, &val)) return nullptr;
+
   if (PyBool_Check(val)) {
     if (!self->tree->graft(path, InfoTree::make(PyObject_IsTrue(val) ? true : false))) {
-      Py_INCREF(Py_False);
-      return Py_False;
+      Py_RETURN_FALSE;
     }
   } else if (PyLong_Check(val)) {
     if (!self->tree->graft(path, InfoTree::make(PyLong_AsLong(val)))) {
-      Py_INCREF(Py_False);
-      return Py_False;
+      Py_RETURN_FALSE;
     }
   } else if (PyFloat_Check(val)) {
     if (!self->tree->graft(path, InfoTree::make(PyFloat_AsDouble(val)))) {
-      Py_INCREF(Py_False);
-      return Py_False;
+      Py_RETURN_FALSE;
     }
   } else if (PyUnicode_Check(val)) {
     if (!self->tree->graft(path, InfoTree::make(PyUnicode_AsUTF8(val)))) {
-      Py_INCREF(Py_False);
-      return Py_False;
+      Py_RETURN_FALSE;
     }
+  } else if (PyDict_Check(val)) {
+    PyObject *obj = PyImport_ImportModule("json"), *method = PyUnicode_FromString("dumps");
+    PyObject* res = PyObject_CallMethodObjArgs(obj, method, val, nullptr);
+    auto tree = infotree::json::deserialize(PyUnicode_AsUTF8(res));
+    // decrement refcounts
+    for (auto& o : {obj, method, res}) Py_XDECREF(o);
+    // graft tree from dumped json
+    if (!self->tree->graft(path, tree)) return nullptr;
+  } else if (PyList_Check(val)) {
+    PyObject *obj = PyImport_ImportModule("json"), *method = PyUnicode_FromString("dumps");
+    PyObject* res = PyObject_CallMethodObjArgs(obj, method, val, nullptr);
+    auto tree = infotree::json::deserialize(PyUnicode_AsUTF8(res));
+    // decrement refcounts
+    for (auto& o : {obj, method, res}) Py_XDECREF(o);
+    // graft tree from dumped json
+    if (!self->tree->graft(path, tree)) return nullptr;
   } else if (PyObject_IsInstance(val, reinterpret_cast<PyObject*>(&pyInfoTree::pyType))) {
     if (!self->tree->graft(path, reinterpret_cast<pyInfoTree::pyInfoTreeObject*>(val)->keepAlive)) {
-      Py_INCREF(Py_False);
-      return Py_False;
+      Py_RETURN_FALSE;
     }
   } else {  // unsorted PyObject type
-    Py_INCREF(Py_False);
-    return Py_False;
+    Py_RETURN_FALSE;
   }
   // return true if everything went well
-  Py_INCREF(Py_True);
-  return Py_True;
+  Py_RETURN_TRUE;
 }
 
 PyDoc_STRVAR(pyinfotree_json_doc,
              "Get a JSON representation of the tree.\n"
              "Arguments: (path)\n"
-             "Returns: the JSON representation \n");
+             "Returns: The JSON representation of the tree\n");
 
 PyObject* pyInfoTree::json(pyInfoTreeObject* self, PyObject* args, PyObject* kwds) {
-  const char* path = nullptr;
+  const char* path = ".";
   static char* kwlist[] = {(char*)"path", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, &path)) {
-    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
-    return nullptr;
-  }
-  if (nullptr == path) path = ".";
-  return PyUnicode_FromString(infotree::json::serialize(self->tree->get_tree(path).get()).c_str());
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, &path)) return nullptr;
+  // serialize infotree to a json string
+  auto str = infotree::json::serialize(self->tree->get_tree(path).get());
+  return PyUnicode_FromString(str.c_str());
 }
 
 PyObject* pyInfoTree::any_to_pyobject(const Any& any) {
   auto category = any.get_category();
   if (AnyCategory::NONE == category) {  // any is empty
-    Py_INCREF(Py_None);
-    return Py_None;
+    Py_RETURN_NONE;
   } else if (AnyCategory::BOOLEAN == category) {
-    if (!any.as<bool>()) {
-      Py_INCREF(Py_False);
-      return Py_False;
-    }
-    Py_INCREF(Py_True);
-    return Py_True;
+    if (!any.as<bool>()) Py_RETURN_FALSE;
+    Py_RETURN_TRUE;
   } else if (AnyCategory::INTEGRAL == category) {
     return PyLong_FromLong(any.copy_as<long>());
   } else if (AnyCategory::FLOATING_POINT == category) {
@@ -193,23 +220,20 @@ PyObject* pyInfoTree::any_to_pyobject(const Any& any) {
     return PyUnicode_FromString(Any::to_string(any).c_str());
   }
   // should not happen since all possible values of AnyCategory are checked
-  Py_INCREF(Py_None);
-  return Py_None;
+  Py_RETURN_NONE;
 }
 
 PyDoc_STRVAR(pyinfotree_get_doc,
-             "Get value at path. No argument is interpreted as '.' (root node).\n"
+             "Get value at path (defaults to root node \".\")."
              "Arguments: (path)\n"
              "Returns: value\n");
 
 PyObject* pyInfoTree::get(pyInfoTreeObject* self, PyObject* args, PyObject* kwds) {
-  const char* path = nullptr;
+  const char* path = ".";
   static char* kwlist[] = {(char*)"path", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, &path)) {
-    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
-    return nullptr;
-  }
-  return any_to_pyobject(self->tree->branch_get_value(path ? path : "."));
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, &path)) return nullptr;
+
+  return any_to_pyobject(self->tree->branch_get_value(path));
 }
 
 PyDoc_STRVAR(pyinfotree_tag_as_array_doc,
@@ -285,6 +309,13 @@ PyObject* pyInfoTree::get_key_values(pyInfoTreeObject* self, PyObject* args, PyO
   return result;
 }
 
+PyObject* pyInfoTree::tp_str(pyInfoTreeObject* self) {
+  // serialize infotree as a json encoded string
+  auto str = infotree::json::serialize(self->tree->get_tree(".").get());
+  // return new ref to python string
+  return PyUnicode_FromString(str.c_str());
+}
+
 PyMethodDef pyInfoTree::pyInfoTree_methods[] = {
     {"empty", (PyCFunction)empty, METH_VARARGS | METH_KEYWORDS, pyinfotree_empty_doc},
     {"prune", (PyCFunction)prune, METH_VARARGS | METH_KEYWORDS, pyinfotree_prune_doc},
@@ -311,8 +342,7 @@ PyDoc_STRVAR(pyquid_pyinfotree_doc,
              "A InfoTree is a key value structure where keys are string based, hierarchical and "
              "separated by dots, e.g. \"root.child.subchild\". Values are typed and the tree can "
              "be serialized & deserialized.\n"
-             "An InfoTree object can be serialized using the json() method, and deserialized using "
-             "the InfoTree constructor with the json description given as argument\n");
+             "An InfoTree object can be serialized using the str() built-in function.\n");
 
 PyTypeObject pyInfoTree::pyType = {
     PyVarObject_HEAD_INIT(nullptr, 0)(char*) "pyquid.InfoTree", /* tp_name */
@@ -329,9 +359,9 @@ PyTypeObject pyInfoTree::pyType = {
     0,                                                          /* tp_as_mapping */
     0,                                                          /* tp_hash  */
     0,                                                          /* tp_call */
-    0,                                                          /* tp_str */
-    0,                                                          /* tp_getattro */
-    0,                                                          /* tp_setattro */
+    (reprfunc)tp_str,                                           /* tp_str */
+    PyObject_GenericGetAttr,                                    /* tp_getattro */
+    PyObject_GenericSetAttr,                                    /* tp_setattro */
     0,                                                          /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE,                   /* tp_flags */
     pyquid_pyinfotree_doc,                                      /* tp_doc */
@@ -351,20 +381,25 @@ PyTypeObject pyInfoTree::pyType = {
     0,                                                          /* tp_dictoffset */
     (initproc)InfoTree_init,                                    /* tp_init */
     0,                                                          /* tp_alloc */
-    InfoTree_new                                                /* tp_new */
+    (newfunc)InfoTree_new                                       /* tp_new */
 };
 
-PyObject* pyInfoTree::make_pyobject_from_c_ptr(InfoTree* tree, bool do_copy) {
-  PyObject* keyworded_args = PyDict_New();
-  On_scope_exit { Py_XDECREF(keyworded_args); };
-  PyObject* empty_tuple = PyTuple_New(0);
-  On_scope_exit { Py_XDECREF(empty_tuple); };
-  auto tree_capsule = PyCapsule_New(static_cast<void*>(tree), nullptr, nullptr);
-  On_scope_exit { Py_XDECREF(tree_capsule); };
-  PyDict_SetItemString(keyworded_args, "infotree_c_ptr", tree_capsule);
-  PyObject* copy = PyLong_FromLong(do_copy);
-  On_scope_exit { Py_XDECREF(copy); };
-  PyDict_SetItemString(keyworded_args, "copy", copy);
-  PyObject* obj = PyObject_Call((PyObject*)&pyInfoTree::pyType, empty_tuple, keyworded_args);
+// pyInfoTree C++ only methods
+
+// set C pointer to an infotree for a given pyinfotree instance
+void pyInfoTree::set_tree(PyObject* instance, InfoTree* tree, bool copy) {
+  pyInfoTreeObject* self = reinterpret_cast<pyInfoTreeObject*>(instance);
+  self->keepAlive = copy ? InfoTree::copy(tree) : InfoTree::ptr(tree);
+  self->tree = self->keepAlive.get();
+};
+
+// init pyinfotree instance from a C pointer to an infotree
+PyObject* pyInfoTree::make_pyobject_from_c_ptr(InfoTree* tree, bool copy) {
+  // call options
+  PyObject* type = reinterpret_cast<PyObject*>(&pyInfoTree::pyType);
+  // call type without options
+  PyObject* obj = PyObject_CallFunctionObjArgs(type, nullptr);
+  // set c pointer for obj instance
+  pyInfoTree::set_tree(obj, tree, copy);
   return obj;
 }

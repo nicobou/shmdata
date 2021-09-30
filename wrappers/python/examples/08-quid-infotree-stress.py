@@ -14,7 +14,7 @@ import sys
 import pyquid
 import time
 from typing import List
-import assert_exit_1
+
 
 queue = asyncio.Queue()
 vquids: List[pyquid.Quiddity] = []

@@ -65,15 +65,10 @@ PyObject* pyQuiddity::set(pyQuiddityObject* self, PyObject* args, PyObject* kwds
   } else {
     val_str = PyUnicode_AsEncodedString(value, "utf-8", "Error ");
   }
-  if (!pyquid::ungiled(std::function([&]() {
-        return self->quid->prop<MPtr(&property::PBag::set_str_str)>(property,
-                                                                    PyBytes_AS_STRING(val_str));
-      }))) {
-    Py_INCREF(Py_False);
-    return Py_False;
+  if (!self->quid->prop<MPtr(&property::PBag::set_str_str)>(property, PyBytes_AS_STRING(val_str))) {
+    Py_RETURN_FALSE;
   }
-  Py_INCREF(Py_True);
-  return Py_True;
+  Py_RETURN_TRUE;
 }
 
 PyDoc_STRVAR(pyquiddity_get_doc,
@@ -84,17 +79,14 @@ PyDoc_STRVAR(pyquiddity_get_doc,
 PyObject* pyQuiddity::get(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
   const char* property = nullptr;
   static char* kwlist[] = {(char*)"name", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &property)) {
-    Py_INCREF(Py_False);
-    return Py_False;
-  }
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &property)) return nullptr;
+
   auto prop_id = self->quid->prop<MPtr(&property::PBag::get_id)>(property);
   if (0 == prop_id) {
     PyErr_SetString(PyExc_ValueError, "property not found");
-    return static_cast<PyObject*>(nullptr);
+    return nullptr;
   }
-  return pyInfoTree::any_to_pyobject(pyquid::ungiled(
-      std::function([&]() { return self->quid->prop<MPtr(&property::PBag::get_any)>(prop_id); })));
+  return pyInfoTree::any_to_pyobject(self->quid->prop<MPtr(&property::PBag::get_any)>(prop_id));
 }
 
 PyDoc_STRVAR(pyquiddity_invoke_doc,
@@ -632,25 +624,29 @@ int pyQuiddity::Quiddity_init(pyQuiddityObject* self, PyObject* args, PyObject* 
     PyErr_SetString(PyExc_TypeError, "error parsing arguments");
     return -1;
   }
-  if (pyswitch && !PyObject_IsInstance(pyswitch, reinterpret_cast<PyObject*>(&pySwitch::pyType))) {
-    PyErr_SetString(PyExc_TypeError,
-                    "error switcher argument is not an instance of a pyquid.Switcher");
+
+  // pointer to type object
+  PyObject* type = nullptr;
+
+  // pyswitch type check
+  type = reinterpret_cast<PyObject*>(&pySwitch::pyType);
+  if (pyswitch && !PyObject_IsInstance(pyswitch, type)) {
+    PyErr_SetString(PyExc_TypeError, "argument `switcher` is not an instance of pyquid.Switcher");
     return -1;
   }
-
-  if (pyinfotree &&
-      !PyObject_IsInstance(pyinfotree, reinterpret_cast<PyObject*>(&pyInfoTree::pyType))) {
-    PyErr_SetString(PyExc_TypeError,
-                    "error config argument is not an instance of a pyquid.InfoTree");
+  // pyinfotree type check
+  type = reinterpret_cast<PyObject*>(&pyInfoTree::pyType);
+  if (pyinfotree && !PyObject_IsInstance(pyinfotree, type)) {
+    PyErr_SetString(PyExc_TypeError, "argument `config` is not an instance of pyquid.InfoTree");
     return -1;
   }
 
   // retrieve switcher instance
   auto pyswitchobj = reinterpret_cast<pySwitch::pySwitchObject*>(pyswitch);
-  auto switcher = pyswitchobj->switcher;
+  self->switcher = pyswitchobj->switcher;
 
   // create a quiddity without calling creation callbacks
-  auto qrox = switcher->quids<MPtr(&quiddity::Container::quiet_create)>(
+  auto qrox = self->switcher->quids<MPtr(&quiddity::Container::quiet_create)>(
       kind,
       nickname ? nickname : std::string(),
       pyinfotree ? reinterpret_cast<pyInfoTree::pyInfoTreeObject*>(pyinfotree)->tree : nullptr);
@@ -665,18 +661,21 @@ int pyQuiddity::Quiddity_init(pyQuiddityObject* self, PyObject* args, PyObject* 
   }
 
   self->quid = quid;
-  self->sig_reg = std::make_unique<sig_registering_t>();
-  self->prop_reg = std::make_unique<prop_registering_t>();
-  self->async_invocations = std::make_unique<std::list<std::future<void>>>();
 
   // append quiddity into quiddities list
   PyObject* obj = reinterpret_cast<PyObject*>(self);
   PyList_Append(pyswitchobj->quiddities, obj);
 
+  // signal registering and async invocations
+  self->sig_reg = std::make_unique<sig_registering_t>();
+  self->prop_reg = std::make_unique<prop_registering_t>();
+  self->async_invocations = std::make_unique<std::list<std::future<void>>>();
+
   self->interpreter_state = PyThreadState_Get()->interp;
   PyEval_InitThreads();
 
-  switcher->quids<MPtr(&quiddity::Container::notify_quiddity_created)>(quid);
+  // notify quiddity created
+  self->switcher->quids<MPtr(&quiddity::Container::notify_quiddity_created)>(quid);
 
   return 0; 
 }
@@ -778,6 +777,14 @@ PyObject* pyQuiddity::get_connection_specs(pyQuiddityObject* self, PyObject*, Py
   return pyInfoTree::make_pyobject_from_c_ptr(self->connnection_spec_keep_alive_.get(), false);
 }
 
+PyObject* pyQuiddity::tp_str(pyQuiddityObject* self) {
+  auto str = infotree::json::serialize(
+      self->switcher
+          ->quids<MPtr(&quiddity::Container::get_quiddity_description)>(self->quid->get_id())
+          .get());
+  return PyUnicode_FromString(str.c_str());
+}
+
 PyMethodDef pyQuiddity::pyQuiddity_methods[] = {
     {"set", (PyCFunction)pyQuiddity::set, METH_VARARGS | METH_KEYWORDS, pyquiddity_set_doc},
     {"get", (PyCFunction)pyQuiddity::get, METH_VARARGS | METH_KEYWORDS, pyquiddity_get_doc},
@@ -874,7 +881,7 @@ PyTypeObject pyQuiddity::pyType = {
     0,                                                          /* tp_as_mapping */
     0,                                                          /* tp_hash  */
     0,                                                          /* tp_call */
-    0,                                                          /* tp_str */
+    (reprfunc)tp_str,                                           /* tp_str */
     0,                                                          /* tp_getattro */
     0,                                                          /* tp_setattro */
     0,                                                          /* tp_as_buffer */
@@ -898,4 +905,3 @@ PyTypeObject pyQuiddity::pyType = {
     0,                                                          /* tp_alloc */
     Quiddity_new                                                /* tp_new */
 };
-

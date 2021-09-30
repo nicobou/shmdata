@@ -13,7 +13,6 @@
 import sys
 import pyquid
 import time
-import assert_exit_1
 
 
 sw = pyquid.Switcher('urivid', debug=True)

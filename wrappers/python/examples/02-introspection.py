@@ -12,7 +12,7 @@
 
 import sys
 import pyquid
-import assert_exit_1
+
 
 sw = pyquid.Switcher("introspection", debug=True)
 

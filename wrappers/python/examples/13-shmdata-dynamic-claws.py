@@ -11,7 +11,7 @@
 # GNU Lesser General Public License for more details.
 
 from pyquid import Switcher, Quiddity, WriterClaw, FollowerClaw
-import assert_exit_1
+
 
 spec_added_received = 0
 spec_removed_received = 0

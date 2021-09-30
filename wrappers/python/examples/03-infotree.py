@@ -21,7 +21,6 @@
 import sys
 import pyquid
 import json
-import assert_exit_1
 
 # first create a quiddity and get a reference to its internal user data tree. Note this
 # user data tree is available for each kind of quiddity.

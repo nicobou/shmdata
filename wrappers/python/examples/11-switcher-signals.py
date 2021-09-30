@@ -12,7 +12,7 @@
 
 import time
 import pyquid
-import assert_exit_1
+
 
 on_created_success = False
 on_removed_success = True

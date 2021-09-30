@@ -21,11 +21,14 @@
 #define __SWITCHER_PYQUIDDITY_H__
 
 #include <Python.h>  // according to python doc, this *must* be the first include
+
 #include <future>
 #include <list>
 #include <map>
 #include <memory>
+
 #include "switcher/quiddity/quiddity.hpp"
+#include "switcher/switcher.hpp"
 
 using namespace switcher;
 using namespace quiddity;
@@ -45,6 +48,7 @@ class pyQuiddity {
   };
   using pyQuiddityObject = struct {
     PyObject_HEAD Quiddity* quid{nullptr};
+    Switcher::ptr switcher{nullptr};
     InfoTree::ptr connnection_spec_keep_alive_{};
     std::unique_ptr<sig_registering_t> sig_reg{};
     std::unique_ptr<prop_registering_t> prop_reg{};
@@ -64,6 +68,7 @@ class pyQuiddity {
   static PyObject* Quiddity_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /*kwds*/);
   static int Quiddity_init(pyQuiddityObject* self, PyObject* /*args*/, PyObject* /*kwds*/);
   static void Quiddity_dealloc(pyQuiddityObject* self);
+  static PyObject* tp_str(pyQuiddityObject* self);
   static PyObject* set(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* get(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* invoke(pyQuiddityObject* self, PyObject* args, PyObject* kwds);

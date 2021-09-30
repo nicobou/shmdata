@@ -18,7 +18,7 @@
 import sys
 import pyquid
 import time
-import assert_exit_1
+
 
 # create a switcher.
 sw = pyquid.Switcher('pyquid', debug=True)
