@@ -340,17 +340,36 @@ void PJPresence::add_buddy(const std::string& user) {
   }
 
   SIPPlugin::this_->debug("Buddy added");
+
   buddy_id_[sip_user] = buddy_id;
-  SIPPlugin::this_->white_list_->add(
-      sip_user, [path = ".buddies." + std::to_string(buddy_id)](bool authorized) {
-        SIPPlugin::this_->graft_tree(path + ".whitelisted", InfoTree::make(authorized));
-      });
-  SIPPlugin::this_->graft_tree(".buddies." + std::to_string(buddy_id) + ".uri",
-                               InfoTree::make(sip_user));
-  SIPPlugin::this_->graft_tree(".buddies." + std::to_string(buddy_id) + ".send_status",
-                               InfoTree::make(PJCall::SendRecvStatusMap.at(PJCall::SendRecvStatus::DISCONNECTED)));
-  SIPPlugin::this_->graft_tree(".buddies." + std::to_string(buddy_id) + ".recv_status",
-                               InfoTree::make(PJCall::SendRecvStatusMap.at(PJCall::SendRecvStatus::DISCONNECTED)));
+
+  // get the quiddity infotree and declare paths
+  auto tree = SIPPlugin::this_->get_tree(".");
+  const std::string buddiespath = ".buddies";
+  const std::string buddypath = ".buddies." + std::to_string(buddy_id);
+
+  // check for `buddies` branch
+  if (!tree->branch_is_array(buddiespath)) {
+    tree->graft(buddiespath, InfoTree::make());
+    tree->tag_as_array(buddiespath, true);
+  }
+
+  // graft buddy data
+  tree->graft(buddypath + ".uri", InfoTree::make(sip_user));
+  tree->graft(buddypath + ".send_status",
+              InfoTree::make(PJCall::SendRecvStatusMap.at(PJCall::SendRecvStatus::DISCONNECTED)));
+  tree->graft(buddypath + ".recv_status",
+              InfoTree::make(PJCall::SendRecvStatusMap.at(PJCall::SendRecvStatus::DISCONNECTED)));
+
+  // graft infotree
+  SIPPlugin::this_->graft_tree(".", tree);
+
+  // add our new buddy to the infotree whitelist and then trigger a callback to confirm that our
+  // buddy has been authorized
+  SIPPlugin::this_->white_list_->add(sip_user, [buddypath, tree](bool authorized) {
+    SIPPlugin::this_->graft_tree(buddypath + ".whitelisted", InfoTree::make(authorized));
+  });
+
   return;
 }
 

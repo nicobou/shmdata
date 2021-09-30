@@ -273,16 +273,23 @@ PyObject* pyQuiddity::get_user_tree(pyQuiddityObject* self, PyObject*, PyObject*
 PyDoc_STRVAR(pyquiddity_get_info_doc,
              "Get a value in the InfoTree.\n"
              "Arguments: (path)\n"
-             "Returns: the value\n");
+             "Returns: A value from the InfoTree\n");
 
 PyObject* pyQuiddity::get_info(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
+  // parse arguments
   const char* path = nullptr;
   static char* kwlist[] = {(char*)"path", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &path)) {
-    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
-    return nullptr;
-  }
-  return pyInfoTree::any_to_pyobject(self->quid->tree<MPtr(&InfoTree::branch_get_value)>(path));
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &path)) return nullptr;
+  // call options
+  PyObject *obj = PyImport_ImportModule("json"), *method = PyUnicode_FromString("loads"),
+           *arg = PyUnicode_FromString(
+               self->quid->tree<MPtr(&InfoTree::serialize_json)>(path).c_str());
+  // call function
+  PyObject* res = PyObject_CallMethodObjArgs(obj, method, arg, nullptr);
+  // decrement refcounts
+  for (auto& o : {obj, method, arg}) Py_XDECREF(o);
+  // return serialized object
+  return res;
 }
 
 PyDoc_STRVAR(pyquiddity_get_kind_doc,
