@@ -21,13 +21,6 @@
 extern "C" {
 #endif
 
-/** \defgroup  capi C API
- * The port of the C++ API in C.
- *
- * Here is a usage example for the C API, that illustrate the writing and reading of a shmdata
- * from a same provcess: \include tests/check-c-wrapper.cpp
- *  @{
- */
 typedef void* ShmdataFollower;
 
 /**
@@ -61,7 +54,6 @@ ShmdataFollower shmdata_make_follower(const char* path,
  */
 void shmdata_delete_follower(ShmdataFollower follower);
 
-/** @}*/
 #ifdef __cplusplus
 }
 #endif

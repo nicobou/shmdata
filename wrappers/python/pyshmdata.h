@@ -28,22 +28,6 @@
 extern "C" {
 #endif
 
-/** \defgroup pyshmdata Python Shmdata
- *
- *  Python Shmdata provides a Python 3 API for writing and reading Shmdata.
- *
- *  Reference is available using pyshmdata module Help. From a Python interactive command line, it can be accessed as follows:
- * \code{.py}
- * import pyshmdata
- * help(pyshmdata)
- * \endcode
- *
- *  Here follows an example of a Python script that instanciate both a shmdata writer and a shmdata reader.
- * \include wrappers/python/example.py
- *  @{
- *  @}
- */
-
 /*************/
 // Any-data-writer
 typedef struct {

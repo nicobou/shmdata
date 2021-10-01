@@ -21,10 +21,6 @@
 extern "C" {
 #endif
 
-  /** \addtogroup  capi
-   *  @{
-   */
-  
   typedef void * ShmdataWriter;
   typedef void * ShmdataWriterAccess;
 
@@ -43,14 +39,14 @@ extern "C" {
    *
    * \return the created ShmdataWriter
    */
-  
-  ShmdataWriter shmdata_make_writer(const char *path,
-                                  size_t memsize,
-                                  const char *type_descr,
-                                  void (*on_client_connected)(void *user_data, int id),
-                                  void (*on_client_disconnected)(void *user_data, int id),
-                                  void *user_data,
-                                  ShmdataLogger log);
+
+  ShmdataWriter shmdata_make_writer(const char* path,
+                                    size_t memsize,
+                                    const char* type_descr,
+                                    void (*on_client_connected)(void* user_data, int id),
+                                    void (*on_client_disconnected)(void* user_data, int id),
+                                    void* user_data,
+                                    ShmdataLogger log);
 
   /**
    * \brief Delete the ShmdataWriter and release associated ressources.
@@ -77,8 +73,6 @@ extern "C" {
   // System-wide limit on the number of shared memory segments
   unsigned long shmdata_get_shmmni(ShmdataLogger log);
 
-/** @}*/
- 
 #ifdef __cplusplus
 }
 #endif
