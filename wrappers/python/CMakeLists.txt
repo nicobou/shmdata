@@ -52,8 +52,8 @@ if (WITH_PYTHON)
   add_test(pyquid_quid_conf_and_two_jack_servers ${CMAKE_CURRENT_SOURCE_DIR}/examples/10-quid-conf-and-two-jack-servers.py)
   add_test(pyquid_switcher_signals ${CMAKE_CURRENT_SOURCE_DIR}/examples/11-switcher-signals.py)
   add_test(pyquid_switcher_session ${CMAKE_CURRENT_SOURCE_DIR}/examples/12-switcher-session.py)
-  add_test(pyquid_shmdata_connection ${CMAKE_CURRENT_SOURCE_DIR}/examples/12-shmdata-connection.py)
-  add_test(pyquid_shmdata_dynamic_claws ${CMAKE_CURRENT_SOURCE_DIR}/examples/13-shmdata-dynamic-claws.py)
+  add_test(pyquid_shmdata_connection ${CMAKE_CURRENT_SOURCE_DIR}/examples/13-shmdata-connection.py)
+  add_test(pyquid_shmdata_dynamic_claws ${CMAKE_CURRENT_SOURCE_DIR}/examples/14-shmdata-dynamic-claws.py)
 
 endif ()
 
