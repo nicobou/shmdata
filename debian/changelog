@@ -1,3 +1,9 @@
+switcher (3.0.0-1) focal; urgency=low
+
+  * New release for version 3.0.0
+
+ -- Nicolas Bouillot <nbouillot@sat.qc.ca>  Mon, 04 Oct 2021 22:13:03 -0400
+
 switcher (2.3.0-1) focal; urgency=low
 
   * New release for version 2.3.0
