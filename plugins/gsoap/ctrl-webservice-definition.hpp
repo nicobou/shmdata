@@ -28,10 +28,10 @@
 //gsoap switcher schema namespace:	urn:control
 
 //gsoap switcher service method-documentation: get available names
-int switcher__get_classes(std::vector<std::string> *result);
+int switcher__get_kinds(std::vector<std::string> *result);
 
 //gsoap switcher service method-documentation: get available json doc *without* props and methods
-int switcher__get_classes_doc(std::string *result);
+int switcher__get_kinds_doc(std::string *result);
 
 //gsoap switcher service method-documentation: get available json doc *without* props and methods
 int switcher__get_quiddity_description(std::string quiddity_name, std::string *result);
@@ -41,11 +41,6 @@ int switcher__get_quiddities_description(std::string *result);
 
 //gsoap switcher service method-documentation: get names of instances
 int switcher__get_quiddity_nicknames(std::vector<std::string> *result);
-
-//gsoap switcher service method-documentation: get shmpath of a quiddity, given the suffix
-int switcher__make_shmpath(std::string quiddity_name,
-			   std::string suffix,
-			   std::string *result);
 
 //gsoap switcher service method-documentation: set a value of a property from an quiddity instance
 int switcher__set_property(std::string quiddity_name,
@@ -59,7 +54,7 @@ int switcher__get_property(std::string quiddity_name,
 			   std::string *result);
 
 //gsoap switcher service method-documentation: create an quiddity instance and return its name
-int switcher__create_named_quiddity(std::string quiddity_class,
+int switcher__create_named_quiddity(std::string quiddity_kind,
                                     std::string nick_name,
                                     std::string *result);
 
@@ -89,6 +84,15 @@ int switcher__run(std::string file_name,
 int switcher__get_information_tree(std::string quiddity_name,
                                    std::string path,
                                    std::string *result);
+
+//gsoap switcher service try_connect quiddities
+int switcher__try_connect(std::string reader_quiddity,
+                          std::string writer_wuiddity,
+                          std::string *result);
+
+//gsoap switcher service get shmdata connection specification
+int switcher__get_connection_spec(std::string quiddity,
+                                  std::string *result);
 
 //gsoap switcher service read user data
 int switcher__get_user_data(std::string quiddity_name,

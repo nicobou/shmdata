@@ -23,7 +23,6 @@
 #include <memory>
 #include "../gst/video-codec.hpp"
 #include "../quiddity/quiddity.hpp"
-#include "../shmdata/connector.hpp"
 
 namespace switcher {
 namespace quiddities {
@@ -31,17 +30,13 @@ using namespace quiddity;
 class GstVideoEncoder : public Quiddity {
  public:
   GstVideoEncoder(quiddity::Config&&);
-  ~GstVideoEncoder() = default;
-  GstVideoEncoder(const GstVideoEncoder&) = delete;
-  GstVideoEncoder& operator=(const GstVideoEncoder&) = delete;
 
  private:
-  // registering connect/disconnect/can_sink_caps:
-  shmdata::Connector shmcntr_;
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
   std::unique_ptr<gst::VideoCodec> codecs_{nullptr};
+
   bool on_shmdata_disconnect();
   bool on_shmdata_connect(const std::string& shmdata_socket_path);
-  bool can_sink_caps(const std::string& caps);
 };
 
 }  // namespace quiddities

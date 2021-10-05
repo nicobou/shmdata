@@ -44,7 +44,9 @@ add_library(${SWITCHER_LIBRARY} SHARED
   quiddity/basic-test.cpp
   quiddity/bundle/bundle.cpp
   quiddity/bundle/description-parser.cpp
-  quiddity/class-printer.cpp
+  quiddity/kind-printer.cpp
+  quiddity/claw/claw.cpp
+  quiddity/claw/connection-spec.cpp
   quiddity/container.cpp
   quiddity/doc.cpp
   quiddity/documentation-registry.cpp
@@ -64,7 +66,6 @@ add_library(${SWITCHER_LIBRARY} SHARED
   session/session.cpp
   shmdata/caps/audio-caps.cpp
   shmdata/caps/utils.cpp
-  shmdata/connector.cpp
   shmdata/follower.cpp
   shmdata/gst-subscriber.cpp
   shmdata/gst-tree-updater.cpp
@@ -75,6 +76,7 @@ add_library(${SWITCHER_LIBRARY} SHARED
   utils/bool-log.cpp
   utils/counter-map.cpp
   utils/file-utils.cpp
+  utils/ids.cpp
   utils/net-utils.cpp
   utils/safe-bool-idiom.cpp
   utils/serialize-string.cpp

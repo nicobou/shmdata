@@ -38,8 +38,8 @@ class SBag {
   SBag() = delete;
   // ctor will own tree and write into .property.
   SBag(InfoTree::ptr tree,
-             on_tree_grafted_cb_t on_tree_grafted_cb,
-             on_tree_pruned_cb_t on_tree_pruned_cb);
+       on_tree_grafted_cb_t on_tree_grafted_cb,
+       on_tree_pruned_cb_t on_tree_pruned_cb);
 
   // ------------- use (const methods)
   // return 0 if id is not found

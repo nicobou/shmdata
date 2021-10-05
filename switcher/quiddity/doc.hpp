@@ -29,24 +29,18 @@ class Doc {
  public:
   Doc() = default;
   Doc(const std::string& long_name,
-      const std::string& class_name,
-      const std::string& category,
-      const std::string& tags,  // backslash separated
+      const std::string& kind,
       const std::string& short_description,
       const std::string& license,
       const std::string& author);
-  std::string get_category() const;
-  std::string get_class_name() const;
+  std::string get_kind() const;
   std::string get_description() const;
   std::string get_long_name() const;
   std::string get_author() const;
   std::string get_license() const;
-  std::vector<std::string> get_tags() const;
 
  private:
-  std::string category_{};
-  std::vector<std::string> tags_{};
-  std::string class_name_{};
+  std::string kind_{};
   std::string description_{};
   std::string long_name_{};
   std::string author_{};

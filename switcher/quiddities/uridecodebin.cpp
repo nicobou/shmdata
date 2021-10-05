@@ -26,11 +26,22 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Uridecodebin,
                                      "urisrc",
                                      "URI/URL Player",
-                                     "network",
-                                     "writer",
                                      "URI decoding to one or more shmdata",
                                      "LGPL",
                                      "Nicolas Bouillot");
+
+const std::string Uridecodebin::kConnectionSpec(R"(
+{
+"writer":
+  [
+    {
+      "label": "custom%",
+      "description": "Decoded streams",
+      "can_do": [ "all" ]
+    }
+  ]
+}
+)");
 
 void Uridecodebin::bus_async(GstMessage* msg) {
   if (GST_MESSAGE_TYPE(msg) != GST_MESSAGE_EOS) return;
@@ -38,7 +49,7 @@ void Uridecodebin::bus_async(GstMessage* msg) {
 }
 
 Uridecodebin::Uridecodebin(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
+    : Quiddity(std::forward<quiddity::Config>(conf), {kConnectionSpec}),
       on_msg_async_cb_([this](GstMessage* msg) { this->bus_async(msg); }),
       on_msg_sync_cb_(nullptr),
       on_error_cb_([this](GstObject*, GError*) { this->error_ = true; }),
@@ -49,17 +60,20 @@ Uridecodebin::Uridecodebin(quiddity::Config&& conf)
     return;
   }
 
-  register_writer_suffix(".*");
-
-  pmanage<MPtr(&property::PBag::make_string)>("uri",
-                                              [this](const std::string& val) {
-                                                uri_ = val;
-                                                return to_shmdata();
-                                              },
-                                              [this]() { return uri_; },
-                                              "URI",
-                                              "URI To Be Redirected Into Shmdata(s)",
-                                              "");
+  pmanage<MPtr(&property::PBag::make_string)>(
+      "uri",
+      [this](const std::string& val) {
+        // first reset all existing writers from dynamic specs
+        for (const auto& swid : claw_.get_swids()) {
+          claw_.remove_writer_from_meta(swid);
+        }
+        uri_ = val;
+        return to_shmdata();
+      },
+      [this]() { return uri_; },
+      "URI",
+      "URI To Be Redirected Into Shmdata(s)",
+      "");
 
   pmanage<MPtr(&property::PBag::make_bool)>(
       "loop",
@@ -279,8 +293,15 @@ void Uridecodebin::pad_to_shmdata_writer(GstElement* bin, GstPad* pad) {
   auto name_splited = padname_split[0] ? std::string(padname_split[0]) : std::string();
   auto count = counter_.get_count(name_splited);
   std::string media_name = std::string(padname_split[0]) + "-" + std::to_string(count);
-  debug("uridecodebin: new media %", media_name);
-  std::string shmpath = make_shmpath(media_name);
+  // find caps in order  to register new claw
+  GstCaps* pad_caps = gst_pad_get_current_caps(pad);
+  On_scope_exit { gst_caps_unref(pad_caps); };
+  char* pad_caps_str = gst_caps_to_string(pad_caps);
+  On_scope_exit { free(pad_caps_str); };
+  debug("uridecodebin: new media %, caps is %", media_name, std::string(pad_caps_str));
+  auto swid = claw_.add_writer_to_meta(claw_.get_swid("custom%"),
+                                       {media_name, media_name, {std::string(pad_caps_str)}});
+  std::string shmpath = claw_.get_writer_shmpath(swid);
   g_object_set(G_OBJECT(shmdatasink), "socket-path", shmpath.c_str(), nullptr);
   auto extra_caps = get_quiddity_caps();
   g_object_set(G_OBJECT(shmdatasink), "extra-caps-properties", extra_caps.c_str(), nullptr);

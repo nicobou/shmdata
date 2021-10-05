@@ -23,7 +23,6 @@
 #include <deque>
 #include "../gst/utils.hpp"
 #include "../quiddity/quiddity.hpp"
-#include "../shmdata/connector.hpp"
 #include "../shmdata/follower.hpp"
 #include "../shmdata/writer.hpp"
 #include "../utils/periodic-task.hpp"
@@ -72,14 +71,12 @@ class ShmDelay : public Quiddity {
     size_t max_size_{0};    //!< Maximum size in bytes of the buffer.
   };
 
+  bool on_shmdata_connect(const std::string& shmpath, claw::sfid_t sfid);
+  bool on_shmdata_disconnect(claw::sfid_t sfid);
 
-  bool on_shmdata_connect(const std::string& shmpath);
-  bool on_shmdata_disconnect(const std::string& shmpath);
-  bool on_shmdata_disconnect_all();
-  bool can_sink_caps(const std::string& str_caps);
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
 
   ShmBuffer delay_content_{1 << 10};   //!< Size limit for the buffer (~1GB)
-  shmdata::Connector shmcntr_{nullptr};  //!< Shmdata connector for ltc and shmdata inputs
   std::unique_ptr<shmdata::Follower> shm_follower_{nullptr};          //!< Shmdata to be delayed
   std::unique_ptr<shmdata::Follower> diff_follower_{nullptr};         //!< Timecode delay
   std::unique_ptr<shmdata::Writer> shmw_{};                           //!< Shmdata writer.

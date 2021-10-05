@@ -38,6 +38,8 @@ class HTTPSDPDec : public Quiddity {
   HTTPSDPDec(quiddity::Config&&);
 
  private:
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
+
   std::unique_ptr<gst::Pipeliner> gst_pipeline_;
   gst::UGstElem souphttpsrc_;
   gst::UGstElem sdpdemux_;
@@ -54,6 +56,7 @@ class HTTPSDPDec : public Quiddity {
   CounterMap counter_{};
   std::vector<std::unique_ptr<shmdata::GstTreeUpdater>> shm_subs_{};
   property::prop_id_t to_shm_id_;
+
   bool to_shmdata(std::string uri);
   void init_httpsdpdec();
   void destroy_httpsdpdec();

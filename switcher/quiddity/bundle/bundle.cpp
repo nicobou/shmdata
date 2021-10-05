@@ -18,11 +18,14 @@
  */
 
 #include "./bundle.hpp"
+
 #include <regex>
+
 #include "../../logger/forwarder.hpp"
 #include "../../utils/scope-exit.hpp"
 #include "../container.hpp"
 #include "../quid-id-t.hpp"
+#include "switcher/infotree/json-serializer.hpp"
 
 namespace switcher {
 namespace quiddity {
@@ -32,12 +35,16 @@ Quiddity* create(quiddity::Config&& conf) {
 }
 void destroy(Quiddity* quiddity) { delete quiddity; }
 
-Bundle::~Bundle() { quitting_ = true; }
+Bundle::~Bundle() {
+  quitting_ = true;
+  for (const auto& reg : registered_sigs_) {
+    reg.quid_->sig<MPtr(&signal::SBag::unsubscribe_by_name)>(reg.sig_name_, reg.reg_id_);
+  }
+}
 
 Bundle::Bundle(quiddity::Config&& conf)
     : Quiddity(std::forward<quiddity::Config>(conf)),
       conf_(conf),
-      shmcntr_(static_cast<Quiddity*>(this)),
       manager_(Switcher::make_switcher<log::Forwarder>(conf_.nickname_, conf_.log_)) {
   for (auto& it : qcontainer_->get_switcher()->qfactory_.get_plugin_dirs()) {
     manager_->qfactory_.scan_dir(it);
@@ -63,35 +70,63 @@ Bundle::Bundle(quiddity::Config&& conf)
     return;
   }
   reader_quid_ = spec.get_reader_quid();
+
+  // build the claw conf
+  claw::OnConnect_t on_connect_cb;
+  claw::OnDisconnect_t on_disconnect_cb;
+
+  InfoTree::ptr con_tree = InfoTree::make();
+  for (const auto& quid_nick : exposed_writer_quids_) {
+    auto quid = manager_->qcontainer_->get_quiddity(manager_->qcontainer_->get_id(quid_nick));
+    quid->connection_spec_tree_->cfor_each_in_array("writer", [&](const InfoTree* tree) {
+      const auto label = tree->branch_get_value("label").as<std::string>();
+      auto writer_tree = tree->get_copy();
+      writer_tree->prune("swid");
+      writer_tree->prune("from_swid");
+      con_tree->graft("writer." + quid_nick, writer_tree);
+      // change label in order to avoid collision among exposed writers
+      con_tree->vgraft("writer." + quid_nick + ".label", quid_nick + "/" + label);
+    });
+  }
+  if (!exposed_writer_quids_.empty()) {
+    con_tree->tag_as_array("writer", true);
+  }
+
   if (!reader_quid_.empty()) {
-    shmcntr_.install_connect_method(
-        [this](const std::string& shmpath) {
-          auto quid =
-              manager_->qcontainer_->get_quiddity(manager_->qcontainer_->get_id(reader_quid_));
-          return quid->meth<MPtr(&method::MBag::invoke<std::function<bool(std::string)>>)>(
-              quid->meth<MPtr(&method::MBag::get_id)>("connect"), std::make_tuple(shmpath));
-        },
-        [this](const std::string& shmpath) {
-          auto quid =
-              manager_->qcontainer_->get_quiddity(manager_->qcontainer_->get_id(reader_quid_));
-          return quid->meth<MPtr(&method::MBag::invoke<std::function<bool(std::string)>>)>(
-              quid->meth<MPtr(&method::MBag::get_id)>("disconnect"), std::make_tuple(shmpath));
-        },
-        [this]() {
-          auto quid =
-              manager_->qcontainer_->get_quiddity(manager_->qcontainer_->get_id(reader_quid_));
-          return quid->meth<MPtr(&method::MBag::invoke<std::function<bool()>>)>(
-              quid->meth<MPtr(&method::MBag::get_id)>("disconnect-all"), std::make_tuple());
-        },
-        [this](const std::string& caps) {
-          auto quid =
-              manager_->qcontainer_->get_quiddity(manager_->qcontainer_->get_id(reader_quid_));
-          return quid->meth<MPtr(&method::MBag::invoke<std::function<bool(std::string)>>)>(
-              quid->meth<MPtr(&method::MBag::get_id)>("can-sink-caps"), std::make_tuple(caps));
-        },
-        manager_->qcontainer_->get_quiddity(manager_->qcontainer_->get_id(reader_quid_))
-            ->tree<MPtr(&InfoTree::branch_get_value)>("shmdata.max_reader")
-            .copy_as<unsigned int>());
+    auto quid = manager_->qcontainer_->get_quiddity(manager_->qcontainer_->get_id(reader_quid_));
+    claw::sfid_t quid_sfid;
+    quid->connection_spec_tree_->cfor_each_in_array("follower", [&](const InfoTree* tree) {
+      const auto label = tree->branch_get_value("label").as<std::string>();
+      auto follower_tree = tree->get_copy();
+      quid_sfid = tree->branch_get_value("sfid").as<claw::sfid_t>();
+      follower_tree->prune("sfid");
+      follower_tree->prune("from_sfid");
+      con_tree->graft("follower." + reader_quid_, follower_tree);
+      // change label in order to avoid collision among exposed writers
+      con_tree->vgraft("follower." + reader_quid_ + ".label", reader_quid_ + "/" + label);
+    });
+    con_tree->tag_as_array("follower", true);
+    on_connect_cb = [this, quid, quid_sfid](const std::string& shmpath, claw::sfid_t) {
+      return quid->claw_.on_connect_cb_(shmpath, quid_sfid);
+    };
+    on_disconnect_cb = [this, quid, quid_sfid](claw::sfid_t) {
+      return quid->claw_.on_disconnect_cb_(quid_sfid);
+    };
+  }
+
+  claw_ = claw::Claw(this,
+                     claw::ConnectionSpec(infotree::json::serialize(con_tree.get())),
+                     on_connect_cb,
+                     on_disconnect_cb);
+  // now force the shmdata writer path
+  for (const auto& quid_nick : exposed_writer_quids_) {
+    auto quid = manager_->qcontainer_->get_quiddity(manager_->qcontainer_->get_id(quid_nick));
+    quid->connection_spec_tree_->cfor_each_in_array("writer", [&](const InfoTree* tree) {
+      const auto label = tree->branch_get_value("label").as<std::string>();
+      const auto quid_swid = tree->branch_get_value("swid").as<claw::swid_t>();
+      const auto bundle_swid = claw_.get_swid(quid_nick + "/" + label);
+      claw_.forced_writer_shmpaths_.emplace(bundle_swid, quid->claw_.get_writer_shmpath(quid_swid));
+    });
   }
 }
 
@@ -106,9 +141,9 @@ bool Bundle::make_quiddities(const std::vector<bundle::quiddity_spec_t>& quids) 
   }
   // create quiddities and set properties
   for (auto& quid : quids) {
-    auto res = manager_->qcontainer_->create(quid.type, quid.name, nullptr);
+    auto res = manager_->qcontainer_->create(quid.kind, quid.name, nullptr);
     if (!res) {
-      warning("internal manager failed to instantiate a quiddity of type %", quid.type);
+      warning("internal manager failed to instantiate a quiddity of kind %", quid.kind);
       return false;
     }
     std::string name = res.msg();
@@ -128,16 +163,22 @@ bool Bundle::make_quiddities(const std::vector<bundle::quiddity_spec_t>& quids) 
     // registering quiddity properties
     auto quid_ptr = manager_->qcontainer_->get_quiddity(manager_->qcontainer_->get_id(name));
     on_tree_datas_.emplace_back(std::make_unique<on_tree_data_t>(this, name, quid_ptr.get(), quid));
-    quid_ptr->sig<MPtr(&signal::SBag::subscribe_by_name)>(
-        std::string("on-tree-grafted"),
-        [&, tree_data = on_tree_datas_.back().get()](InfoTree::ptr tree) {
-          Bundle::on_tree_grafted(tree->get_value().as<std::string>(), tree_data);
-        });
-    quid_ptr->sig<MPtr(&signal::SBag::subscribe_by_name)>(
-        std::string("on-tree-pruned"),
-        [&, tree_data = on_tree_datas_.back().get()](InfoTree::ptr tree) {
-          Bundle::on_tree_pruned(tree->get_value().as<std::string>(), tree_data);
-        });
+    registered_sigs_.push_back(
+        QuidRegSig(quid_ptr,
+                   "on-tree-grafted",
+                   quid_ptr->sig<MPtr(&signal::SBag::subscribe_by_name)>(
+                       std::string("on-tree-grafted"),
+                       [&, tree_data = on_tree_datas_.back().get()](InfoTree::ptr tree) {
+                         Bundle::on_tree_grafted(tree->get_value().as<std::string>(), tree_data);
+                       })));
+    registered_sigs_.push_back(
+        QuidRegSig(quid_ptr,
+                   "on-tree-pruned",
+                   quid_ptr->sig<MPtr(&signal::SBag::subscribe_by_name)>(
+                       std::string("on-tree-pruned"),
+                       [&, tree_data = on_tree_datas_.back().get()](InfoTree::ptr tree) {
+                         Bundle::on_tree_pruned(tree->get_value().as<std::string>(), tree_data);
+                       })));
     // mirroring property
     if (!quid.top_level && (quid.expose_prop || !quid.whitelisted_params.empty())) {
       auto group_name = name;
@@ -196,9 +237,16 @@ void Bundle::on_tree_grafted(const std::string& key, void* user_data) {
         auto& qcontainer = context->self_->manager_->qcontainer_;
         for (auto& it : context->quid_spec_.connects_to_) {
           auto quid = qcontainer->get_quiddity(qcontainer->get_id(it));
-          if (!quid->meth<MPtr(&method::MBag::invoke<std::function<bool(std::string)>>)>(
-                  quid->meth<MPtr(&method::MBag::get_id)>("can-sink-caps"),
-                  std::make_tuple(caps))) {
+          // WARNING test against the first follower sfid, bundle need to be extended
+          // specification of which follower to connect in order to allow internal
+          // connection to dedicated sfid
+          auto sfid = quid->claw<MPtr(&quiddity::claw::Claw::get_sfids)>();
+          if (sfid.empty()) {
+            quid->warning("BUG in bundle, no follower available when connecting from quiddity %",
+                          quid->get_nickname());
+            continue;
+          }
+          if (!quid->claw<MPtr(&quiddity::claw::Claw::sfid_can_do_shmtype)>(sfid[0], caps)) {
             context->self_->message(
                 "ERROR: bundle specification error: % cannot connect with % (caps is %)",
                 context->quid_spec_.name,
@@ -212,8 +260,7 @@ void Bundle::on_tree_grafted(const std::string& key, void* user_data) {
             continue;
           }
 
-          quid->meth<MPtr(&method::MBag::invoke<std::function<bool(std::string)>>)>(
-              quid->meth<MPtr(&method::MBag::get_id)>("connect"), std::make_tuple(shm_match[1]));
+          quid->claw<MPtr(&quiddity::claw::Claw::connect_raw)>(sfid[0], shm_match[1]);
           {
             std::lock_guard<std::mutex> lock(context->self_->connected_shms_mtx_);
             context->self_->connected_shms_.push_back(std::make_pair(it, shm_match[1]));
@@ -350,8 +397,14 @@ void Bundle::on_tree_pruned(const std::string& key, void* user_data) {
       for (auto& it : to_disconnect) {
         auto quid = qcontainer->get_quiddity(qcontainer->get_id(it.first));
         if (!quid) continue;
-        quid->meth<MPtr(&method::MBag::invoke<std::function<bool(std::string)>>)>(
-            quid->meth<MPtr(&method::MBag::get_id)>("disconnect"), std::make_tuple(it.second));
+        // WARNING disconnecting the first sfid only because specification of which sfid to connect
+        // is missing
+        const auto sfids = quid->claw<MPtr(&quiddity::claw::Claw::get_sfids)>();
+        if (sfids.empty()) {
+          quid->warning("BUG in bundle, no follower available when disconnecting from quiddity %",
+                        quid->get_nickname());
+        }
+        quid->claw<MPtr(&quiddity::claw::Claw::disconnect)>(sfids[0]);
       }
     }
     return;
@@ -398,23 +451,6 @@ bool Bundle::property_is_displayed(bundle::quiddity_spec_t quid_spec, std::strin
                                                             property_name))));
 }
 
-std::string Bundle::make_shmpath(const std::string& suffix) const {
-  if (exposed_writer_quids_.empty()) {
-    warning("bundle cannot provide shmpath since no shmdata writer is exposed (suffix % bundle %)",
-            suffix,
-            get_nickname());
-    return "";
-  }
-  for (const auto& it : exposed_writer_quids_) {
-    auto quid = manager_->qcontainer_->get_quiddity(manager_->qcontainer_->get_id(it));
-    auto writer_regex =
-        quid->tree<MPtr(&InfoTree::branch_get_value)>("shmdata.writer.suffix").as<std::string>();
-    if (writer_regex.empty()) continue;
-    if (std::regex_match(suffix, std::regex(writer_regex))) return quid->make_shmpath(suffix);
-  }
-  warning("no shmpath found for suffix % (bundle %)", suffix, get_nickname());
-  return "";
-}
 }  // namespace bundle
 }  // namespace quiddity
 }  // namespace switcher

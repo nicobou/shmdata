@@ -614,7 +614,10 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
     auto media = media_to_receive.at(i);
     auto media_label = PJCallUtils::get_media_label(media);
 
-    auto rtp_shmpath = SIPPlugin::this_->make_shmpath("rtp");
+    auto swid = SIPPlugin::this_->claw_.add_writer_to_meta(
+        SIPPlugin::this_->claw_.get_swid("rtp%"),
+        {media_label, std::string("A RTP stream received from ") + call->peer_uri});
+    auto rtp_shmpath = SIPPlugin::this_->claw_.get_writer_shmpath(swid);
 
     // ensure rtp_shmpath is unique (can happen in case of label collision) and add suffix if necessary
     unsigned int j = 0;
@@ -661,8 +664,14 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
     call->rtp_receivers_.emplace_back(std::make_unique<gst::RTPReceiver>(
         call->recv_rtp_session_.get(),
         rtp_shmpath,
-        [=](GstElement* el, const std::string& media_type, const std::string&) {
-          auto shmpath = SIPPlugin::this_->make_shmpath(media_type) + '-' + rtp_shmpath_suffix;
+        [=, peer_uri = call->peer_uri](
+            GstElement* el, const std::string& media_type, const std::string&) {
+          auto swid = SIPPlugin::this_->claw_.add_writer_to_meta(
+              SIPPlugin::this_->claw_.get_swid("stream%"),
+              {"",
+               std::string("A stream received from ") + peer_uri + " (" + media_type + '-' +
+                   rtp_shmpath_suffix + ")"});
+          auto shmpath = SIPPlugin::this_->claw_.get_writer_shmpath(swid);
           auto extra_caps = SIPPlugin::this_->get_quiddity_caps();
           g_object_set(G_OBJECT(el), "socket-path", shmpath.c_str(), "extra-caps-properties", extra_caps.c_str(), nullptr);
           std::lock_guard<std::mutex> lock(call->shm_subs_mtx_);

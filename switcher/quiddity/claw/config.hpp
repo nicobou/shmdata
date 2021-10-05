@@ -17,17 +17,43 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_INFORMATION_TREE_QUIDDITY_CLASS_PRINTER_H__
-#define __SWITCHER_INFORMATION_TREE_QUIDDITY_CLASS_PRINTER_H__
+#ifndef __SWITCHER_QUIDDITY_CLAW_CONFIG_H__
+#define __SWITCHER_QUIDDITY_CLAW_CONFIG_H__
 
-#include <string>
-#include "../infotree/information-tree.hpp"
+#include "./types.hpp"
 
 namespace switcher {
 namespace quiddity {
-namespace classprinter {
-std::string print(InfoTree::ptrc);
-}  // namespace classprinter
+namespace claw {
+
+/**
+ * claw::Config class is a minimal structure for argument passing
+ * in Quiddity constructor, used eventually for the construction
+ * of a Claw.
+ *
+ */
+struct Config {
+  /**
+   * \brief JSON version of the specification to be parsed during Claw
+   * construction.
+   *
+   */
+  const std::string spec{};
+  /**
+   * \brief the callback to trigger when Claw is asked to connect
+   * to a shmdata writer.
+   *
+   */
+  const OnConnect_t on_connect_cb{};
+  /**
+   * \brief the callback to trigger when Claw is asked to disconnect
+   * from a shmdata writer.
+   *
+   */
+  const OnDisconnect_t on_disconnect_cb{};
+};
+
+}  // namespace claw
 }  // namespace quiddity
 }  // namespace switcher
 #endif

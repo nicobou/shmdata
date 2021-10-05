@@ -24,8 +24,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(EmptyQuiddity,
                                      "emptyquid",
                                      "Empty Quiddity",
-                                     "utils",
-                                     "",
                                      "Quiddity for user data saving",
                                      "LGPL",
                                      "Nicolas Bouillot");

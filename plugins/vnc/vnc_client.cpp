@@ -30,22 +30,43 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(VncClientSrc,
                                      "vncclientsrc",
                                      "VNC client",
-                                     "video",
-                                     "writer/reader",
                                      "Connects to a VNC server and outputs the video to a shmdata",
                                      "LGPL",
                                      "Emmanuel Durand");
 
+const std::string VncClientSrc::kConnectionSpec(R"(
+{
+"follower":
+  [
+    {
+      "label": "mouse",
+      "description": "Mouse event stream",
+      "can_do": ["application/x-mouse-events"]
+    },
+    {
+      "label": "keyb",
+      "description": "Keyboard envent stream",
+      "can_do": ["application/x-keyboard-events"]
+    }
+  ],
+"writer":
+  [
+    {
+      "label": "vnc",
+      "description": "Produced rendering",
+      "can_do": ["video/x-raw"]
+    }
+  ]
+}
+)");
+
 VncClientSrc::VncClientSrc(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
-      Startable(this),
-      shmcntr_(static_cast<Quiddity*>(this)) {
-  register_writer_suffix("vnc");
-  shmcntr_.install_connect_method([this](const std::string path) { return connect(path); },
-                                  [this](const std::string path) { return disconnect(path); },
-                                  [this]() { return disconnect_all(); },
-                                  [this](const std::string caps) { return can_sink_caps(caps); },
-                                  2);
+    : Quiddity(
+          std::forward<quiddity::Config>(conf),
+          {kConnectionSpec,
+           [this](const std::string& shmpath, claw::sfid_t sfid) { return connect(shmpath, sfid); },
+           [this](claw::sfid_t sfid) { return disconnect(sfid); }}),
+      Startable(this) {
   vnc_server_address_id_ =
       pmanage<MPtr(&property::PBag::make_string)>("vnc_server_address",
                                                   [this](const std::string& val) {
@@ -115,11 +136,8 @@ bool VncClientSrc::stop() {
   return true;
 }
 
-bool VncClientSrc::connect(string shmdata_socket_path) {
+bool VncClientSrc::connect(string shmdata_socket_path, claw::sfid_t sfid) {
   unique_lock<mutex> connectLock(connect_mutex_);
-
-  int shmreader_id = shmreader_id_;
-  shmreader_id_++;
 
   auto reader = std::make_unique<shmdata::Follower>(
       this,
@@ -129,7 +147,7 @@ bool VncClientSrc::connect(string shmdata_socket_path) {
 
         if (rfb_client_ == nullptr) return;
 
-        auto typeIt = shmdata_readers_caps_.find(shmreader_id);
+        auto typeIt = shmdata_readers_caps_.find(sfid);
         if (typeIt == shmdata_readers_caps_.end()) return;
 
         auto type = typeIt->second;
@@ -154,32 +172,22 @@ bool VncClientSrc::connect(string shmdata_socket_path) {
       },
       [=](string caps) {
         unique_lock<mutex> lock(mutex_);
-        shmdata_readers_caps_[shmreader_id] = caps;
+        shmdata_readers_caps_[sfid] = caps;
       });
 
-  events_readers_[shmdata_socket_path] = std::move(reader);
+  events_readers_[sfid] = std::move(reader);
 
   return true;
 }
 
-bool VncClientSrc::disconnect(string shmdata_socket_path) {
+bool VncClientSrc::disconnect(claw::sfid_t sfid) {
   unique_lock<mutex> lock(mutex_);
-  auto shmdataIt = events_readers_.find(shmdata_socket_path);
+  auto shmdataIt = events_readers_.find(sfid);
   if (shmdataIt != events_readers_.end()) {
     events_readers_.erase(shmdataIt);
     return true;
-  } else {
-    return false;
   }
-}
-
-bool VncClientSrc::disconnect_all() {
-  events_readers_.clear();
-  return true;
-}
-
-bool VncClientSrc::can_sink_caps(string caps) {
-  return (caps == string(VNC_MOUSE_EVENTS_CAPS)) || (caps == string(VNC_KEYBOARD_EVENTS_CAPS));
+  return false;
 }
 
 rfbBool VncClientSrc::resize_vnc(rfbClient* client) {
@@ -243,7 +251,7 @@ void VncClientSrc::update_vnc(rfbClient* client, int, int, int, int) {
 
     that->vnc_writer_.reset();
     that->vnc_writer_ = std::make_unique<shmdata::Writer>(
-        that, that->make_shmpath("vnc"), that->framebuffer_size_, data_type);
+        that, that->claw_.get_shmpath_from_writer_label("vnc"), that->framebuffer_size_, data_type);
     if (!that->vnc_writer_) {
       return;
     }

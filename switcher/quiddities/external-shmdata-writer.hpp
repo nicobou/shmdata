@@ -30,11 +30,10 @@ using namespace quiddity;
 class ExternalWriter : public Quiddity {
  public:
   ExternalWriter(quiddity::Config&&);
-  ~ExternalWriter() = default;
-  ExternalWriter(const ExternalWriter&) = delete;
-  ExternalWriter& operator=(const ExternalWriter&) = delete;
 
  private:
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
+
   std::string shmdata_path_{};
   std::unique_ptr<shmdata::Follower> shm_{nullptr};
   InfoTree::ptr on_saving() final;

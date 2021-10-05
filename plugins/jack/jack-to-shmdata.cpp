@@ -26,14 +26,25 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackToShmdata,
                                      "jacksrc",
                                      "Jack Audio Device",
-                                     "audio",
-                                     "writer/device",
                                      "Get audio from jack",
                                      "LGPL",
                                      "Nicolas Bouillot");
 
+const std::string JackToShmdata::kConnectionSpec(R"(
+{
+"writer":
+  [
+    {
+      "label": "audio",
+      "description": "Audio stream from Jack",
+      "can_do": ["audio/x-raw"]
+    }
+  ]
+}
+)");
+
 JackToShmdata::JackToShmdata(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
+    : Quiddity(std::forward<quiddity::Config>(conf), {kConnectionSpec}),
       Startable(this),
       client_name_(get_nickname()),
       server_name_(conf.tree_config_->branch_has_data("server_name")
@@ -119,7 +130,6 @@ JackToShmdata::JackToShmdata(quiddity::Config&& conf)
                                                               1,
                                                               max_number_of_channels);
   update_port_to_connect();
-  register_writer_suffix("audio");
 }
 
 bool JackToShmdata::start() {
@@ -184,7 +194,7 @@ bool JackToShmdata::start() {
   }
   data_type += channel_mask;
 
-  std::string shmpath = make_shmpath("audio");
+  std::string shmpath = claw_.get_shmpath_from_writer_label("audio");
   shm_ = std::make_unique<shmdata::Writer>(
       this, shmpath, buf_.size() * sizeof(jack_sample_t), data_type);
   if (!shm_.get()) {

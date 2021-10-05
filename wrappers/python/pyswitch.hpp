@@ -71,9 +71,9 @@ class pySwitch {
   static PyObject* load_state(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* reset_state(pySwitchObject* self, PyObject* args, PyObject* kwds);
   // introspection
-  static PyObject* list_classes(pySwitchObject* self, PyObject* args, PyObject* kwds);
-  static PyObject* classes_doc(pySwitchObject* self, PyObject* args, PyObject* kwds);
-  static PyObject* class_doc(pySwitchObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* list_kinds(pySwitchObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* kinds_doc(pySwitchObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* kind_doc(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* list_quids(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* list_ids(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* quids_descr(pySwitchObject* self, PyObject* args, PyObject* kwds);

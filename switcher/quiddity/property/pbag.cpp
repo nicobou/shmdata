@@ -23,6 +23,11 @@ namespace switcher {
 namespace quiddity {
 namespace property {
 
+const std::string PBag::disabledWhenConnectedMsg =
+    "this property is disabled when a stream is connected";
+const std::string PBag::disabledWhenDisconnectedMsg =
+    "this property is disabled when no stream is connected";
+
 PBag::PBag(InfoTree::ptr tree,
                        on_tree_grafted_cb_t on_tree_grafted_cb,
                        on_tree_pruned_cb_t on_tree_pruned_cb)

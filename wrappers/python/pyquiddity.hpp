@@ -21,14 +21,18 @@
 #define __SWITCHER_PYQUIDDITY_H__
 
 #include <Python.h>  // according to python doc, this *must* be the first include
+
 #include <future>
 #include <list>
 #include <map>
 #include <memory>
+
 #include "switcher/quiddity/quiddity.hpp"
+#include "switcher/switcher.hpp"
 
 using namespace switcher;
 using namespace quiddity;
+using namespace claw;
 
 class pyQuiddity {
  public:
@@ -44,6 +48,8 @@ class pyQuiddity {
   };
   using pyQuiddityObject = struct {
     PyObject_HEAD Quiddity* quid{nullptr};
+    Switcher::ptr switcher{nullptr};
+    InfoTree::ptr connnection_spec_keep_alive_{};
     std::unique_ptr<sig_registering_t> sig_reg{};
     std::unique_ptr<prop_registering_t> prop_reg{};
     // async invocations
@@ -62,18 +68,18 @@ class pyQuiddity {
   static PyObject* Quiddity_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /*kwds*/);
   static int Quiddity_init(pyQuiddityObject* self, PyObject* /*args*/, PyObject* /*kwds*/);
   static void Quiddity_dealloc(pyQuiddityObject* self);
+  static PyObject* tp_str(pyQuiddityObject* self);
   static PyObject* set(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* get(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* invoke(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* invoke_async(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
-  static PyObject* make_shmpath(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   // access to user tree
   static PyObject* get_user_tree(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   // access to quiddity InfoTree
   static PyObject* get_info(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* get_info_tree_as_json(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
-  // name, type, nickname and id
-  static PyObject* get_type(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
+  // name, kind, nickname and id
+  static PyObject* get_kind(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* set_nickname(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* nickname(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* id(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
@@ -92,5 +98,10 @@ class pyQuiddity {
   static bool unsubscribe_from_property(pyQuiddityObject* self, const char* prop_name);
   // signals
   static PyObject* get_signal_id(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
+  // claw
+  static PyObject* try_connect(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* get_connection_specs(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* get_writer_claws(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* get_follower_claws(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
 };
 #endif

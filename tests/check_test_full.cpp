@@ -32,7 +32,7 @@ int main() {
   bool success = true;
   {
     Switcher::ptr manager = Switcher::make_switcher("test_full");
-    for (auto& it : manager->factory<MPtr(&quiddity::Factory::get_class_list)>()) {
+    for (auto& it : manager->factory<MPtr(&quiddity::Factory::get_kinds)>()) {
       if (!quiddity::test::full(manager, it)) {
         success = false;
       }

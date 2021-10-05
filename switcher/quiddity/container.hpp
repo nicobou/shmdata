@@ -27,6 +27,7 @@
 #include "../infotree/information-tree.hpp"
 #include "../infotree/json-serializer.hpp"
 #include "../logger/logged.hpp"
+#include "../utils/ids.hpp"
 #include "./config.hpp"
 #include "./documentation-registry.hpp"
 #include "./factory.hpp"
@@ -63,14 +64,13 @@ class Container : public log::Logged {
   std::vector<qid_t> get_ids() const;
 
   // **** creation/remove/get and notification
-  Qrox create(const std::string& quiddity_class,
+  Qrox create(const std::string& quiddity_kind,
               const std::string& nickname,
               InfoTree::ptrc override_config);
-  Qrox quiet_create(const std::string& quiddity_class,
+  Qrox quiet_create(const std::string& quiddity_kind,
                     const std::string& nickname,
                     InfoTree::ptrc tree);
 
-  
   /**
   * @brief Send confirmation signal for quiddity creation.
   *        Use after a Container::quiet_create call.
@@ -167,10 +167,9 @@ class Container : public log::Logged {
   std::map<unsigned int, OnCreateRemoveCb> on_created_cbs_{};
   std::map<unsigned int, OnCreateRemoveCb> on_removed_cbs_{};
   CounterMap counters_{};
-  unsigned int cur_id_{0};
   std::weak_ptr<Container> me_{};
   Switcher* switcher_;
-  std::vector<qid_t> ids_{};
+  Ids ids_{};
   std::unordered_map<qid_t, std::shared_ptr<Quiddity>> quiddities_{};
 };
 

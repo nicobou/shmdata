@@ -24,7 +24,7 @@
 #include "switcher/infotree/json-serializer.hpp"
 #include "switcher/logger/console.hpp"
 #include "switcher/logger/silent.hpp"
-#include "switcher/quiddity/class-printer.hpp"
+#include "switcher/quiddity/kind-printer.hpp"
 #include "switcher/switcher.hpp"
 #include "switcher/utils/file-utils.hpp"
 
@@ -38,9 +38,9 @@ static gboolean display_version;
 static gboolean quiet;
 static gboolean debug;
 static gboolean verbose;
-static gboolean listclasses;
-static gboolean classesdoc;
-static gchar* classdoc = nullptr;
+static gboolean listkinds;
+static gboolean kindsdoc;
+static gchar* kinddoc = nullptr;
 static gchar* extraplugindir = nullptr;
 static Switcher::ptr manager;
 static GOptionEntry entries[15] = {
@@ -81,20 +81,20 @@ static GOptionEntry entries[15] = {
      "display all messages, excluding debug",
      nullptr},
     {"debug", 'd', 0, G_OPTION_ARG_NONE, &debug, "display all messages, including debug", nullptr},
-    {"list-classes", 'C', 0, G_OPTION_ARG_NONE, &listclasses, "list quiddity classes", nullptr},
-    {"classes-doc",
+    {"list-kinds", 'C', 0, G_OPTION_ARG_NONE, &listkinds, "list quiddity kinds", nullptr},
+    {"kinds-doc",
      'K',
      0,
      G_OPTION_ARG_NONE,
-     &classesdoc,
-     "print classes documentation, JSON-formated",
+     &kindsdoc,
+     "print kinds documentation, JSON-formated",
      nullptr},
-    {"class-doc",
+    {"kind-doc",
      'k',
      0,
      G_OPTION_ARG_STRING,
-     &classdoc,
-     "print class documentation, JSON-formated (--class-doc class_name)",
+     &kinddoc,
+     "print kind documentation, JSON-formated (--kind-doc kind_name)",
      nullptr},
     {"extra-plugin-dir",
      'E',
@@ -149,22 +149,21 @@ int main(int argc, char* argv[]) {
     manager->factory<MPtr(&quiddity::Factory::scan_dir)>(extraplugindir);
 
   // checking if this is printing info only
-  if (listclasses) {
-    std::vector<std::string> resultlist =
-        manager->factory<MPtr(&quiddity::Factory::get_class_list)>();
+  if (listkinds) {
+    std::vector<std::string> resultlist = manager->factory<MPtr(&quiddity::Factory::get_kinds)>();
     for (uint i = 0; i < resultlist.size(); i++) g_print("%s\n", resultlist[i].c_str());
     return 0;
   }
-  if (classesdoc) {
+  if (kindsdoc) {
     g_print("%s\n",
-            classprinter::print(manager->factory<MPtr(&quiddity::Factory::get_classes_doc)>().get())
+            kindprinter::print(manager->factory<MPtr(&quiddity::Factory::get_kinds_doc)>().get())
                 .c_str());
     return 0;
   }
-  if (classdoc != nullptr) {
+  if (kinddoc != nullptr) {
     g_print("%s\n",
-            infotree::json::serialize(manager->factory<MPtr(&quiddity::Factory::get_classes_doc)>()
-                                          ->get_tree(std::string(".classes.") + classdoc)
+            infotree::json::serialize(manager->factory<MPtr(&quiddity::Factory::get_kinds_doc)>()
+                                          ->get_tree(std::string(".kinds.") + kinddoc)
                                           .get())
                 .c_str());
     return 0;

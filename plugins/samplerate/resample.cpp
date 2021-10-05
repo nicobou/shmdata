@@ -22,15 +22,36 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Resample,
                                      "resample",
                                      "Audio resampler",
-                                     "audio",
-                                     "reader/writer",
                                      "Audio resampling with libsamplerate",
                                      "GPL",
                                      "Nicolas Bouillot");
 
+const std::string Resample::kConnectionSpec(R"(
+{
+"follower":
+  [
+    {
+      "label": "audio",
+      "description": "Audio stream",
+      "can_do": ["audio/x-raw"]
+    }
+  ],
+"writer":
+  [
+    {
+      "label": "audio",
+      "description": "Resampled audio stream",
+      "can_do": ["audio/x-raw"]
+    }
+  ]
+}
+)");
+
 Resample::Resample(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
-      cntr_(static_cast<Quiddity*>(this)),
+    : Quiddity(std::forward<quiddity::Config>(conf),
+               {kConnectionSpec,
+                [this](const std::string& shmpath, claw::sfid_t) { return connect(shmpath); },
+                [this](claw::sfid_t) { return disconnect(); }}),
       samplerate_id_(pmanage<MPtr(&property::PBag::make_parented_unsigned_int)>(
           "samplerate",
           "",
@@ -54,12 +75,6 @@ Resample::Resample(quiddity::Config&& conf)
           "Resampling algorithm",
           "Balance fidelity vs. speed",
           algo_)) {
-  register_writer_suffix("audio");
-  cntr_.install_connect_method([this](const std::string& shmpath) { return connect(shmpath); },
-                               [this](const std::string&) { return disconnect(); },
-                               [this]() { return disconnect(); },
-                               [this](const std::string& caps) { return can_sink_caps(caps); },
-                               1);
   resampled_.resize(resampled_size_);
   in_converted_.resize(resampled_size_);
 }
@@ -67,9 +82,8 @@ Resample::Resample(quiddity::Config&& conf)
 bool Resample::connect(const std::string& path) {
   shmr_.reset();
   shmw_.reset();
-  pmanage<MPtr(&property::PBag::disable)>(algo_id_, shmdata::Connector::disabledWhenConnectedMsg);
-  pmanage<MPtr(&property::PBag::disable)>(samplerate_id_,
-                                          shmdata::Connector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(algo_id_, property::PBag::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(samplerate_id_, property::PBag::disabledWhenConnectedMsg);
   shmr_ = std::make_unique<shmdata::Follower>(
       this,
       path,
@@ -144,7 +158,8 @@ bool Resample::connect(const std::string& path) {
         auto newcaps = *incaps_;
         newcaps.set_samplerate(samplerate_);
         newcaps.set_float();
-        shmw_ = std::make_unique<shmdata::Writer>(this, make_shmpath("audio"), 1, newcaps.get());
+        shmw_ = std::make_unique<shmdata::Writer>(
+            this, claw_.get_shmpath_from_writer_label("audio"), 1, newcaps.get());
       },
       nullptr);
   return true;
@@ -155,15 +170,6 @@ bool Resample::disconnect() {
   shmw_.reset();
   pmanage<MPtr(&property::PBag::enable)>(algo_id_);
   pmanage<MPtr(&property::PBag::enable)>(samplerate_id_);
-  return true;
-}
-
-bool Resample::can_sink_caps(const std::string& str_caps) {
-  auto audiocaps = shmdata::caps::AudioCaps(str_caps);
-  if (!audiocaps) return false;
-  if (!audiocaps.is_float() && audiocaps.format_size_in_bytes() != sizeof(short) &&
-      audiocaps.format_size_in_bytes() != sizeof(int))
-    return false;
   return true;
 }
 

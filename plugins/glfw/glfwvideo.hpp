@@ -29,7 +29,6 @@
 #include "switcher/gst/pipeliner.hpp"
 #include "switcher/shmdata/gst-tree-updater.hpp"
 #include "switcher/utils/periodic-task.hpp"
-#include "switcher/shmdata/connector.hpp"
 #include "switcher/shmdata/follower.hpp"
 #include "switcher/shmdata/writer.hpp"
 #include "switcher/utils/threaded-wrapper.hpp"
@@ -136,6 +135,7 @@ class GLFWVideo : public Quiddity {
     GLFWVideo* parent_window_{nullptr};
 
     ImVec2 text_size_{};
+
     std::string text_{};
     property::prop_id_t text_id_{0};
     property::Selection<unsigned int> alignment_{
@@ -238,7 +238,6 @@ class GLFWVideo : public Quiddity {
   void install_gst_properties();
   void remove_gst_properties();
   static void on_handoff_cb(GstElement* object, GstBuffer* buf, GstPad* pad, gpointer user_data);
-  bool can_sink_caps(std::string caps);
 
   /**
    * \brief Used for OpenGL rendering
@@ -258,7 +257,7 @@ class GLFWVideo : public Quiddity {
   /**
    * \brief Shmdata connection
    */
-  shmdata::Connector shmcntr_;
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
   std::string shmpath_{};
   std::unique_ptr<shmdata::Follower> shm_follower_{nullptr};
   std::unique_ptr<shmdata::GstTreeUpdater> shm_sub_{nullptr};

@@ -10,8 +10,9 @@
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Lesser General Public License for more details.
 
-import pyquid
 import time
+import pyquid
+
 
 on_created_success = False
 on_removed_success = True

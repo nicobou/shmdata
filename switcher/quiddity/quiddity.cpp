@@ -33,7 +33,7 @@
 namespace switcher {
 namespace quiddity {
 
-Quiddity::Quiddity(quiddity::Config&& conf)
+Quiddity::Quiddity(quiddity::Config&& conf, claw::Config claw_conf)
     : log::Logged(conf.log_),
       information_tree_(InfoTree::make()),
       structured_user_data_(InfoTree::make()),
@@ -59,6 +59,12 @@ Quiddity::Quiddity(quiddity::Config&& conf)
           "on-user-data-pruned", "A branch has been pruned from the quiddity's user data tree")),
       on_nicknamed_id_(smanage<MPtr(&signal::SBag::make)>(
           "on-nicknamed", "A nickname has been given to the quiddity")),
+      on_connection_spec_grafted_id_(smanage<MPtr(&signal::SBag::make)>(
+          "on-connection-spec-added",
+          "New specification has been added to the connection specification")),
+      on_connection_spec_pruned_id_(smanage<MPtr(&signal::SBag::make)>(
+          "on-connection-spec-removed",
+          "Specification has been removed from the connection specification")),
       props_(
           information_tree_,
           [this](const std::string& key) {
@@ -92,10 +98,14 @@ Quiddity::Quiddity(quiddity::Config&& conf)
           }),
       id_(conf.id_),
       nickname_(conf.nickname_),
-      type_(conf.type_),
+      kind_(conf.kind_),
+      claw_(this,
+            claw::ConnectionSpec(claw_conf.spec),
+            claw_conf.on_connect_cb,
+            claw_conf.on_disconnect_cb),
       qcontainer_(conf.qc_) {
   configuration_tree_->graft(".", InfoTree::make());
-  information_tree_->graft(".type", InfoTree::make(conf.type_));
+  information_tree_->graft(".kind", InfoTree::make(conf.kind_));
 }
 
 Quiddity::~Quiddity() {
@@ -104,29 +114,7 @@ Quiddity::~Quiddity() {
 
 qid_t Quiddity::get_id() const { return id_; }
 
-std::string Quiddity::get_type() const { return type_; }
-
-std::string Quiddity::make_shmpath(const std::string& suffix) const {
-  auto server_name = qcontainer_->get_switcher()->get_name();
-  auto name =
-      std::string(get_shmpath_prefix() + server_name + "_" + std::to_string(id_) + "_" + suffix);
-
-  // Done this way for OSX portability, there is a maximum socket path length in UNIX systems and
-  // shmdata use sockets.
-  static struct sockaddr_un s;
-  static auto max_path_size = sizeof(s.sun_path);
-
-  // We truncate
-  if (static_cast<int>(name.length() - max_path_size) > 0) {
-    return std::string(name.begin(), name.begin() + max_path_size - 1);
-  }
-
-  return name;
-}
-
-std::string Quiddity::get_shmpath_prefix() {
-  return Switcher::get_shm_dir() + "/" + Switcher::get_shm_prefix();
-}
+std::string Quiddity::get_kind() const { return kind_; }
 
 std::string Quiddity::get_manager_name() { return qcontainer_->get_switcher()->get_name(); }
 
@@ -217,10 +205,6 @@ bool Quiddity::set_nickname(const std::string& nickname) {
 }
 
 std::string Quiddity::get_nickname() const { return nickname_; }
-
-void Quiddity::register_writer_suffix(const std::string& suffix) {
-  information_tree_->graft("shmdata.writer.suffix", InfoTree::make(suffix));
-}
 
 InfoTree::ptr Quiddity::get_shm_information_template() {
   InfoTree::ptr tree = InfoTree::make();

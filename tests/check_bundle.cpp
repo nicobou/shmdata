@@ -18,9 +18,12 @@
 #undef NDEBUG  // get assert in release mode
 
 #include <gst/gst.h>
+
 #include <atomic>
 #include <cassert>
 #include <condition_variable>
+
+#include "switcher/infotree/information-tree.hpp"  // remove me
 #include "switcher/quiddity/basic-test.hpp"
 #include "switcher/switcher.hpp"
 
@@ -86,13 +89,15 @@ int main() {
                  }
                }));
 
-    assert(dummy->meth<MPtr(
-               &quiddity::method::MBag::invoke<std::function<bool(quiddity::qid_t, std::string)>>)>(
-        dummy->meth<MPtr(&quiddity::method::MBag::get_id)>("connect-quid"),
-        std::make_tuple(srcqrox.get_id(), "video-encoded")));
-
+    std::cout << srcqrox.get()->conspec<MPtr(&InfoTree::get_copy)>()->serialize_json() << '\n';
+    std::cout << dummy->conspec<MPtr(&InfoTree::get_copy)>()->serialize_json() << '\n';
+    assert(dummy->claw<MPtr(&quiddity::claw::Claw::connect)>(
+        dummy->claw<MPtr(&quiddity::claw::Claw::get_sfid)>("dummy/default"),
+        srcqrox.get_id(),
+        srcqrox.get()->claw<MPtr(&quiddity::claw::Claw::get_swid)>("encoder/video-encoded")));
     wait_until_success();
 
+    assert(srcqrox.get()->prop<MPtr(&quiddity::property::PBag::set_str_str)>("started", "false"));
     if (!success) {
       std::cout << "No data received." << std::endl;
       return 1;

@@ -25,7 +25,7 @@ switcher-ctrl -s OSCreceiver started true
 
 In another terminal, check if frames are coming into the OSCreceiver Shmdata.
 ```
-sdflow $(switcher-ctrl -p OSCreceiver osc)
+sdflow /tmp/switcher_default_2_1
 ```
 Note: if a message is received by OSCreceiver, then sdflow command will display a line like the following:
 ```
@@ -43,10 +43,11 @@ Then you should have seen the frame displayed by the sdflow command.
 (This assumes OSC to Shmdata is still running.)
 
 ```
-OSCSINK_ID=$(switcher-ctrl -C OSCsink OSCsender)
+switcher-ctrl -C OSCsink OSCsender
 switcher-ctrl -s OSCsender port 2397
 switcher-ctrl -s OSCsender host localhost
-switcher-ctrl -i OSCsender connect-quid $OSCSINK_ID osc
+switcher-ctrl -s OSCsender autostart true
+switcher-ctrl -o OSCsender OSCreceiver
 ```
 
 Run an OSC receiver using liblo command line tools:

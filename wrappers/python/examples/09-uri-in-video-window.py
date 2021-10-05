@@ -13,36 +13,48 @@
 import sys
 import pyquid
 import time
-import assert_exit_1
 
 
 sw = pyquid.Switcher('urivid', debug=True)
+audio_connection = None
+image_connection = None
+
+
+def on_con_spec_added(data, uri):
+    global win, a, audio_connection, image_connection
+    label = uri.get_connection_specs().get(data.get() + '.label')
+    if 'audio-0' == label:
+        audio_connection = a.try_connect(uri)
+    else:
+        image_connection = win.try_connect(uri)
+
+
+def on_con_spec_removed(data, user_data):
+    global audio_connection, image_connection
+    label = uri.get_connection_specs().get(data.get() + '.label')
+    if 'audio-0' == label:
+        audio_connection.disconnect()
+    else:
+        image_connection.disconnect()
+
 
 # creating the window
 try:
-    win = sw.create(type='glfwin', nickname='win')
+    win = sw.create(kind='glfwin', nickname='win')
 except RuntimeError:
-    win = sw.create(type='dummysink', nickname='win')
-try:
-    win2 = sw.create(type='glfwin', nickname='win2')
-except RuntimeError:
-    win2 = sw.create(type='dummysink', nickname='win2')
+    win = sw.create(kind='dummysink', nickname='win')
+
 
 # creating a dummysink for audio
-a = sw.create(type='dummysink', nickname='asink')
+a = sw.create(kind='dummysink', nickname='asink')
 
 # creating the uri decoder
 uri = sw.create('urisrc', 'uri')
 
-# connecting quiddities
-assert win.invoke('connect-quid', [uri.id(), 'image-0'])
-assert win2.invoke('connect-quid', [uri.id(), 'video-0'])
-assert a.invoke('connect-quid', [uri.id(), 'audio-0'])
+assert uri.subscribe("on-connection-spec-added", on_con_spec_added, uri)
+assert uri.subscribe("on-connection-spec-removed", on_con_spec_removed, uri)
 
 assert uri.set('uri', 'https://gitlab.com/sat-metalab/switcher/raw/master/tests/oie.mp3')
-time.sleep(2)
-
-assert uri.set('uri', 'https://download.blender.org/peach/bigbuckbunny_movies/BigBuckBunny_320x180.mp4')
 time.sleep(2)
 
 assert uri.set(

@@ -13,7 +13,7 @@
 import sys
 import pyquid
 import time
-import assert_exit_1
+
 
 # "xxx_user_data" will be passed to the subscribe method
 width_user_data = 'width user data'

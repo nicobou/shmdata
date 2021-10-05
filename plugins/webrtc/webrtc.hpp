@@ -39,7 +39,6 @@
 #include "switcher/infotree/json-serializer.hpp"
 #include "switcher/quiddity/quiddity.hpp"
 #include "switcher/quiddity/startable.hpp"
-#include "switcher/shmdata/connector.hpp"
 #include "switcher/shmdata/follower.hpp"
 #include "switcher/utils/scope-exit.hpp"
 #include "switcher/utils/threaded-wrapper.hpp"
@@ -119,6 +118,8 @@ class Webrtc : public Quiddity, public Startable {
   using handler_tuple_t = std::tuple<signal_handler_t, signal_handler_t>;
   using peer_data_t = std::tuple<handler_tuple_t, unique_bundle_p>;
 
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
+
   std::unique_ptr<gst::Pipeliner> pipeline_;
   std::mutex pipeline_mutex_{};  // <! avoid concurent access among start/stop and wss messages
   unique_gobject<SoupWebsocketConnection> connection_;
@@ -134,7 +135,6 @@ class Webrtc : public Quiddity, public Startable {
   std::string audio_{"shmdatasrc socket-path=/tmp/fake name=shmaudio copy-buffers=true do-timestamp=true"};
   std::string video_{"shmdatasrc socket-path=/tmp/fake name=shmvideo copy-buffers=true do-timestamp=true"};
 
-  shmdata::Connector connector_;
   ThreadedWrapper<> async_this_{};
 
   std::string signaling_server_{"wss://localhost:8443"};
@@ -165,9 +165,8 @@ class Webrtc : public Quiddity, public Startable {
            ",payload=" + std::to_string(n);
   }
 
-  bool on_shmdata_connect(const std::string& shmpath, ShmType type);
-  bool on_shmdata_disconnect(ShmType type);
-  bool can_sink_caps(const std::string& str_caps);
+  bool on_shmdata_connect(const std::string& shmpath, claw::sfid_t sfid);
+  bool on_shmdata_disconnect(claw::sfid_t sfid);
 
   /*!
     Start the client. Join a room on the signaling server and contact every peer in the room.

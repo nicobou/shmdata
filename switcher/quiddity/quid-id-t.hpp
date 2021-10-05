@@ -20,9 +20,11 @@
 #ifndef __SWITCHER_QUID_ID_T_H__
 #define __SWITCHER_QUID_ID_T_H__
 
+#include "../utils/ids.hpp"
+
 namespace switcher {
 namespace quiddity {
-using qid_t = size_t;
+using qid_t = Ids::id_t;
 }  // namespace quiddity
 }  // namespace switcher
 #endif

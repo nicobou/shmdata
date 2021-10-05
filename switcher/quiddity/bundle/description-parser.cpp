@@ -25,8 +25,8 @@ namespace switcher {
 namespace quiddity {
 namespace bundle {
 DescriptionParser::DescriptionParser(const std::string& description,
-                                     const std::vector<std::string>& valid_types)
-    : is_valid_(parse_description(description, valid_types)) {
+                                     const std::vector<std::string>& valid_kinds)
+    : is_valid_(parse_description(description, valid_kinds)) {
   if (!is_valid_) return;
 
   // check if placeholders in connections_ refer to existing quiddity
@@ -91,32 +91,32 @@ DescriptionParser::DescriptionParser(const std::string& description,
 }
 
 bool DescriptionParser::parse_description(const std::string& description,
-                                          const std::vector<std::string>& valid_types) {
+                                          const std::vector<std::string>& valid_kinds) {
   // split by '&', but can be escaped with '\\&'
   std::regex rgx("[^\\\\]&");
   std::sregex_token_iterator iter(description.begin(), description.end(), rgx, -1);
   for (; iter != std::sregex_token_iterator(); ++iter) {
     if (static_cast<std::string>(*iter).empty()) continue;
-    if (!parse_branch(*iter, valid_types)) return false;
+    if (!parse_branch(*iter, valid_kinds)) return false;
   }
   return true;
 }
 
 bool DescriptionParser::parse_branch(const std::string& branch,
-                                     const std::vector<std::string>& valid_types) {
+                                     const std::vector<std::string>& valid_kinds) {
   // split by '!', but can be escaped with '\\!'
   std::regex rgx("[^\\\\]!");
   std::sregex_token_iterator iter(branch.begin(), branch.end(), rgx, -1);
   for (; iter != std::sregex_token_iterator(); ++iter) {
     if (static_cast<std::string>(*iter).empty()) continue;
-    if (!parse_item(*iter, valid_types)) return false;
+    if (!parse_item(*iter, valid_kinds)) return false;
   }
   previous_quid_.clear();
   return true;
 }
 
 bool DescriptionParser::parse_item(const std::string& raw_item,
-                                   const std::vector<std::string>& valid_types) {
+                                   const std::vector<std::string>& valid_kinds) {
   // start with some filtering
   std::string item = prepare_item(raw_item);
   item = protect_space_in_quote(item);
@@ -124,7 +124,7 @@ bool DescriptionParser::parse_item(const std::string& raw_item,
   item = protect_escaped_spaces(item);
   std::regex rgx("\\s");
   std::sregex_token_iterator iter(item.begin(), item.end(), rgx, -1);
-  bool type_found = false;
+  bool kind_found = false;
   static const std::string shmr("<shmr");
   static const std::string shmw("<shmw");
   static const std::string noprop("<no_prop");
@@ -133,8 +133,8 @@ bool DescriptionParser::parse_item(const std::string& raw_item,
   quiddity_spec_t quid;
   for (; iter != std::sregex_token_iterator(); ++iter) {
     if (static_cast<std::string>(*iter).empty()) continue;
-    // first thing to do is to find quiddity type
-    if (!type_found) {
+    // first thing to do is to find quiddity kind
+    if (!kind_found) {
       const auto& str = static_cast<std::string>(*iter);
       if (*str.begin() == '.') {
         if (str.size() == 1) {
@@ -153,14 +153,14 @@ bool DescriptionParser::parse_item(const std::string& raw_item,
         previous_quid_ = str;
         return true;
       } else {
-        if (!valid_types.empty() &&
-            valid_types.end() == std::find(valid_types.begin(), valid_types.end(), *iter)) {
-          parsing_error_ = static_cast<std::string>(*iter) + " is not a valid quiddity type";
+        if (!valid_kinds.empty() &&
+            valid_kinds.end() == std::find(valid_kinds.begin(), valid_kinds.end(), *iter)) {
+          parsing_error_ = static_cast<std::string>(*iter) + " is not a valid quiddity kind";
           return false;
         }
-        quid.type = *iter;
+        quid.kind = *iter;
       }
-      type_found = true;
+      kind_found = true;
       continue;
     }
     if (*iter == shmr) {
@@ -207,7 +207,7 @@ bool DescriptionParser::parse_item(const std::string& raw_item,
 
   if (quid.name.empty()) {
     parsing_error_ =
-        std::string("quiddity name is missing for quiddity specified with type ") + quid.type;
+        std::string("quiddity name is missing for quiddity specified with kind ") + quid.kind;
     return false;
   }
   if (!previous_quid_.empty()) connections_.push_back(shm_connection_t(previous_quid_, quid.name));

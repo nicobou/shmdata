@@ -24,35 +24,44 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstAudioEncoder,
                                      "audioenc",
                                      "Audio Encoder",
-                                     "audio",
-                                     "writer/reader",
                                      "Encode raw audio stream",
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-GstAudioEncoder::GstAudioEncoder(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
-      shmcntr_(static_cast<Quiddity*>(this)),
-      codecs_(std::make_unique<gst::AudioCodec>(static_cast<Quiddity*>(this))) {
-  register_writer_suffix("audio-encoded");
-  shmcntr_.install_connect_method(
-      [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
-      [this](const std::string&) { return this->on_shmdata_disconnect(); },
-      [this]() { return this->on_shmdata_disconnect(); },
-      [this](const std::string& caps) { return this->can_sink_caps(caps); },
-      1);
+const std::string GstAudioEncoder::kConnectionSpec(R"(
+{
+"follower":
+  [
+    {
+      "label": "rawaudio",
+      "description": "The audio stream to encode",
+      "can_do": ["audio/x-raw"]
+    }
+  ],
+"writer":
+  [
+    {
+      "label": "audio-encoded",
+      "description": "The encoded audio",
+      "can_do": ["any"]
+    }
+  ]
 }
+)");
+
+GstAudioEncoder::GstAudioEncoder(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf),
+               {kConnectionSpec,
+                [this](const std::string& shmpath, claw::sfid_t sfid) {
+                  return on_shmdata_connect(shmpath);
+                },
+                [this](claw::sfid_t sfid) { return on_shmdata_disconnect(); }}),
+      codecs_(std::make_unique<gst::AudioCodec>(static_cast<Quiddity*>(this))) {}
 
 bool GstAudioEncoder::on_shmdata_disconnect() { return codecs_->stop(); }
 
 bool GstAudioEncoder::on_shmdata_connect(const std::string& shmpath) {
-  return codecs_->start(shmpath, make_shmpath("audio-encoded"));
-}
-
-bool GstAudioEncoder::can_sink_caps(const std::string& caps) {
-  // assuming codecs_ is internally using audioconvert as first caps negotiating
-  // gst element
-  return gst::utils::can_sink_caps("audioconvert", caps);
+  return codecs_->start(shmpath, claw_.get_shmpath_from_writer_label("audio-encoded"));
 }
 
 }  // namespace quiddities

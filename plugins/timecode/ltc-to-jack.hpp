@@ -23,7 +23,6 @@
 #include <jack/jack.h>
 #include <ltc.h>
 #include "switcher/quiddity/quiddity.hpp"
-#include "switcher/shmdata/connector.hpp"
 #include "switcher/shmdata/follower.hpp"
 
 namespace switcher {
@@ -38,17 +37,14 @@ class LTCToJack : public Quiddity {
  public:
   LTCToJack(quiddity::Config&&);
   ~LTCToJack();
-  LTCToJack(const LTCToJack&) = delete;
-  LTCToJack& operator=(const LTCToJack&) = delete;
 
  private:
   bool on_shmdata_connect(const std::string& shmpath);
   bool on_shmdata_disconnect();
   void on_data(void* data, size_t data_size);
-  bool can_sink_caps(std::string str_caps);
 
   // Shmdata
-  shmdata::Connector shmcntr_;  //!< Shmdata connector to connect into the quiddity.
+  static const std::string kConnectionSpec;                   //!< Shmdata specifications
   std::unique_ptr<shmdata::Follower> shm_follower_{nullptr};  //!< Incoming LTC stream
 
   jack_client_t* jack_client_{nullptr};  //!< Jack client connected to transport

@@ -22,7 +22,6 @@
 
 #include <atomic>
 #include <vector>
-#include "../../shmdata/connector.hpp"
 #include "../../switcher.hpp"
 #include "../quiddity.hpp"
 #include "../startable.hpp"
@@ -38,8 +37,6 @@ class Bundle : public Quiddity, public Startable {
   Bundle(const Bundle&) = delete;
   Bundle& operator=(const Bundle&) = delete;
 
-  std::string make_shmpath(const std::string& suffix) const final;
-
  private:
   struct on_tree_data_t {
     on_tree_data_t(Bundle* self,
@@ -54,6 +51,7 @@ class Bundle : public Quiddity, public Startable {
   };
 
  private:
+  std::string connection_spec_{};  //!< Shmdata specifications
   quiddity::Config conf_;
   std::atomic_bool quitting_{false};
   std::vector<std::pair<std::string /*quid_name*/, std::string /*shmpath*/>> connected_shms_{};
@@ -61,11 +59,18 @@ class Bundle : public Quiddity, public Startable {
   std::vector<std::string> start_quids_{};
   std::vector<std::string> exposed_writer_quids_{};
   std::string reader_quid_{};
-  shmdata::Connector shmcntr_;
   std::vector<std::unique_ptr<on_tree_data_t>> on_tree_datas_{};
   std::string pipeline_{};
   Switcher::ptr manager_;
   std::vector<unsigned int> quiddity_removal_cb_ids_{};
+  struct QuidRegSig {
+    QuidRegSig(Quiddity::ptr quid, std::string sig_name, signal::register_id_t reg_id)
+        : quid_(quid), sig_name_(sig_name), reg_id_(reg_id) {}
+    Quiddity::ptr quid_;
+    std::string sig_name_;
+    signal::register_id_t reg_id_;
+  };
+  std::vector<QuidRegSig> registered_sigs_{};
 
   bool start() final;
   bool stop() final;

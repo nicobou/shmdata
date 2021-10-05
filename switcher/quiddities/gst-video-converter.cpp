@@ -24,14 +24,37 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstVideoConverter,
                                      "videoconvert",
                                      "Video converter",
-                                     "video",
-                                     "writer/reader",
                                      "Convert pixel format of raw video stream",
                                      "LGPL",
                                      "Nicolas Bouillot");
 
+const std::string GstVideoConverter::kConnectionSpec(R"(
+{
+"follower":
+  [
+    {
+      "label": "video",
+      "description": "Video stream to convert",
+      "can_do": ["video/x-raw"]
+    }
+  ],
+"writer":
+  [
+    {
+      "label": "video",
+      "description": "Converted video stream",
+      "can_do": ["video/x-raw"]
+    }
+  ]
+}
+)");
+
 GstVideoConverter::GstVideoConverter(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
+    : Quiddity(
+          std::forward<quiddity::Config>(conf),
+          {kConnectionSpec,
+           [this](const std::string& shmpath, claw::sfid_t) { return on_shmdata_connect(shmpath); },
+           [this](claw::sfid_t) { return on_shmdata_disconnect(); }}),
       video_format_(
           gst::utils::get_gst_element_capability_as_list("videoconvert", "format", GST_PAD_SRC), 0),
       video_format_id_(pmanage<MPtr(&property::PBag::make_selection<>)>(
@@ -43,16 +66,8 @@ GstVideoConverter::GstVideoConverter(quiddity::Config&& conf)
           [this]() { return video_format_.get(); },
           "Convert to selected pixel format",
           "Pixel format to convert into",
-          video_format_)),
-      shmcntr_(static_cast<Quiddity*>(this)) {
-  shmcntr_.install_connect_method(
-      [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
-      [this](const std::string&) { return this->on_shmdata_disconnect(); },
-      [this]() { return this->on_shmdata_disconnect(); },
-      [this](const std::string& caps) { return this->can_sink_caps(caps); },
-      1);
-  shmpath_converted_ = make_shmpath("video");
-  register_writer_suffix("video");
+          video_format_)) {
+  shmpath_converted_ = claw_.get_shmpath_from_writer_label("video");
 }
 
 bool GstVideoConverter::on_shmdata_disconnect() {
@@ -85,12 +100,8 @@ bool GstVideoConverter::on_shmdata_connect(const std::string& shmpath) {
                                                 shmpath_to_convert_,
                                                 shmdata::GstTreeUpdater::Direction::reader);
   pmanage<MPtr(&property::PBag::disable)>(video_format_id_,
-                                          shmdata::Connector::disabledWhenConnectedMsg);
+                                          property::PBag::disabledWhenConnectedMsg);
   return true;
-}
-
-bool GstVideoConverter::can_sink_caps(const std::string& caps) {
-  return gst::PixelFormatConverter::can_sink_caps(caps);
 }
 
 }  // namespace quiddities

@@ -32,7 +32,6 @@
 
 #include "switcher/quiddity/quiddity.hpp"
 #include "switcher/quiddity/startable.hpp"
-#include "switcher/shmdata/connector.hpp"
 #include "switcher/shmdata/follower.hpp"
 #include "switcher/utils/periodic-task.hpp"
 #include "switcher/utils/string-utils.hpp"
@@ -51,16 +50,15 @@ class Executor : public Quiddity, public Startable {
  private:
   bool start() final;
   bool stop() final;
-  bool on_shmdata_connect(const std::string& shmpath);
-  bool on_shmdata_disconnect(const std::string& shmpath);
-  bool on_shmdata_disconnect_all();
-  bool can_sink_caps(const std::string& str_caps);
+  bool on_shmdata_connect(const std::string& shmpath, claw::sfid_t sfid);
+  bool on_shmdata_disconnect(claw::sfid_t sfid);
   pid_t spawn_child(char* program, char** arg_list);
   void clean_up_child_process();
   void monitor_process();
   bool read_outputs();
   bool graft_output(const std::string& type, const std::string& escaped_value);
 
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
   struct sigaction sigchld_action_;
   int child_return_code_{0};
   int cout_pipe_[2];
@@ -70,7 +68,6 @@ class Executor : public Quiddity, public Startable {
   pid_t child_pid_{0};
   posix_spawnattr_t attr_;
   posix_spawn_file_actions_t act_;
-  shmdata::Connector shmcntr_;
   std::string shmpath_{};
   std::string shmpath_audio_{};
   std::string shmpath_video_{};

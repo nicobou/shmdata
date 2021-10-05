@@ -9,20 +9,19 @@ ret=$!
 sleep 3
 
 # query information to the switcher
-switcher-ctrl --list-classes
+switcher-ctrl --list-kinds
 switcher-ctrl --list-quiddities
-switcher-ctrl --classes-doc
-switcher-ctrl --class-doc dummy
+switcher-ctrl --kinds-doc
+switcher-ctrl --kind-doc dummy
 
 # add a quiddity named foo 
 switcher-ctrl --create-quiddity dummy foo
 
 # set get the foo property
-switcher-ctrl --set-prop foo int_ 3
-switcher-ctrl --get-prop foo int_
+switcher-ctrl --set-prop foo int 3
+switcher-ctrl --get-prop foo int
 
 # query information about the foo quiddity
-switcher-ctrl --shmpath foo video
 switcher-ctrl --print-tree foo \.property\.
 switcher-ctrl --quiddities-descr
 switcher-ctrl --quiddity-descr
@@ -41,14 +40,14 @@ switcher-ctrl --prune-user-data foo .to_remove
 switcher-ctrl --print-user-data foo
 
 # add a quiddity named bar
-switcher-ctrl --create-quiddity method bar
-switcher-ctrl --invoke-method bar hello_ "Ringo Star"
+switcher-ctrl --create-quiddity methodquid bar
+switcher-ctrl --invoke-method bar hello "Ringo Star"
 
 # save/remove foo/load
 switcher-ctrl --save ./switcher_save
 switcher-ctrl -D foo
 switcher-ctrl --load ./switcher_save
-switcher-ctrl --set-prop foo int_ 4
+switcher-ctrl --set-prop foo int 4
 rm ./switcher_save
 
 # kill the switcher

@@ -24,14 +24,29 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(LTCToJack,
                                      "ltctojack",
                                      "LTC to Jack Transport",
-                                     "audio",
-                                     "reader",
                                      "Control Jack Transport from an incoming LTC stream",
                                      "LGPL",
                                      "Jérémie Soria");
 
+const std::string LTCToJack::kConnectionSpec(R"(
+{
+"follower":
+  [
+    {
+      "label": "ltc",
+      "description": "LTC stream",
+      "can_do": ["audio/x-raw"]
+    }
+  ]
+}
+)");
+
 LTCToJack::LTCToJack(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)), shmcntr_(static_cast<Quiddity*>(this)) {
+    : Quiddity(
+          std::forward<quiddity::Config>(conf),
+          {kConnectionSpec,
+           [this](const std::string& shmpath, claw::sfid_t) { return on_shmdata_connect(shmpath); },
+           [this](claw::sfid_t) { return on_shmdata_disconnect(); }}) {
   jack_client_ = jack_client_open(
       std::string(std::string("clockLTC_") + get_nickname()).c_str(), JackNullOption, nullptr);
 
@@ -46,13 +61,6 @@ LTCToJack::LTCToJack(quiddity::Config&& conf)
     is_valid_ = false;
     return;
   }
-
-  shmcntr_.install_connect_method(
-      [this](const std::string& shmpath) { return on_shmdata_connect(shmpath); },
-      [this](const std::string&) { return on_shmdata_disconnect(); },
-      [this]() { return on_shmdata_disconnect(); },
-      [this](const std::string& caps) { return can_sink_caps(caps); },
-      1);
 
   drift_threshold_id_ = pmanage<MPtr(&property::PBag::make_double)>(
       "drift_threshold",
@@ -172,10 +180,6 @@ void LTCToJack::on_data(void* data, size_t data_size) {
       }
     }
   }
-}
-
-bool LTCToJack::can_sink_caps(std::string str_caps) {
-  return stringutils::starts_with(str_caps, "audio/x-raw");
 }
 
 }  // namespace quiddities

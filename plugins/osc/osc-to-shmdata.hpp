@@ -36,6 +36,7 @@ class OscToShmdata : public Quiddity, public Startable {
   OscToShmdata& operator=(const OscToShmdata&) = delete;
 
  private:
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
   int port_{1056};
   property::prop_id_t port_id_;
   lo_server_thread osc_thread_{nullptr};
