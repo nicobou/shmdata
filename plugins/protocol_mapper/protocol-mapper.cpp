@@ -25,8 +25,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(ProtocolMapper,
                                      "protocol-mapper",
                                      "Protocol to property mapper",
-                                     "controller",
-                                     "hid/device",
                                      "Maps properties to a protocol",
                                      "LGPL",
                                      "Nicolas Bouillot/Jérémie Soria");

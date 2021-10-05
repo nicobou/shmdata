@@ -37,6 +37,9 @@ add_test(check_ugstelem check_ugstelem)
 add_executable(check_string_utils check_string_utils.cpp)
 add_test(check_string_utils check_string_utils)
 
+add_executable(check_connection_spec check_connection_spec.cpp)
+add_test(check_connection_spec check_connection_spec)
+
 #
 # Code coverage
 #

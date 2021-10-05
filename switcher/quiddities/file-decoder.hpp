@@ -41,6 +41,9 @@ class FileDecoder : public Quiddity {
   void configure_shmdatasink(GstElement* element,
                              const std::string& media_type,
                              const std::string& media_label);
+
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
+
   // internals
   std::condition_variable media_loaded_cond_{};
   std::mutex media_loaded_mutex_{};

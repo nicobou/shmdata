@@ -35,6 +35,24 @@ if (PLUGIN_EXAMPLE)
         custom-save-plugin.cpp
         )
 
+    # Shmdata Quid
+
+    add_library(shmdata_quid SHARED
+        shmdata-quid.cpp
+        )
+
+    # Dynamic Writer Quid
+
+    add_library(shmdata_dynamic_writer SHARED
+        shmdata-dynamic-writer.cpp
+        )
+
+    # Dynamic Reader Quid
+
+    add_library(shmdata_dynamic_reader SHARED
+        shmdata-dynamic-reader.cpp
+        )
+
     # GST quid
     
     add_library(gst_quid SHARED
@@ -58,8 +76,27 @@ if (PLUGIN_EXAMPLE)
     add_executable(check_gst_plugin check_gst_plugin.cpp)
     add_test(check_gst_plugin check_gst_plugin)
 
+    add_executable(check_shmdata_quid check_shmdata_quid.cpp)
+    add_test(check_shmdata_quid check_shmdata_quid)
+
+    add_executable(check_dynamic_writer_quid check_dynamic_writer_quid.cpp)
+    add_test(check_dynamic_writer_quid check_dynamic_writer_quid)
+
+    add_executable(check_dynamic_reader_quid check_dynamic_reader_quid.cpp)
+    add_test(check_dynamic_reader_quid check_dynamic_reader_quid)
+
     # INSTALL
 
-    install(TARGETS prop_quid meth_quid custom_save signal_quid gst_quid LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins)
+    install(TARGETS
+      custom_save
+      gst_quid
+      meth_quid
+      prop_quid
+      shmdata_dynamic_reader
+      shmdata_dynamic_writer
+      shmdata_quid
+      signal_quid
+      LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins
+      )
 
 endif ()

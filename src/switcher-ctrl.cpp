@@ -31,21 +31,22 @@ static gboolean load = FALSE;
 static gboolean run = FALSE;
 static gboolean createquiddity = FALSE;
 static gboolean deletequiddity = FALSE;
-static gboolean listclasses = FALSE;
-static gboolean classesdoc = FALSE;
-static gboolean classdoc = FALSE;
+static gboolean listkinds = FALSE;
+static gboolean kindsdoc = FALSE;
+static gboolean kinddoc = FALSE;
 static gboolean listquiddities = FALSE;
 static gboolean quidditydescr = FALSE;
 static gboolean quidditiesdescr = FALSE;
 static gboolean setprop = FALSE;
 static gboolean getprop = FALSE;
-static gboolean shmpath = FALSE;
 static gboolean print_tree = FALSE;
 static gboolean print_user_data = FALSE;
 static gboolean prune_user_data = FALSE;
 static gboolean graft_user_data = FALSE;
 static gboolean tag_as_array_user_data = FALSE;
 static gboolean invokemethod = FALSE;
+static gboolean try_connect = FALSE;
+static gboolean con_spec = FALSE;
 static gchar** remaining_args = nullptr;
 
 static GOptionEntry entries[25] = {
@@ -64,14 +65,12 @@ static GOptionEntry entries[25] = {
      &load,
      "load state from history file (--load filename)",
      nullptr},
-    // FIXME make this working { "run", nullptr, 0, G_OPTION_ARG_NONE, &run,
-    // "run history to file (--run filename)", nullptr },
     {"create-quiddity",
      'C',
      0,
      G_OPTION_ARG_NONE,
      &createquiddity,
-     "create a quiddity instance (-C quiddity_class [optional nick name])",
+     "create a quiddity instance (-C quiddity_kind [optional nick name])",
      nullptr},
     {"delete-quiddity",
      'D',
@@ -80,7 +79,7 @@ static GOptionEntry entries[25] = {
      &deletequiddity,
      "delete a quiddity instance by its name",
      nullptr},
-    {"list-classes", 'c', 0, G_OPTION_ARG_NONE, &listclasses, "list quiddity classes", nullptr},
+    {"list-kinds", 'c', 0, G_OPTION_ARG_NONE, &listkinds, "list quiddity kinds", nullptr},
     {"list-quiddities",
      'e',
      0,
@@ -102,12 +101,19 @@ static GOptionEntry entries[25] = {
      &getprop,
      "get property value (-g quiddity_name prop_name)",
      nullptr},
-    {"shmpath",
-     'p',
+    {"try-connect",
+     'o',
      0,
      G_OPTION_ARG_NONE,
-     &shmpath,
-     "get shmpath of a quiddity, according to the given suffix",
+     &try_connect,
+     "try to connect two quiddities using nicknames (-o reader_quiddity writer_qwuiddity)",
+     nullptr},
+    {"con-spec",
+     'O',
+     0,
+     G_OPTION_ARG_NONE,
+     &con_spec,
+     "print current shmdata connection specification in json format (-O quiddity_nickname)",
      nullptr},
     {"print-tree",
      't',
@@ -153,19 +159,19 @@ static GOptionEntry entries[25] = {
      &invokemethod,
      "invoke method of a quiddity (-i quiddity_name method_name args...)",
      nullptr},
-    {"classes-doc",
+    {"kinds-doc",
      'K',
      0,
      G_OPTION_ARG_NONE,
-     &classesdoc,
-     "print classes documentation, JSON-formated",
+     &kindsdoc,
+     "print kinds documentation, JSON-formated",
      nullptr},
-    {"class-doc",
+    {"kind-doc",
      'k',
      0,
      G_OPTION_ARG_NONE,
-     &classdoc,
-     "print class documentation, JSON-formated (--class-doc class_name)",
+     &kinddoc,
+     "print kind documentation, JSON-formated (--kind-doc kind)",
      nullptr},
     {"quiddities-descr",
      'Q',
@@ -179,7 +185,7 @@ static GOptionEntry entries[25] = {
      0,
      G_OPTION_ARG_NONE,
      &quidditydescr,
-     "print quiddity documentation, JSON-formated (--class-doc class_name)",
+     "print quiddity documentation, JSON-formated (--kind-doc kind)",
      nullptr},
     {G_OPTION_REMAINING,
      0,
@@ -203,10 +209,10 @@ int main(int argc, char* argv[]) {
 
   if (server == nullptr) server = g_strdup("http://localhost:27182");
 
-  if (!(save ^ load ^ run ^ listclasses ^ classesdoc ^ classdoc ^ listquiddities ^ quidditydescr ^
-        quidditiesdescr ^ setprop ^ getprop ^ shmpath ^ createquiddity ^ deletequiddity ^
-        invokemethod ^ print_tree ^ print_user_data ^ prune_user_data ^ graft_user_data ^
-        tag_as_array_user_data)) {
+  if (!(save ^ load ^ run ^ listkinds ^ kindsdoc ^ kinddoc ^ listquiddities ^ quidditydescr ^
+        quidditiesdescr ^ setprop ^ getprop ^ createquiddity ^ deletequiddity ^ invokemethod ^
+        print_tree ^ print_user_data ^ prune_user_data ^ graft_user_data ^ tag_as_array_user_data ^
+        try_connect ^ con_spec)) {
     g_printerr(
         "I am very sorry for the inconvenience, "
         "but I am able to process only exactly one command at a time. \n");
@@ -240,24 +246,24 @@ int main(int argc, char* argv[]) {
     }
     switcher_control.run(remaining_args[0], &result);
     std::cout << result << std::endl;
-  } else if (listclasses) {
+  } else if (listkinds) {
     std::vector<std::string> resultlist;
-    switcher_control.get_classes(&resultlist);
+    switcher_control.get_kinds(&resultlist);
     for (uint i = 0; i < resultlist.size(); i++) std::cout << resultlist[i] << std::endl;
-  } else if (classesdoc) {
+  } else if (kindsdoc) {
     std::string result;
-    switcher_control.get_classes_doc(&result);
+    switcher_control.get_kinds_doc(&result);
     std::cout << result << std::endl;
-  } else if (classdoc) {
+  } else if (kinddoc) {
     std::string resultlist;
     if (remaining_args == nullptr) {
-      g_printerr("class name missing\n");
+      g_printerr("kind value is missing\n");
       return false;
     }
-    switcher_control.get_classes_doc(&resultlist);
+    switcher_control.get_kinds_doc(&resultlist);
     std::cout << infotree::json::serialize(
                      infotree::json::deserialize(resultlist)
-                         ->get_tree(std::string(".classes.") + remaining_args[0])
+                         ->get_tree(std::string(".kinds.") + remaining_args[0])
                          .get())
               << '\n';
   } else if (quidditydescr) {
@@ -288,6 +294,22 @@ int main(int argc, char* argv[]) {
       switcher_control.get_information_tree(remaining_args[0], ".", &resultlist);
     else
       switcher_control.get_information_tree(remaining_args[0], remaining_args[1], &resultlist);
+    std::cout << resultlist << std::endl;
+  } else if (try_connect) {
+    std::string resultlist;
+    if (!remaining_args || !remaining_args[1]) {
+      g_printerr("try-connect requires two quiddity names, at least one is missing\n");
+      return false;
+    }
+    switcher_control.try_connect(remaining_args[0], remaining_args[1], &resultlist);
+    std::cout << resultlist << std::endl;
+  } else if (con_spec) {
+    std::string resultlist;
+    if (remaining_args == nullptr) {
+      g_printerr("quiddity name missing for printing the shmdata connection specification\n");
+      return false;
+    }
+    switcher_control.get_connection_spec(remaining_args[0], &resultlist);
     std::cout << resultlist << std::endl;
   } else if (print_user_data) {
     std::string resultlist;
@@ -323,7 +345,7 @@ int main(int argc, char* argv[]) {
       return false;
     }
     if (remaining_args[2] == nullptr) {
-      g_printerr("type name missing\n");
+      g_printerr("kind is missing\n");
       return false;
     }
     if (remaining_args[3] == nullptr) {
@@ -377,17 +399,9 @@ int main(int argc, char* argv[]) {
     std::string val;
     switcher_control.get_property(remaining_args[0], remaining_args[1], &val);
     std::cout << val << std::endl;
-  } else if (shmpath) {
-    if (remaining_args == nullptr || remaining_args[1] == nullptr) {
-      g_printerr("missing argument for shmpath\n");
-      return false;
-    }
-    std::string val;
-    switcher_control.make_shmpath(remaining_args[0], remaining_args[1], &val);
-    std::cout << val << std::endl;
   } else if (createquiddity) {
     if (remaining_args == nullptr) {
-      g_printerr("missing class name for creating quiddity\n");
+      g_printerr("missing kind argument )required for creation of the quiddity)\n");
       return false;
     }
     std::string name;

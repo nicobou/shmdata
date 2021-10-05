@@ -23,7 +23,6 @@
 #include <memory>
 #include "../gst/audio-codec.hpp"
 #include "../quiddity/quiddity.hpp"
-#include "../shmdata/connector.hpp"
 
 namespace switcher {
 namespace quiddities {
@@ -31,17 +30,13 @@ using namespace quiddity;
 class GstAudioEncoder : public Quiddity {
  public:
   GstAudioEncoder(quiddity::Config&&);
-  ~GstAudioEncoder() = default;
-  GstAudioEncoder(const GstAudioEncoder&) = delete;
-  GstAudioEncoder& operator=(const GstAudioEncoder&) = delete;
 
  private:
-  // registering connect/disconnect/can_sink_caps:
-  shmdata::Connector shmcntr_;
   std::unique_ptr<gst::AudioCodec> codecs_;
   bool on_shmdata_disconnect();
   bool on_shmdata_connect(const std::string& shmdata_socket_path);
-  bool can_sink_caps(const std::string& caps);
+
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
 };
 
 }  // namespace quiddities

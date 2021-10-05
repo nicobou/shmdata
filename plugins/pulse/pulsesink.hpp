@@ -29,7 +29,6 @@
 #include "switcher/gst/pipeliner.hpp"
 #include "switcher/gst/unique-gst-element.hpp"
 #include "switcher/quiddity/quiddity.hpp"
-#include "switcher/shmdata/connector.hpp"
 #include "switcher/shmdata/gst-tree-updater.hpp"
 
 namespace switcher {
@@ -54,9 +53,8 @@ class PulseSink : public Quiddity {
     std::string active_port_{};
   } DeviceDescription;
 
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
   std::unique_ptr<gst::GlibMainLoop> mainloop_;
-  // registering connect/disconnect/can_sink_caps:
-  shmdata::Connector shmcntr_;
   // gst pipeline:
   std::unique_ptr<gst::Pipeliner> gst_pipeline_;
   // shmsubscriber (publishing to the information-tree):
@@ -85,7 +83,6 @@ class PulseSink : public Quiddity {
 
   bool on_shmdata_connect(const std::string& shmpath);
   bool on_shmdata_disconnect();
-  bool can_sink_caps(const std::string& caps);
   bool remake_elements();
   void make_device_description(pa_context* pulse_context);
   void update_output_device();

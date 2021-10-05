@@ -13,14 +13,15 @@
 import sys
 import pyquid
 import time
-import assert_exit_1
+
 
 success = False
 
 
 def on_invocation_done(value, user_data):
     global success
-    assert value == True
+    global my_user_data
+    assert value == 'hello world and count is 0'
     assert user_data == my_user_data
     success = True
 
@@ -28,16 +29,10 @@ def on_invocation_done(value, user_data):
 # create a switcher.
 sw = pyquid.Switcher('pyquid', debug=True)
 
-# creating a video source that will eventually be connected to the dummysink quiddity
-vid = sw.create('videotestsrc', 'vid')
-
-# the video needs to be activated
-assert vid.set('started', True)
-
-# creating a dummysink in order to illustrate invoke_async
-dummysink = sw.create('dummysink', 'sink')
+# creating a quiddity method-quid in order to illustrate invoke_async
+methodquid = sw.create('methodquid')
 my_user_data = ["my", "user", "data"]
-dummysink.invoke_async('connect-quid', [vid.id(), 'video'], on_invocation_done, my_user_data)
+methodquid.invoke_async('hello', ['world'], on_invocation_done, my_user_data)
 
 # wait 200 milliseconds
 time.sleep(0.2)

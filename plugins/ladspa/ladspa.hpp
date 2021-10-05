@@ -18,7 +18,6 @@
  */
 
 #include "switcher/gst/pipeliner.hpp"
-#include "switcher/shmdata/connector.hpp"
 #include "switcher/shmdata/follower.hpp"
 #include "switcher/shmdata/gst-tree-updater.hpp"
 #include "switcher/shmdata/writer.hpp"
@@ -50,6 +49,7 @@ class LADSPA : public Quiddity {
    */
   using PluginList = std::pair<std::vector<std::string>, std::vector<std::string>>;
 
+  static const std::string kConnectionSpec;                    //!< Shmdata specifications
   static const std::vector<std::string> KPropertiesBlackList;  //!< Blacklisted gstreamer properties
 
   //! Method used to get all the available ladspa plugins on your system.
@@ -64,7 +64,6 @@ class LADSPA : public Quiddity {
   bool on_shmdata_connect(const std::string& shmpath);
   void create_and_play_gst_pipeline();
   bool on_shmdata_disconnect();
-  bool can_sink_caps(std::string str_caps);
 
   // property::Property custom saving
   InfoTree::ptr on_saving() final;
@@ -73,7 +72,6 @@ class LADSPA : public Quiddity {
 
   std::string shmpath_{};  //!< Path of the input shmdata
   std::string shmpath_transformed_{};  //!< Path of the output shmdata
-  shmdata::Connector shmcntr_;         //!< Shmdata connector to connect into the quiddity.
   std::unique_ptr<gst::Pipeliner> gst_pipeline_{nullptr};       //!< Gstreamer pipeline
   std::unique_ptr<shmdata::GstTreeUpdater> shmsrc_sub_{nullptr};   //!< Subscriber to input shmdata
   std::unique_ptr<shmdata::GstTreeUpdater> shmsink_sub_{nullptr};  //!< Subscriber to output shmdata

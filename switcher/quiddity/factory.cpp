@@ -40,34 +40,34 @@ namespace switcher {
 namespace quiddity {
 
 quiddity::Factory::Factory(log::Base* log) : log::Logged(log) {
-  abstract_factory_.register_class<quiddities::AudioTestSource>(
-      DocumentationRegistry::get()->get_type_from_class_name("AudioTestSource"));
-  abstract_factory_.register_class<quiddities::DummySink>(
-      DocumentationRegistry::get()->get_type_from_class_name("DummySink"));
-  abstract_factory_.register_class<quiddities::EmptyQuiddity>(
-      DocumentationRegistry::get()->get_type_from_class_name("EmptyQuiddity"));
-  abstract_factory_.register_class<quiddities::ExternalWriter>(
-      DocumentationRegistry::get()->get_type_from_class_name("ExternalWriter"));
-  abstract_factory_.register_class<quiddities::FileDecoder>(
-      DocumentationRegistry::get()->get_type_from_class_name("FileDecoder"));
-  abstract_factory_.register_class<quiddities::GstVideoConverter>(
-      DocumentationRegistry::get()->get_type_from_class_name("GstVideoConverter"));
-  abstract_factory_.register_class<quiddities::GstVideoEncoder>(
-      DocumentationRegistry::get()->get_type_from_class_name("GstVideoEncoder"));
-  abstract_factory_.register_class<quiddities::GstAudioEncoder>(
-      DocumentationRegistry::get()->get_type_from_class_name("GstAudioEncoder"));
-  abstract_factory_.register_class<quiddities::GstDecodebin>(
-      DocumentationRegistry::get()->get_type_from_class_name("GstDecodebin"));
-  abstract_factory_.register_class<quiddities::HTTPSDPDec>(
-      DocumentationRegistry::get()->get_type_from_class_name("HTTPSDPDec"));
-  abstract_factory_.register_class<quiddities::ShmDelay>(
-      DocumentationRegistry::get()->get_type_from_class_name("ShmDelay"));
-  abstract_factory_.register_class<quiddities::Timelapse>(
-      DocumentationRegistry::get()->get_type_from_class_name("Timelapse"));
-  abstract_factory_.register_class<quiddities::Uridecodebin>(
-      DocumentationRegistry::get()->get_type_from_class_name("Uridecodebin"));
-  abstract_factory_.register_class<quiddities::VideoTestSource>(
-      DocumentationRegistry::get()->get_type_from_class_name("VideoTestSource"));
+  abstract_factory_.register_kind<quiddities::AudioTestSource>(
+      DocumentationRegistry::get()->get_type_from_kind("AudioTestSource"));
+  abstract_factory_.register_kind<quiddities::DummySink>(
+      DocumentationRegistry::get()->get_type_from_kind("DummySink"));
+  abstract_factory_.register_kind<quiddities::EmptyQuiddity>(
+      DocumentationRegistry::get()->get_type_from_kind("EmptyQuiddity"));
+  abstract_factory_.register_kind<quiddities::ExternalWriter>(
+      DocumentationRegistry::get()->get_type_from_kind("ExternalWriter"));
+  abstract_factory_.register_kind<quiddities::FileDecoder>(
+      DocumentationRegistry::get()->get_type_from_kind("FileDecoder"));
+  abstract_factory_.register_kind<quiddities::GstVideoConverter>(
+      DocumentationRegistry::get()->get_type_from_kind("GstVideoConverter"));
+  abstract_factory_.register_kind<quiddities::GstVideoEncoder>(
+      DocumentationRegistry::get()->get_type_from_kind("GstVideoEncoder"));
+  abstract_factory_.register_kind<quiddities::GstAudioEncoder>(
+      DocumentationRegistry::get()->get_type_from_kind("GstAudioEncoder"));
+  abstract_factory_.register_kind<quiddities::GstDecodebin>(
+      DocumentationRegistry::get()->get_type_from_kind("GstDecodebin"));
+  abstract_factory_.register_kind<quiddities::HTTPSDPDec>(
+      DocumentationRegistry::get()->get_type_from_kind("HTTPSDPDec"));
+  abstract_factory_.register_kind<quiddities::ShmDelay>(
+      DocumentationRegistry::get()->get_type_from_kind("ShmDelay"));
+  abstract_factory_.register_kind<quiddities::Timelapse>(
+      DocumentationRegistry::get()->get_type_from_kind("Timelapse"));
+  abstract_factory_.register_kind<quiddities::Uridecodebin>(
+      DocumentationRegistry::get()->get_type_from_kind("Uridecodebin"));
+  abstract_factory_.register_kind<quiddities::VideoTestSource>(
+      DocumentationRegistry::get()->get_type_from_kind("VideoTestSource"));
 }
 
 bool quiddity::Factory::scan_dir(const std::string& directory_path) {
@@ -110,32 +110,27 @@ std::string quiddity::Factory::get_default_plugin_dir() const {
 
 std::vector<std::string> quiddity::Factory::get_plugin_dirs() const { return plugin_dirs_; }
 
-InfoTree::ptr quiddity::Factory::get_classes_doc() const {
-  auto classes_str = std::string(".classes.");
+InfoTree::ptr quiddity::Factory::get_kinds_doc() const {
+  auto kinds_str = std::string(".kinds.");
   auto res = InfoTree::make();
-  res->graft(classes_str, InfoTree::make());
-  res->tag_as_array(classes_str, true);
+  res->graft(kinds_str, InfoTree::make());
+  res->tag_as_array(kinds_str, true);
   for (auto& doc : DocumentationRegistry::get()->get_docs()) {
-    auto class_name = doc.first;
-    auto class_doc = doc.second;
-    res->graft(classes_str + class_name, InfoTree::make());
-    auto subtree = res->get_tree(classes_str + class_name);
-    subtree->graft(".class", InfoTree::make(class_name));
-    subtree->graft(".name", InfoTree::make(class_doc.get_long_name()));
-    subtree->graft(".category", InfoTree::make(class_doc.get_category()));
-    auto tags = class_doc.get_tags();
-    subtree->graft(".tags", InfoTree::make());
-    subtree->tag_as_array(".tags", true);
-    for (auto& tag : tags) subtree->graft(".tags." + tag, InfoTree::make(tag));
-    subtree->graft(".description", InfoTree::make(class_doc.get_description()));
-    subtree->graft(".license", InfoTree::make(class_doc.get_license()));
-    subtree->graft(".author", InfoTree::make(class_doc.get_author()));
+    auto kind = doc.first;
+    auto kind_doc = doc.second;
+    res->graft(kinds_str + kind, InfoTree::make());
+    auto subtree = res->get_tree(kinds_str + kind);
+    subtree->graft(".kind", InfoTree::make(kind));
+    subtree->graft(".name", InfoTree::make(kind_doc.get_long_name()));
+    subtree->graft(".description", InfoTree::make(kind_doc.get_description()));
+    subtree->graft(".license", InfoTree::make(kind_doc.get_license()));
+    subtree->graft(".author", InfoTree::make(kind_doc.get_author()));
   }
   return res;
 }
 
-bool quiddity::Factory::exists(const std::string& class_name) const {
-  return abstract_factory_.key_exists(class_name);
+bool quiddity::Factory::exists(const std::string& kind) const {
+  return abstract_factory_.key_exists(kind);
 }
 
 bool quiddity::Factory::load_plugin(const std::string& filename) {
@@ -144,32 +139,31 @@ bool quiddity::Factory::load_plugin(const std::string& filename) {
     warning("%", plugin->msg());
     return false;
   }
-  std::string class_name = plugin->get_class_name();
+  std::string kind = plugin->get_kind();
   // ignore already loaded plugin
-  if (plugins_.end() != plugins_.find(class_name)) {
-    debug("ignoring already loaded plugin (% from file %)", class_name, filename);
+  if (plugins_.end() != plugins_.find(kind)) {
+    debug("ignoring already loaded plugin (% from file %)", kind, filename);
     return false;
   }
 
-  abstract_factory_.register_class_with_custom_factory(
-      class_name, plugin->create_, plugin->destroy_);
-  plugins_.emplace(class_name, std::move(plugin));
+  abstract_factory_.register_kind_with_custom_factory(kind, plugin->create_, plugin->destroy_);
+  plugins_.emplace(kind, std::move(plugin));
   return true;
 }
 
-Quiddity::ptr quiddity::Factory::create(const std::string& class_name, quiddity::Config&& config) {
-  return abstract_factory_.create(class_name, std::forward<quiddity::Config>(config));
+Quiddity::ptr quiddity::Factory::create(const std::string& kind, quiddity::Config&& config) {
+  return abstract_factory_.create(kind, std::forward<quiddity::Config>(config));
 }
 
-std::vector<std::string> quiddity::Factory::get_class_list() const {
+std::vector<std::string> quiddity::Factory::get_kinds() const {
   return abstract_factory_.get_keys();
 }
 
-void quiddity::Factory::register_class_with_custom_factory(
-    const std::string& class_name,
+void quiddity::Factory::register_kind_with_custom_factory(
+    const std::string& kind,
     Quiddity* (*custom_create)(quiddity::Config&&),
     void (*custom_destroy)(Quiddity*)) {
-  abstract_factory_.register_class_with_custom_factory(class_name, custom_create, custom_destroy);
+  abstract_factory_.register_kind_with_custom_factory(kind, custom_create, custom_destroy);
 }
 
 }  // namespace quiddity

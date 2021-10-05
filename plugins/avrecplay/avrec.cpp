@@ -32,11 +32,21 @@ SWITCHER_DECLARE_PLUGIN(AVRecorder);
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AVRecorder,
                                      "avrec",
                                      "Audio/Video shmdata recorder",
-                                     "audio/video",
-                                     "reader",
                                      "Records connected audio/video shmdata",
                                      "LGPL",
                                      "Jérémie Soria");
+
+const std::string AVRecorder::kConnectionSpec(R"(
+{
+"follower":
+  [
+    {
+      "label": "stream%",
+      "description": "Streams to record",
+      "can_do": ["video/x-h264", "video/x-h265", "audio/x-raw"]
+    }
+  ]
+)");
 
 std::vector<std::string> AVRecorder::kGstMuxers = {};
 const std::vector<std::string> AVRecorder::kPropertiesBlackList = {"name", "parent"};
@@ -45,9 +55,13 @@ const std::string AVRecorder::kRecordModeLabel = "Label suffix";
 const std::string AVRecorder::kRecordModeOverwrite = "Overwrite";
 
 AVRecorder::AVRecorder(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
+    : Quiddity(std::forward<quiddity::Config>(conf),
+               {kConnectionSpec,
+                [this](const std::string& shmpath, claw::sfid_t sfid) {
+                  return on_shmdata_connect(shmpath, sfid);
+                },
+                [this](claw::sfid_t sfid) { return on_shmdata_disconnect(sfid); }}),
       Startable(this),
-      shmcntr_(static_cast<Quiddity*>(this)),
       gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)) {
   // Create a list of all available gstreamer muxers if not already done.
   auto mux_factories =
@@ -114,13 +128,6 @@ AVRecorder::AVRecorder(quiddity::Config&& conf)
       "recording suffixed with custom label), Overwrite "
       "(same file overwritten at each recording)",
       record_mode_);
-
-  shmcntr_.install_connect_method(
-      [this](const std::string& shmpath) { return on_shmdata_connect(shmpath); },
-      [this](const std::string& shmpath) { return on_shmdata_disconnect(shmpath); },
-      nullptr,
-      [this](const std::string& caps) { return can_sink_caps(caps); },
-      std::numeric_limits<unsigned int>::max());
 }
 
 std::string AVRecorder::generate_pipeline_description() {
@@ -267,8 +274,8 @@ bool AVRecorder::stop() {
   return true;
 }
 
-bool AVRecorder::on_shmdata_connect(const std::string& shmpath) {
-  auto connected_shmdata = std::make_unique<ConnectedShmdata>(this, shmpath);
+bool AVRecorder::on_shmdata_connect(const std::string& shmpath, claw::sfid_t sfid) {
+  auto connected_shmdata = std::make_unique<ConnectedShmdata>(this, shmpath, sfid);
 
   // Create a follower on the connecting shmdata, when receiving its caps, discover compatible
   // muxers and fetch all their gstreamer properties then create the appropriate switcher
@@ -355,13 +362,11 @@ bool AVRecorder::on_shmdata_connect(const std::string& shmpath) {
   return true;
 }
 
-bool AVRecorder::on_shmdata_disconnect(const std::string& shmpath) {
-  connected_shmdata_.erase(
-      std::remove_if(connected_shmdata_.begin(),
-                     connected_shmdata_.end(),
-                     [&shmpath](const std::unique_ptr<ConnectedShmdata>& shmdata) {
-                       return shmpath == shmdata->shmdata_name_;
-                     }));
+bool AVRecorder::on_shmdata_disconnect(claw::sfid_t sfid) {
+  connected_shmdata_.erase(std::remove_if(
+      connected_shmdata_.begin(),
+      connected_shmdata_.end(),
+      [&](const std::unique_ptr<ConnectedShmdata>& shmdata) { return sfid == shmdata->sfid_; }));
   return true;
 }
 
@@ -371,27 +376,6 @@ GstBusSyncReply AVRecorder::bus_sync(GstMessage* msg) {
     cv_eos_.notify_all();
   }
   return GST_BUS_PASS;
-}
-
-bool AVRecorder::can_sink_caps(const std::string& str_caps) {
-  GstCaps* caps = gst_caps_from_string(str_caps.c_str());
-  On_scope_exit {
-    if (nullptr != caps) gst_caps_unref(caps);
-  };
-
-  // We only accept h264/h265 video and raw audio so we check the start of the caps string.
-  if (str_caps.find("video/") == 0 && str_caps.find("video/x-h264") != 0 &&
-      str_caps.find("video/x-h265") != 0)
-    return false;
-  if (str_caps.find("audio/") == 0 && str_caps.find("audio/x-raw") != 0) return false;
-
-  // Then we check if we find a compatible muxer.
-  for (const auto& mux : AVRecorder::kGstMuxers) {
-    auto current_factory = gst_element_factory_find(mux.c_str());
-    if (current_factory && gst_element_factory_can_sink_all_caps(current_factory, caps))
-      return true;
-  }
-  return false;
 }
 
 InfoTree::ptr AVRecorder::on_saving() {
@@ -450,8 +434,9 @@ void AVRecorder::save_properties() {
 }
 
 AVRecorder::ConnectedShmdata::ConnectedShmdata(AVRecorder* parent,
-                                               const std::string& shmpath)
-    : parent_(parent), shmpath_(shmpath) {}
+                                               const std::string& shmpath,
+                                               claw::sfid_t sfid)
+    : parent_(parent), shmpath_(shmpath), sfid_(sfid) {}
 
 AVRecorder::ConnectedShmdata::~ConnectedShmdata() {
   parent_->pmanage<MPtr(&property::PBag::remove)>(muxer_selection_id_);

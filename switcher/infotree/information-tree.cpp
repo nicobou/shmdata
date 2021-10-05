@@ -62,7 +62,11 @@ InfoTree::ptr InfoTree::copy(InfoTree::ptrc tree) {
   auto res = InfoTree::make();
   std::list<std::string> path;
 
-  if (tree)
+  if (tree) {
+    auto root_value = tree->get_value();
+    if (root_value.not_null()) {
+      res->set_value(root_value);
+    }
     preorder_tree_walk(tree,
                        [&](const std::string& name, InfoTree::ptrc tree, bool is_array_element) {
                          std::string key{"."};
@@ -85,6 +89,7 @@ InfoTree::ptr InfoTree::copy(InfoTree::ptrc tree) {
                          path.pop_back();
                          return true;
                        });
+  }
   return res;
 }
 
@@ -203,6 +208,8 @@ Any InfoTree::branch_get_value(const std::string& path) const {
   Any res;
   return res;
 }
+
+InfoTree::ptr InfoTree::get_copy() const { return copy(this); }
 
 InfoTree::ptr InfoTree::branch_get_copy(const std::string& path) const {
   if (path_is_root(path)) return copy(this);
@@ -381,12 +388,12 @@ InfoTree::ptrc InfoTree::get_subtree(InfoTree::ptrc tree, const std::string& pat
 
 std::string InfoTree::serialize_json(const std::string& path) const {
   std::lock_guard<std::recursive_mutex> lock(mutex_);
-  if (path_is_root(path)) return infotree::json::serialize(me_.lock().get());
+  if (path_is_root(path)) return infotree::json::serialize(me_.lock().get(), true);
   auto found = get_node(path);
   if (nullptr == found.first) return "null";
   auto tree = (*found.first)[found.second].second;
   if (!tree) return "null";
-  return infotree::json::serialize(tree.get());
+  return infotree::json::serialize(tree.get(), true);
 }
 
 bool InfoTree::path_is_root(const std::string& path) { return (path == ".") || (path == ".."); }
@@ -394,7 +401,7 @@ bool InfoTree::path_is_root(const std::string& path) { return (path == ".") || (
 bool InfoTree::for_each_in_array(const std::string& path, std::function<void(InfoTree*)> fun) {
   std::lock_guard<std::recursive_mutex> lock(mutex_);
   // finding the parent node of the array
-  auto& children = children_;
+  auto children = children_;
   if (path_is_root(path)) {
     if (!is_array_) return false;
   } else {
@@ -416,7 +423,7 @@ bool InfoTree::cfor_each_in_array(const std::string& path,
                                   std::function<void(const InfoTree*)> fun) const {
   std::lock_guard<std::recursive_mutex> lock(mutex_);
   // finding the parent node of the array
-  auto& children = children_;
+  auto children = children_;
   if (path_is_root(path)) {
     if (!is_array_) return false;
   } else {
@@ -434,4 +441,5 @@ bool InfoTree::cfor_each_in_array(const std::string& path,
   return true;
 }
 
+std::string InfoTree::json() const { return serialize_json("."); }
 }  // namespace switcher

@@ -31,18 +31,26 @@ SWITCHER_DECLARE_PLUGIN(AVPlayer);
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AVPlayer,
                                      "avplayer",
                                      "Audio/video shmdata player",
-                                     "audio/video",
-                                     "writer",
                                      "Replays and controls a recorded shmdata audio/video file",
                                      "LGPL",
                                      "Jérémie Soria");
 
-const std::string AVPlayer::kShmDestPath = "/tmp/avplayer/";
+const std::string AVPlayer::kConnectionSpec(R"(
+{
+"writer":
+  [
+    {
+      "label": "stream%",
+      "description": "Streams from file",
+      "can_do": [ "all" ]
+    }
+  ]
+}
+)");
 
 AVPlayer::AVPlayer(quiddity::Config&& conf)
     : Quiddity(std::forward<quiddity::Config>(conf)),
       Startable(this),
-      shmcntr_(static_cast<Quiddity*>(this)),
       gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)) {
   pmanage<MPtr(&property::PBag::make_string)>(
       "playpath",
@@ -76,25 +84,6 @@ AVPlayer::AVPlayer(quiddity::Config&& conf)
       "Paused",
       "Toggle paused status of the stream",
       pause_);
-
-  std::error_code ec;
-  fs::create_directory(AVPlayer::kShmDestPath, ec);
-  if (ec) {
-    error(
-        "The shmdata destination folder for avplayer does not exist and could not be created (%).",
-        ec.message());
-    is_valid_ = false;
-    return;
-  }
-
-  ec.clear();
-  fs::permissions(AVPlayer::kShmDestPath, fs::perms::owner_all, ec);
-  if (ec) {
-    error("Could not set permission for the avplayer shmdata destination folder (%).",
-          ec.message());
-    is_valid_ = false;
-    return;
-  }
 }
 
 bool AVPlayer::start() {
@@ -113,10 +102,9 @@ bool AVPlayer::start() {
   int i = 0;  // File index of written shmdata
   for (auto& file : playlist) {
     if (file == "." || file == "..") continue;
-    auto to_play =
-        std::make_unique<ShmFile>(AVPlayer::kShmDestPath + "avplayer" + std::to_string(i),
-                                  playpath_ + "/" + file,
-                                  "shmsink_" + file);
+    auto swid = claw_.add_writer_to_meta(claw_.get_swid("stream%"), {"", file});
+    auto to_play = std::make_unique<ShmFile>(
+        claw_.get_writer_shmpath(swid), playpath_ + "/" + file, "shmsink_" + file);
 
     auto extra_caps = get_quiddity_caps();
     description += std::string("filesrc") + (i == 0 ? " do-timestamp=true " : " ") + "location=" +
@@ -161,6 +149,9 @@ bool AVPlayer::stop() {
   track_duration_ = 0;
   pause_ = false;
   files_list_.clear();
+  for (const auto& swid : claw_.get_swids()) {
+    claw_.remove_writer_from_meta(swid);
+  }
   return true;
 }
 

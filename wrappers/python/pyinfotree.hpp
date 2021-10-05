@@ -37,21 +37,23 @@ class pyInfoTree {
   static PyMethodDef pyInfoTree_methods[];
   static PyObject* any_to_pyobject(const Any& any);
 
-  static PyObject* make_pyobject_from_c_ptr(InfoTree* tree, bool do_copy);
+  static void set_tree(PyObject* instance, InfoTree* tree, bool copy);
+  static PyObject* make_pyobject_from_c_ptr(InfoTree* tree, bool copy);
 
  private:
   // Boilerplate
   static PyObject* InfoTree_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /*kwds*/);
   static int InfoTree_init(pyInfoTreeObject* self, PyObject* /*args*/, PyObject* /*kwds*/);
   static void InfoTree_dealloc(pyInfoTreeObject* self);
-  static PyObject* empty(pyInfoTreeObject* self, PyObject* args, PyObject* kwds);
-  static PyObject* prune(pyInfoTreeObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* tp_str(pyInfoTreeObject* self);
   static PyObject* copy(pyInfoTreeObject* self, PyObject* args, PyObject* kwds);
-  static PyObject* graft(pyInfoTreeObject* self, PyObject* args, PyObject* kwds);
-  static PyObject* json(pyInfoTreeObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* empty(pyInfoTreeObject* self, PyObject* args, PyObject* kwds);
   static PyObject* get(pyInfoTreeObject* self, PyObject* args, PyObject* kwds);
-  static PyObject* tag_as_array(pyInfoTreeObject* self, PyObject* args, PyObject* kwds);
   static PyObject* get_child_keys(pyInfoTreeObject* self, PyObject* args, PyObject* kwds);
   static PyObject* get_key_values(pyInfoTreeObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* graft(pyInfoTreeObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* json(pyInfoTreeObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* prune(pyInfoTreeObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* tag_as_array(pyInfoTreeObject* self, PyObject* args, PyObject* kwds);
 };
 #endif

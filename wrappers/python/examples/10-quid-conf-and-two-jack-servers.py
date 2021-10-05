@@ -18,18 +18,18 @@
 import sys
 import pyquid
 import time
-import assert_exit_1
+
 
 # create a switcher.
 sw = pyquid.Switcher('pyquid', debug=True)
 
 # first dummy jack server
-src_serv = pyquid.Quiddity(switcher=sw, type='jackserver', config=pyquid.InfoTree(
+src_serv = pyquid.Quiddity(switcher=sw, kind='jackserver', config=pyquid.InfoTree(
     '{ "driver" : "dummy", "name": "swcapture" }'))
 src_serv.set('started', True)
 
 # second dummy jack server
-sink_serv = pyquid.Quiddity(switcher=sw, type='jackserver', config=pyquid.InfoTree(
+sink_serv = pyquid.Quiddity(switcher=sw, kind='jackserver', config=pyquid.InfoTree(
     '{ "driver" : "dummy", "name": "swcard" }'))
 sink_serv.set('started', True)
 
@@ -40,7 +40,7 @@ swcapture.set('started', True)
 
 # create a shmdata-to-jack in the second sever
 swcard = pyquid.Quiddity(sw, 'jacksink', 'display', pyquid.InfoTree('{ "server_name" : "swcard" }'))
-swcard.invoke('connect-quid', [swcapture.id(), 'audio'])
+swcard.try_connect(swcapture)
 
 # let it go! but just for a sec.
 time.sleep(1)

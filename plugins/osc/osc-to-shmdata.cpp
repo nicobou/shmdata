@@ -24,35 +24,45 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(OscToShmdata,
                                      "OSCsrc",
                                      "OSC Receiver",
-                                     "network",
-                                     "writer",
                                      "Receive OSC messages and write to shmdata",
                                      "LGPL",
                                      "Nicolas Bouillot");
 
-OscToShmdata::OscToShmdata(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
-      Startable(this),
-      port_id_(pmanage<MPtr(&property::PBag::make_int)>("port",
-                                                        [this](const int& val) {
-                                                          port_ = val;
-                                                          return true;
-                                                        },
-                                                        [this]() { return port_; },
-                                                        "Port",
-                                                        "OSC port to listen to",
-                                                        port_,
-                                                        1,
-                                                        65536)) {
-  register_writer_suffix("osc");
+const std::string OscToShmdata::kConnectionSpec(R"(
+{
+"writer":
+  [
+    {
+      "label": "osc",
+      "description": "OSC stream",
+      "can_do": ["application/x-libloserialized-osc"]
+    }
+  ]
 }
+)");
+
+OscToShmdata::OscToShmdata(quiddity::Config&& conf)
+    : Quiddity(std::forward<quiddity::Config>(conf), {kConnectionSpec}),
+      Startable(this),
+      port_id_(pmanage<MPtr(&property::PBag::make_int)>(
+          "port",
+          [this](const int& val) {
+            port_ = val;
+            return true;
+          },
+          [this]() { return port_; },
+          "Port",
+          "OSC port to listen to",
+          port_,
+          1,
+          65536)) {}
 
 OscToShmdata::~OscToShmdata() { stop(); }
 
 bool OscToShmdata::start() {
   // creating a shmdata
   shm_ = std::make_unique<shmdata::Writer>(
-      this, make_shmpath("osc"), 1, "application/x-libloserialized-osc");
+      this, claw_.get_shmpath_from_writer_label("osc"), 1, "application/x-libloserialized-osc");
   if (!shm_.get()) {
     warning("OscToShmdata failed to start");
     shm_.reset(nullptr);
@@ -94,8 +104,10 @@ int OscToShmdata::osc_handler(const char* path,
   void* buftmp = lo_message_serialise(m, path, nullptr, &size);
   if (context->shm_->writer<MPtr(&::shmdata::Writer::alloc_size)>() < size) {
     context->shm_.reset(nullptr);
-    context->shm_.reset(new shmdata::Writer(
-        context, context->make_shmpath("osc"), size, "application/x-libloserialized-osc"));
+    context->shm_.reset(new shmdata::Writer(context,
+                                            context->claw_.get_shmpath_from_writer_label("osc"),
+                                            size,
+                                            "application/x-libloserialized-osc"));
   }
   context->shm_->writer<MPtr(&::shmdata::Writer::copy_to_shm)>(buftmp, size);
   context->shm_->bytes_written(size);

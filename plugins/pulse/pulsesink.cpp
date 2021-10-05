@@ -32,16 +32,30 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PulseSink,
                                      "pulsesink",
                                      "Audio Display (Pulse)",
-                                     "audio",
-                                     "reader/device",
                                      "Inspecting Devices And Playing Audio To Outputs",
                                      "LGPL",
                                      "Nicolas Bouillot");
 
+const std::string PulseSink::kConnectionSpec(R"(
+{
+"follower":
+  [
+    {
+      "label": "audio",
+      "description": "Audio stream",
+      "can_do": ["audio/x-raw"]
+    }
+  ]
+}
+)");
+
 PulseSink::PulseSink(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
+    : Quiddity(
+          std::forward<quiddity::Config>(conf),
+          {kConnectionSpec,
+           [this](const std::string& shmpath, claw::sfid_t) { return on_shmdata_connect(shmpath); },
+           [this](claw::sfid_t) { return on_shmdata_disconnect(); }}),
       mainloop_(std::make_unique<gst::GlibMainLoop>()),
-      shmcntr_(static_cast<Quiddity*>(this)),
       gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)) {
   if (!shmsrc_ || !audioconvert_ || !pulsesink_) {
     is_valid_ = false;
@@ -53,12 +67,6 @@ PulseSink::PulseSink(quiddity::Config&& conf)
                "client-name",
                get_nickname().c_str(),
                nullptr);
-  shmcntr_.install_connect_method(
-      [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
-      [this](const std::string&) { return this->on_shmdata_disconnect(); },
-      [this]() { return this->on_shmdata_disconnect(); },
-      [this](const std::string& caps) { return this->can_sink_caps(caps); },
-      1);
 
   std::unique_lock<std::mutex> lock(devices_mutex_);
   gst::utils::g_idle_add_full_with_context(mainloop_->get_main_context(),
@@ -292,10 +300,6 @@ void PulseSink::update_output_device() {
   devices_enum_ = property::Selection<>(std::make_pair(names, nicks), 0);
 }
 
-bool PulseSink::can_sink_caps(const std::string& caps) {
-  return gst::utils::can_sink_caps("audioconvert", caps);
-};
-
 bool PulseSink::on_shmdata_disconnect() {
   pmanage<MPtr(&property::PBag::enable)>(devices_enum_id_);
   shm_sub_.reset();
@@ -305,7 +309,7 @@ bool PulseSink::on_shmdata_disconnect() {
 
 bool PulseSink::on_shmdata_connect(const std::string& shmpath) {
   pmanage<MPtr(&property::PBag::disable)>(devices_enum_id_,
-                                          shmdata::Connector::disabledWhenConnectedMsg);
+                                          property::PBag::disabledWhenConnectedMsg);
   shmpath_ = shmpath;
   g_object_set(G_OBJECT(shmsrc_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
   if (!devices_.empty())

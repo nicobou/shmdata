@@ -30,26 +30,51 @@ extern "C" void signal_cb(int signal_number) { child_dead = 1; }
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Executor,
                                      "executor",
                                      "Command line launcher",
-                                     "utils",
-                                     "reader",
                                      "Plugin for launching command lines",
                                      "LGPL",
                                      "Francis Lecavalier");
 
+const std::string Executor::kConnectionSpec(R"(
+{
+"follower":
+  [
+    {
+      "label": "custom",
+      "description": "Stream to connect to the exceutor",
+      "can_do": ["all"]
+    },
+    {
+      "label": "audio",
+      "description": "Audio stream",
+      "can_do": ["audio/x-raw"]
+    },
+    {
+      "label": "video",
+      "description": "Video stream",
+      "can_do": ["video/x-raw"]
+    }
+  ]
+}
+)");
+
 Executor::Executor(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
+    : Quiddity(std::forward<quiddity::Config>(conf),
+               {kConnectionSpec,
+                [this](const std::string& shmpath, claw::sfid_t sfid) {
+                  return on_shmdata_connect(shmpath, sfid);
+                },
+                [this](claw::sfid_t sfid) { return on_shmdata_disconnect(sfid); }}),
       Startable(this),
-      shmcntr_(static_cast<Quiddity*>(this)),
-      command_line_id_(
-          pmanage<MPtr(&property::PBag::make_string)>("command_line",
-                                                      [this](const std::string& val) {
-                                                        command_line_ = val;
-                                                        return true;
-                                                      },
-                                                      [this]() { return command_line_; },
-                                                      "Command Line",
-                                                      "Command line to execute",
-                                                      command_line_)),
+      command_line_id_(pmanage<MPtr(&property::PBag::make_string)>(
+          "command_line",
+          [this](const std::string& val) {
+            command_line_ = val;
+            return true;
+          },
+          [this]() { return command_line_; },
+          "Command Line",
+          "Command line to execute",
+          command_line_)),
       autostart_id_(pmanage<MPtr(&property::PBag::make_bool)>(
           "autostart",
           [this](bool val) {
@@ -82,22 +107,22 @@ Executor::Executor(quiddity::Config&& conf)
           periodic_)),
 
       // Whitelist caps in order to control connections with an Executor as a writer
-      whitelist_caps_id_(
-          pmanage<MPtr(&property::PBag::make_string)>("whitelist_caps",
-                                                      [this](const std::string& val) {
-                                                        whitelist_caps_ = val;
-                                                        return true;
-                                                      },
-                                                      [this]() { return whitelist_caps_; },
-                                                      "Whitelist compatible capabilities",
-                                                      "Apply capabilities to executed command line",
-                                                      whitelist_caps_)) {
-  shmcntr_.install_connect_method(
-      [this](const std::string& shmpath) { return on_shmdata_connect(shmpath); },
-      [this](const std::string& shmpath) { return on_shmdata_disconnect(shmpath); },
-      [this]() { return on_shmdata_disconnect_all(); },
-      [this](const std::string& caps) { return can_sink_caps(caps); },
-      std::numeric_limits<unsigned int>::max());
+      whitelist_caps_id_(pmanage<MPtr(&property::PBag::make_string)>(
+          "whitelist_caps",
+          [this](const std::string& val) {
+            whitelist_caps_ = val;
+            auto string_caps = stringutils::split_string(val, ";");
+            std::vector<::shmdata::Type> types;
+            for (const auto& type_desc : string_caps) {
+              types.push_back(::shmdata::Type(type_desc));
+            }
+            claw_.replace_follower_can_do(claw_.get_sfid("custom"), types);
+            return true;
+          },
+          [this]() { return whitelist_caps_; },
+          "Whitelist compatible capabilities",
+          "Apply capabilities to executed command line",
+          whitelist_caps_)) {
   memset(&sigchld_action_, 0, sizeof(sigchld_action_));
   sigchld_action_.sa_handler = signal_cb;
   sigaction(SIGCHLD, &sigchld_action_, nullptr);
@@ -184,8 +209,9 @@ bool Executor::stop() {
   return true;
 }
 
-bool Executor::on_shmdata_connect(const std::string& shmpath) {
-  if (stringutils::ends_with(shmpath, "video")) {
+bool Executor::on_shmdata_connect(const std::string& shmpath, claw::sfid_t sfid) {
+  auto sfid_label = claw_.get_follower_label(sfid);
+  if ("video" == sfid_label) {
     if (!shmpath_video_.empty()) follower_video_.reset();
     shmpath_video_ = shmpath;
     follower_video_ = std::make_unique<shmdata::Follower>(this,
@@ -196,7 +222,7 @@ bool Executor::on_shmdata_connect(const std::string& shmpath) {
                                                           shmdata::Stat::kDefaultUpdateInterval,
                                                           shmdata::Follower::Direction::reader,
                                                           true);
-  } else if (stringutils::ends_with(shmpath, "audio")) {
+  } else if ("audio" == sfid_label) {
     if (!shmpath_audio_.empty()) follower_audio_.reset();
     shmpath_audio_ = shmpath;
     follower_audio_ = std::make_unique<shmdata::Follower>(this,
@@ -234,11 +260,12 @@ bool Executor::on_shmdata_connect(const std::string& shmpath) {
   return true;
 }
 
-bool Executor::on_shmdata_disconnect(const std::string& shmpath) {
-  if (stringutils::ends_with(shmpath, "video")) {
+bool Executor::on_shmdata_disconnect(claw::sfid_t sfid) {
+  auto sfid_label = claw_.get_follower_label(sfid);
+  if ("video" == sfid_label) {
     follower_video_.reset();
     shmpath_video_.clear();
-  } else if (stringutils::ends_with(shmpath, "audio")) {
+  } else if ("audio" == sfid_label) {
     follower_audio_.reset();
     shmpath_audio_.clear();
   } else {
@@ -257,32 +284,6 @@ bool Executor::on_shmdata_disconnect(const std::string& shmpath) {
     }
   }
   return true;
-}
-
-bool Executor::on_shmdata_disconnect_all() {
-  follower_video_.reset();
-  follower_audio_.reset();
-  follower_.reset();
-  shmpath_video_.clear();
-  shmpath_audio_.clear();
-  shmpath_.clear();
-  return stop();
-}
-
-bool Executor::can_sink_caps(const std::string& str_caps) {
-  // by default, it accepts all caps if `whitelist_caps_` is empty
-  if (whitelist_caps_.empty()) return true;
-
-  GstCaps* caps = gst_caps_from_string(str_caps.c_str());
-
-  On_scope_exit {
-    if (nullptr != caps) gst_caps_unref(caps);
-  };
-
-  GstStructure* caps_struct = gst_caps_get_structure(caps, 0);
-  std::string caps_name(gst_structure_get_name(caps_struct));
-
-  return (int) whitelist_caps_.find(caps_name, 0) >= 0;
 }
 
 void Executor::monitor_process() {

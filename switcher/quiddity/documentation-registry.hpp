@@ -34,14 +34,14 @@ class DocumentationRegistry {
     return instance_;
   }
   bool register_doc(const std::string& quiddity_type, const quiddity::Doc& doc);
-  bool register_type_from_class_name(const std::string& class_name, const std::string& quid_type);
-  std::string get_type_from_class_name(const std::string& class_name) const;
+  bool register_type_from_kind(const std::string& kind, const std::string& quid_type);
+  std::string get_type_from_kind(const std::string& kind) const;
   const std::map<std::string, quiddity::Doc>& get_docs() const;
 
  private:
   static std::unique_ptr<DocumentationRegistry> instance_;
   std::map<std::string, quiddity::Doc> doc_registry_{};
-  std::map<std::string, std::string> type_from_class_registry_{};
+  std::map<std::string, std::string> type_from_kind_registry_{};
 };
 
 }  // namespace quiddity

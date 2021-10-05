@@ -27,14 +27,25 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(AudioTestSource,
                                      "audiotestsrc",
                                      "Audio Test Source",
-                                     "audio",
-                                     "writer",
                                      "Creates audio test signals",
                                      "LGPL",
                                      "Nicolas Bouillot");
 
+const std::string AudioTestSource::kConnectionSpec(R"(
+{
+"writer":
+  [
+    {
+      "label": "audio",
+      "description": "The audio test signal",
+      "can_do": ["audio/x-raw"]
+    }
+  ]
+}
+)");
+
 AudioTestSource::AudioTestSource(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
+    : Quiddity(std::forward<quiddity::Config>(conf), {kConnectionSpec}),
       quiddity::Startable(this),
       gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)),
       sample_rate_id_(pmanage<MPtr(&property::PBag::make_selection<>)>(
@@ -73,17 +84,18 @@ AudioTestSource::AudioTestSource(quiddity::Config&& conf)
           0.5f,
           0.0f,
           1.0f)),
-      channels_id_(pmanage<MPtr(&property::PBag::make_int)>("channels",
-                                                            [this](const int& val) {
-                                                              channels_ = val;
-                                                              return true;
-                                                            },
-                                                            [this]() { return channels_; },
-                                                            "Number of channels",
-                                                            "Set number of channels",
-                                                            1,
-                                                            1,
-                                                            kMaxChannels)),
+      channels_id_(pmanage<MPtr(&property::PBag::make_int)>(
+          "channels",
+          [this](const int& val) {
+            channels_ = val;
+            return true;
+          },
+          [this]() { return channels_; },
+          "Number of channels",
+          "Set number of channels",
+          1,
+          1,
+          kMaxChannels)),
       format_(property::Selection<>(
           gst::utils::get_gst_element_capability_as_list("audiotestsrc", "format", GST_PAD_SRC),
           0)),
@@ -102,7 +114,7 @@ AudioTestSource::AudioTestSource(quiddity::Config&& conf)
     return;
   }
 
-  shmpath_ = make_shmpath("audio");
+  shmpath_ = claw_.get_shmpath_from_writer_label("audio");
   g_object_set(G_OBJECT(audiotestsrc_.get_raw()), "is-live", TRUE, nullptr);
   g_object_set(G_OBJECT(audiotestsrc_.get_raw()), "samplesperbuffer", 512, nullptr);
   g_object_set(G_OBJECT(shmdatasink_.get_raw()), "socket-path", shmpath_.c_str(), nullptr);
@@ -110,7 +122,6 @@ AudioTestSource::AudioTestSource(quiddity::Config&& conf)
   g_object_set(G_OBJECT(shmdatasink_.get_raw()), "extra-caps-properties", extra_caps.c_str(), nullptr);
   waveforms_id_ = pmanage<MPtr(&property::PBag::push)>(
       "wave", quiddity::property::to_prop(G_OBJECT(audiotestsrc_.get_raw()), "wave"));
-  register_writer_suffix("audio");
 }
 
 bool AudioTestSource::start() {

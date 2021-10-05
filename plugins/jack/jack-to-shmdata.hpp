@@ -38,6 +38,7 @@ class JackToShmdata : public Quiddity, public Startable {
   JackToShmdata& operator=(const JackToShmdata&) = delete;
 
  private:
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
   size_t kMaxNumberOfChannels{128};
   size_t num_channels_{1};
   property::prop_id_t num_channels_id_{0};

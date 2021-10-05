@@ -22,6 +22,7 @@
 #include <shmdata/console-logger.hpp>
 
 #include "switcher/quiddity/basic-test.hpp"
+#include "switcher/quiddity/claw/claw.hpp"
 #include "switcher/shmdata/follower.hpp"
 
 bool success = false;
@@ -30,6 +31,8 @@ std::condition_variable cond_var{};
 std::mutex mut{};
 
 using namespace switcher;
+using namespace quiddity;
+using namespace claw;
 
 void wait_until_success() {
   // wait 3 seconds
@@ -61,19 +64,21 @@ int main() {
     auto filesrc =
         manager->quids<MPtr(&quiddity::Container::create)>("filesrc", "src", nullptr).get();
 
-    ::shmdata::ConsoleLogger logger;
-    auto reader = std::make_unique<::shmdata::Follower>(filesrc->make_shmpath("audio"),
-                                                        [](void*, size_t data_size) {
-                                                          if (!data_size) return;
-                                                          notify_success();
-                                                        },
-                                                        nullptr,
-                                                        nullptr,
-                                                        &logger);
-
     filesrc->prop<MPtr(&quiddity::property::PBag::set_str_str)>("loop", "true");
     filesrc->prop<MPtr(&quiddity::property::PBag::set_str_str)>("play", "true");
     filesrc->prop<MPtr(&quiddity::property::PBag::set_str_str)>("location", "./oie.mp3");
+
+    ::shmdata::ConsoleLogger logger;
+    auto reader = std::make_unique<::shmdata::Follower>(
+        filesrc->claw<MPtr(&Claw::get_writer_shmpath)>(
+            filesrc->claw<MPtr(&Claw::get_swid)>("audio")),
+        [](void*, size_t data_size) {
+          if (!data_size) return;
+          notify_success();
+        },
+        nullptr,
+        nullptr,
+        &logger);
 
     wait_until_success();
 

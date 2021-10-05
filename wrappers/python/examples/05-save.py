@@ -13,21 +13,23 @@
 import sys
 import pyquid
 import time
-import assert_exit_1
+
 
 sw = pyquid.Switcher('save_example', debug=True)
 
 # instantiate and use some quiddities
 try:
-    win = sw.create(type='glfwin', nickname='win')
+    win = sw.create(kind='glfwin', nickname='win')
 except RuntimeError:
     # The following replace the glfwin quiddity by a dummy quiddity if glfwin is not available
-    win = sw.create(type='dummysink', nickname='win')
+    win = sw.create(kind='dummysink', nickname='win')
 
 vid = sw.create('videotestsrc', 'vid')
-assert win.invoke('connect-quid', [vid.id(), 'video'])
-assert win.invoke('disconnect-all')
-assert win.invoke('connect', [vid.make_shmpath('video')])
+connection = win.try_connect(vid)
+assert connection.disconnect()
+
+connection = win.try_connect(vid)
+
 assert vid.set('started', True)
 
 time.sleep(1)

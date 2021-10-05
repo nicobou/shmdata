@@ -13,7 +13,7 @@
 import sys
 from pyquid import Switcher, Quiddity, InfoTree
 import time
-import assert_exit_1
+
 
 # create a switcher.
 sw = Switcher('pyquid', debug=True)
@@ -22,22 +22,22 @@ assert 'pyquid' == sw.name()
 # it has a version
 assert '' != sw.version()
 
-# with switcher, you can create different types of named Quiddities.
-# In this case, glfwin is a quiddity type that manage video window
+# with switcher, you can create different kinds of named Quiddities.
+# In this case, glfwin is a quiddity kind that manage video window
 try:
-    win = Quiddity(switcher=sw, type='glfwin', nickname='win')
+    win = Quiddity(switcher=sw, kind='glfwin', nickname='win')
 except RuntimeError:
     # The following replace the glfwin quiddity by a dummy quiddity if glfwin is not available
     # note here the quiddity is constructed from the switcher create method. This is equivalent
     # to creation from the pyquid.Quiddity constructor
-    win = sw.create(type='dummysink', nickname='win')
+    win = sw.create(kind='dummysink', nickname='win')
 
 # creating a video source that will eventually be connected to the video window
 vid = Quiddity(sw, 'videotestsrc', 'vid')
 
-# Quiddities have nicknames & types
+# Quiddities have nicknames & kinds
 assert None != vid.nickname()
-assert None != vid.get_type()
+assert None != vid.get_kind()
 nick = 'my vid'
 assert vid.set_nickname(nick)
 assert nick == vid.nickname()
@@ -54,23 +54,19 @@ assert False == vid.get('started')
 # the video needs to be activated
 assert vid.set('started', True)
 
-# Quiddities also have methods. For instance, win has a connect method
-# connecting win to vid through its video shmpath
-# (vid is a quiddity sharing a video stream through the shmdata library, and
-# win is a quiddity that reads a video from a shmdata and displays it in a window)
-# all quiddities provide the make_shmpath method, that give the shmdata path according to a keyword
-# Usually, the keyword used is the type of media shared through the shmdata
-vidshmpath = vid.make_shmpath('video')
-assert win.invoke('connect', [vidshmpath])
+# Quiddities can connect to other through shmdata
+sfid = win.try_connect(vid)
 
 time.sleep(1)
 
 # win can disconnect from vid
-assert win.invoke('disconnect', [vidshmpath])
+assert sfid.disconnect()
 
 time.sleep(1)
-# and can reconnect, using the alternative connect-quid method
-assert win.invoke('connect-quid', [vid.id(), 'video'])
+
+# and can reconnect
+win.try_connect(vid)
+
 time.sleep(1)
 
 sw.remove(vid.id())

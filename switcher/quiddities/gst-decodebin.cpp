@@ -24,28 +24,43 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstDecodebin,
                                      "decoder",
                                      "Decoder",
-                                     "other",
-                                     "writer/reader",
                                      "Generic shmdata decoder",
                                      "LGPL",
                                      "Nicolas Bouillot");
 
+const std::string GstDecodebin::kConnectionSpec(R"(
+{
+"follower":
+  [
+    {
+      "label": "to-decode",
+      "description": "Stream to be decoded",
+      "can_do": [ "all" ]
+    }
+  ],
+"writer":
+  [
+    {
+      "label": "custom%",
+      "description": "Produced random buffers",
+      "can_do": [ "video/x-raw", "audio/x-raw", "text/x-raw" ]
+    }
+  ]
+}
+)");
+
 GstDecodebin::GstDecodebin(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
+    : Quiddity(
+          std::forward<quiddity::Config>(conf),
+          {kConnectionSpec,
+           [this](const std::string& shmpath, claw::sfid_t) { return on_shmdata_connect(shmpath); },
+           [this](claw::sfid_t sfid) { return on_shmdata_disconnect(); }}),
       gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)),
-      shmsrc_("shmdatasrc"),
-      shmcntr_(static_cast<Quiddity*>(this)) {
-  register_writer_suffix(".*");
+      shmsrc_("shmdatasrc") {
   if (!shmsrc_) {
     is_valid_ = false;
     return;
   }
-  shmcntr_.install_connect_method(
-      [this](const std::string& shmpath) { return this->on_shmdata_connect(shmpath); },
-      [this](const std::string&) { return this->on_shmdata_disconnect(); },
-      [this]() { return this->on_shmdata_disconnect(); },
-      [this](const std::string& caps) { return this->can_sink_caps(caps); },
-      1);
 }
 
 bool GstDecodebin::on_shmdata_disconnect() {
@@ -70,10 +85,13 @@ void GstDecodebin::configure_shmdatasink(GstElement* element,
   auto count = counter_.get_count(media_label + media_type);
   std::string media_name = media_type;
   if (count != 0) media_name.append("-" + std::to_string(count));
-  if (media_label.empty())
-    shmpath_decoded_ = make_shmpath(media_name);
-  else
-    shmpath_decoded_ = make_shmpath(media_label + "-" + media_name);
+  if (media_label.empty()) {
+    shmpath_decoded_ = claw_.get_writer_shmpath(
+        claw_.add_writer_to_meta(claw_.get_swid("custom%"), {media_name, media_name}));
+  } else {
+    shmpath_decoded_ = claw_.get_writer_shmpath(claw_.add_writer_to_meta(
+        claw_.get_swid("custom%"), {media_label + "-" + media_name, media_label}));
+  }
 
   auto extra_caps = get_quiddity_caps();
   g_object_set(G_OBJECT(element), "socket-path", shmpath_decoded_.c_str(), "extra-caps-properties", extra_caps.c_str(), nullptr);
@@ -185,10 +203,6 @@ bool GstDecodebin::create_pipeline() {
   }
   gst_pipeline_->play(true);
   return true;
-}
-
-bool GstDecodebin::can_sink_caps(const std::string& caps) {
-  return gst::utils::can_sink_caps("decodebin", caps);
 }
 
 }  // namespace quiddities

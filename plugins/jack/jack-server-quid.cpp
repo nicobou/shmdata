@@ -24,8 +24,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackServerQuid,
                                      "jackserver",
                                      "Jack Audio Server",
-                                     "audio",
-                                     "",
                                      "Run a Jack audio server",
                                      "LGPL",
                                      "Nicolas Bouillot");

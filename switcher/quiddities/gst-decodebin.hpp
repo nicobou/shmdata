@@ -25,7 +25,6 @@
 #include "../gst/pipeliner.hpp"
 #include "../gst/unique-gst-element.hpp"
 #include "../quiddity/quiddity.hpp"
-#include "../shmdata/connector.hpp"
 #include "../shmdata/follower.hpp"
 #include "../utils/scope-exit.hpp"
 #include "../utils/threaded-wrapper.hpp"
@@ -48,14 +47,14 @@ class GstDecodebin : public Quiddity {
   std::string shmpath_to_decode_{};
   std::string shmpath_decoded_{};
   std::string cur_caps_{};
-  shmdata::Connector shmcntr_;
   std::unique_ptr<gst::DecodebinToShmdata> decoder_{nullptr};
   std::unique_ptr<shmdata::Follower> shmw_sub_{};
   std::unique_ptr<shmdata::Follower> shmr_sub_{};
   ThreadedWrapper<> async_this_{};
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
+
   bool on_shmdata_disconnect();
   bool on_shmdata_connect(const std::string& shmdata_socket_path);
-  bool can_sink_caps(const std::string& caps);
   void configure_shmdatasink(GstElement* element,
                              const std::string& media_type,
                              const std::string& media_label);

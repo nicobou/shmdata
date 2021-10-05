@@ -36,10 +36,10 @@ class Uridecodebin : public Quiddity {
  public:
   Uridecodebin(quiddity::Config&&);
   ~Uridecodebin();
-  Uridecodebin(const Uridecodebin&) = delete;
-  Uridecodebin& operator=(const Uridecodebin&) = delete;
 
  private:
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
+
   std::mutex pipe_mtx_{};
   std::map<GstElement*, gulong> decodebin_handles_{};
   std::vector<gulong> sig_handles_{};
@@ -51,8 +51,7 @@ class Uridecodebin : public Quiddity {
   GstElement* uridecodebin_{nullptr};
   GstCaps* rtpgstcaps_{nullptr};
   bool discard_next_uncomplete_buffer_{false};
-  // custom properties
-  bool loop_{false};
+  bool loop_{false};  //!< custom properties
   bool playing_{true};
   std::string uri_{};
   CounterMap counter_{};

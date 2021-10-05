@@ -54,24 +54,24 @@ class Switcher(builtins.object)
  |  
  |  Methods defined here:
 ...
- |  class_doc(...)
- |      Get a JSON documentation of a given classes.
- |      Arguments: (class)
- |      Returns: JSON-formated documentation of the class.
+ |  kind_doc(...)
+ |      Get a JSON documentation of a given kinds.
+ |      Arguments: (kind)
+ |      Returns: JSON-formated documentation of the kind.
  |  
- |  classes_doc(...)
- |      Get a JSON documentation of all classes.
+ |  kinds_doc(...)
+ |      Get a JSON documentation of all kinds.
  |      Arguments: (None)
- |      Returns: JSON-formated documentation of all classes available.
+ |      Returns: JSON-formated documentation of all kinds available.
  |  
  |  create(...)
  |      Create a quiddity. The name and the config are optional.The config (an InfoTree) overrides the switcher configuration file
  |      Arguments: (type, name, config)
  |      Returns: a handle to the created quiddity (pyquid.Qrox), or None
 ...
- |  list_classes(...) |      Get the list of available type of quiddity.
+ |  list_kinds(...) |      Get the list of available type of quiddity.
  |      Arguments: (None)
- |      Returns: A list a of class name.
+ |      Returns: A list a of kinds.
  |  
  |  list_quids(...)
  |      Get the list of instanciated quiddities.
@@ -80,19 +80,19 @@ class Switcher(builtins.object)
 ...
 ```
 
-So it looks like we can get a list of the available classes (or quiddities), get some documentation about them and create one given its class name. Let's list the available classes:
+So it looks like we can get a list of the available kinds (or quiddities), get some documentation about them and create one given its kind. Let's list the available kinds:
 
 ```python
-sw.list_classes()
+sw.list_kinds()
 ```
 
-You will get a list looking more or less like the following, depending on the available classes:
+You will get a list looking more or less like the following, depending on the available kinds:
 
 ```
 ['OSCsink', 'OSCsrc', 'SOAPcontrolServer', 'audioenc', 'audiotestsrc', 'avplayer', 'avrec', 'cropper', 'custom-save', 'decoder', 'dummy', 'dummysink', 'emptyquid', 'executor', 'extshmsrc', 'filesrc', 'glfwin', 'httpsdpdec', 'jackserver', 'jacksink', 'jacksrc', 'ladspa', 'ltcdiff', 'ltcsource', 'ltctojack', 'method', 'midisink', 'midisrc', 'nvenc', 'protocol-mapper', 'pulsesink', 'pulsesrc', 'resample', 'rtmp', 'shmdelay', 'signal', 'sip', 'systemusage', 'timelapse', 'urisrc', 'v4l2src', 'videnc', 'videoconvert', 'videosnapshot', 'videotestsrc', 'vncclientsrc', 'vrpnsink', 'vrpnsrc', 'watcher']
 ```
 
-Note that to get information about a class, you can use the `swquid-info` command line tool:
+Note that to get information about a kind, you can use the `swquid-info` command line tool:
 
 ```bash
 swquid-info --short-list --properties videotestsrc

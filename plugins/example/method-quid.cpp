@@ -23,10 +23,8 @@
 namespace switcher {
 namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(MethodQuid,
-                                     "method",
+                                     "methodquid",
                                      "Example Method Plugin",
-                                     "test",
-                                     "",
                                      "Dummy plugin for testing/example purpose",
                                      "LGPL",
                                      "Nicolas Bouillot");
@@ -34,7 +32,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(MethodQuid,
 MethodQuid::MethodQuid(quiddity::Config&& conf)
     : Quiddity(std::forward<quiddity::Config>(conf)),
       hello_id_(mmanage<MPtr(&method::MBag::make_method<my_method_t>)>(
-          "hello_",
+          "hello",
           infotree::json::deserialize(
               R"(
                   {
@@ -52,7 +50,7 @@ MethodQuid::MethodQuid(quiddity::Config&& conf)
             return std::string("hello ") + str + " and count is " + std::to_string(count_);
           })),
       count_id_(mmanage<MPtr(&method::MBag::make_method<std::function<void()>>)>(
-          "count_",
+          "count",
           infotree::json::deserialize(
               R"(
                   {
@@ -63,7 +61,7 @@ MethodQuid::MethodQuid(quiddity::Config&& conf)
               )"),
           [&]() { ++count_; })),
       many_args_id_(mmanage<MPtr(&method::MBag::make_method<many_args_t>)>(
-          "many_args_",
+          "many_args",
           infotree::json::deserialize(
               R"(
                   {

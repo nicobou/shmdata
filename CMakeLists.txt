@@ -7,8 +7,8 @@ project(switcher)
 
 # Project Variables
 set(SWITCHER_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
-set(SWITCHER_VERSION_MAJOR 2)
-set(SWITCHER_VERSION_MINOR 3)
+set(SWITCHER_VERSION_MAJOR 3)
+set(SWITCHER_VERSION_MINOR 0)
 set(SWITCHER_VERSION_PATCH 0)
 set(SWITCHER_VERSION_STRING ${SWITCHER_VERSION_MAJOR}.${SWITCHER_VERSION_MINOR}.${SWITCHER_VERSION_PATCH})
 set(SWITCHER_API_VERSION ${SWITCHER_VERSION_MAJOR}.${SWITCHER_VERSION_MINOR})
@@ -158,6 +158,13 @@ add_compile_options(-Wall -Wextra -Werror)
 add_compile_options(-Wno-unused-parameter)
 add_compile_options(-Wno-cast-function-type)
 add_definitions("-DDATADIR=\"${DATADIR}\"")
+
+# COLOR OUTPUT
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag(-fdiagnostics-color CAN_DIAGNOSTICS_COLOR)
+if(CAN_DIAGNOSTICS_COLOR)
+  add_definitions(-fdiagnostics-color)
+endif()
 
 # OSX
 if(APPLE AND ${CMAKE_SYSTEM_NAME} MATCHES "Darwin")

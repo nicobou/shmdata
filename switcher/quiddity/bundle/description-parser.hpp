@@ -29,7 +29,7 @@ namespace switcher {
 namespace quiddity {
 namespace bundle {
 struct quiddity_spec_t {
-  std::string type{};
+  std::string kind{};
   std::string name{};
   std::string group_name{};
   std::vector<std::pair<std::string, std::string>> params{};
@@ -54,8 +54,8 @@ struct shm_connection_t {
 class DescriptionParser : public SafeBoolIdiom {
  public:
   DescriptionParser() = delete;
-  // if valid_types is empty, then no check is performed
-  DescriptionParser(const std::string& description, const std::vector<std::string>& valid_types);
+  // if valid_kinds is empty, then no check is performed
+  DescriptionParser(const std::string& description, const std::vector<std::string>& valid_kinds);
   std::string get_parsing_error() const { return parsing_error_; }
   std::vector<quiddity_spec_t> get_quiddities() const { return quiddities_; }
   std::string get_reader_quid() const { return reader_quid_; }
@@ -69,9 +69,9 @@ class DescriptionParser : public SafeBoolIdiom {
   std::string reader_quid_{};
   bool is_valid_;
   bool parse_description(const std::string& description,
-                         const std::vector<std::string>& valid_types);
-  bool parse_branch(const std::string& branch, const std::vector<std::string>& valid_types);
-  bool parse_item(const std::string& item, const std::vector<std::string>& valid_types);
+                         const std::vector<std::string>& valid_kinds);
+  bool parse_branch(const std::string& branch, const std::vector<std::string>& valid_kinds);
+  bool parse_item(const std::string& item, const std::vector<std::string>& valid_kinds);
   bool parse_param(const std::string& raw_param, quiddity_spec_t& quid);
   std::string protect_space_in_quote(const std::string& item) const;
   std::string protect_escaped_spaces(const std::string& item) const;

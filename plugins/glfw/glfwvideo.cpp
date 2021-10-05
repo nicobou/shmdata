@@ -31,8 +31,6 @@ SWITCHER_DECLARE_PLUGIN(GLFWVideo);
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GLFWVideo,
                                      "glfwin",
                                      "OpenGL Video Display (configurable)",
-                                     "video",
-                                     "reader/device/occasional-writer",
                                      "Video window with fullscreen",
                                      "LGPL",
                                      "Jérémie Soria");
@@ -50,9 +48,38 @@ const std::string GLFWVideo::kOverlayDisabledMessage =
 
 std::atomic<int> GLFWVideo::instance_counter_(0);
 
+const std::string GLFWVideo::kConnectionSpec(R"(
+{
+"follower":
+  [
+    {
+      "label": "video",
+      "description": "Video stream to display",
+      "can_do": ["video/x-raw"]
+    }
+  ],
+"writer":
+  [
+    {
+      "label": "keyb",
+      "description": "Keyboard events",
+      "can_do": ["application/x-keyboard-events"]
+    },
+    {
+      "label": "mouse",
+      "description": "Mouse events",
+      "can_do": ["application/x-mouse-events"]
+    }
+  ]
+}
+)");
+
 GLFWVideo::GLFWVideo(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
-      shmcntr_(static_cast<Quiddity*>(this)),
+    : Quiddity(
+          std::forward<quiddity::Config>(conf),
+          {kConnectionSpec,
+           [this](const std::string& shmpath, claw::sfid_t) { return on_shmdata_connect(shmpath); },
+           [this](claw::sfid_t) { return on_shmdata_disconnect(); }}),
       gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)),
       background_config_id_(pmanage<MPtr(&property::PBag::make_group)>(
           "background_config",
@@ -207,15 +234,21 @@ GLFWVideo::GLFWVideo(quiddity::Config&& conf)
           [this](bool val) {
             xevents_to_shmdata_ = val;
             if (xevents_to_shmdata_) {
-              keyb_shm_ = std::make_unique<shmdata::Writer>(
-                  this, make_shmpath("keyb"), sizeof(KeybEvent), "application/x-keyboard-events");
+              keyb_shm_ =
+                  std::make_unique<shmdata::Writer>(this,
+                                                    claw_.get_shmpath_from_writer_label("keyb"),
+                                                    sizeof(KeybEvent),
+                                                    "application/x-keyboard-events");
               if (!keyb_shm_.get()) {
                 warning("GLFW keyboard event shmdata writer failed");
                 keyb_shm_.reset(nullptr);
               }
 
-              mouse_shm_ = std::make_unique<shmdata::Writer>(
-                  this, make_shmpath("mouse"), sizeof(MouseEvent), "application/x-mouse-events");
+              mouse_shm_ =
+                  std::make_unique<shmdata::Writer>(this,
+                                                    claw_.get_shmpath_from_writer_label("mouse"),
+                                                    sizeof(MouseEvent),
+                                                    "application/x-mouse-events");
               if (!mouse_shm_.get()) {
                 warning("GLFW mouse event shmdata writer failed");
                 mouse_shm_.reset(nullptr);
@@ -482,13 +515,6 @@ GLFWVideo::GLFWVideo(quiddity::Config&& conf)
                                                             0,
                                                             max_height_);
 
-  shmcntr_.install_connect_method(
-      [this](const std::string& shmpath) { return on_shmdata_connect(shmpath); },
-      [this](const std::string&) { return on_shmdata_disconnect(); },
-      [this]() { return on_shmdata_disconnect(); },
-      [this](const std::string& caps) { return can_sink_caps(caps); },
-      1);
-
   pmanage<MPtr(&property::PBag::make_bool)>(
       "keyb_interaction",
       [this](const bool val) {
@@ -557,7 +583,6 @@ GLFWVideo::GLFWVideo(quiddity::Config&& conf)
   ++instance_counter_;
   RendererSingleton::get()->subscribe_to_render_loop(this);
 
-  register_writer_suffix("keyb|mouse");
   // We need the quiddity config to be loaded so we cannot do it in the constructor.
   if (is_valid_) {
     load_icon();
@@ -1207,10 +1232,6 @@ inline void GLFWVideo::on_handoff_cb(GstElement* /*object*/,
 
   context->video_frames_.write(map.data, map.data + map.size);
 }
-
-bool GLFWVideo::can_sink_caps(std::string caps) {
-  return gst::utils::can_sink_caps("videoconvert", caps);
-};
 
 GLFWVideo::GUIConfiguration::GUIConfiguration(GLFWVideo* window)
     : parent_window_(window), color_(255, 255, 255, 255), context_(std::make_unique<GUIContext>()) {

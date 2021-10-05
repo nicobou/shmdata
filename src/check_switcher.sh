@@ -6,14 +6,14 @@ set -e
 # print version
 switcher --version
 
-# list quiddity classes
-switcher --list-classes
+# list quiddity kinds
+switcher --list-kinds
 
-# print classes documentation, JSON-formated
-switcher --classes-doc
+# print kinds documentation, JSON-formated
+switcher --kinds-doc
 
-# print documentation for a given class (here the "dummy" quiddity type)
-switcher --class-doc dummy
+# print documentation for a given kind (here the "dummy" quiddity kind)
+switcher --kind-doc dummy
 
 # run a quiet switcher
 switcher --quiet --extra-plugin-dir ../plugins/gsoap/&

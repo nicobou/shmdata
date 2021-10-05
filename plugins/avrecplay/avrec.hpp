@@ -22,7 +22,6 @@
 
 #include <switcher/quiddity/startable.hpp>
 #include "switcher/gst/pipeliner.hpp"
-#include "switcher/shmdata/connector.hpp"
 #include "switcher/shmdata/follower.hpp"
 
 namespace switcher {
@@ -36,6 +35,8 @@ class AVRecorder : public Quiddity, public Startable {
   bool stop() final;
 
  private:
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
+
   static std::vector<std::string> kGstMuxers;                  //!< List of GStreamer muxers
   static const std::vector<std::string> kPropertiesBlackList;  //!< Blacklisted gstreamer properties
   static const std::string kRecordModeDate;
@@ -45,9 +46,8 @@ class AVRecorder : public Quiddity, public Startable {
   GstBusSyncReply bus_sync(GstMessage* msg);
 
   //! Shmdata methods
-  bool on_shmdata_connect(const std::string& shmpath);
-  bool on_shmdata_disconnect(const std::string& shmpath);
-  bool can_sink_caps(const std::string& str_caps);
+  bool on_shmdata_connect(const std::string& shmpath, claw::sfid_t sfid);
+  bool on_shmdata_disconnect(claw::sfid_t sfid);
 
   std::string generate_pipeline_description();
 
@@ -62,8 +62,7 @@ class AVRecorder : public Quiddity, public Startable {
   };
 
   struct ConnectedShmdata {
-    ConnectedShmdata(AVRecorder* parent,
-                     const std::string& shmpath);
+    ConnectedShmdata(AVRecorder* parent, const std::string& shmpath, claw::sfid_t sfid);
     ~ConnectedShmdata();
     void discover_compatible_muxers(std::vector<std::string>&);
     bool update_gst_properties();
@@ -74,6 +73,7 @@ class AVRecorder : public Quiddity, public Startable {
     std::string caps_{};           //!< String caps received on connection of the shmdata.
     std::string shmdata_name_{};   //!< Extraction of the unique shmdata name from the shmpath.
     std::string shmpath_{};        //!< Shmdata file path.
+    claw::sfid_t sfid_{Ids::kInvalid};  //!< the claw identifier for thethis shmdata follower
     std::string recfile_{};        //!< Name of the recording file (modulo suffix from record mode).
     property::prop_id_t recfile_id_{0};
     std::string label_{"custom"};  //!< Label suffix for label record mode.
@@ -88,7 +88,6 @@ class AVRecorder : public Quiddity, public Startable {
   };
 
   bool is_valid_{false};      //!< Used to validate that the construction of the quiddity worked
-  shmdata::Connector shmcntr_;  //!< Shmdata connector to connect into the quiddity.
   std::unique_ptr<gst::Pipeliner> gst_pipeline_{nullptr};  //!< Gstreamer pipeline
   GstElement* avrec_bin_{nullptr};                       //!< Full recording pipeline
 

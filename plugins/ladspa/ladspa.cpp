@@ -27,24 +27,44 @@ SWITCHER_DECLARE_PLUGIN(LADSPA);
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(LADSPA,
                                      "ladspa",
                                      "LADSPA plugin",
-                                     "audio",
-                                     "reader/writer",
                                      "Choice of LADSPA plugins",
                                      "LGPL",
                                      "Jérémie Soria");
 
 const std::vector<std::string> LADSPA::KPropertiesBlackList = {"name", "parent"};
 
+const std::string LADSPA::kConnectionSpec(R"(
+{
+"follower":
+  [
+    {
+      "label": "audio",
+      "description": "Audio stream",
+      "can_do": ["audio/x-raw"]
+    }
+  ],
+"writer":
+  [
+    {
+      "label": "audio",
+      "description": "Audio stream with effect",
+      "can_do": ["audio/x-raw"]
+    }
+  ]
+}
+)");
+
 LADSPA::LADSPA(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
-      shmcntr_(static_cast<Quiddity*>(this)),
+    : Quiddity(
+          std::forward<quiddity::Config>(conf),
+          {kConnectionSpec,
+           [this](const std::string& shmpath, claw::sfid_t) { return on_shmdata_connect(shmpath); },
+           [this](claw::sfid_t) { return on_shmdata_disconnect(); }}),
       gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)),
       plugins_list_(get_ladspa_plugins()),
       plugins_(property::Selection<>(
           std::move(plugins_list_.first), std::move(plugins_list_.second), 0)) {
   if (plugins_list_.first.empty()) return;
-
-  register_writer_suffix("audio");
 
   perchannel_group_id_ = pmanage<MPtr(&property::PBag::make_group)>(
       "perchannel_group",
@@ -87,13 +107,6 @@ LADSPA::LADSPA(quiddity::Config&& conf)
       "LADSPA plugin",
       "Select a LADSPA plugin among all the ones installed on the system.",
       plugins_);
-
-  shmcntr_.install_connect_method(
-      [this](const std::string& shmpath) { return on_shmdata_connect(shmpath); },
-      [this](const std::string&) { return on_shmdata_disconnect(); },
-      [this]() { return on_shmdata_disconnect(); },
-      [this](const std::string& caps) { return can_sink_caps(caps); },
-      1);
 
   pmanage<MPtr(&property::PBag::set_to_current)>(plugins_id_);
   pmanage<MPtr(&property::PBag::set_to_current)>(global_settings_id_);
@@ -310,7 +323,7 @@ void LADSPA::get_gst_properties() {
 
 bool LADSPA::on_shmdata_connect(const std::string& shmpath) {
   shmpath_ = shmpath;
-  shmpath_transformed_ = make_shmpath("audio");
+  shmpath_transformed_ = claw_.get_shmpath_from_writer_label("audio");
 
   // We get the values before resetting the pipeline before the first connection.
   // After that this will be done during the disconnection event.
@@ -322,8 +335,7 @@ bool LADSPA::on_shmdata_connect(const std::string& shmpath) {
     save_properties();
     first_connect_ = false;
   }
-  pmanage<MPtr(&property::PBag::disable)>(plugins_id_,
-                                          shmdata::Connector::disabledWhenConnectedMsg);
+  pmanage<MPtr(&property::PBag::disable)>(plugins_id_, property::PBag::disabledWhenConnectedMsg);
 
   create_and_play_gst_pipeline();
 
@@ -393,32 +405,6 @@ bool LADSPA::on_shmdata_disconnect() {
 
   gst_pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, nullptr);
   return true;
-}
-
-bool LADSPA::can_sink_caps(std::string str_caps) {
-  if (!stringutils::starts_with(str_caps, "audio/x-raw")) return false;
-
-  GstCaps* caps = gst_caps_from_string(str_caps.c_str());
-  On_scope_exit {
-    if (nullptr != caps) gst_caps_unref(caps);
-  };
-
-  GstStructure* s = gst_caps_get_structure(caps, 0);
-  if (nullptr == s) {
-    warning("Cannot get structure from caps (ladspa)");
-    return false;
-  }
-
-  auto rate = 0;
-  if (!gst_structure_get_int(s, "rate", &rate)) {
-    warning("Cannot get rate from shmdata description (ladspa)");
-    return false;
-  }
-
-  auto target_rate = gst::utils::get_gst_element_capability_as_range(
-      plugins_.get_attached(), "rate", GST_PAD_SINK);
-
-  return ((target_rate.first <= rate && rate <= target_rate.second));
 }
 
 InfoTree::ptr LADSPA::on_saving() {

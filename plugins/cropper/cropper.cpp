@@ -24,84 +24,100 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(Cropper,
                                      "cropper",
                                      "Video Cropper",
-                                     "video",
-                                     "reader/writer",
                                      "Plugin for cropping video sources",
                                      "LGPL",
                                      "Francis Lecavalier");
 
+const std::string Cropper::kConnectionSpec(R"(
+{
+"follower":
+  [
+    {
+      "label": "video",
+      "description": "Video stream to crop",
+      "can_do": ["video/x-raw"]
+    }
+  ],
+"writer":
+  [
+    {
+      "label": "video",
+      "description": "Croped video stream",
+      "can_do": ["video/x-raw"]
+    }
+  ]
+}
+)");
+
 Cropper::Cropper(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
-      shmcntr_(static_cast<Quiddity*>(this)),
+    : Quiddity(std::forward<quiddity::Config>(conf),
+               {kConnectionSpec,
+                [this](const std::string& shmpath, claw::sfid_t sfid) {
+                  return on_shmdata_connect(shmpath);
+                },
+                [this](claw::sfid_t sfid) { return on_shmdata_disconnect(); }}),
       gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)),
-      left_id_(pmanage<MPtr(&property::PBag::make_int)>("left",
-                                                        [this](const int val) {
-                                                          left_ = val;
-                                                          if (gst_pipeline_ != nullptr) {
-                                                            async_this_.run_async(
-                                                                [this]() { create_pipeline(); });
-                                                          }
-                                                          return true;
-                                                        },
-                                                        [this]() { return left_; },
-                                                        "Left Crop",
-                                                        "Pixels to crop on the left side",
-                                                        0,
-                                                        0,
-                                                        4096)),
-      right_id_(pmanage<MPtr(&property::PBag::make_int)>("right",
-                                                         [this](const int val) {
-                                                           right_ = val;
-                                                           if (gst_pipeline_ != nullptr) {
-                                                             async_this_.run_async(
-                                                                 [this]() { create_pipeline(); });
-                                                           }
-                                                           return true;
-                                                         },
-                                                         [this]() { return right_; },
-                                                         "Right Crop",
-                                                         "Pixels to crop on the right side",
-                                                         0,
-                                                         0,
-                                                         4096)),
-      top_id_(pmanage<MPtr(&property::PBag::make_int)>("top",
-                                                       [this](const int val) {
-                                                         top_ = val;
-                                                         if (gst_pipeline_ != nullptr) {
-                                                           async_this_.run_async(
-                                                               [this]() { create_pipeline(); });
-                                                         }
-                                                         return true;
-                                                       },
-                                                       [this]() { return top_; },
-                                                       "Top Crop",
-                                                       "Pixels to crop at the top",
-                                                       0,
-                                                       0,
-                                                       4096)),
-      bottom_id_(pmanage<MPtr(&property::PBag::make_int)>("bottom",
-                                                          [this](const int val) {
-                                                            bottom_ = val;
-                                                            if (gst_pipeline_ != nullptr) {
-                                                              async_this_.run_async(
-                                                                  [this]() { create_pipeline(); });
-                                                            }
-                                                            return true;
-                                                          },
-                                                          [this]() { return bottom_; },
-                                                          "Bottom Crop",
-                                                          "Pixels to crop at the bottom",
-                                                          0,
-                                                          0,
-                                                          4096)) {
-  shmcntr_.install_connect_method(
-      [this](const std::string& shmpath) { return on_shmdata_connect(shmpath); },
-      [this](const std::string&) { return on_shmdata_disconnect(); },
-      [this]() { return on_shmdata_disconnect(); },
-      [this](const std::string& caps) { return can_sink_caps(caps); },
-      1);
-  shmpath_cropped_ = make_shmpath("video");
-  register_writer_suffix("video");
+      left_id_(pmanage<MPtr(&property::PBag::make_int)>(
+          "left",
+          [this](const int val) {
+            left_ = val;
+            if (gst_pipeline_ != nullptr) {
+              async_this_.run_async([this]() { create_pipeline(); });
+            }
+            return true;
+          },
+          [this]() { return left_; },
+          "Left Crop",
+          "Pixels to crop on the left side",
+          0,
+          0,
+          4096)),
+      right_id_(pmanage<MPtr(&property::PBag::make_int)>(
+          "right",
+          [this](const int val) {
+            right_ = val;
+            if (gst_pipeline_ != nullptr) {
+              async_this_.run_async([this]() { create_pipeline(); });
+            }
+            return true;
+          },
+          [this]() { return right_; },
+          "Right Crop",
+          "Pixels to crop on the right side",
+          0,
+          0,
+          4096)),
+      top_id_(pmanage<MPtr(&property::PBag::make_int)>(
+          "top",
+          [this](const int val) {
+            top_ = val;
+            if (gst_pipeline_ != nullptr) {
+              async_this_.run_async([this]() { create_pipeline(); });
+            }
+            return true;
+          },
+          [this]() { return top_; },
+          "Top Crop",
+          "Pixels to crop at the top",
+          0,
+          0,
+          4096)),
+      bottom_id_(pmanage<MPtr(&property::PBag::make_int)>(
+          "bottom",
+          [this](const int val) {
+            bottom_ = val;
+            if (gst_pipeline_ != nullptr) {
+              async_this_.run_async([this]() { create_pipeline(); });
+            }
+            return true;
+          },
+          [this]() { return bottom_; },
+          "Bottom Crop",
+          "Pixels to crop at the bottom",
+          0,
+          0,
+          4096)) {
+  shmpath_cropped_ = claw_.get_shmpath_from_writer_label("video");
 }
 
 bool Cropper::on_shmdata_connect(const std::string& shmpath) {
@@ -220,10 +236,6 @@ bool Cropper::create_pipeline() {
   }
   gst_pipeline_->play(true);
   return true;
-}
-
-bool Cropper::can_sink_caps(const std::string& caps) {
-  return gst::utils::can_sink_caps("videocrop", caps);
 }
 
 }  // namespace quiddities

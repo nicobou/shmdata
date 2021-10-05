@@ -212,6 +212,11 @@ int main() {
     assert(serialized == infotree::json::serialize(tree_cpy.get()));
     auto tree_cpy2 = tree->branch_get_copy(".");
     assert(serialized == infotree::json::serialize(tree_cpy2.get()));
+
+    // access array element by its hidden key
+    auto red_door = tree->get_tree("child1.child2.red_door");
+    assert(!red_door->empty());
+    assert(infotree::json::serialize(red_door.get()) == infotree::json::serialize(elem1.get()));
   }
 
   {  // get childs keys inserting in an existing container

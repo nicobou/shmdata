@@ -2,6 +2,47 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 3.0.0 (2021-10-04)
+---------------------------
+This is an official release in the 3.0 stable series.
+
+New features:
+* ✨ InfoTree API: Usage improvements
+* ✨ add Claw classes and integrate in Quiddity
+* ✨ add can_do methods to claw and connect_quid
+* ✨ add can_sink_caps to claw
+* ✨ add connection API for shmdata reader Quiddity
+* ✨ add dynamic shmdata in claw
+* ✨ add get_copy to infoTree
+* ✨ add repeat_array_indexes option in infoTree json serialization
+* ✨ add signals for dynamic connection spec
+* ✨ add try-connect and get-con-spec to switcher-ctrl, with updated doc
+* ✨ get optional parsing error message when deserializing InfoTree
+* ✨ parsing ConnectionSpec
+* ✨ python wrapper for Claw
+
+Bug fixes:
+* 🎨 reorder python example files
+* 🐛 fix CI
+* 🐛 fix assert not handled in python text number 11
+* 🐛 fix infotree foreach breaking the tree
+* 🐛 fix shmshot (wrong use of python condition variable)
+
+Improvements:
+* 👷 add color to compiler output
+* 📝 formating in Ids doxygen
+
+Documentation:
+* 📝 update MIGRATIONS.md for Switcher 3.0.0 release
+
+Breaking change:
+* 🐛 Fix the SIP plugin along with the `get_info` method for `pyquid`
+* 💥 pyquid sends Infotree in signals rather than a json serialization of it
+* 💥 removed connect methods on quiddities
+* 💥 use kind keyword instead of either class or type for string description of quiddity types
+* 🔥 remove category and tag
+
+
 switcher 2.3.0 (2021-09-20)
 ---------------------------
 This is an official release in the 2.3 stable series.

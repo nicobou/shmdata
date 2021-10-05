@@ -20,7 +20,6 @@
 #include "switcher/gst/pipeliner.hpp"
 #include "switcher/quiddity/quiddity.hpp"
 #include "switcher/quiddity/startable.hpp"
-#include "switcher/shmdata/connector.hpp"
 #include "switcher/shmdata/follower.hpp"
 
 namespace switcher {
@@ -34,22 +33,17 @@ class RTMP : public Quiddity, public Startable {
  public:
   RTMP(quiddity::Config&&);
   ~RTMP();
-  RTMP(const RTMP&) = delete;
-  RTMP& operator=(const RTMP&) = delete;
 
  private:
   bool start() final;
   bool stop() final;
-  bool on_shmdata_connect(const std::string& shmpath);
-  bool on_shmdata_disconnect(const std::string& shmpath);
-  bool on_shmdata_disconnect_all();
-  bool can_sink_caps(const std::string& str_caps);
-
+  bool on_shmdata_connect(const std::string& shmpath, claw::sfid_t sfid);
+  bool on_shmdata_disconnect(claw::sfid_t sfid);
   bool create_gst_pipeline();
 
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
   std::string audio_shmpath_{};
   std::string video_shmpath_{};
-  shmdata::Connector shmcntr_;
   std::unique_ptr<shmdata::Follower> follower_video_{nullptr};
   std::unique_ptr<shmdata::Follower> follower_audio_{nullptr};
 

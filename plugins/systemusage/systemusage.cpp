@@ -45,8 +45,6 @@ namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SystemUsage,
                                      "systemusage",
                                      "SystemUsage plugin",
-                                     "monitoring",
-                                     "",
                                      "Gives system load information",
                                      "LGPL",
                                      "Emmanuel Durand");

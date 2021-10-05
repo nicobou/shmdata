@@ -25,8 +25,6 @@ SWITCHER_DECLARE_PLUGIN(SIPPlugin);
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SIPPlugin,
                                      "sip",
                                      "SIP (Session Initiation Protocol)",
-                                     "network",
-                                     "occasional-writer",
                                      "Manages user sessions",
                                      "LGPL",
                                      "Nicolas Bouillot");
@@ -35,8 +33,26 @@ SIPPlugin* SIPPlugin::this_ = nullptr;
 
 std::atomic<unsigned short> SIPPlugin::sip_plugin_used_(0);
 
+const std::string SIPPlugin::kConnectionSpec(R"(
+{
+"writer":
+  [
+    {
+      "label": "rtp%",
+      "description": "rtp streams received",
+      "can_do": ["application/x-rtp"]
+    },
+    {
+      "label": "stream%",
+      "description": "Stream received by ",
+      "can_do": [ "all" ]
+    }
+  ]
+}
+)");
+
 SIPPlugin::SIPPlugin(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
+    : Quiddity(std::forward<quiddity::Config>(conf), {kConnectionSpec}),
       port_id_(pmanage<MPtr(&property::PBag::make_string)>(
           "port",
           [this](const std::string& valstr) {

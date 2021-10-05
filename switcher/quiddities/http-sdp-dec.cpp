@@ -32,14 +32,25 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(
     HTTPSDPDec,
     "httpsdpdec",
     "HTTP/SDP Player",
-    "network",
-    "writer",
     "Decode an SDP-described stream delivered through http and make shmdata",
     "LGPL",
     "Nicolas Bouillot");
 
+const std::string HTTPSDPDec::kConnectionSpec(R"(
+{
+"writer":
+  [
+    {
+      "label": "custom%",
+      "description": "Streams received according to the SDP description",
+      "can_do": [ "all" ]
+    }
+  ]
+}
+)");
+
 HTTPSDPDec::HTTPSDPDec(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
+    : Quiddity(std::forward<quiddity::Config>(conf), {kConnectionSpec}),
       gst_pipeline_(std::make_unique<gst::Pipeliner>(nullptr, nullptr)),
       souphttpsrc_("souphttpsrc"),
       sdpdemux_("sdpdemux"),
@@ -67,7 +78,6 @@ HTTPSDPDec::HTTPSDPDec(quiddity::Config&& conf)
     is_valid_ = false;
     return;
   }
-  register_writer_suffix(".*");
 }
 
 void HTTPSDPDec::init_httpsdpdec() {
@@ -111,10 +121,13 @@ void HTTPSDPDec::configure_shmdatasink(GstElement* element,
   std::string media_name = media_type;
   if (count != 0) media_name.append("-" + std::to_string(count));
   std::string shmpath;
-  if (media_label.empty())
-    shmpath = make_shmpath(media_name);
-  else
-    shmpath = make_shmpath(media_label + "-" + media_name);
+  if (media_label.empty()) {
+    shmpath = claw_.get_writer_shmpath(
+        claw_.add_writer_to_meta(claw_.get_swid("custom%"), {media_name, ""}));
+  } else {
+    shmpath = claw_.get_writer_shmpath(
+        claw_.add_writer_to_meta(claw_.get_swid("custom%"), {media_label + "-" + media_name, ""}));
+  }
 
   auto extra_caps = get_quiddity_caps();
   g_object_set(G_OBJECT(element), "socket-path", shmpath.c_str(), "extra-caps-properties", extra_caps.c_str(), nullptr);

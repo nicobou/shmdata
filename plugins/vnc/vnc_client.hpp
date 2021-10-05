@@ -29,7 +29,6 @@
 
 #include "switcher/quiddity/quiddity.hpp"
 #include "switcher/quiddity/startable.hpp"
-#include "switcher/shmdata/connector.hpp"
 #include "switcher/shmdata/follower.hpp"
 #include "switcher/shmdata/writer.hpp"
 
@@ -45,14 +44,13 @@ class VncClientSrc : public Quiddity, public Startable {
  public:
   VncClientSrc(quiddity::Config&&);
   ~VncClientSrc();
-  VncClientSrc(const VncClientSrc&) = delete;
-  VncClientSrc& operator=(const VncClientSrc&) = delete;
 
   bool start();
   bool stop();
 
  private:
-  shmdata::Connector shmcntr_;
+  static const std::string kConnectionSpec;  //!< Shmdata specifications
+
   // prop
   std::string vnc_server_address_{"localhost"};
   property::prop_id_t vnc_server_address_id_{0};
@@ -68,14 +66,11 @@ class VncClientSrc : public Quiddity, public Startable {
 
   std::mutex mutex_{};
   std::mutex connect_mutex_{};
-  int shmreader_id_{0};
   std::map<int, std::string> shmdata_readers_caps_{};
-  std::map<std::string, std::unique_ptr<shmdata::Follower>> events_readers_{};
+  std::map<claw::sfid_t, std::unique_ptr<shmdata::Follower>> events_readers_{};
 
-  bool connect(std::string shmdata_socket_path);
-  bool disconnect(std::string shmName);
-  bool disconnect_all();
-  bool can_sink_caps(std::string caps);
+  bool connect(std::string shmdata_socket_path, claw::sfid_t sfid);
+  bool disconnect(claw::sfid_t sfid);
 
   static rfbBool resize_vnc(rfbClient* client);
   static void update_vnc(rfbClient* client, int x, int y, int w, int h);
