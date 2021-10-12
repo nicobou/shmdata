@@ -1,2 +1,6 @@
 # You must remove unused comment lines for the released package.
-html/*
+html/
+*.md
+doc/
+tests/
+wrappers/python/example.py
