@@ -15,7 +15,7 @@ override_dh_install:
 	dh_install --list-missing
 
 override_dh_installdocs:
-	dh_auto_configure -- DCMAKE_LIBRARY_ARCHITECTURE="$(DEB_TARGET_MULTIARCH)"
+	dh_auto_configure -- -DCMAKE_LIBRARY_ARCHITECTURE="$(DEB_TARGET_MULTIARCH)"
 	rm -rf html
 	cd "obj-${DEB_TARGET_MULTIARCH}" && make doc && cd ..
 	dh_installdocs
