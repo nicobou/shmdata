@@ -106,7 +106,7 @@ static GOptionEntry entries[25] = {
      0,
      G_OPTION_ARG_NONE,
      &try_connect,
-     "try to connect two quiddities using nicknames (-o reader_quiddity writer_qwuiddity)",
+     "try to connect two quiddities using nicknames (-o reader_quiddity writer_quiddity)",
      nullptr},
     {"con-spec",
      'O',
