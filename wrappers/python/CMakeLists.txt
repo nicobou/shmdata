@@ -7,6 +7,7 @@ add_feature_info("wrapper-python" WITH_PYTHON "Python Wrapper")
 if (WITH_PYTHON)
   find_package(PythonInterp 3 REQUIRED)
   pkg_check_modules(PYTHON REQUIRED python3)
+  
   link_directories(${PYTHON_LIBRARY_DIRS})
   add_compile_options(${PYTHON_CFLAGS})
   add_compile_options("-Wno-missing-field-initializers")
@@ -54,6 +55,5 @@ if (WITH_PYTHON)
   add_test(pyquid_switcher_session ${CMAKE_CURRENT_SOURCE_DIR}/examples/12-switcher-session.py)
   add_test(pyquid_shmdata_connection ${CMAKE_CURRENT_SOURCE_DIR}/examples/13-shmdata-connection.py)
   add_test(pyquid_shmdata_dynamic_claws ${CMAKE_CURRENT_SOURCE_DIR}/examples/14-shmdata-dynamic-claws.py)
-
 endif ()
 

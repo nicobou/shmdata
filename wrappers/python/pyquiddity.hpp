@@ -68,6 +68,7 @@ class pyQuiddity {
   static PyObject* Quiddity_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /*kwds*/);
   static int Quiddity_init(pyQuiddityObject* self, PyObject* /*args*/, PyObject* /*kwds*/);
   static void Quiddity_dealloc(pyQuiddityObject* self);
+  static PyObject* tp_repr(pyQuiddityObject* self);
   static PyObject* tp_str(pyQuiddityObject* self);
   static PyObject* set(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* get(pyQuiddityObject* self, PyObject* args, PyObject* kwds);

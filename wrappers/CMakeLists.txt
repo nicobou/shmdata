@@ -7,3 +7,5 @@ include_directories(
 )
 
 add_subdirectory(python)
+add_subdirectory(switcherio)
+

@@ -454,11 +454,18 @@ bool pySwitch::subscribe_to_signal(pySwitchObject* self,
                                    PyObject* user_data) {
   auto signalCb = [cb, user_data, self](quiddity::qid_t id) {
     bool has_gil = (1 == PyGILState_Check()) ? true : false;
+
+    // save the thread state in a local variable
     PyThreadState* m_state = nullptr;
+
     if (!has_gil) {
+      // create a new thread state for the the interpreter interp
       m_state = PyThreadState_New(self->interpreter_state);
+      // Acquire the GIL and set the thread state to tstate, which must not be NULL
       PyEval_RestoreThread(m_state);
     }
+
+    // call the python callback
     PyObject* arglist;
     if (user_data)
       arglist = Py_BuildValue("(nO)", id, user_data);
@@ -469,10 +476,16 @@ bool pySwitch::subscribe_to_signal(pySwitchObject* self,
     if (pyerr != nullptr) PyErr_Print();
     Py_DECREF(arglist);
     Py_XDECREF(pyobjresult);
+
     if (!has_gil) {
+      // release the global interpreter lock and reset the thread state to NULL
       PyEval_SaveThread();
       if (m_state) {
+        // Reset all information in a thread state object
+        // The global interpreter lock must be held
         PyThreadState_Clear(m_state);
+        // Destroy a thread state object
+        // The global interpreter lock need not be held
         PyThreadState_Delete(m_state);
       }
     }
@@ -652,6 +665,7 @@ PyMemberDef pySwitch::pySwitch_members[] = {
     {(char*)"session", T_OBJECT_EX, offsetof(pySwitch::pySwitchObject, session), READONLY},
     {nullptr}};
 
+
 PyTypeObject pySwitch::pyType = {
     PyVarObject_HEAD_INIT(nullptr, 0).tp_name = "pyquid.Switcher",
     .tp_basicsize = sizeof(pySwitchObject),
@@ -661,4 +675,4 @@ PyTypeObject pySwitch::pyType = {
     .tp_methods = pySwitch_methods,
     .tp_members = pySwitch_members,
     .tp_init = (initproc)Switcher_init,
-    .tp_new = Switcher_new};
+    .tp_new = (newfunc)Switcher_new};

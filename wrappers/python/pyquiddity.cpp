@@ -35,30 +35,32 @@ PyDoc_STRVAR(pyquiddity_set_doc,
              "Returns: true of false\n");
 
 PyObject* pyQuiddity::set(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
+  // parse arguments
   const char* property = nullptr;
   PyObject* value = nullptr;
   static char* kwlist[] = {(char*)"property", (char*)"value", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO", kwlist, &property, &value)) {
-    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO", kwlist, &property, &value))
     return nullptr;
-  }
+  
   PyObject* val_str = nullptr;
   PyObject* repr = nullptr;
   On_scope_exit {
     if (val_str) Py_XDECREF(val_str);
     if (repr) Py_XDECREF(repr);
   };
+  
+  // check for boolean type value
   if (PyBool_Check(value)) {
+    // @JOKE: find meaning to this arcane magic
     if (!pyquid::ungiled(std::function([&]() {
           return self->quid->prop<MPtr(&property::PBag::set_str_str)>(
               property, (value == Py_True) ? "true" : "false");
-        }))) {
-      Py_INCREF(Py_False);
-      return Py_False;
-    }
-    Py_INCREF(Py_True);
-    return Py_True;
+        }))) { Py_RETURN_FALSE; }
+    Py_RETURN_TRUE;
   }
+  
+  
+  // check for unicode type value
   if (!PyObject_TypeCheck(value, &PyUnicode_Type)) {
     repr = PyObject_Repr(value);
     val_str = PyUnicode_AsEncodedString(repr, "utf-8", "Error ");
@@ -672,6 +674,13 @@ int pyQuiddity::Quiddity_init(pyQuiddityObject* self, PyObject* args, PyObject* 
   self->async_invocations = std::make_unique<std::list<std::future<void>>>();
 
   self->interpreter_state = PyThreadState_Get()->interp;
+  
+  // @NOTE: Deprecated function which does nothing.
+  // In Python 3.6 and older, this function created the GIL if it didn’t exist.
+  // Changed in version 3.9: The function now does nothing.
+  // Changed in version 3.7: This function is now called by Py_Initialize(), so you don’t have to call it yourself anymore.
+  // Changed in version 3.2: This function cannot be called before Py_Initialize() anymore.
+  // Deprecated since version 3.9, will be removed in version 3.11.
   PyEval_InitThreads();
 
   // notify quiddity created
@@ -777,6 +786,19 @@ PyObject* pyQuiddity::get_connection_specs(pyQuiddityObject* self, PyObject*, Py
   return pyInfoTree::make_pyobject_from_c_ptr(self->connnection_spec_keep_alive_.get(), false);
 }
 
+PyObject* pyQuiddity::tp_repr(pyQuiddityObject* self) {
+  auto obj = reinterpret_cast<PyObject*>(self);
+  PyObject* cls = PyObject_GetAttrString(obj, "__class__");
+  PyObject* name = PyObject_GetAttrString(cls, "__name__");
+  std::ostringstream oss;
+  // compute representation string
+  oss << "<" << PyUnicode_AsUTF8(name) << " (" << self->quid->get_id() << ")>";
+  // decrement refcounts
+  for (auto& o : {cls, name}) Py_XDECREF(o);
+  // return new ref to unicode string that represents the instance
+  return PyUnicode_FromString(oss.str().c_str());
+}
+
 PyObject* pyQuiddity::tp_str(pyQuiddityObject* self) {
   auto str = infotree::json::serialize(
       self->switcher
@@ -875,7 +897,7 @@ PyTypeObject pyQuiddity::pyType = {
     0,                                                          /* tp_getattr */
     0,                                                          /* tp_setattr */
     0,                                                          /* tp_reserved */
-    0,                                                          /* tp_repr */
+    (reprfunc)tp_repr,                                          /* tp_repr */
     0,                                                          /* tp_as_number */
     0,                                                          /* tp_as_sequence */
     0,                                                          /* tp_as_mapping */
