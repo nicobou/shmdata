@@ -18,10 +18,6 @@
 extern "C" {
 #endif
 
-  /** \addtogroup  capi
-   *  @{
-   */
-  
   typedef void *ShmdataLogger;
   ShmdataLogger shmdata_make_logger(void (*on_error)(void *user_data, const char *),
                                     void (*on_critical)(void *user_data, const char *),
@@ -32,7 +28,6 @@ extern "C" {
                                     void *user_data);
   void shmdata_delete_logger(ShmdataLogger logger);
 
-  /** @}*/
 #ifdef __cplusplus
 }
 #endif
