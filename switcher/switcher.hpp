@@ -125,24 +125,20 @@ class Switcher : public gst::Initialized {
     const auto path = std::getenv("SWITCHER_PLUGIN_PATH");
     if (path) {
       for (const auto& it : stringutils::split_string(path, ":")) {
-        // scanning directory
-        qfactory_.scan_dir(it);
-        // scanning sub-directories
-        for (const auto& dir_entry : fs::recursive_directory_iterator(it)) {
-          if (dir_entry.is_directory()) qfactory_.scan_dir(dir_entry.path());
-        }
+        scan_dir_for_plugins(it);
       }
     }
 
     // loading plugin from the default plugin directory
-    const auto default_plugin_dir = qfactory_.get_default_plugin_dir();
-    qfactory_.scan_dir(default_plugin_dir);
-    for (const auto& dir_entry :
-         fs::recursive_directory_iterator(default_plugin_dir)) {
-      if (dir_entry.is_directory()) qfactory_.scan_dir(dir_entry.path());
-    }
+    scan_dir_for_plugins(qfactory_.get_default_plugin_dir());
   }
 
+  /**
+   * Scan a directory for plugins and load them. The scan is recursive.
+   *
+   * @param path the path of the directory
+   */
+  void scan_dir_for_plugins(const std::string& path);
   void apply_gst_configuration();
   void register_bundle_from_configuration();
   void remove_shm_zombies() const;

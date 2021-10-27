@@ -367,4 +367,16 @@ void Switcher::remove_shm_zombies() const {
   }
 }
 
+void Switcher::scan_dir_for_plugins(const std::string& path) {
+  if (fs::is_directory(path)) {
+    qfactory_.scan_dir(path);
+    // scanning sub-directories
+    for (const auto& dir_entry : fs::recursive_directory_iterator(path)) {
+      if (dir_entry.is_directory()) qfactory_.scan_dir(dir_entry.path());
+    }
+  } else {
+    log_->warning("Switcher cannot scan % when loading Quiddity plugins (not a directory)", path);
+  }
+}
+
 }  // namespace switcher
