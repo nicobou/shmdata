@@ -38,14 +38,14 @@ PJICEStreamTrans::PJICEStreamTrans(pj_ice_strans_cfg& ice_cfg,
                                          this,       /* user data */
                                          &icecb,     /* callback */
                                          &icest_)) { /* instance ptr */
-    SIPPlugin::this_->message("ERROR:Error creating ICE");
+    SIPPlugin::this_->warning("error when creating ICE");
     return;
   }
   std::unique_lock<std::mutex> lock(cand_ready_mtx_);
   while (!cand_ready_)
     if (cand_ready_cv_.wait_for(lock, std::chrono::seconds(3)) == std::cv_status::timeout) return;
   if (PJ_SUCCESS != pj_ice_strans_init_ice(icest_, role, nullptr, nullptr)) {
-    SIPPlugin::this_->message("ERROR:Error initializing ICE");
+    SIPPlugin::this_->warning("error during ICE initialization");
     return;
   }
   // done
@@ -56,7 +56,7 @@ PJICEStreamTrans::~PJICEStreamTrans() {
   if (nullptr != icest_) {
     if (pj_ice_strans_has_sess(icest_)) {
       if (PJ_SUCCESS != pj_ice_strans_stop_ice(icest_))
-        SIPPlugin::this_->warning("issue stoping ICE session");
+        SIPPlugin::this_->warning("issue when stoping ICE session");
     }
     pj_ice_strans_destroy(icest_);
   }
@@ -105,7 +105,6 @@ void PJICEStreamTrans::cb_on_ice_complete(pj_ice_strans* ice_st,
     char errmsg[PJ_ERR_MSG_SIZE];
     pj_strerror(status, errmsg, sizeof(errmsg));
     SIPPlugin::this_->warning("ICE % failed: %", std::string(opname), std::string(errmsg));
-    SIPPlugin::this_->message("ERROR:ICE % failed: %", std::string(opname), std::string(errmsg));
     // pj_ice_strans_destroy(ice_st);
     // icest_ = NULL;
   }
