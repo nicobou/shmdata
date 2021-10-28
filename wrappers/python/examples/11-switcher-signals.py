@@ -56,8 +56,9 @@ vid2 = sw.create("videotestsrc")
 assert sw.subscribe("on-quiddity-removed", on_removed_cb, my_user_data)
 
 # remove a quiddity
-assert sw.remove(vid2.id())
-assert vid2.id() == on_removed_id
+vid2_id = vid2.id()
+assert sw.remove(vid2_id)
+assert vid2_id == on_removed_id
 
 # wait for the signal to arrive,
 time.sleep(0.5)

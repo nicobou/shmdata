@@ -32,7 +32,7 @@ using namespace claw;
 class pyFollowerClaw {
  public:
   using pyFollowerClawObject = struct {
-    PyObject_HEAD Quiddity* quid{nullptr};
+    PyObject_HEAD std::weak_ptr<Quiddity> quid{};
     sfid_t id;
     long invalid_id;
   };

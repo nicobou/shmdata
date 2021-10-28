@@ -199,12 +199,22 @@ PyDoc_STRVAR(pyswitch_remove_doc,
              "Returns: true or false\n");
 
 PyObject* pySwitch::remove(pySwitchObject* self, PyObject* args, PyObject* kwds) {
-  long int id = 0;
+  qid_t id = 0;
   static char* kwlist[] = {(char*)"id", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "l", kwlist, &id)) {
     PyErr_SetString(PyExc_TypeError, "error parsing arguments");
     return nullptr;
   }
+
+  for (auto i = 0; i < PyList_Size(self->quiddities); i++) {
+    auto quid = reinterpret_cast<pyQuiddity::pyQuiddityObject*>(PyList_GetItem(self->quiddities, i))
+                    ->quid.lock();
+    if (quid && quid->get_id() == id) {
+      PyList_SetSlice(self->quiddities, i, i + 1, nullptr);
+      break;
+    }
+  }
+
   if (!self->switcher->quids<MPtr(&quiddity::Container::remove)>(id)) {
     Py_INCREF(Py_False);
     return Py_False;
@@ -230,7 +240,7 @@ PyObject* pySwitch::get_quid(pySwitchObject* self, PyObject* args, PyObject* kwd
   for (auto i = 0; i < size; i++) {
     PyObject* item = PyList_GetItem(self->quiddities, i);
     if (item && PyObject_TypeCheck(item, &pyQuiddity::pyType)) {
-      auto quid = reinterpret_cast<pyQuiddity::pyQuiddityObject*>(item)->quid;
+      auto quid = reinterpret_cast<pyQuiddity::pyQuiddityObject*>(item)->quid.lock();
       if (quid->get_id() == id) {
         Py_INCREF(item);
         return item;

@@ -105,6 +105,13 @@ class Quiddity : public log::Logged, public SafeBoolIdiom {
   bool set_nickname(const std::string& nickname);
   std::string get_nickname() const;
 
+  /**
+   * Get a weak pointer to the current Quiddity, obtained from the Switcher instance.
+   *
+   * @return the weak pointer
+   */
+  std::weak_ptr<Quiddity> get_weak_ptr_to_this() const;
+
   // properties
   Make_consultable(Quiddity, property::PBag, &props_, prop);
 
