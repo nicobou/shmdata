@@ -152,8 +152,9 @@ std::string Claw::get_writer_shmpath(swid_t id) const {
     return overriden->second;
   }
   // otherwise generate to shmpath
-  return Switcher::get_shm_dir() + "/" + Switcher::get_shm_prefix() +
-         quid_->qcontainer_->get_switcher()->get_name() + "_" + std::to_string(quid_->id_) + "_" +
+  auto switcher = this->quid_->qcontainer_->get_switcher();
+  std::string basepath = (fs::path(switcher->get_shm_dir()) / switcher->get_shm_prefix()).string();
+  return basepath + switcher->get_name() + "_" + std::to_string(quid_->id_) + "_" +
          std::to_string(id);
 }
 

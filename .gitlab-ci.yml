@@ -58,7 +58,7 @@ Test -- Package:
   stage: test
   image: $CONTAINER_TAG_PREFIX-ubuntu2004
   script:
-    - cmake -B build -DENABLE_GPL=ON -DCMAKE_BUILD_TYPE="Release" && make clean -sC build
+    - cmake -B build -DENABLE_GPL=ON -DCMAKE_BUILD_TYPE="Release"
     - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y xvfb
     - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make package_source_test -sC build
   only:

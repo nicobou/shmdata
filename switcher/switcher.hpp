@@ -95,8 +95,8 @@ class Switcher : public gst::Initialized {
   log::Base* get_logger() { return log_.get(); }
 
   // shmpaths
-  static std::string get_shm_dir() { return "/tmp"; }
-  static std::string get_shm_prefix() { return "switcher_"; }
+  const std::string get_shm_dir() const { return conf_.get_value(".shm.directory"); }
+  const std::string get_shm_prefix() const { return conf_.get_value(".shm.prefix"); }
 
   // Bundles
   bool load_bundle_from_config(const std::string& bundle_description);

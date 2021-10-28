@@ -38,10 +38,9 @@ class Configuration : public log::Logged {
   bool from_file(const std::string& file_path);
   InfoTree::ptr get();
   void set(InfoTree::ptr conf);
-  
-  
+
   /**
-   * @brief Retrieves a vector of configured path(s) for the `extraConfig` key.
+   * Retrieves a vector of configured path(s) for the `extraConfig` key.
    *
    * Available configuration keys:
    *
@@ -59,13 +58,35 @@ class Configuration : public log::Logged {
   std::vector<fs::path> list_extra_configs();
 
   /**
-   * @brief Reads the content of an extra configuration file
+   * Reads the content of an extra configuration file
    *
    * @param name The name of the extra configuration file
    *
    * @return The content of an extra configuration file as a string
    */
   std::string get_extra_config(const std::string &name);
+
+  /**
+   * Get a value in the configuration
+   *
+   * @param branch_path The path of the value in the configuration
+   *
+   * @return the value
+   */
+  Any get_value(const std::string& branch_path) const;
+
+  /**
+   * Set a value in the configuration
+   *
+   * @param branch_path The path of the value in the configuration
+   * @param value The value to set for the key
+   *
+   * @return A boolean asserting how the update went
+   */
+  template <typename T>
+  bool set_value(const std::string& branch_path, T value) {
+    return configuration_->branch_set_value(branch_path, value);
+  };
 
  private:
   on_loaded_t on_loaded_cb_;
