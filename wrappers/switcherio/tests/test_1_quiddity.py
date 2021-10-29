@@ -15,7 +15,8 @@ class QuiddityTestCase(SocketIOTestCase):
       - property.set
       - quiddity.connect
       - quiddity.create
-      - quiddity.remove
+      - quiddity.delete
+      - quiddity.list
     """
 
     server_name = 'SocketIOServerTest'
@@ -24,7 +25,7 @@ class QuiddityTestCase(SocketIOTestCase):
     # registering some generic event callbacks for testing purposes
     events = [
         'quiddity.created',
-        'quiddity.removed',
+        'quiddity.deleted',
         'nickname.updated'
     ]
     # data sent by the server will be eventually available
@@ -91,14 +92,22 @@ class QuiddityTestCase(SocketIOTestCase):
         time.sleep(1)
         self.assertIsNone(err)
         self.assertIsInstance(res, str)
-        err, res = self.sio.call('method.invoke', data=(4, 'hello', ['Albert Camus']))
+        err, res = self.sio.call('quiddity.invoke', data=(4, 'hello', ['Albert Camus']))
         time.sleep(1)
         self.assertIsNone(err)
         self.assertIsInstance(res, str)
 
-    def test_08_quiddity_remove(self):
-        err, res = self.sio.call('quiddity.remove', data='mquid')
+    def test_08_quiddity_delete(self):
+        err, res = self.sio.call('quiddity.delete', data='mquid')
         time.sleep(1)
         self.assertIsNone(err)
         self.assertTrue(res)
+        self.sio.logger.debug(self.rcvd_data)
         self.assertIsInstance(self.rcvd_data[0], int)
+
+    def test_09_quiddity_list(self):
+        err, res = self.sio.call('quiddity.list')
+        time.sleep(1)
+        self.assertIsNone(err)
+        self.assertIsInstance(res, str)
+        self.assertIsInstance(json.loads(res), list)

@@ -56,16 +56,16 @@ def on_quiddity_created(quid_id: int) -> None:
                                  quid.get_info_tree_as_json()))
 
 
-def on_quiddity_removed(quid_id: int) -> None:
+def on_quiddity_deleted(quid_id: int) -> None:
     """Switcher callback signal to notify all clients of the successful removal of the quiddity.
 
-    This is called by Switcher whenever a quiddity is removed and emits a `quiddity.removed` event
+    This is called by Switcher whenever a quiddity is removed and emits a `quiddity.deleted` event
     to all clients in the room.
 
     Arguments:
         quid_id {int} -- The identifier of the removed `Quiddity`.
     """
-    asyncio.create_task(sio.emit('quiddity.removed', quid_id))
+    asyncio.create_task(sio.emit('quiddity.deleted', quid_id))
 
 
 def on_property_updated(value: Any, user_data: Dict[str, str]) -> None:
@@ -86,7 +86,7 @@ def on_property_updated(value: Any, user_data: Dict[str, str]) -> None:
             sio.emit('property.updated', (
                 quid_id, property_name, value, property_id)), loop)
     except KeyError as e:
-        sio.logger.warn(f'Error in "on_property_updated" callback: {e}')
+        sio.logger.exception(e)
 
 
 def on_nickname_updated(nickname: str, quid_id: int) -> None:
@@ -104,7 +104,7 @@ def on_nickname_updated(nickname: str, quid_id: int) -> None:
             sio.emit('nickname.updated', (
                 quid_id, str(nickname).replace("\"", ""))))
     except KeyError as e:
-        sio.logger.warn(f'Error in "on_nickname_updated" callback: {e}')
+        sio.logger.exception(e)
 
 
 # Subscriptions
@@ -156,7 +156,7 @@ def set_switcher_instance(instance: pyquid.Switcher) -> None:
 
     # Switcher signals subscription
     sw.subscribe("on-quiddity-created", on_quiddity_created)
-    sw.subscribe("on-quiddity-removed", on_quiddity_removed)
+    sw.subscribe("on-quiddity-removed", on_quiddity_deleted)
 
 
 def start_server() -> None:
@@ -351,6 +351,48 @@ def create_quiddity(
         return None, quid.get_info_tree_as_json()
 
 
+@sio.on('quiddity.delete')
+def remove_quiddity(
+    sid: str,
+    nickname: str
+) -> Tuple[Optional[str], Optional[bool]]:
+    """Remove a quiddity instance
+
+    [description]
+
+    Decorators:
+        sio.on
+
+    Arguments:
+        sid {str} -- The session identifier assigned to the client
+        nickname {str} -- The nickname of the quiddity to remove
+
+    Returns:
+        tuple -- The error and response for this event
+    """
+    quid_id = sw.get_quid_id(nickname)
+    if sw.remove(quid_id):
+        return None, True
+    return f'Could not remove `{nickname}` quiddity', None
+
+
+@sio.on('quiddity.list')
+def list_quiddities(sid: str) -> List[str]:
+    """Retrieves a list of existing quiddities encoded as a json string.
+
+    Decorators:
+        sio.on
+
+    Arguments:
+        sid {str} -- The session identifier assigned to the client
+
+    Returns:
+        tuple -- The error and response for this event
+    """
+    quids_list = [str(quid) for quid in sw.quiddities]
+    return None, json.dumps(quids_list)
+
+
 @sio.on('quiddity.connect')
 def connect_quiddity(
     sid: str,
@@ -378,16 +420,18 @@ def connect_quiddity(
         src.try_connect(dst)
         return None, True
     except Exception as e:
-        sio.logger.warn(e)
+        sio.logger.exception(e)
         return f"Could not connect quiddities `{src.nickname()}` and `{dst.nickname()}`", False
 
 
-@sio.on('quiddity.remove')
-def remove_quiddity(
+@sio.on('quiddity.invoke')
+async def invoke_quiddity_method(
     sid: str,
-    nickname: str
-) -> Tuple[Optional[str], Optional[bool]]:
-    """Remove a quiddity instance
+    quid_id: int,
+    method_name: str,
+    method_args: List[str] = []
+) -> Tuple[Optional[str], Optional[Any]]:
+    """Invoke a method of a quiddity
 
     [description]
 
@@ -396,15 +440,20 @@ def remove_quiddity(
 
     Arguments:
         sid {str} -- The session identifier assigned to the client
-        nickname {str} -- The nickname of the quiddity to remove
+        quid_id {int} -- The quiddity identifier
+        method_name {str} -- The name of the method to invoke
+        method_args {List[str] = []} -- The list of arguments for the method
 
     Returns:
         tuple -- The error and response for this event
     """
-    quid_id = sw.get_quid_id(nickname)
-    if sw.remove(quid_id):
-        return None, True
-    return f'Could not remove `{nickname}` quiddity', None
+    try:
+        quid = sw.get_quid(quid_id)
+        return None, quid.invoke(method_name, method_args)
+    except TypeError as e:
+        return f'Could not invoke method `{e}`', None
+    except KeyError:
+        return f'Quiddity `{quid_id}` does not exist', None
 
 
 # Property API
@@ -467,39 +516,6 @@ async def set_property(
             return None, True
         return (f'Could not set value `{value}`'
                 f'for property `{property_name}`', None)
-    except KeyError:
-        return f'Quiddity `{quid_id}` does not exist', None
-
-
-# Method API
-@sio.on('method.invoke')
-async def invoke_method(
-    sid: str,
-    quid_id: int,
-    method_name: str,
-    method_args: List[str] = []
-) -> Tuple[Optional[str], Optional[Any]]:
-    """Invoke a method of a quiddity
-
-    [description]
-
-    Decorators:
-        sio.on
-
-    Arguments:
-        sid {str} -- The session identifier assigned to the client
-        quid_id {int} -- The quiddity identifier
-        method_name {str} -- The name of the method to invoke
-        method_args {List[str] = []} -- The list of arguments for the method
-
-    Returns:
-        tuple -- The error and response for this event
-    """
-    try:
-        quid = sw.get_quid(quid_id)
-        return None, quid.invoke(method_name, method_args)
-    except TypeError as e:
-        return f'Could not invoke method `{e}`', None
     except KeyError:
         return f'Quiddity `{quid_id}` does not exist', None
 
