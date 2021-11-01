@@ -85,7 +85,7 @@ class Configuration : public log::Logged {
    */
   template <typename T>
   bool set_value(const std::string& branch_path, T value) {
-    return configuration_->branch_set_value(branch_path, value);
+    return configuration_->vgraft(branch_path, value);
   };
 
  private:

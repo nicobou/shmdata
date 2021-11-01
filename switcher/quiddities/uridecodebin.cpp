@@ -302,6 +302,7 @@ void Uridecodebin::pad_to_shmdata_writer(GstElement* bin, GstPad* pad) {
   auto swid = claw_.add_writer_to_meta(claw_.get_swid("custom%"),
                                        {media_name, media_name, {std::string(pad_caps_str)}});
   std::string shmpath = claw_.get_writer_shmpath(swid);
+  debug("uridecodebin: shmpath is %", shmpath);
   g_object_set(G_OBJECT(shmdatasink), "socket-path", shmpath.c_str(), nullptr);
   auto extra_caps = get_quiddity_caps();
   g_object_set(G_OBJECT(shmdatasink), "extra-caps-properties", extra_caps.c_str(), nullptr);
