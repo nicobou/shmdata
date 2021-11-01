@@ -206,7 +206,7 @@ PyObject* pySwitch::remove(pySwitchObject* self, PyObject* args, PyObject* kwds)
     return nullptr;
   }
 
-  for (auto i = 0; i < PyList_Size(self->quiddities); i++) {
+  for (Py_ssize_t i = 0; i < PyList_Size(self->quiddities); ++i) {
     auto quid = reinterpret_cast<pyQuiddity::pyQuiddityObject*>(PyList_GetItem(self->quiddities, i))
                     ->quid.lock();
     if (quid && quid->get_id() == id) {
@@ -237,7 +237,7 @@ PyObject* pySwitch::get_quid(pySwitchObject* self, PyObject* args, PyObject* kwd
   }
 
   auto size = PyList_Size(self->quiddities);
-  for (auto i = 0; i < size; i++) {
+  for (Py_ssize_t i = 0; i < size; ++i) {
     PyObject* item = PyList_GetItem(self->quiddities, i);
     if (item && PyObject_TypeCheck(item, &pyQuiddity::pyType)) {
       auto quid = reinterpret_cast<pyQuiddity::pyQuiddityObject*>(item)->quid.lock();
