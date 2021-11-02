@@ -47,8 +47,9 @@ class pyQuiddity {
     std::map<property::prop_id_t, PyObject*> user_data{};
   };
   using pyQuiddityObject = struct {
-    PyObject_HEAD Quiddity* quid{nullptr};
-    Switcher::ptr switcher{nullptr};
+    PyObject_HEAD std::weak_ptr<Quiddity> quid{};
+    std::weak_ptr<Switcher> switcher{};
+    PyObject* quiddities{nullptr};
     InfoTree::ptr connnection_spec_keep_alive_{};
     std::unique_ptr<sig_registering_t> sig_reg{};
     std::unique_ptr<prop_registering_t> prop_reg{};
@@ -68,6 +69,7 @@ class pyQuiddity {
   static PyObject* Quiddity_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /*kwds*/);
   static int Quiddity_init(pyQuiddityObject* self, PyObject* /*args*/, PyObject* /*kwds*/);
   static void Quiddity_dealloc(pyQuiddityObject* self);
+  static PyObject* tp_repr(pyQuiddityObject* self);
   static PyObject* tp_str(pyQuiddityObject* self);
   static PyObject* set(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* get(pyQuiddityObject* self, PyObject* args, PyObject* kwds);

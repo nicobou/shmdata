@@ -214,5 +214,9 @@ InfoTree::ptr Quiddity::get_shm_information_template() {
   return tree;
 }
 
+std::weak_ptr<Quiddity> Quiddity::get_weak_ptr_to_this() const {
+  return qcontainer_->get_quiddity(id_);
+}
+
 }  // namespace quiddity
 }  // namespace switcher

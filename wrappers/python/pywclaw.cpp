@@ -42,12 +42,14 @@ int pyWriterClaw::WriterClaw_init(pyWriterClawObject* self, PyObject* args, PyOb
     return -1;
   }
 
+  Quiddity* raw_quid = nullptr;
   if (quid_c_ptr) {
-    self->quid = static_cast<Quiddity*>(PyCapsule_GetPointer(quid_c_ptr, nullptr));
+    raw_quid = static_cast<Quiddity*>(PyCapsule_GetPointer(quid_c_ptr, nullptr));
   } else {
-    self->quid = reinterpret_cast<pyQuiddity::pyQuiddityObject*>(quid)->quid;
+    raw_quid = reinterpret_cast<pyQuiddity::pyQuiddityObject*>(quid)->quid.lock().get();
   }
-  self->id = self->quid->claw<MPtr(&Claw::get_swid)>(label);
+  self->id = raw_quid->claw<MPtr(&Claw::get_swid)>(label);
+  self->quid = raw_quid->get_weak_ptr_to_this();
   if (Ids::kInvalid == self->id) {
     PyErr_Format(PyExc_RuntimeError, "error label not found for writer in Quiddity Claw");
     return -1;
@@ -65,7 +67,12 @@ PyDoc_STRVAR(pywriterclaw_label_doc,
              "Returns: the label (string)\n");
 
 PyObject* pyWriterClaw::label(pyWriterClawObject* self, PyObject* args, PyObject* kwds) {
-  return PyUnicode_FromString(self->quid->claw<MPtr(&Claw::get_writer_label)>(self->id).c_str());
+  auto quid = self->quid.lock();
+  if (!quid) {
+    PyErr_SetString(PyExc_MemoryError, "Quiddity or parent Switcher has been deleted");
+    return nullptr;
+  }
+  return PyUnicode_FromString(quid->claw<MPtr(&Claw::get_writer_label)>(self->id).c_str());
 }
 
 PyDoc_STRVAR(pywriterclaw_shmpath_doc,
@@ -74,7 +81,12 @@ PyDoc_STRVAR(pywriterclaw_shmpath_doc,
              "Returns: the shmpath (string)\n");
 
 PyObject* pyWriterClaw::shmpath(pyWriterClawObject* self, PyObject* args, PyObject* kwds) {
-  return PyUnicode_FromString(self->quid->claw<MPtr(&Claw::get_writer_shmpath)>(self->id).c_str());
+  auto quid = self->quid.lock();
+  if (!quid) {
+    PyErr_SetString(PyExc_MemoryError, "Quiddity or parent Switcher has been deleted");
+    return nullptr;
+  }
+  return PyUnicode_FromString(quid->claw<MPtr(&Claw::get_writer_shmpath)>(self->id).c_str());
 }
 
 PyDoc_STRVAR(pywriterclaw_get_can_do_str_doc,
@@ -83,7 +95,12 @@ PyDoc_STRVAR(pywriterclaw_get_can_do_str_doc,
              "Returns: a list of shmdata types (list of string)\n");
 
 PyObject* pyWriterClaw::get_can_do_str(pyWriterClawObject* self, PyObject* args, PyObject* kwds) {
-  auto can_dos = self->quid->claw<MPtr(&Claw::get_writer_can_do)>(self->id);
+  auto quid = self->quid.lock();
+  if (!quid) {
+    PyErr_SetString(PyExc_MemoryError, "Quiddity or parent Switcher has been deleted");
+    return nullptr;
+  }
+  auto can_dos = quid->claw<MPtr(&Claw::get_writer_can_do)>(self->id);
   PyObject* res = PyList_New(can_dos.size());
   int i = 0;
   for (const auto& can_do : can_dos) {

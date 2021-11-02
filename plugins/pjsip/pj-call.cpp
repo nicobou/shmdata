@@ -63,7 +63,7 @@ PJCall::PJCall() {
   pj_status_t status;
   local_ips_ = netutils::get_ips();
   for (auto& it : local_ips_)
-    SIPPlugin::this_->debug("Local IP found for interface %: %", it.first, it.second);
+    SIPPlugin::this_->debug("local IP found for interface %: %", it.first, it.second);
   for (auto& it : local_ips_) {
     if (0 != std::string(it.second, 0, 4).compare("127.")) pj_cstr(&local_addr_, it.second.c_str());
   }
@@ -83,15 +83,15 @@ PJCall::PJCall() {
       SIPPlugin::this_->warning("unregistering default invite module failed");
     /* Initialize invite session module:  */
     status = pjsip_inv_usage_init(PJSIP::this_->sip_endpt_, &inv_cb);
-    if (status != PJ_SUCCESS) SIPPlugin::this_->warning("Init invite session module failed");
+    if (status != PJ_SUCCESS) SIPPlugin::this_->warning("init invite session module failed");
   }
   pjsip_100rel_init_module(PJSIP::this_->sip_endpt_);
   /* Register our module to receive incoming requests. */
   status = pjsip_endpt_register_module(PJSIP::this_->sip_endpt_, &mod_siprtp_);
-  if (status != PJ_SUCCESS) SIPPlugin::this_->warning("Register mod_siprtp_ failed");
+  if (status != PJ_SUCCESS) SIPPlugin::this_->warning("register mod_siprtp_ failed");
   // registering codecs
   status = PJCodec::install_codecs();
-  if (status != PJ_SUCCESS) SIPPlugin::this_->warning("Install codecs failed");
+  if (status != PJ_SUCCESS) SIPPlugin::this_->warning("install codecs failed");
   // properties and methods for user
   SIPPlugin::this_->mmanage<MPtr(&method::MBag::make_method<std::function<bool(std::string)>>)>(
       "send",
@@ -218,7 +218,7 @@ pj_bool_t PJCall::on_rx_request(pjsip_rx_data* rdata) {
 }
 
 void PJCall::on_inv_state_disconnected(call_t* call, pjsip_inv_session* inv, pjsua_buddy_id id) {
-  SIPPlugin::this_->debug("Call disconnected. Reason=% (%)",
+  SIPPlugin::this_->debug("call disconnected. Reason=% (%)",
                           std::to_string(inv->cause),
                           std::string(inv->cause_text.ptr, static_cast<int>(inv->cause_text.slen)));
   if (!release_outgoing_call(call, id)) release_incoming_call(call, id);
@@ -295,7 +295,7 @@ bool PJCall::release_outgoing_call(call_t* call, pjsua_buddy_id id) {
 }
 
 void PJCall::on_inv_state_confirmed(call_t* call, pjsip_inv_session* /*inv*/, pjsua_buddy_id id) {
-  SIPPlugin::this_->debug("Call connected");
+  SIPPlugin::this_->debug("call connected");
   // updating call status in the tree
   InfoTree::ptr tree =
       SIPPlugin::this_->prune_tree(std::string(".buddies." + std::to_string(id)),
@@ -464,7 +464,7 @@ void PJCall::call_on_media_update(pjsip_inv_session* inv, pj_status_t status) {
           SIPPlugin::this_->pjsip_->run([&]() {
             if (!call->ice_trans_send_->sendto(
                     comp_id, data, size, def_addr, pj_sockaddr_get_len(def_addr))) {
-              SIPPlugin::this_->debug("issue sending data with ICE");
+              SIPPlugin::this_->debug("error when sending data with ICE");
             }
           });
         });
@@ -478,7 +478,7 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
   std::lock_guard<std::mutex> lock(SIPPlugin::this_->sip_calls_->finalize_incoming_calls_m_);
   if (!SIPPlugin::this_ || !SIPPlugin::this_->sip_calls_.get() ||
       !SIPPlugin::this_->sip_calls_->can_create_calls_) {
-    SIPPlugin::this_->warning("Trying to initiate a call after all calls are hung out.");
+    SIPPlugin::this_->warning("trying to initiate a call after all calls are hung out.");
     return;
   }
 
@@ -486,7 +486,7 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
   char uristr[PJSIP_MAX_URL_SIZE];
   int len = pjsip_uri_print(
       PJSIP_URI_IN_REQ_URI, rdata->msg_info.msg->line.req.uri, uristr, sizeof(uristr));
-  SIPPlugin::this_->debug("Incoming call from %", std::string(uristr, len));
+  SIPPlugin::this_->debug("incoming call from %", std::string(uristr, len));
   len = pjsip_uri_print(PJSIP_URI_IN_FROMTO_HDR,
                         pjsip_uri_get_uri(rdata->msg_info.from->uri),
                         uristr,
@@ -498,7 +498,6 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
   stringutils::tolower(peer_uri_lower_case);
   if (!SIPPlugin::this_->white_list_->is_authorized(peer_uri) &&
       !SIPPlugin::this_->white_list_->is_authorized(peer_uri_lower_case)) {
-    SIPPlugin::this_->message("ERROR:call refused from %", peer_uri);
     SIPPlugin::this_->debug("call refused from %", peer_uri);
     pjsip_endpt_respond_stateless(
         PJSIP::this_->sip_endpt_, rdata, PJSIP_SC_BUSY_HERE, nullptr, nullptr, nullptr);
@@ -534,7 +533,7 @@ void PJCall::process_incoming_call(pjsip_rx_data* rdata) {
     status = sdp_info->sdp_err;
     if (status == PJ_SUCCESS && sdp_info->sdp == nullptr)
       status = PJSIP_ERRNO_FROM_SIP_STATUS(PJSIP_SC_NOT_ACCEPTABLE);
-    if (status != PJ_SUCCESS) SIPPlugin::this_->warning("Bad SDP in incoming INVITE");
+    if (status != PJ_SUCCESS) SIPPlugin::this_->warning("bad SDP in incoming INVITE");
   }
   unsigned options = 0;
   status =
@@ -810,14 +809,14 @@ void PJCall::print_sdp(const pjmedia_sdp_session* sdp) {
     sdpbuf[len] = '\0';
     SIPPlugin::this_->debug("SDP : \n% \n ", std::string(sdpbuf));
   } else {
-    SIPPlugin::this_->error("Error while printing SDP");
+    SIPPlugin::this_->error("error while printing SDP");
   }
 }
 
 bool PJCall::is_call_valid(const std::string& contact_uri) {
   // Are we registered?
   if (SIPPlugin::this_->sip_presence_->sip_local_user_.empty()) {
-    SIPPlugin::this_->error("Not registered to SIP server. Call aborted.");
+    SIPPlugin::this_->error("not registered to SIP server, call aborted");
     return false;
   }
 
@@ -828,7 +827,7 @@ bool PJCall::is_call_valid(const std::string& contact_uri) {
     [&contact_uri](const auto& c) {return c->peer_uri == contact_uri;}
   );
   if (it != outgoing_call_.end()) {
-    SIPPlugin::this_->error("A call with % already exists. Aborting new call.", contact_uri);
+    SIPPlugin::this_->error("a call with % already exists, new call aborted", contact_uri);
     return false;
   }
 
@@ -836,7 +835,7 @@ bool PJCall::is_call_valid(const std::string& contact_uri) {
   auto sip_local_user = SIPPlugin::this_->sip_presence_->sip_local_user_;
   auto sip_dest_user = "sip:" + contact_uri;
   if (sip_dest_user == std::string(sip_local_user, 0, sip_local_user.find_last_of(':'))) {
-    SIPPlugin::this_->error("Cannot call self. Call aborted.");
+    SIPPlugin::this_->error("cannot call self, call aborted");
     return false;
   }
 
@@ -845,7 +844,7 @@ bool PJCall::is_call_valid(const std::string& contact_uri) {
   pj_cstr(&remote_uri, sip_dest_user.c_str());
   auto id = pjsua_buddy_find(&remote_uri);
   if (id == PJSUA_INVALID_ID) {
-    SIPPlugin::this_->error("Cannot find buddy %. Call aborted.", contact_uri);
+    SIPPlugin::this_->error("cannot find buddy %,  call aborted", contact_uri);
     return false;
   }
 
@@ -853,7 +852,7 @@ bool PJCall::is_call_valid(const std::string& contact_uri) {
   auto paths = SIPPlugin::this_->tree<MPtr(&InfoTree::copy_leaf_values)>(
       std::string(".buddies." + std::to_string(id) + ".connections"));
   if (paths.empty()) {
-    SIPPlugin::this_->error("No shmdatas attached to buddy %. Call aborted.", contact_uri);
+    SIPPlugin::this_->error("no shmdatas attached to buddy %, call aborted", contact_uri);
     return false;
   }
 
@@ -875,8 +874,8 @@ pjsip_dialog* PJCall::create_sip_dialog(const pj_str_t local_uri, const pj_str_t
   if (status != PJ_SUCCESS) {
     char errstr[1024];
     pj_strerror(status, errstr, 1024);
-    SIPPlugin::this_->error("Error while creating SIP dialog: %", std::string(errstr));
-    SIPPlugin::this_->error("Could not create SIP dialog. Call aborted.");
+    SIPPlugin::this_->error("error while creating SIP dialog: %", std::string(errstr));
+    SIPPlugin::this_->error("could not create SIP dialog, call aborted");
     outgoing_call_.pop_back();
     return nullptr;
   }
@@ -886,8 +885,8 @@ pjsip_dialog* PJCall::create_sip_dialog(const pj_str_t local_uri, const pj_str_t
   if (status != PJ_SUCCESS) {
     char errstr[1024];
     pj_strerror(status, errstr, 1024);
-    SIPPlugin::this_->error("Error while setting session credentials: %", std::string(errstr));
-    SIPPlugin::this_->error("Could not set session credentials. Call aborted.");
+    SIPPlugin::this_->error("error while setting session credentials: %", std::string(errstr));
+    SIPPlugin::this_->error("could not set session credentials, call aborted");
     pjsip_dlg_terminate(dlg);
     outgoing_call_.pop_back();
     return nullptr;
@@ -902,8 +901,8 @@ bool PJCall::send_invite_request(pjsip_dialog* dlg, call_t* call, const pjmedia_
   if (status != PJ_SUCCESS) {
     char errstr[1024];
     pj_strerror(status, errstr, 1024);
-    SIPPlugin::this_->error("Error while creating INVITE session: %", std::string(errstr));
-    SIPPlugin::this_->error("Could not create INVITE session. Call aborted.");
+    SIPPlugin::this_->error("error while creating INVITE session: %", std::string(errstr));
+    SIPPlugin::this_->error("could not create INVITE session, call aborted");
     pjsip_inv_terminate(call->inv, 500, PJ_FALSE);
     pjsip_dlg_terminate(dlg);
     outgoing_call_.pop_back();
@@ -920,8 +919,8 @@ bool PJCall::send_invite_request(pjsip_dialog* dlg, call_t* call, const pjmedia_
   if (status != PJ_SUCCESS) {
     char errstr[1024];
     pj_strerror(status, errstr, 1024);
-    SIPPlugin::this_->error("Error while creating INVITE request: %", std::string(errstr));
-    SIPPlugin::this_->error("Could not create INVITE request. Call aborted.");
+    SIPPlugin::this_->error("error while creating INVITE request: %", std::string(errstr));
+    SIPPlugin::this_->error("could not create INVITE request, call aborted");
     pjsip_inv_end_session(call->inv, 500, nullptr, &tdata);
     pjsip_dlg_terminate(dlg);
     outgoing_call_.pop_back();
@@ -936,8 +935,8 @@ bool PJCall::send_invite_request(pjsip_dialog* dlg, call_t* call, const pjmedia_
   if (status != PJ_SUCCESS) {
     char errstr[1024];
     pj_strerror(status, errstr, 1024);
-    SIPPlugin::this_->error("Error while sending INVITE request: %", std::string(errstr));
-    SIPPlugin::this_->error("Could not send INVITE request. Call aborted.");
+    SIPPlugin::this_->error("error while sending INVITE request: %", std::string(errstr));
+    SIPPlugin::this_->error("could not send INVITE request, call aborted");
     pjsip_inv_end_session(call->inv, 500, nullptr, &tdata);
     pjsip_dlg_terminate(dlg);
     outgoing_call_.pop_back();
@@ -972,7 +971,7 @@ bool PJCall::make_call(const std::string contact_uri) {
   // Create SDP
   pjmedia_sdp_session* sdp = nullptr;
   if (!create_outgoing_sdp(dlg, cur_call, &sdp)) {
-    SIPPlugin::this_->error("Could not create outgoing SDP. Call aborted.");
+    SIPPlugin::this_->error("could not create outgoing SDP, call aborted");
     pjsip_dlg_terminate(dlg);
     outgoing_call_.pop_back();
     return false;
@@ -989,7 +988,7 @@ bool PJCall::make_call(const std::string contact_uri) {
   auto id = pjsua_buddy_find(&remote_uri);
   InfoTree::ptr tree = SIPPlugin::this_->prune_tree(".buddies." + std::to_string(id), false);
   if (!tree) {
-    SIPPlugin::this_->error("Could not find buddy % information tree. Aborting call.", contact_uri);
+    SIPPlugin::this_->error("could not find buddy % information tree, call aborted", contact_uri);
     pjsip_tx_data* tdata = nullptr;
     pjsip_inv_end_session(cur_call->inv, 500, nullptr, &tdata);
     pjsip_dlg_terminate(dlg);
@@ -1009,7 +1008,7 @@ bool PJCall::create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_se
   pj_cstr(&contact, tmpstr.c_str());
   auto id = pjsua_buddy_find(&contact);
   if (id == PJSUA_INVALID_ID) {
-    SIPPlugin::this_->error("Could not find buddy %", call->peer_uri);
+    SIPPlugin::this_->error("could not find buddy %", call->peer_uri);
     return false;
   }
   auto paths = SIPPlugin::this_->tree<MPtr(&InfoTree::copy_leaf_values)>(
@@ -1019,7 +1018,7 @@ bool PJCall::create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_se
   call->ice_trans_send_ =
       SIPPlugin::this_->stun_turn_->get_ice_transport(paths.size(), PJ_ICE_SESS_ROLE_CONTROLLING);
   if (!call->ice_trans_send_) {
-    SIPPlugin::this_->error("Could not initialize ICE transport for sending. Aborting call.");
+    SIPPlugin::this_->error("could not initialize ICE transport for sending. Aborting call.");
     return false;
   }
 
@@ -1029,10 +1028,10 @@ bool PJCall::create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_se
   // Add ICE-related attributes ('ice-ufrag' and 'ice-pwd')
   auto ufrag_pwd = call->ice_trans_send_->get_ufrag_and_passwd();
   if (!desc.add_msg_attribute("ice-ufrag", std::string(ufrag_pwd.first.ptr, ufrag_pwd.first.slen))) {
-    SIPPlugin::this_->warning("Could not add 'ice-ufrag' in outgoing SDP");
+    SIPPlugin::this_->warning("could not add 'ice-ufrag' in outgoing SDP");
   }
   if (!desc.add_msg_attribute("ice-pwd", std::string(ufrag_pwd.second.ptr, ufrag_pwd.second.slen))) {
-    SIPPlugin::this_->warning("Could not add 'ice-pwd' in outgoing SDP");
+    SIPPlugin::this_->warning("could not add 'ice-pwd' in outgoing SDP");
   }
 
   // Add medias ('m' fields) and 'candidate' lines for each media ('a' fields)
@@ -1087,7 +1086,7 @@ bool PJCall::create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_se
 
     // Add SDPMedia to current SDP description
     if (!desc.add_media(media)) {
-      SIPPlugin::this_->warning("Could not add a media to the SDP description");
+      SIPPlugin::this_->warning("could not add media to the SDP description");
     } else {
       call->media.emplace_back();
       call->media.back().shm_path_to_send = path;
@@ -1096,14 +1095,14 @@ bool PJCall::create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_se
 
   // Abort if there is nothing to send (no media)
   if (call->media.empty()) {
-    SIPPlugin::this_->error("No valid media could be added to SDP. Aborting call");
+    SIPPlugin::this_->error("no valid media could be added to SDP, call aborted");
     return false;
   }
 
   // Abort if the produced SDP description is empty
   std::string desc_str = desc.get_string();
   if (desc_str.empty()) {
-    SIPPlugin::this_->error("Newly created SDP description is empty. Aborting call.");
+    SIPPlugin::this_->error("newly created SDP description is empty, call aborted");
     return false;
   }
 
@@ -1112,7 +1111,7 @@ bool PJCall::create_outgoing_sdp(pjsip_dialog* dlg, call_t* call, pjmedia_sdp_se
   pj_strdup2(dlg->pool, &sdp_str, desc_str.c_str());
   pj_status_t status = pjmedia_sdp_parse(dlg->pool, sdp_str.ptr, sdp_str.slen, res);
   if (status != PJ_SUCCESS) {
-    SIPPlugin::this_->error("Newly created SDP description is malformed. Aborting call.");
+    SIPPlugin::this_->error("newly created SDP description is malformed, call aborted");
     return false;
   }
 
@@ -1123,7 +1122,7 @@ bool PJCall::send_to(const std::string& sip_url) {
   std::lock_guard<std::mutex> lock(finalize_outgoing_calls_m_);
 
   if (!can_create_calls_) {
-    SIPPlugin::this_->warning("Trying to initiate a call after all calls have been hung out.");
+    SIPPlugin::this_->warning("trying to initiate a call after all calls have been hung out");
     return false;
   }
   if (sip_url.empty()) {
@@ -1240,7 +1239,6 @@ void PJCall::make_attach_shmdata_to_contact(const std::string& shmpath,
   auto& sip_local_user = SIPPlugin::this_->sip_presence_->sip_local_user_;
   if (std::string("sip:") + contact_uri ==
       std::string(sip_local_user, 0, sip_local_user.find_last_of(':'))) {
-    SIPPlugin::this_->message("ERROR:cannot attach shmdata to self");
     SIPPlugin::this_->warning("cannot attach shmdata to self");
     return;
   }
@@ -1337,7 +1335,7 @@ bool PJCall::negotiate_ice(PJICEStreamTrans* ice_trans,
                          &port,
                          type);
         if (cnt != 7) {
-          SIPPlugin::this_->warning("error: Invalid ICE candidate line");
+          SIPPlugin::this_->warning("error: invalid ICE candidate line");
           return false;
         }
         if (strcmp(type, "host") == 0)
@@ -1347,7 +1345,7 @@ bool PJCall::negotiate_ice(PJICEStreamTrans* ice_trans,
         else if (strcmp(type, "relay") == 0)
           cand->type = PJ_ICE_CAND_TYPE_RELAYED;
         else {
-          SIPPlugin::this_->warning("Error: invalid candidate type '%'", std::string(type));
+          SIPPlugin::this_->warning("error: invalid candidate type '%'", std::string(type));
           return false;
         }
         cand->comp_id = (pj_uint8_t)comp_id;
@@ -1360,7 +1358,7 @@ bool PJCall::negotiate_ice(PJICEStreamTrans* ice_trans,
         tmpaddr = pj_str(ipaddr);
         pj_sockaddr_init(af, &cand->addr, NULL, 0);
         if (PJ_SUCCESS != pj_sockaddr_set_str_addr(af, &cand->addr, &tmpaddr)) {
-          SIPPlugin::this_->warning("Error: invalid IP address '%'", std::string(ipaddr));
+          SIPPlugin::this_->warning("error: invalid IP address '%'", std::string(ipaddr));
         }
         pj_sockaddr_set_port(&cand->addr, (pj_uint16_t)port);
       }
@@ -1369,7 +1367,7 @@ bool PJCall::negotiate_ice(PJICEStreamTrans* ice_trans,
   if (0 == cand_cnt) return false;
 
   if (!ice_trans->start_nego(&ufrag->value, &pwd->value, cand_cnt, candidates)) {
-    SIPPlugin::this_->warning("Error starting ICE negotiation");
+    SIPPlugin::this_->warning("error starting ICE negotiation");
     return false;
   }
   return true;

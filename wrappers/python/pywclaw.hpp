@@ -32,7 +32,7 @@ using namespace claw;
 class pyWriterClaw {
  public:
   using pyWriterClawObject = struct {
-    PyObject_HEAD Quiddity* quid{nullptr};
+    PyObject_HEAD std::weak_ptr<Quiddity> quid{};
     swid_t id;
     long invalid_id;
   };

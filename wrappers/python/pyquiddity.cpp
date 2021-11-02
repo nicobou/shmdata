@@ -35,37 +35,47 @@ PyDoc_STRVAR(pyquiddity_set_doc,
              "Returns: true of false\n");
 
 PyObject* pyQuiddity::set(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
+  // parse arguments
   const char* property = nullptr;
   PyObject* value = nullptr;
   static char* kwlist[] = {(char*)"property", (char*)"value", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO", kwlist, &property, &value)) {
-    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "sO", kwlist, &property, &value))
     return nullptr;
-  }
+  
   PyObject* val_str = nullptr;
   PyObject* repr = nullptr;
   On_scope_exit {
     if (val_str) Py_XDECREF(val_str);
     if (repr) Py_XDECREF(repr);
   };
+
+  auto quid = self->quid.lock();
+  if (!quid) {
+    PyErr_SetString(PyExc_MemoryError, "Quiddity or parent Switcher has been deleted");
+    return nullptr;
+  }
+
+  // check for boolean type value
   if (PyBool_Check(value)) {
+    // @JOKE: find meaning to this arcane magic
     if (!pyquid::ungiled(std::function([&]() {
-          return self->quid->prop<MPtr(&property::PBag::set_str_str)>(
+          return quid->prop<MPtr(&property::PBag::set_str_str)>(
               property, (value == Py_True) ? "true" : "false");
         }))) {
-      Py_INCREF(Py_False);
-      return Py_False;
+      Py_RETURN_FALSE;
     }
-    Py_INCREF(Py_True);
-    return Py_True;
+    Py_RETURN_TRUE;
   }
+  
+  
+  // check for unicode type value
   if (!PyObject_TypeCheck(value, &PyUnicode_Type)) {
     repr = PyObject_Repr(value);
     val_str = PyUnicode_AsEncodedString(repr, "utf-8", "Error ");
   } else {
     val_str = PyUnicode_AsEncodedString(value, "utf-8", "Error ");
   }
-  if (!self->quid->prop<MPtr(&property::PBag::set_str_str)>(property, PyBytes_AS_STRING(val_str))) {
+  if (!quid->prop<MPtr(&property::PBag::set_str_str)>(property, PyBytes_AS_STRING(val_str))) {
     Py_RETURN_FALSE;
   }
   Py_RETURN_TRUE;
@@ -81,12 +91,18 @@ PyObject* pyQuiddity::get(pyQuiddityObject* self, PyObject* args, PyObject* kwds
   static char* kwlist[] = {(char*)"name", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &property)) return nullptr;
 
-  auto prop_id = self->quid->prop<MPtr(&property::PBag::get_id)>(property);
+  auto quid = self->quid.lock();
+  if (!quid) {
+    PyErr_SetString(PyExc_MemoryError, "Quiddity or parent Switcher has been deleted");
+    return nullptr;
+  }
+
+  auto prop_id = quid->prop<MPtr(&property::PBag::get_id)>(property);
   if (0 == prop_id) {
     PyErr_SetString(PyExc_ValueError, "property not found");
     return nullptr;
   }
-  return pyInfoTree::any_to_pyobject(self->quid->prop<MPtr(&property::PBag::get_any)>(prop_id));
+  return pyInfoTree::any_to_pyobject(quid->prop<MPtr(&property::PBag::get_any)>(prop_id));
 }
 
 PyDoc_STRVAR(pyquiddity_invoke_doc,
@@ -114,7 +130,7 @@ PyObject* pyQuiddity::invoke(pyQuiddityObject* self, PyObject* args, PyObject* k
     }
   }
   auto tuple_args = std::string();
-  for (auto i = 0; i < list_size; ++i) {
+  for (Py_ssize_t i = 0; i < list_size; ++i) {
     PyObject* item = nullptr;
     PyObject* item_str = nullptr;
     PyObject* repr = nullptr;
@@ -136,9 +152,14 @@ PyObject* pyQuiddity::invoke(pyQuiddityObject* self, PyObject* args, PyObject* k
       tuple_args = tuple_args + "," + serialize::esc_for_tuple(PyBytes_AS_STRING(item_str));
   }
 
+  auto quid = self->quid.lock();
+  if (!quid) {
+    PyErr_SetString(PyExc_MemoryError, "Quiddity or parent Switcher has been deleted");
+    return nullptr;
+  }
   BoolAny res = pyquid::ungiled(std::function([&]() {
-    return self->quid->meth<MPtr(&method::MBag::invoke_any)>(
-        self->quid->meth<MPtr(&method::MBag::get_id)>(method), tuple_args);
+    return quid->meth<MPtr(&method::MBag::invoke_any)>(
+        quid->meth<MPtr(&method::MBag::get_id)>(method), tuple_args);
   }));
 
   if (!res) {
@@ -177,7 +198,7 @@ PyObject* pyQuiddity::invoke_async(pyQuiddityObject* self, PyObject* args, PyObj
     }
   }
   auto tuple_args = std::string();
-  for (auto i = 0; i < list_size; ++i) {
+  for (Py_ssize_t i = 0; i < list_size; ++i) {
     PyObject* item = nullptr;
     PyObject* item_str = nullptr;
     PyObject* repr = nullptr;
@@ -206,12 +227,19 @@ PyObject* pyQuiddity::invoke_async(pyQuiddityObject* self, PyObject* args, PyObj
     return nullptr;
   }
 
+  auto quid = self->quid.lock();
+  if (!quid) {
+    PyErr_SetString(PyExc_MemoryError, "Quiddity or parent Switcher has been deleted");
+    return nullptr;
+  }
+
   Py_INCREF(cb);
   Py_INCREF(user_data);
   self->async_invocations->emplace_back(std::async(
       std::launch::async, [self, cb, user_data, meth = std::string(method), tuple_args]() {
-        auto res = self->quid->meth<MPtr(&method::MBag::invoke_any)>(
-            self->quid->meth<MPtr(&method::MBag::get_id)>(meth), tuple_args);
+        auto quid = self->quid.lock();
+        auto res = quid->meth<MPtr(&method::MBag::invoke_any)>(
+            quid->meth<MPtr(&method::MBag::get_id)>(meth), tuple_args);
         bool has_gil = (1 == PyGILState_Check()) ? true : false;
         PyThreadState* m_state = nullptr;
         if (!has_gil) {
@@ -258,7 +286,13 @@ PyDoc_STRVAR(pyquiddity_get_user_tree_doc,
              "Returns: the user data (InfoTree)\n");
 
 PyObject* pyQuiddity::get_user_tree(pyQuiddityObject* self, PyObject*, PyObject*) {
-  auto* tree = self->quid->user_data<MPtr(&InfoTree::get_tree)>(".").get();
+  auto quid = self->quid.lock();
+  if (!quid) {
+    PyErr_SetString(PyExc_MemoryError, "Quiddity or parent Switcher has been deleted");
+    return nullptr;
+  }
+
+  auto* tree = quid->user_data<MPtr(&InfoTree::get_tree)>(".").get();
   return pyInfoTree::make_pyobject_from_c_ptr(tree, false);
 }
 
@@ -272,10 +306,15 @@ PyObject* pyQuiddity::get_info(pyQuiddityObject* self, PyObject* args, PyObject*
   const char* path = nullptr;
   static char* kwlist[] = {(char*)"path", nullptr};
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "s", kwlist, &path)) return nullptr;
+  auto quid = self->quid.lock();
+  if (!quid) {
+    PyErr_SetString(PyExc_MemoryError, "Quiddity or parent Switcher has been deleted");
+    return nullptr;
+  }
+
   // call options
   PyObject *obj = PyImport_ImportModule("json"), *method = PyUnicode_FromString("loads"),
-           *arg = PyUnicode_FromString(
-               self->quid->tree<MPtr(&InfoTree::serialize_json)>(path).c_str());
+           *arg = PyUnicode_FromString(quid->tree<MPtr(&InfoTree::serialize_json)>(path).c_str());
   // call function
   PyObject* res = PyObject_CallMethodObjArgs(obj, method, arg, nullptr);
   // decrement refcounts
@@ -290,7 +329,12 @@ PyDoc_STRVAR(pyquiddity_get_kind_doc,
              "Returns: the value\n");
 
 PyObject* pyQuiddity::get_kind(pyQuiddityObject* self, PyObject*, PyObject*) {
-  return PyUnicode_FromString(self->quid->get_kind().c_str());
+  auto quid = self->quid.lock();
+  if (!quid) {
+    PyErr_SetString(PyExc_MemoryError, "Quiddity or parent Switcher has been deleted");
+    return nullptr;
+  }
+  return PyUnicode_FromString(quid->get_kind().c_str());
 }
 
 PyDoc_STRVAR(pyquiddity_set_nickname_doc,
@@ -306,7 +350,12 @@ PyObject* pyQuiddity::set_nickname(pyQuiddityObject* self, PyObject* args, PyObj
     return nullptr;
   }
 
-  if (!self->quid->set_nickname(nickname)) {
+  auto quid = self->quid.lock();
+  if (!quid) {
+    PyErr_SetString(PyExc_MemoryError, "Quiddity or parent Switcher has been deleted");
+    return nullptr;
+  }
+  if (!quid->set_nickname(nickname)) {
     Py_INCREF(Py_False);
     return Py_False;
   }
@@ -320,7 +369,12 @@ PyDoc_STRVAR(pyquiddity_nickname_doc,
              "Returns: the value\n");
 
 PyObject* pyQuiddity::nickname(pyQuiddityObject* self, PyObject*, PyObject*) {
-  return PyUnicode_FromString(self->quid->get_nickname().c_str());
+  auto quid = self->quid.lock();
+  if (!quid) {
+    PyErr_SetString(PyExc_MemoryError, "Quiddity or parent Switcher has been deleted");
+    return nullptr;
+  }
+  return PyUnicode_FromString(quid->get_nickname().c_str());
 }
 
 PyDoc_STRVAR(pyquiddity_id_doc,
@@ -329,16 +383,23 @@ PyDoc_STRVAR(pyquiddity_id_doc,
              "Returns: the id (strictly positive long int)\n");
 
 PyObject* pyQuiddity::id(pyQuiddityObject* self, PyObject*, PyObject*) {
-  return PyLong_FromSize_t(self->quid->get_id());
+  auto quid = self->quid.lock();
+  if (!quid) {
+    PyErr_SetString(PyExc_MemoryError, "Quiddity or parent Switcher has been deleted");
+    return nullptr;
+  }
+  return PyLong_FromSize_t(quid->get_id());
 }
 
 bool pyQuiddity::subscribe_to_signal(pyQuiddityObject* self,
                                      const char* signal_name,
                                      PyObject* cb,
                                      PyObject* user_data) {
-  auto sig_id = self->quid->sig<MPtr(&signal::SBag::get_id)>(signal_name);
+  auto quid = self->quid.lock();
+  if (!quid) return false;
+  auto sig_id = quid->sig<MPtr(&signal::SBag::get_id)>(signal_name);
   if (0 == sig_id) return false;
-  auto reg_id = self->quid->sig<MPtr(&signal::SBag::subscribe)>(
+  auto reg_id = quid->sig<MPtr(&signal::SBag::subscribe)>(
       sig_id, [cb, user_data, self](const InfoTree::ptr& tree) {
         bool has_gil = (1 == PyGILState_Check()) ? true : false;
         PyThreadState* m_state = nullptr;
@@ -380,10 +441,12 @@ bool pyQuiddity::subscribe_to_property(pyQuiddityObject* self,
                                        const char* prop_name,
                                        PyObject* cb,
                                        PyObject* user_data) {
-  auto prop_id = self->quid->prop<MPtr(&property::PBag::get_id)>(prop_name);
+  auto quid = self->quid.lock();
+  if (!quid) return false;
+  auto prop_id = quid->prop<MPtr(&property::PBag::get_id)>(prop_name);
   if (0 == prop_id) return false;
   auto reg_id =
-      self->quid->prop<MPtr(&property::PBag::subscribe)>(prop_id, [prop_id, cb, self, user_data]() {
+      quid->prop<MPtr(&property::PBag::subscribe)>(prop_id, [prop_id, cb, self, user_data, quid]() {
         bool has_gil = (1 == PyGILState_Check()) ? true : false;
         PyThreadState* m_state;
         if (!has_gil) {
@@ -392,14 +455,14 @@ bool pyQuiddity::subscribe_to_property(pyQuiddityObject* self,
         }
         PyObject* arglist;
         if (user_data)
-          arglist = Py_BuildValue("(OO)",
-                                  pyInfoTree::any_to_pyobject(
-                                      self->quid->prop<MPtr(&property::PBag::get_any)>(prop_id)),
-                                  user_data);
+          arglist = Py_BuildValue(
+              "(OO)",
+              pyInfoTree::any_to_pyobject(quid->prop<MPtr(&property::PBag::get_any)>(prop_id)),
+              user_data);
         else
-          arglist = Py_BuildValue("(O)",
-                                  pyInfoTree::any_to_pyobject(
-                                      self->quid->prop<MPtr(&property::PBag::get_any)>(prop_id)));
+          arglist = Py_BuildValue(
+              "(O)",
+              pyInfoTree::any_to_pyobject(quid->prop<MPtr(&property::PBag::get_any)>(prop_id)));
         PyObject* pyobjresult = PyEval_CallObject(cb, arglist);
         PyObject* pyerr = PyErr_Occurred();
         if (pyerr != nullptr) PyErr_Print();
@@ -461,11 +524,13 @@ PyObject* pyQuiddity::subscribe(pyQuiddityObject* self, PyObject* args, PyObject
 }
 
 bool pyQuiddity::unsubscribe_from_property(pyQuiddityObject* self, const char* prop_name) {
-  auto prop_id = self->quid->prop<MPtr(&property::PBag::get_id)>(prop_name);
+  auto quid = self->quid.lock();
+  if (!quid) return false;
+  auto prop_id = quid->prop<MPtr(&property::PBag::get_id)>(prop_name);
   if (0 == prop_id) return false;
   auto found = self->prop_reg->props.find(prop_id);
   if (self->prop_reg->props.end() == found) return false;
-  auto unsubscribed = self->quid->prop<MPtr(&property::PBag::unsubscribe)>(prop_id, found->second);
+  auto unsubscribed = quid->prop<MPtr(&property::PBag::unsubscribe)>(prop_id, found->second);
   if (!unsubscribed) return false;
   auto cb = self->prop_reg->callbacks.find(prop_id);
   Py_XDECREF(cb->second);
@@ -480,11 +545,13 @@ bool pyQuiddity::unsubscribe_from_property(pyQuiddityObject* self, const char* p
 }
 
 bool pyQuiddity::unsubscribe_from_signal(pyQuiddityObject* self, const char* signal_name) {
-  auto sig_id = self->quid->sig<MPtr(&signal::SBag::get_id)>(signal_name);
+  auto quid = self->quid.lock();
+  if (!quid) return false;
+  auto sig_id = quid->sig<MPtr(&signal::SBag::get_id)>(signal_name);
   if (0 == sig_id) return false;
   auto found = self->sig_reg->signals.find(sig_id);
   if (self->sig_reg->signals.end() == found) return false;
-  auto unsubscribed = self->quid->sig<MPtr(&signal::SBag::unsubscribe)>(sig_id, found->second);
+  auto unsubscribed = quid->sig<MPtr(&signal::SBag::unsubscribe)>(sig_id, found->second);
   if (!unsubscribed) return false;
   auto cb = self->sig_reg->callbacks.find(sig_id);
   Py_XDECREF(cb->second);
@@ -504,21 +571,30 @@ PyDoc_STRVAR(pyquiddity_try_connect_doc,
              "Returns: a follower claw (FollowerClaw)\n");
 
 PyObject* pyQuiddity::try_connect(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
-  PyObject* quid = nullptr;
+  PyObject* connect_quid_arg = nullptr;
   static char* kwlist[] = {(char*)"quid", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &quid)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &connect_quid_arg)) {
     PyErr_SetString(PyExc_TypeError, "error parsing arguments");
     return nullptr;
   }
-  if (quid && !PyObject_IsInstance(quid, reinterpret_cast<PyObject*>(&pyQuiddity::pyType))) {
+  if (connect_quid_arg &&
+      !PyObject_IsInstance(connect_quid_arg, reinterpret_cast<PyObject*>(&pyQuiddity::pyType))) {
     PyErr_SetString(PyExc_TypeError, "error quid argument is not a pyquid.Quiddidy instance");
     return nullptr;
   }
 
-  const auto res = pyquid::ungiled(std::function([&]() {
-    return self->quid->claw<MPtr(&Claw::try_connect)>(
-        reinterpret_cast<pyQuiddity::pyQuiddityObject*>(quid)->quid->get_id());
-  }));
+  auto connect_quid =
+      reinterpret_cast<pyQuiddity::pyQuiddityObject*>(connect_quid_arg)->quid.lock();
+  if (!connect_quid) return nullptr;
+
+  auto quid = self->quid.lock();
+  if (!quid) {
+    PyErr_SetString(PyExc_MemoryError, "Quiddity or parent Switcher has been deleted");
+    return nullptr;
+  }
+
+  const auto res = pyquid::ungiled(std::function(
+      [&]() { return quid->claw<MPtr(&Claw::try_connect)>(connect_quid->get_id()); }));
   if (Ids::kInvalid == res) {
     PyErr_Format(PyExc_RuntimeError, "failed to connect, check switcher log for more information");
     return nullptr;
@@ -533,8 +609,8 @@ PyObject* pyQuiddity::try_connect(pyQuiddityObject* self, PyObject* args, PyObje
   PyDict_SetItemString(
       keyworded_args,
       "label",
-      PyUnicode_FromString(self->quid->claw<MPtr(&Claw::get_follower_label)>(res).c_str()));
-  auto quid_capsule = PyCapsule_New(static_cast<void*>(self->quid), nullptr, nullptr);
+      PyUnicode_FromString(quid->claw<MPtr(&Claw::get_follower_label)>(res).c_str()));
+  auto quid_capsule = PyCapsule_New(static_cast<void*>(quid.get()), nullptr, nullptr);
   On_scope_exit { Py_XDECREF(quid_capsule); };
   PyDict_SetItemString(keyworded_args, "quid_c_ptr", quid_capsule);
   return PyObject_Call((PyObject*)&pyFollowerClaw::pyType, empty_tuple, keyworded_args);
@@ -584,8 +660,13 @@ PyObject* pyQuiddity::get_info_tree_as_json(pyQuiddityObject* self,
   }
   if (nullptr == path) path = ".";
 
+  auto quid = self->quid.lock();
+  if (!quid) {
+    PyErr_SetString(PyExc_MemoryError, "Quiddity or parent Switcher has been deleted");
+    return nullptr;
+  }
   std::string res = pyquid::ungiled(
-      std::function([&]() { return self->quid->tree<MPtr(&InfoTree::serialize_json)>(path); }));
+      std::function([&]() { return quid->tree<MPtr(&InfoTree::serialize_json)>(path); }));
 
   return PyUnicode_FromString(res.c_str());
 }
@@ -602,7 +683,12 @@ PyObject* pyQuiddity::get_signal_id(pyQuiddityObject* self, PyObject* args, PyOb
     PyErr_SetString(PyExc_TypeError, "error parsing arguments");
     return nullptr;
   }
-  return PyLong_FromLong(self->quid->sig<MPtr(&signal::SBag::get_id)>(signal));
+  auto quid = self->quid.lock();
+  if (!quid) {
+    PyErr_SetString(PyExc_MemoryError, "Quiddity or parent Switcher has been deleted");
+    return nullptr;
+  }
+  return PyLong_FromLong(quid->sig<MPtr(&signal::SBag::get_id)>(signal));
 }
 
 PyObject* pyQuiddity::Quiddity_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /*kwds*/) {
@@ -643,16 +729,17 @@ int pyQuiddity::Quiddity_init(pyQuiddityObject* self, PyObject* args, PyObject* 
 
   // retrieve switcher instance
   auto pyswitchobj = reinterpret_cast<pySwitch::pySwitchObject*>(pyswitch);
-  self->switcher = pyswitchobj->switcher;
+  auto switcher = pyswitchobj->switcher;
+  self->switcher = switcher;
 
   // create a quiddity without calling creation callbacks
-  auto qrox = self->switcher->quids<MPtr(&quiddity::Container::quiet_create)>(
+  auto qrox = switcher->quids<MPtr(&quiddity::Container::quiet_create)>(
       kind,
       nickname ? nickname : std::string(),
       pyinfotree ? reinterpret_cast<pyInfoTree::pyInfoTreeObject*>(pyinfotree)->tree : nullptr);
 
   // try to retrieve a pointer to quiddity
-  auto quid = qrox.get();
+  auto quid = switcher->quids<MPtr(&quiddity::Container::get_quiddity)>(qrox.get_id());
 
   // check for pointer to quiddity
   if (!quid) {
@@ -661,10 +748,11 @@ int pyQuiddity::Quiddity_init(pyQuiddityObject* self, PyObject* args, PyObject* 
   }
 
   self->quid = quid;
+  self->quiddities = pyswitchobj->quiddities;
 
   // append quiddity into quiddities list
   PyObject* obj = reinterpret_cast<PyObject*>(self);
-  PyList_Append(pyswitchobj->quiddities, obj);
+  PyList_Append(self->quiddities, obj);
 
   // signal registering and async invocations
   self->sig_reg = std::make_unique<sig_registering_t>();
@@ -672,20 +760,38 @@ int pyQuiddity::Quiddity_init(pyQuiddityObject* self, PyObject* args, PyObject* 
   self->async_invocations = std::make_unique<std::list<std::future<void>>>();
 
   self->interpreter_state = PyThreadState_Get()->interp;
+  
+  // @NOTE: Deprecated function which does nothing.
+  // In Python 3.6 and older, this function created the GIL if it didn’t exist.
+  // Changed in version 3.9: The function now does nothing.
+  // Changed in version 3.7: This function is now called by Py_Initialize(), so you don’t have to call it yourself anymore.
+  // Changed in version 3.2: This function cannot be called before Py_Initialize() anymore.
+  // Deprecated since version 3.9, will be removed in version 3.11.
   PyEval_InitThreads();
 
   // notify quiddity created
-  self->switcher->quids<MPtr(&quiddity::Container::notify_quiddity_created)>(quid);
+  switcher->quids<MPtr(&quiddity::Container::notify_quiddity_created)>(quid.get());
 
   return 0; 
 }
 
 void pyQuiddity::Quiddity_dealloc(pyQuiddityObject* self) {
-  if (self->quid) {
+  // remove quiddity from quiddities list
+  if (self->quiddities) {
+    PyObject* obj = reinterpret_cast<PyObject*>(self);
+    for (Py_ssize_t i = 0; i < PyList_Size(self->quiddities); i++) {
+      if (PyList_GetItem(self->quiddities, i) == obj) {
+        PyList_SetSlice(self->quiddities, i, i + 1, nullptr);
+        break;
+      }
+    }
+  }
+  auto quid = self->quid.lock();
+  if (quid) {
     // cleaning signal subscription
     for (const auto& it : self->sig_reg->callbacks) {
       const auto found = self->sig_reg->signals.find(it.first);
-      self->quid->sig<MPtr(&signal::SBag::unsubscribe)>(found->first, found->second);
+      quid->sig<MPtr(&signal::SBag::unsubscribe)>(found->first, found->second);
       Py_XDECREF(it.second);
     }
     for (auto& it : self->sig_reg->user_data) {
@@ -696,7 +802,7 @@ void pyQuiddity::Quiddity_dealloc(pyQuiddityObject* self) {
     // cleaning prop subscription
     for (const auto& it : self->prop_reg->callbacks) {
       auto found = self->prop_reg->props.find(it.first);
-      self->quid->prop<MPtr(&property::PBag::unsubscribe)>(found->first, found->second);
+      quid->prop<MPtr(&property::PBag::unsubscribe)>(found->first, found->second);
       Py_XDECREF(it.second);
     }
     for (auto& it : self->prop_reg->user_data) {
@@ -715,7 +821,12 @@ PyDoc_STRVAR(pyquiddity_get_writer_claws_doc,
              "Returns: the list of WriterClaw objects\n");
 
 PyObject* pyQuiddity::get_writer_claws(pyQuiddityObject* self, PyObject*, PyObject*) {
-  auto labels = self->quid->claw<MPtr(&Claw::get_writer_labels)>();
+  auto quid = self->quid.lock();
+  if (!quid) {
+    PyErr_SetString(PyExc_MemoryError, "Quiddity or parent Switcher has been deleted");
+    return nullptr;
+  }
+  auto labels = quid->claw<MPtr(&Claw::get_writer_labels)>();
   unsigned int i = 0;
   PyObject* result = PyList_New(labels.size());
   for (auto& label : labels) {
@@ -727,7 +838,7 @@ PyObject* pyQuiddity::get_writer_claws(pyQuiddityObject* self, PyObject*, PyObje
     Py_INCREF(Py_None);
     PyDict_SetItemString(keyworded_args, "quid", Py_None);
     PyDict_SetItemString(keyworded_args, "label", PyUnicode_FromString(label.c_str()));
-    auto quid_capsule = PyCapsule_New(static_cast<void*>(self->quid), nullptr, nullptr);
+    auto quid_capsule = PyCapsule_New(static_cast<void*>(quid.get()), nullptr, nullptr);
     On_scope_exit { Py_XDECREF(quid_capsule); };
     PyDict_SetItemString(keyworded_args, "quid_c_ptr", quid_capsule);
     // add the object to the result
@@ -744,7 +855,12 @@ PyDoc_STRVAR(pyquiddity_get_follower_claws_doc,
              "Returns: the list of FollowerClaw objects\n");
 
 PyObject* pyQuiddity::get_follower_claws(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
-  auto labels = self->quid->claw<MPtr(&Claw::get_follower_labels)>();
+  auto quid = self->quid.lock();
+  if (!quid) {
+    PyErr_SetString(PyExc_MemoryError, "Quiddity or parent Switcher has been deleted");
+    return nullptr;
+  }
+  auto labels = quid->claw<MPtr(&Claw::get_follower_labels)>();
   unsigned int i = 0;
   PyObject* result = PyList_New(labels.size());
   for (auto& label : labels) {
@@ -756,7 +872,7 @@ PyObject* pyQuiddity::get_follower_claws(pyQuiddityObject* self, PyObject* args,
     Py_INCREF(Py_None);
     PyDict_SetItemString(keyworded_args, "quid", Py_None);
     PyDict_SetItemString(keyworded_args, "label", PyUnicode_FromString(label.c_str()));
-    auto quid_capsule = PyCapsule_New(static_cast<void*>(self->quid), nullptr, nullptr);
+    auto quid_capsule = PyCapsule_New(static_cast<void*>(quid.get()), nullptr, nullptr);
     On_scope_exit { Py_XDECREF(quid_capsule); };
     PyDict_SetItemString(keyworded_args, "quid_c_ptr", quid_capsule);
     // add the object to the result
@@ -773,15 +889,43 @@ PyDoc_STRVAR(pyquiddity_get_connection_specs_doc,
              "Returns: the connection specifications (pyquid.InfoTree)\n");
 
 PyObject* pyQuiddity::get_connection_specs(pyQuiddityObject* self, PyObject*, PyObject*) {
-  self->connnection_spec_keep_alive_ = self->quid->conspec<MPtr(&InfoTree::get_copy)>();
+  auto quid = self->quid.lock();
+  if (!quid) {
+    PyErr_SetString(PyExc_MemoryError, "Quiddity or parent Switcher has been deleted");
+    return nullptr;
+  }
+  self->connnection_spec_keep_alive_ = quid->conspec<MPtr(&InfoTree::get_copy)>();
   return pyInfoTree::make_pyobject_from_c_ptr(self->connnection_spec_keep_alive_.get(), false);
 }
 
+PyObject* pyQuiddity::tp_repr(pyQuiddityObject* self) {
+  auto obj = reinterpret_cast<PyObject*>(self);
+  PyObject* cls = PyObject_GetAttrString(obj, "__class__");
+  PyObject* name = PyObject_GetAttrString(cls, "__name__");
+  auto quid = self->quid.lock();
+  if (!quid) {
+    PyErr_SetString(PyExc_MemoryError, "Quiddity or parent Switcher has been deleted");
+    return nullptr;
+  }
+  std::ostringstream oss;
+  // compute representation string
+  oss << "<" << PyUnicode_AsUTF8(name) << " (" << quid->get_id() << ")>";
+  // decrement refcounts
+  for (auto& o : {cls, name}) Py_XDECREF(o);
+  // return new ref to unicode string that represents the instance
+  return PyUnicode_FromString(oss.str().c_str());
+}
+
 PyObject* pyQuiddity::tp_str(pyQuiddityObject* self) {
+  auto quid = self->quid.lock();
+  if (!quid) {
+    PyErr_SetString(PyExc_MemoryError, "Quiddity or parent Switcher has been deleted");
+    return nullptr;
+  }
+  auto switcher = self->switcher.lock();
+  if (!switcher) return nullptr;
   auto str = infotree::json::serialize(
-      self->switcher
-          ->quids<MPtr(&quiddity::Container::get_quiddity_description)>(self->quid->get_id())
-          .get());
+      switcher->quids<MPtr(&quiddity::Container::get_quiddity_description)>(quid->get_id()).get());
   return PyUnicode_FromString(str.c_str());
 }
 
@@ -875,7 +1019,7 @@ PyTypeObject pyQuiddity::pyType = {
     0,                                                          /* tp_getattr */
     0,                                                          /* tp_setattr */
     0,                                                          /* tp_reserved */
-    0,                                                          /* tp_repr */
+    (reprfunc)tp_repr,                                          /* tp_repr */
     0,                                                          /* tp_as_number */
     0,                                                          /* tp_as_sequence */
     0,                                                          /* tp_as_mapping */

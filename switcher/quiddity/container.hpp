@@ -70,7 +70,7 @@ class Container : public log::Logged {
   Qrox quiet_create(const std::string& quiddity_kind,
                     const std::string& nickname,
                     InfoTree::ptrc tree);
-
+  
   /**
   * @brief Send confirmation signal for quiddity creation.
   *        Use after a Container::quiet_create call.

@@ -35,7 +35,7 @@ PJStunTurn::PJStunTurn() {
   ice_cfg_.stun_cfg.pf = PJSIP::this_->pool_->factory;
   if (PJ_SUCCESS !=
       pj_thread_create(PJSIP::this_->pool_, "switcherSIP", &worker_thread, this, 0, 0, &thread_)) {
-    SIPPlugin::this_->warning("STUN TURN thread creating failed");
+    SIPPlugin::this_->warning("STUN TURN thread creation failed");
     return;
   }
   ice_cfg_.af = pj_AF_INET();

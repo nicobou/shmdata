@@ -1,0 +1,4 @@
+aiohttp[speedups]
+python-socketio
+requests
+websocket-client

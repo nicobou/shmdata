@@ -5,26 +5,22 @@ services:
 
 variables:
   BUILD_DIR: /opt/switcher
+  CONTAINER_TAG_PREFIX: $CI_REGISTRY/sat-metalab/switcher:deps
+  CTEST_OUTPUT_ON_FAILURE: '1'
+  GIT_SUBMODULE_STRATEGY: recursive
 
 stages:
   - deps
+  - build
   - test
   - coverage
   - deploy
 
-#
-# Build dependencies images
-#
-Build and Deploy dependency images:
+Docker -- Dependency Image:
   stage: deps
   image: docker:18-git
-  variables:
-    CONTAINER_TAG_PREFIX: $CI_REGISTRY/sat-metalab/switcher:deps
-    GIT_SUBMODULE_STRATEGY: recursive
   script:
-    - git clone --single-branch --branch develop https://gitlab.com/sat-metalab/switcher.git switcher-dev
-    - mkdir -p switcher-dev/deps
-    - "if [ 0 -eq $(diff switcher-dev/deps/ deps/ | wc -l) ]; then echo new image build not required; exit 0; fi"
+    - git diff HEAD:wrappers/switcherio/requirements.txt origin/develop:wrappers/switcherio/requirements.txt --quiet && git diff HEAD:deps origin/develop:deps --quiet && echo "New docker image build is not required" && exit 0
     - echo $CI_DEPLOY_PASSWORD | docker login -u $CI_DEPLOY_USER --password-stdin $CI_REGISTRY
     - docker build -t $CONTAINER_TAG_PREFIX-ubuntu2004 -f dockerfiles/Dockerfile-deps-Ubuntu-20.04 --target build .
     - docker push $CONTAINER_TAG_PREFIX-ubuntu2004
@@ -32,56 +28,52 @@ Build and Deploy dependency images:
     - develop
     - master
 
-
-Test Ubuntu 20.04:
-  stage: test
-  image: $CI_REGISTRY/sat-metalab/switcher:deps-ubuntu2004
-  variables:
-    CTEST_OUTPUT_ON_FAILURE: 1
-    GIT_SUBMODULE_STRATEGY: recursive
+Build -- Ubuntu 20.04:
+  stage: build
+  image: $CONTAINER_TAG_PREFIX-ubuntu2004
   script:
-    - mkdir -p build && cd build 
-    - cmake -DENABLE_GPL="ON" -DCMAKE_BUILD_TYPE="Release" ..
-    - make -j"$(nproc)" && make install && ldconfig
+    - cmake -B build -DENABLE_GPL="ON" -DCMAKE_BUILD_TYPE="Release"
+    - make -sC build -j`nproc`
+  except:
+    - develop
+    - master
+  artifacts:
+    paths:
+      - build
+
+Test -- Ubuntu 20.04:
+  stage: test
+  image: $CONTAINER_TAG_PREFIX-ubuntu2004
+  script:
     - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y xvfb
-    - xvfb-run  --auto-servernum --server-args='-screen 0 1920x1080x24'  pulseaudio &
-    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make test
+    - make install -sC build && ldconfig
+    - pulseaudio --start
+    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make test -sC build
   except:
     - develop
     - master
 
-#
-# Test package
-#
-Test package:
+# Package
+Test -- Package:
   stage: test
-  image: $CI_REGISTRY/sat-metalab/switcher:deps-ubuntu2004
-  variables:
-    CTEST_OUTPUT_ON_FAILURE: 1
-    GIT_SUBMODULE_STRATEGY: recursive
+  image: $CONTAINER_TAG_PREFIX-ubuntu2004
   script:
-    - mkdir -p build && cd build 
-    - cmake -DENABLE_GPL="ON" -DCMAKE_BUILD_TYPE="Release" ..
+    - cmake -B build -DENABLE_GPL=ON -DCMAKE_BUILD_TYPE="Release"
     - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y xvfb
-    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make package_source_test
+    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make package_source_test -sC build
   only:
     - develop
     - test-switcher-ci
 
-#
-# Test coverage
-#
-coverage:
+Coverage -- Package:
   stage: coverage
-  image: $CI_REGISTRY/sat-metalab/switcher:deps-ubuntu2004
-  variables:
-    GIT_SUBMODULE_STRATEGY: recursive
+  image: $CONTAINER_TAG_PREFIX-ubuntu2004
   script:
     - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y lcov zip xvfb
     - rm -rf build && mkdir build && cd build
     - cmake -DTEST_COVERAGE=ON -DENABLE_GPL=ON ..
-    - make -j$(nproc) && make install && ldconfig
-    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' pulseaudio &
+    - make -j`nproc` && make install && ldconfig
+    - pulseaudio --start
     - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make check_coverage
     - zip -r coverage.zip coverage
     - mv coverage.zip ../
@@ -93,19 +85,15 @@ coverage:
     - develop
     - test-switcher-ci
 
-#
-# Package
-#
-Debian Package Ubuntu 20.04:
+# Debian Package
+Debian -- Package:
   stage: deploy
-  image: $CI_REGISTRY/sat-metalab/switcher:deps-ubuntu2004
-  variables:
-    GIT_SUBMODULE_STRATEGY: recursive
+  image: $CONTAINER_TAG_PREFIX-ubuntu2004
   script: 
     - DEBIAN_FRONTEND=noninteractive apt update -y
     - rm -rf build && mkdir build && cd build
     - cmake -DENABLE_GPL=ON -DCMAKE_INSTALL_PREFIX=/usr ..
-    - make -j$(nproc) package
+    - make -j`nproc` package
     - mv *.deb ../switcher_ubuntu20.04_latest_amd64.deb
   artifacts:
     name: "switcher_package_${CI_BUILD_REF_NAME}"

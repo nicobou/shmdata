@@ -34,7 +34,8 @@ std::atomic<unsigned short> PJSIP::sip_endpt_used_(0);
 PJSIP::PJSIP(std::function<bool()> init_fun, std::function<void()> destruct_fun)
     : cp_(), destruct_fun_(destruct_fun) {
   if (1 == sip_endpt_used_.fetch_or(1)) {
-    SIPPlugin::this_->warning("an other sip quiddity is instancied, cannot init");
+    SIPPlugin::this_->warning(
+        "another sip quiddity is instantiated, cannot init twice in the same process");
     return;
   }
   i_m_the_one_ = true;
@@ -49,7 +50,7 @@ PJSIP::PJSIP(std::function<bool()> init_fun, std::function<void()> destruct_fun)
   pj_thread_register("switcher-pjsip-singleton", thread_handler_desc_, &pj_thread_ref_);
   status = pjsua_create();
   if (status != PJ_SUCCESS) {
-    SIPPlugin::this_->warning("Error in pjsua_create()");
+    SIPPlugin::this_->warning("error in pjsua_create()");
     return;
   }
   {
@@ -94,7 +95,7 @@ PJSIP::PJSIP(std::function<bool()> init_fun, std::function<void()> destruct_fun)
 
     status = pjsua_init(&cfg, &log_cfg, nullptr);
     if (status != PJ_SUCCESS) {
-      SIPPlugin::this_->warning("Error in pjsua_init()");
+      SIPPlugin::this_->warning("error in pjsua_init()");
       return;
     }
     sip_endpt_ = pjsua_get_pjsip_endpt();
@@ -115,7 +116,7 @@ PJSIP::PJSIP(std::function<bool()> init_fun, std::function<void()> destruct_fun)
   /* Initialization is done, now start pjsua */
   status = pjsua_start();
   if (status != PJ_SUCCESS) {
-    SIPPlugin::this_->warning("Error starting pjsua");
+    SIPPlugin::this_->warning("error starting pjsua");
     return;
   }
   // done
@@ -164,7 +165,7 @@ bool PJSIP::create_resolver(std::string dns_address) {
   pj_uint16_t port = 53;
 
   if (PJ_SUCCESS != pj_dns_resolver_set_ns(resv, 1, &nameserver, &port)) {
-    SIPPlugin::this_->warning("pjsip failed to set name resolution server.");
+    SIPPlugin::this_->warning("pjsip failed to set the name resolution server.");
     return false;
   }
 
