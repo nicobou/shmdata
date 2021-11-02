@@ -451,5 +451,10 @@ int main(int argc, char* argv[]) {
 
   if (switcher_control.error) switcher_control.soap_stream_fault(std::cerr);
 
+  // connection should not be kept alive after the last call: be nice to the
+  // server and tell it that we close the connection after this call
+  soap_clr_omode(&switcher_control, SOAP_IO_KEEPALIVE);
+  switcher_control.soap_close_socket();
+
   return 0;
 }
