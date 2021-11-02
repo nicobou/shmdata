@@ -2,6 +2,28 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 3.0.2 (2021-11-01)
+---------------------------
+This is an official release in the 3.0 stable series.
+
+New features:
+* ✨ SwitcherIO: starting Websocket API for Switcher
+* ✨ Add a configuration key for socket folder
+* ✨ bring back shmpath option into switcher-ctrl
+
+Bug fixes:
+* 🐛 fix crash when trying to scan non existing directory during quiddity loading
+* 🐛 fix config set_value not applyed
+* 🐛 fix switcher not destroyed with python wrapper
+
+Improvements:
+* 👷 separate build and test
+* 🎨 better typing for handling PyList size
+* 👷 let `ctest` output on test failure
+* Fix usage info typo in switcher-ctrl
+* 💬 fix typos in the pjsip quiddity
+* 🐛 fix dependency image in CI not updated
+
 switcher 3.0.0 (2021-10-04)
 ---------------------------
 This is an official release in the 3.0 stable series.
