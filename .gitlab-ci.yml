@@ -2,6 +2,7 @@ stages:
   - test
   - coverage
   - package
+  - deploy
 
 #
 # Test
@@ -76,4 +77,38 @@ Debian Package Ubuntu 20.04:
     - libshmdata_latest_amd64.deb
   only:
     - master
+
+#
+# Gitlab pages
+#
+pages:
+  stage: deploy
+  image: ubuntu:20.04
+  script:
+    # Prepare the image
+    - DEBIAN_FRONTEND=noninteractive apt update -y
+    - DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends file
+    # Build the new website
+    - DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends ca-certificates python3-pip git build-essential 
+    - git clone https://gitlab.com/sat-metalab/documentations/shmdata.git shmdata-doc
+    - pushd shmdata-doc
+    - git pull origin master # Make sure to be up-to-date
+    - pip install -U sphinx
+    - pip install -r requirements.txt
+    - make htmlgitlab
+    - popd
+    # Build the Doxygen
+    - DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends cmake build-essential git libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-base python3-dev doxygen
+    - mkdir build && pushd build && cmake .. && make doc
+    - popd
+    # Gather documentation togeter
+    - mv shmdata-doc/public public
+    - mv html public/doxygen
+  artifacts:
+    paths:
+      - public
+  only:
+    - website
+    - master
+
 
