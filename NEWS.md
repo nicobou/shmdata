@@ -2,6 +2,12 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.3.60 (2021-11-29)
+---------------------------
+This is an official release in the 1.3 stable series.
+
+* 📝 deploy website
+
 shmdata 1.3.58 (2021-10-18)
 ---------------------------
 This is an official release in the 1.3 stable series.
