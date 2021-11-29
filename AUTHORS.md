@@ -12,8 +12,8 @@
 * Mike Wozniewski
 * Alexandre Quessy
 * Patrick Dupuis
-* Marie-Eve Dumas
 * Olivier Gauthier
+* Marie-Eve Dumas
 * Jerome Berthelin
 * Thomas Piquet
 * Rostom Mesli
