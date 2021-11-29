@@ -58,6 +58,7 @@ SoapCtrlServer::SoapCtrlServer(quiddity::Config&& conf)
           [this](int port) { return set_port(port); })) {
   soap_init(&soap_);
   // release port
+  soap_.bind_flags = SO_REUSEADDR;
   soap_.connect_flags = SO_LINGER;
   soap_.accept_flags = SO_LINGER;
   soap_.accept_timeout = 100 * -1000;  // 100ms

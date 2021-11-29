@@ -2,6 +2,13 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 3.0.4 (2021-11-29)
+---------------------------
+This is an official release in the 3.0 stable series.
+
+Bug fix:
+* Set SO_REUSEADDR in soap-ctrl-server and close socket in switcher-ctrl
+
 switcher 3.0.2 (2021-11-01)
 ---------------------------
 This is an official release in the 3.0 stable series.
