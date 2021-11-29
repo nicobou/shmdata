@@ -24,9 +24,6 @@
 
 namespace shmdata {
 
-/** \addtogroup  cppapi
- *  @{
- */
 class OneWriteAccess;
 class Writer : public SafeBoolIdiom {
   friend OneWriteAccess;
@@ -180,6 +177,5 @@ class OneWriteAccess {
   bool has_notified_{false};
 };
 
-/** @}*/
 }  // namespace shmdata
 #endif

@@ -29,9 +29,6 @@
 
 namespace shmdata {
 
-/** \addtogroup  cppapi
- *  @{
- */
 class AbstractLogger {
  public:
   virtual ~AbstractLogger() = default;
@@ -58,6 +55,5 @@ class AbstractLogger {
   }
 };
 
-/** @}*/
 }  // namespace shmdata
 #endif

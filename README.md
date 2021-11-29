@@ -1,9 +1,11 @@
-Shmdata
-=======
-
-![Shmdata logo](doc/logo/png/Shmdata-color-horizontal-black-text.png)
+Shmdata, a library to share any flows of data frames between processes 
+======================================================================
 
 [![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0) [![pipeline status](https://gitlab.com/sat-metalab/shmdata/badges/develop/pipeline.svg)](https://gitlab.com/sat-metalab/shmdata/commits/develop) [![coverage report](https://gitlab.com/sat-metalab/shmdata/badges/develop/coverage.svg)](https://gitlab.com/sat-metalab/shmdata/commits/develop)
+
+For a more complete documentation, go visit the [official website](https://sat-metalab.gitlab.io/shmdata).
+
+## Table of Contents
 
 [[_TOC_]]
 
