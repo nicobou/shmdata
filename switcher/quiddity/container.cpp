@@ -37,14 +37,22 @@ Container::Container(Switcher* switcher, Factory* factory, log::Base* log)
 Qrox Container::create(const std::string& quiddity_kind,
                        const std::string& nickname,
                        InfoTree::ptrc override_config) {
+  // create a quiddity qrox
   auto res = quiet_create(quiddity_kind, nickname, override_config);
+  // skip signals if creation failed
   if (!res) return res;
-  // We work on a copy in case a callback modifies the map of registered callbacks
-  auto tmp_created_cbs = on_created_cbs_;
-  for (auto& cb : tmp_created_cbs) {
-    cb.second(res.get_id());
-    if (on_created_cbs_.empty()) break;  // In case the map gets reset in the callback, e.g bundle
+
+  // Copy the registered callbacks map
+  // @NOTE: This is required in case a callback modifies it
+  auto on_created_map = on_created_cbs_;
+  // Iterate over callbacks
+  for(auto& pair : on_created_map) {
+    // Call second element of the pair which is the callback,
+    // passing the current quiddity id as an argument.
+    pair.second(res.get_id());
+    if (on_created_cbs_.empty()) break;
   }
+  // return the qrox
   return res;
 }
 

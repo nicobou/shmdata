@@ -359,10 +359,23 @@ void Switcher::register_bundle_from_configuration() {
 }
 
 void Switcher::remove_shm_zombies() const {
-  auto files = fileutils::get_shmfiles_from_directory(get_shm_dir(), get_shm_prefix() + get_name());
+  auto files = fileutils::get_shmfiles_from_directory(this->get_shm_dir(),
+                                                      this->get_shm_prefix() + this->get_name());
   for (auto& it : files) {
     auto res = fileutils::remove(it);
     if (!res) log_->warning("fail removing shmdata % (%)", it, res.msg());
+  }
+}
+
+void Switcher::scan_dir_for_plugins(const std::string& path) {
+  if (fs::is_directory(path)) {
+    qfactory_.scan_dir(path);
+    // scanning sub-directories
+    for (const auto& dir_entry : fs::recursive_directory_iterator(path)) {
+      if (dir_entry.is_directory()) qfactory_.scan_dir(dir_entry.path());
+    }
+  } else {
+    log_->warning("Switcher cannot scan % when loading Quiddity plugins (not a directory)", path);
   }
 }
 

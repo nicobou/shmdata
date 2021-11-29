@@ -42,6 +42,12 @@ int switcher__get_quiddities_description(std::string *result);
 //gsoap switcher service method-documentation: get names of instances
 int switcher__get_quiddity_nicknames(std::vector<std::string> *result);
 
+//gsoap switcher service method-documentation: get shmpath of a writer from its label
+int switcher__get_shmpath(std::string quiddity_name,
+                          std::string claw_label,
+                          std::string *result);
+
+
 //gsoap switcher service method-documentation: set a value of a property from an quiddity instance
 int switcher__set_property(std::string quiddity_name,
 			   std::string property_name,

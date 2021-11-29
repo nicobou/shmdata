@@ -58,6 +58,7 @@ SoapCtrlServer::SoapCtrlServer(quiddity::Config&& conf)
           [this](int port) { return set_port(port); })) {
   soap_init(&soap_);
   // release port
+  soap_.bind_flags = SO_REUSEADDR;
   soap_.connect_flags = SO_LINGER;
   soap_.accept_flags = SO_LINGER;
   soap_.accept_timeout = 100 * -1000;  // 100ms
@@ -282,6 +283,27 @@ int controlService::get_property(const std::string& quiddity_nickname,
     *result = std::string();
   else
     *result = qrox.get()->prop<MPtr(&quiddity::property::PBag::get_str)>(id);
+  return SOAP_OK;
+}
+
+int controlService::get_shmpath(const std::string& quiddity_nickname,
+                                const std::string& label,
+                                std::string* result) {
+  using namespace switcher;
+  using namespace quiddity::claw;
+  quiddities::SoapCtrlServer* ctrl_server = static_cast<quiddities::SoapCtrlServer*>(this->user);
+  Switcher* manager = ctrl_server->get_switcher();
+
+  auto qid = manager->quids<MPtr(&quiddity::Container::get_id)>(quiddity_nickname);
+  auto qrox = manager->quids<MPtr(&quiddity::Container::get_qrox)>(qid);
+  *result = std::string();
+  if (!qrox) {
+    return SOAP_OK;
+  }
+  auto swid = qrox.get()->claw<MPtr(&Claw::get_swid)>(label);
+  if (swid != Ids::kInvalid) {
+    *result = qrox.get()->claw<MPtr(&Claw::get_writer_shmpath)>(swid);
+  }
   return SOAP_OK;
 }
 

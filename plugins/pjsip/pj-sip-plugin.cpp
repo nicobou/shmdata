@@ -78,7 +78,7 @@ SIPPlugin::SIPPlugin(quiddity::Config&& conf)
             if (val.empty()) return false;
             if ("default" == requested_val) val = default_dns_address_;
             if (!netutils::is_valid_IP(val)) {
-              message("ERROR:Not a valid IP address, expected x.y.z.a with x, y, z, a in [0:255].");
+              warning("not a valid IP address, expected x.y.z.a with x, y, z, a in [0:255].");
               return false;
             }
 
@@ -88,7 +88,7 @@ SIPPlugin::SIPPlugin(quiddity::Config&& conf)
             if (!pjsip_->invoke<bool>(
                     [&](PJSIP* ctx) { return ctx->create_resolver(dns_address_); })) {
               dns_address_ = old_dns_address;
-              message("ERROR:Could not set the DNS address (PJSIP), setting the old one %.",
+              warning("could not set the DNS address (PJSIP), setting the old one %.",
                       dns_address_);
               pjsip_->invoke<bool>([&](PJSIP* ctx) { return ctx->create_resolver(dns_address_); });
               return false;
@@ -281,8 +281,7 @@ bool SIPPlugin::start_sip_transport() {
   // in pjsip-apps/src/pjsua/pjsua_app.c
 
   if (netutils::is_used(sip_port_)) {
-    warning("SIP port cannot be bound (%)", std::to_string(sip_port_));
-    message("ERROR: SIP port is not available (%)", std::to_string(sip_port_));
+    warning("SIP port is not available (%)", std::to_string(sip_port_));
     return false;
   }
   pjsua_transport_config cfg;
@@ -291,7 +290,6 @@ bool SIPPlugin::start_sip_transport() {
   pj_status_t status = pjsua_transport_create(PJSIP_TRANSPORT_UDP, &cfg, &transport_id_);
   if (status != PJ_SUCCESS) {
     warning("Error creating transport");
-    message("ERROR: SIP port is not available (%)", std::to_string(sip_port_));
     transport_id_ = -1;
     return false;
   }
