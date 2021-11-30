@@ -126,7 +126,9 @@ AudioTestSource::AudioTestSource(quiddity::Config&& conf)
 
 bool AudioTestSource::start() {
   if (!gst_pipeline_) {
-    warning("BUG: gst_pipeline failed to be created, something went very wrong! (audiotestsrc)");
+    LOGGER_WARN(
+        this->logger,
+        "BUG: gst_pipeline failed to be created, something went very wrong! (audiotestsrc)");
     return false;
   }
 
@@ -158,7 +160,7 @@ bool AudioTestSource::stop() {
 
   if (!gst::UGstElem::renew(audiotestsrc_, {"is-live", "samplesperbuffer"}) ||
       !gst::UGstElem::renew(capsfilter_) || !gst::UGstElem::renew(shmdatasink_, {"socket-path", "extra-caps-properties"})) {
-    warning("error initializing gst element for audiotestsrc");
+    LOGGER_WARN(this->logger, "error initializing gst element for audiotestsrc");
     gst_pipeline_.reset();
     return false;
   }
@@ -173,7 +175,7 @@ bool AudioTestSource::stop() {
 void AudioTestSource::update_caps() {
   std::string str_caps = "audio/x-raw,format=" + format_.get_current() + ",channels=" +
                          std::to_string(channels_) + ",rate=" + sample_rate_.get_current();
-  debug("caps: %", str_caps);
+  LOGGER_DEBUG(this->logger, "caps: {}", str_caps);
   GstCaps* caps = gst_caps_from_string(str_caps.c_str());
   On_scope_exit { gst_caps_unref(caps); };
   g_object_set(G_OBJECT(capsfilter_.get_raw()), "caps", caps, nullptr);

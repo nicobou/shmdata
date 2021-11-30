@@ -134,12 +134,13 @@ GLFWVideo::GLFWVideo(quiddity::Config&& conf)
               On_scope_exit { stbi_image_free(data); };
 
               if (!data) {
-                warning("Failed to load image at path %.", background_image_);
+                LOGGER_WARN(this->logger, "Failed to load image at path {}.", background_image_);
                 return true;
               }
 
               if (n < 3) {
-                warning("Source background image is neither RGB nor RGBA (glfw).");
+                LOGGER_WARN(this->logger,
+                            "Source background image is neither RGB nor RGBA (glfw).");
                 return true;
               }
 
@@ -240,7 +241,7 @@ GLFWVideo::GLFWVideo(quiddity::Config&& conf)
                                                     sizeof(KeybEvent),
                                                     "application/x-keyboard-events");
               if (!keyb_shm_.get()) {
-                warning("GLFW keyboard event shmdata writer failed");
+                LOGGER_WARN(this->logger, "GLFW keyboard event shmdata writer failed");
                 keyb_shm_.reset(nullptr);
               }
 
@@ -250,7 +251,7 @@ GLFWVideo::GLFWVideo(quiddity::Config&& conf)
                                                     sizeof(MouseEvent),
                                                     "application/x-mouse-events");
               if (!mouse_shm_.get()) {
-                warning("GLFW mouse event shmdata writer failed");
+                LOGGER_WARN(this->logger, "GLFW mouse event shmdata writer failed");
                 mouse_shm_.reset(nullptr);
               }
             } else {
@@ -393,14 +394,14 @@ GLFWVideo::GLFWVideo(quiddity::Config&& conf)
           vsync_)) {
   if (getenv("DISPLAY") == nullptr) {
     if (-1 == setenv("DISPLAY", ":0", false)) {
-      warning("BUG: Failed to set a display!");
+      LOGGER_WARN(this->logger, "BUG: Failed to set a display!");
       is_valid_ = false;
       return;
     }
   }
 
   if (!instance_counter_ && !glfwInit()) {
-    warning("BUG: Failed to initialize glfw library!");
+    LOGGER_WARN(this->logger, "BUG: Failed to initialize glfw library!");
     is_valid_ = false;
     return;
   }
@@ -408,7 +409,7 @@ GLFWVideo::GLFWVideo(quiddity::Config&& conf)
   discover_monitor_properties();
 
   if (!monitors_config_.size()) {
-    warning("BUG: Failed to discover monitors.");
+    LOGGER_WARN(this->logger, "BUG: Failed to discover monitors.");
     is_valid_ = false;
     return;
   }
@@ -550,14 +551,15 @@ GLFWVideo::GLFWVideo(quiddity::Config&& conf)
 
   glfwMakeContextCurrent(window_);
   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-    warning("BUG: glad could not load openGL functionalities.");
+    LOGGER_WARN(this->logger, "BUG: glad could not load openGL functionalities.");
     is_valid_ = false;
     return;
   }
 
-  debug("OpenGL Version %.% loaded",
-        std::to_string(GLVersion.major),
-        std::to_string(GLVersion.minor));
+  LOGGER_DEBUG(this->logger,
+               "OpenGL Version {}.{} loaded",
+               std::to_string(GLVersion.major),
+               std::to_string(GLVersion.minor));
 
   if (!setup_shaders()) {
     is_valid_ = false;
@@ -575,7 +577,9 @@ GLFWVideo::GLFWVideo(quiddity::Config&& conf)
     if (gui_configuration_->initialized_)
       gui_configuration_->init_properties();
     else
-      warning("Overlay is not useable because something wrong happened during gui configuration");
+      LOGGER_WARN(
+          this->logger,
+          "Overlay is not useable because something wrong happened during gui configuration");
   }
 
   glfwMakeContextCurrent(nullptr);
@@ -628,7 +632,7 @@ GLFWwindow* GLFWVideo::create_window(GLFWwindow* old) {
 
   auto window = glfwCreateWindow(width_, height_, title_.c_str(), nullptr, old);
   if (!window) {
-    warning("Could not create glfw window, probably an OpenGL version mismatch.");
+    LOGGER_WARN(this->logger, "Could not create glfw window, probably an OpenGL version mismatch.");
     return nullptr;
   }
 
@@ -749,7 +753,7 @@ bool GLFWVideo::setup_shaders() {
     glGetProgramiv(vertex_shader_, GL_INFO_LOG_LENGTH, &length);
     std::string buffer;
     glGetShaderInfoLog(vertex_shader_, length, nullptr, const_cast<char*>(buffer.data()));
-    warning("Failed to compile vertex shader (glfwin): %.", buffer);
+    LOGGER_WARN(this->logger, "Failed to compile vertex shader (glfwin): {}.", buffer);
     return false;
   }
 
@@ -762,7 +766,7 @@ bool GLFWVideo::setup_shaders() {
     glGetProgramiv(fragment_shader_, GL_INFO_LOG_LENGTH, &length);
     std::string buffer;
     glGetShaderInfoLog(fragment_shader_, length, nullptr, const_cast<char*>(buffer.data()));
-    warning("Failed to compile fragment shader (glfwin): %.", buffer);
+    LOGGER_WARN(this->logger, "Failed to compile fragment shader (glfwin): {}.", buffer);
     return false;
   }
 
@@ -824,7 +828,7 @@ void GLFWVideo::setup_background_texture() {
 void GLFWVideo::load_icon() {
   icon_.pixels = nullptr;
   if (!config<MPtr(&InfoTree::branch_has_data)>("icon")) {
-    warning("Icons configuration is missing (glfw).");
+    LOGGER_WARN(this->logger, "Icons configuration is missing (glfw).");
     return;
   }
   auto icon_config = config<MPtr(&InfoTree::branch_get_value)>("icon").copy_as<std::string>();
@@ -1097,10 +1101,10 @@ bool GLFWVideo::on_shmdata_connect(const std::string& shmpath) {
       [this](const std::string& shmtype) {
         if (!cur_caps_.empty() && cur_caps_ != shmtype) {
           cur_caps_ = shmtype;
-          debug(
-              "glfwin restarting shmdata connection "
-              "because of an updated caps (%)",
-              cur_caps_);
+          LOGGER_DEBUG(this->logger,
+                       "glfwin restarting shmdata connection "
+                       "because of an updated caps ({})",
+                       cur_caps_);
           async_this_.run_async([this]() { on_shmdata_connect(shmpath_); });
 
           return;
@@ -1188,7 +1192,7 @@ bool GLFWVideo::remake_elements() {
       !gst::UGstElem::renew(gamma_, {"gamma"}) ||
       !gst::UGstElem::renew(videobalance_, {"contrast", "brightness", "hue", "saturation"}) ||
       !gst::UGstElem::renew(fakesink_)) {
-    error("glfwin could not renew GStreamer elements");
+    LOGGER_ERROR(this->logger, "glfwin could not renew GStreamer elements");
     return false;
   }
   install_gst_properties();
@@ -1225,7 +1229,7 @@ inline void GLFWVideo::on_handoff_cb(GstElement* /*object*/,
   GstMapInfo map;
 
   if (!gst_buffer_map(buf, &map, GST_MAP_READ)) {
-    context->warning("gst_buffer_map failed: canceling video buffer access");
+    LOGGER_WARN(context->logger, "gst_buffer_map failed: canceling video buffer access");
     return;
   }
   On_scope_exit { gst_buffer_unmap(buf, &map); };
@@ -1298,7 +1302,8 @@ void GLFWVideo::GUIConfiguration::init_imgui() {
     glGetProgramiv(gui_vertex_shader_, GL_INFO_LOG_LENGTH, &length);
     std::string buffer;
     glGetShaderInfoLog(gui_vertex_shader_, length, nullptr, const_cast<char*>(buffer.data()));
-    parent_window_->warning("Failed to compile GUI vertex shader (glfwin): %.", buffer);
+    LOGGER_WARN(
+        parent_window_->logger, "Failed to compile GUI vertex shader (glfwin): {}.", buffer);
     return;
   }
 
@@ -1308,7 +1313,8 @@ void GLFWVideo::GUIConfiguration::init_imgui() {
     glGetProgramiv(gui_fragment_shader_, GL_INFO_LOG_LENGTH, &length);
     std::string buffer;
     glGetShaderInfoLog(gui_fragment_shader_, length, nullptr, const_cast<char*>(buffer.data()));
-    parent_window_->warning("Failed to compile GUI fragment shader (glfwin): %.", buffer);
+    LOGGER_WARN(
+        parent_window_->logger, "Failed to compile GUI fragment shader (glfwin): {}.", buffer);
     return;
   }
 
@@ -1318,7 +1324,7 @@ void GLFWVideo::GUIConfiguration::init_imgui() {
     glGetProgramiv(gui_shader_program_, GL_INFO_LOG_LENGTH, &length);
     std::string buffer;
     glGetProgramInfoLog(gui_shader_program_, length, nullptr, const_cast<char*>(buffer.data()));
-    parent_window_->warning("Failed to link GUI shader program (glfwin): %.", buffer);
+    LOGGER_WARN(parent_window_->logger, "Failed to link GUI shader program (glfwin): {}.", buffer);
     return;
   }
 
@@ -1374,7 +1380,7 @@ void GLFWVideo::GUIConfiguration::init_imgui() {
 
   fonts_list_ = get_fonts();
   if (fonts_list_.empty()) {
-    parent_window_->warning("Could not find fonts installed for overlay (glfw).");
+    LOGGER_WARN(parent_window_->logger, "Could not find fonts installed for overlay (glfw).");
     return;
   }
 
@@ -1474,15 +1480,19 @@ void GLFWVideo::GUIConfiguration::init_properties() {
       [this](const std::string& val) {
         std::lock_guard<std::mutex> lock(parent_window_->configuration_mutex_);
         if (val.empty()) {
-          parent_window_->message("No value was defined for overlay_additional_font or overlay_config properties.");
+          LOGGER_INFO(
+              parent_window_->logger,
+              "No value was defined for overlay_additional_font or overlay_config properties.");
           return true;
         } else if (!stringutils::ends_with(val, ".ttf")) {
-          parent_window_->message(
-              "Cannot set % as custom font, only truetype fonts are supported (.ttf extension).",
+          LOGGER_INFO(
+              parent_window_->logger,
+              "Cannot set {} as custom font, only truetype fonts are supported (.ttf extension).",
               val);
           return false;
         } else if (!stringutils::starts_with(val, "/")) {
-          parent_window_->message("Only absolute paths are supported for the custom font.");
+          LOGGER_INFO(parent_window_->logger,
+                      "Only absolute paths are supported for the custom font.");
           return false;
         }
         custom_font_ = val;
@@ -1548,8 +1558,8 @@ std::vector<std::string> GLFWVideo::GUIConfiguration::get_fonts() {
 bool GLFWVideo::GUIConfiguration::generate_font_texture(std::string font) {
   struct stat filestat;
   if (stat(font.c_str(), &filestat) < 0) {
-    parent_window_->message("Could not find font file % (glfwin)", font);
-    parent_window_->warning("Could not find font file % (glfwin)", font);
+    LOGGER_INFO(parent_window_->logger, "Could not find font file {} (glfwin)", font);
+    LOGGER_WARN(parent_window_->logger, "Could not find font file {} (glfwin)", font);
     return false;
   }
 

@@ -26,18 +26,18 @@
 #include <vector>
 
 #include "../infotree/information-tree.hpp"
-#include "../logger/logged.hpp"
+#include "../logger/logger.hpp"
 #include "../utils/abstract-factory.hpp"
 #include "./config.hpp"
 #include "./plugin-loader.hpp"
 
 namespace switcher {
 namespace quiddity {
-class Factory : public log::Logged {
+class Factory {
   friend class Container;
-
  public:
-  Factory(log::Base* log);
+  std::shared_ptr<spdlog::logger> logger;
+  Factory();
   std::vector<std::string> get_plugin_dirs() const;
   std::string get_default_plugin_dir() const;
   std::vector<std::string> get_kinds() const;

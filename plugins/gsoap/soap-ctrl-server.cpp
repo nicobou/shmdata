@@ -83,7 +83,7 @@ Switcher* SoapCtrlServer::get_switcher() { return qcontainer_->get_switcher(); }
 
 bool SoapCtrlServer::set_port(int port) {
   if (0 != port_) {
-    warning("soap port can be set only once");
+    LOGGER_WARN(this->logger, "soap port can be set only once");
     return false;
   }
   port_ = port;

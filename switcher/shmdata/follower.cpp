@@ -24,15 +24,16 @@ namespace switcher {
 namespace shmdata {
 
 Follower::Follower(quiddity::Quiddity* quid,
-                                 const std::string& path,
-                                 ::shmdata::Reader::onData od,
-                                 ::shmdata::Reader::onServerConnected osc,
-                                 ::shmdata::Reader::onServerDisconnected osd,
-                                 std::chrono::milliseconds update_interval,
-                                 Direction dir,
-                                 bool get_shmdata_on_connect)
-    : quid_(quid),
-      logger_(quid_->get_log_ptr()),
+                   const std::string& path,
+                   ::shmdata::Reader::onData od,
+                   ::shmdata::Reader::onServerConnected osc,
+                   ::shmdata::Reader::onServerDisconnected osd,
+                   std::chrono::milliseconds update_interval,
+                   Direction dir,
+                   bool get_shmdata_on_connect)
+    : logger(spdlog::get("switcher")),
+      quid_(quid),
+      shmlogger_(),
       od_(od),
       osc_(osc),
       osd_(osd),
@@ -44,7 +45,7 @@ Follower::Follower(quiddity::Quiddity* quid,
           [this](void* data, size_t size) { this->on_data(data, size); },
           [this](const std::string& data_type) { this->on_server_connected(data_type); },
           [this]() { this->on_server_disconnected(); },
-          &logger_)),
+          &shmlogger_)),
       task_(std::make_unique<PeriodicTask<>>([this]() { this->update_quid_stats(); },
                                              update_interval)) {
   // adding default informations for this shmdata

@@ -22,9 +22,12 @@
  */
 
 #include "./quiddity.hpp"
+
 #include <sys/un.h>
+
 #include <algorithm>
 #include <regex>
+
 #include "../shmdata/stat.hpp"
 #include "../switcher.hpp"
 #include "./container.hpp"
@@ -34,7 +37,7 @@ namespace switcher {
 namespace quiddity {
 
 Quiddity::Quiddity(quiddity::Config&& conf, claw::Config claw_conf)
-    : log::Logged(conf.log_),
+    : logger(spdlog::get("switcher")),
       information_tree_(InfoTree::make()),
       structured_user_data_(InfoTree::make()),
       configuration_tree_(conf.tree_config_ ? InfoTree::copy(conf.tree_config_) : InfoTree::make()),
@@ -74,7 +77,6 @@ Quiddity::Quiddity(quiddity::Config&& conf, claw::Config claw_conf)
             smanage<MPtr(&signal::SBag::notify)>(on_tree_pruned_id_, InfoTree::make(key));
           }),
       meths_(
-          conf.log_,
           information_tree_,
           [this](const std::string& key) {  // on_tree_grafted_cb
             smanage<MPtr(&signal::SBag::notify)>(on_tree_grafted_id_, InfoTree::make(key));
@@ -116,7 +118,7 @@ qid_t Quiddity::get_id() const { return id_; }
 
 std::string Quiddity::get_kind() const { return kind_; }
 
-std::string Quiddity::get_manager_name() { return qcontainer_->get_switcher()->get_name(); }
+std::string Quiddity::get_manager_name() { return qcontainer_->get_switcher()->name; }
 
 std::string Quiddity::get_quiddity_caps() {
   auto caps_str = qcontainer_->get_switcher()->get_switcher_caps();
@@ -169,7 +171,7 @@ void Quiddity::self_destruct() {
   auto thread = std::thread([ this, th_lock = std::move(lock) ]() mutable {
     th_lock.unlock();
     auto res = qcontainer_->get_switcher()->quids<MPtr(&quiddity::Container::remove)>(id_);
-    if (!res) warning("% did not self destruct (%)", get_nickname(), res.msg());
+    if (!res) LOGGER_WARN(this->logger, "{} did not self destruct ({})", get_nickname(), res.msg());
   });
   thread.detach();
 }

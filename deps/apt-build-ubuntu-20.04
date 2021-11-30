@@ -15,6 +15,7 @@ libportmidi-dev
 libpulse-dev
 libsamplerate0-dev
 libsoup2.4-dev
+libspdlog-dev
 libssl-dev
 libvncserver-dev
 libxcursor-dev
@@ -26,3 +27,4 @@ python3-dev
 python3-pip
 swh-plugins
 uuid-dev
+libfmt-dev

@@ -23,7 +23,6 @@
 #include <string>
 
 #include "../infotree/information-tree.hpp"
-#include "../logger/base.hpp"
 #include "./quid-id-t.hpp"
 
 namespace switcher {
@@ -35,15 +34,13 @@ struct Config {
          const std::string& nickname,
          const std::string& kind,
          const InfoTree::ptrc tree_config,
-         Container* qc,
-         log::Base* log)
-      : id_(id), nickname_(nickname), kind_(kind), tree_config_(tree_config), qc_(qc), log_(log) {}
+         Container* qc)
+      : id_(id), nickname_(nickname), kind_(kind), tree_config_(tree_config), qc_(qc) {}
   qid_t id_;
   std::string nickname_;
   std::string kind_;
   InfoTree::ptrc tree_config_;
   Container* qc_;
-  log::Base* log_;
 };
 
 }  // namespace quiddity

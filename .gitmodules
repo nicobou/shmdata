@@ -1,12 +1,12 @@
 [submodule "plugins/glfw/external/glfw"]
-	path = plugins/glfw/external/glfw
-	url = https://github.com/glfw/glfw
+  path = plugins/glfw/external/glfw
+  url = https://github.com/glfw/glfw
 [submodule "plugins/pjsip/external/pjsip"]
-	path = plugins/pjsip/external/pjsip
-	url = https://github.com/pjsip/pjproject
+  path = plugins/pjsip/external/pjsip
+  url = https://github.com/pjsip/pjproject
 [submodule "plugins/glfw/external/imgui"]
-	path = plugins/glfw/external/imgui
-	url = https://github.com/ocornut/imgui
+  path = plugins/glfw/external/imgui
+  url = https://github.com/ocornut/imgui
 [submodule "plugins/vrpn/external/vrpn"]
-	path = plugins/vrpn/external/vrpn
-	url = https://github.com/vrpn/vrpn.git
+  path = plugins/vrpn/external/vrpn
+  url = https://github.com/vrpn/vrpn.git

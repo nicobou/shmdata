@@ -31,8 +31,7 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(JackServerQuid,
 JackServerQuid::JackServerQuid(quiddity::Config&& conf)
     : Quiddity(std::forward<quiddity::Config>(conf)),
       Startable(this),
-      jack_server_(get_log_ptr(),
-                   config<MPtr(&InfoTree::branch_get_value)>("name"),
+      jack_server_(config<MPtr(&InfoTree::branch_get_value)>("name"),
                    config<MPtr(&InfoTree::branch_get_value)>("driver"),
                    config<MPtr(&InfoTree::branch_get_value)>("realtime").is_null()
                        ? false
@@ -205,7 +204,8 @@ property::prop_id_t JackServerQuid::make_param(const std::string& config_path,
         config_->branch_get_value(config_path + ".long description").as<std::string>(),
         config_->branch_get_value(config_path + ".value").as<char>());
   }
-  warning("jackserver: unknown type (%) for Jack parameter named %", type, config_path);
+  LOGGER_WARN(
+      this->logger, "jackserver: unknown type ({}) for Jack parameter named {}", type, config_path);
   return 0;
 }
 

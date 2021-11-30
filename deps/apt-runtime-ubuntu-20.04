@@ -15,6 +15,7 @@ libpulse-mainloop-glib0
 libpython3.8
 libsamplerate0
 libsoup2.4-1
+libspdlog1
 libssl1.1
 libvncclient1
 libvncserver1

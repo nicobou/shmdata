@@ -122,11 +122,11 @@ Cropper::Cropper(quiddity::Config&& conf)
 
 bool Cropper::on_shmdata_connect(const std::string& shmpath) {
   if (shmpath.empty()) {
-    error("shmpath must not be empty");
+    LOGGER_ERROR(this->logger, "shmpath must not be empty");
     return false;
   }
   if (shmpath == shmpath_cropped_) {
-    error("cropper cannot connect to itself");
+    LOGGER_ERROR(this->logger, "cropper cannot connect to itself");
     return false;
   }
   shmpath_to_crop_ = shmpath;
@@ -142,10 +142,10 @@ bool Cropper::on_shmdata_connect(const std::string& shmpath) {
       [this](const std::string& caps) {
         if (!cur_caps_.empty() && cur_caps_ != caps) {
           cur_caps_ = caps;
-          debug(
-              "cropper restarting shmdata connection "
-              "because of updated caps (%)",
-              cur_caps_);
+          LOGGER_DEBUG(this->logger,
+                       "cropper restarting shmdata connection "
+                       "because of updated caps ({})",
+                       cur_caps_);
           async_this_.run_async([this]() { on_shmdata_connect(shmpath_to_crop_); });
 
           return;
@@ -184,7 +184,7 @@ bool Cropper::remake_elements() {
   if (!gst::UGstElem::renew(shmsrc_) || !gst::UGstElem::renew(queue_element_) ||
       !gst::UGstElem::renew(cropper_element_) || !gst::UGstElem::renew(scaler_element_) ||
       !gst::UGstElem::renew(shmsink_, {"socket-path", "sync", "extra-caps-properties"})) {
-    error("cropper could not renew GStreamer elements");
+    LOGGER_ERROR(this->logger, "cropper could not renew GStreamer elements");
     return false;
   }
   return true;
