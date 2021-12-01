@@ -28,10 +28,10 @@ Build and install **switcher** from the command line:
 sudo apt install git
 git clone https://gitlab.com/sat-metalab/switcher.git
 
+cd switcher
+
 # uncomment to checkout a specific version
 # git checkout 2.1.38
-
-cd switcher
 
 # install dependencies
 sudo apt install $(cat ./deps/apt-{build,runtime}-ubuntu-20.04)
