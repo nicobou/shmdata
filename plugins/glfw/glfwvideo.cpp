@@ -120,7 +120,7 @@ GLFWVideo::GLFWVideo(quiddity::Config&& conf)
           },
           [this]() { return color_; },
           "Background color",
-          "property::Color of the background when no video is displayed.",
+          "Color of the background when no video is displayed.",
           color_)),
       background_image_id_(pmanage<MPtr(&property::PBag::make_parented_string)>(
           "background_image",
