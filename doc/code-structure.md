@@ -21,14 +21,15 @@ Switcher's directory structure
 switcher/
 ├── configuration  # switcher's configuration file
 ├── gst            # switcher internal handling of GStreamer
+├── logger         # generic `spdlog` macros`
 ├── infotree       # information tree 
-├── logger         # switcher's internal logger
 ├── quiddities     # several internal quiddities that are embedded into the switcher library
 ├── quiddity       # switcher's quiddity
 │   ├── bundle     # create new quiddities from a description of a shmdata pipeline composed of several other quiddities
 │   ├── method     # quiddity's methods
 │   ├── property   # quiddity's properties
 │   └── signal     # quiddity's signals
+├── session        # switcher's session manager
 ├── shmdata        # switcher internal handling of shmdata
 │   └── caps       # switcher internal handling of shmdata caps
 └── utils          # switcher utils, including file, net and several cpp idioms

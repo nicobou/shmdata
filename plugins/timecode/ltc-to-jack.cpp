@@ -51,13 +51,13 @@ LTCToJack::LTCToJack(quiddity::Config&& conf)
       std::string(std::string("clockLTC_") + get_nickname()).c_str(), JackNullOption, nullptr);
 
   if (!jack_client_) {
-    warning("Could not create jack client (ltctojack).");
+    LOGGER_WARN(this->logger, "Could not create jack client (ltctojack).");
     is_valid_ = false;
     return;
   }
 
   if (jack_activate(jack_client_) != 0) {
-    warning("Could not activate jack client (ltctojack).");
+    LOGGER_WARN(this->logger, "Could not activate jack client (ltctojack).");
     is_valid_ = false;
     return;
   }

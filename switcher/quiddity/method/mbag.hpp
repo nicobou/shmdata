@@ -23,14 +23,15 @@
 #include <map>
 #include <memory>
 #include <string>
+
 #include "../../infotree/information-tree.hpp"
-#include "../../logger/logged.hpp"
+#include "../../logger/logger.hpp"
 #include "../../utils/bool-any.hpp"
 #include "../../utils/counter-map.hpp"
 #include "../../utils/is-specialization-of.hpp"
 #include "../../utils/method-trait.hpp"
 #include "../../utils/type-name-registry.hpp"
-#include "./method.hpp"
+#include "method.hpp"
 
 namespace switcher {
 namespace quiddity {
@@ -42,13 +43,13 @@ using on_method_removed_cb_t = std::function<void(const std::string& name)>;
 using on_method_enabled_cb_t = std::function<void(const std::string& name)>;
 using on_method_disabled_cb_t = std::function<void(const std::string& name)>;
 
-class MBag : public log::Logged {
+class MBag {
   friend class Bundle;  // replacing some methods like replace and delete
  public:
+  std::shared_ptr<spdlog::logger> logger;
   MBag() = delete;
   // ctor will own tree and write into .method.
-  MBag(log::Base* log,
-       InfoTree::ptr tree,
+  MBag(InfoTree::ptr tree,
        on_tree_grafted_cb_t on_tree_grafted_cb,
        on_tree_pruned_cb_t on_tree_pruned_cb,
        on_method_created_cb_t on_method_created,
@@ -105,7 +106,7 @@ class MBag : public log::Logged {
   meth_id_t make_method(const std::string& strid, InfoTree::ptr tree, M&& meth) {
     auto valid = validate_method_documentation<M>(tree.get());
     if (!valid) {
-      error("method % could not be installed: %", strid, valid.msg());
+      LOGGER_ERROR(this->logger, "method {} could not be installed: {}", strid, valid.msg());
       return 0;
     }
     meths_.emplace(std::make_pair(++counter_, std::make_unique<Method<M>>(std::forward<M>(meth))));

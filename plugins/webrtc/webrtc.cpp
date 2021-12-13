@@ -115,26 +115,26 @@ std::string Webrtc::make_username() {
 }
 
 bool Webrtc::stop() {
-  debug("Webrtc::stop");
+  LOGGER_DEBUG(this->logger, "Webrtc::stop");
   using namespace std::chrono_literals;
 
   std::lock_guard<std::mutex> pipe_lock(pipeline_mutex_);
   if (stopping_) {
-    warning("Webrtc::stop::Already stopping. Skipping");
+    LOGGER_WARN(this->logger, "Webrtc::stop::Already stopping. Skipping");
     return true;
   } else {
     stopping_ = true;
   }
 
   if (!connection_) {
-    error("Webrtc::stop::Websocket connection is uninitialized");
+    LOGGER_ERROR(this->logger, "Webrtc::stop::Websocket connection is uninitialized");
     return true;
   }
 
   {
     std::scoped_lock lock(loop_lock_);
     if (!loop_) {
-      error("Webrtc::stop::Main loop is uninitialized");
+      LOGGER_ERROR(this->logger, "Webrtc::stop::Main loop is uninitialized");
       return false;
     }
 
@@ -172,7 +172,9 @@ bool Webrtc::stop() {
         state_str = "UNKNOWN";
         break;
     }
-    warning("Webrtc::stop::Websocket disconnection timed out. Current state is [%]", state_str);
+    LOGGER_WARN(this->logger,
+                "Webrtc::stop::Websocket disconnection timed out. Current state is [{}]",
+                state_str);
   }
 
   return state == SOUP_WEBSOCKET_STATE_CLOSED;
@@ -184,12 +186,12 @@ int Webrtc::stop_source_cb(void* self) {
 }
 
 void Webrtc::async_disconnect_from_wss() {
-  debug("Webrtc::async_disconnect_from_wss");
+  LOGGER_DEBUG(this->logger, "Webrtc::async_disconnect_from_wss");
 
   std::lock_guard<std::mutex> pipe_lock(pipeline_mutex_);
 
   if (!connection_) {
-    debug("Webrtc::disconnect::Connection is uninitialized. Nothing to do");
+    LOGGER_DEBUG(this->logger, "Webrtc::disconnect::Connection is uninitialized. Nothing to do");
     return;
   }
 
@@ -202,11 +204,12 @@ void Webrtc::async_disconnect_from_wss() {
 }
 
 bool Webrtc::start() {
-  debug("Webrtc::start");
+  LOGGER_DEBUG(this->logger, "Webrtc::start");
   using namespace std::chrono_literals;
 
   if (stopping_) {
-    warning("Webrtc::start::Unfinished stop task previously launched. Skipping start.");
+    LOGGER_WARN(this->logger,
+                "Webrtc::start::Unfinished stop task previously launched. Skipping start.");
     return false;
   }
 
@@ -227,7 +230,7 @@ bool Webrtc::start() {
   }
 
   if (connection_) {
-    debug("Webrtc::start::Connection object successfully initialized");
+    LOGGER_DEBUG(this->logger, "Webrtc::start::Connection object successfully initialized");
     g_object_get(connection_.get(), "state", &state, nullptr);
   }
 
@@ -247,9 +250,11 @@ bool Webrtc::start() {
         state_str = "UNKNOWN";
         break;
     }
-    warning("Webrtc::start::Websocket connection not open. Current state is [%]", state_str);
+    LOGGER_WARN(this->logger,
+                "Webrtc::start::Websocket connection not open. Current state is [{}]",
+                state_str);
   } else {
-    debug("Webrtc::start::Connection state is: [OPEN]");
+    LOGGER_DEBUG(this->logger, "Webrtc::start::Connection state is: [OPEN]");
   }
 
   return state == SOUP_WEBSOCKET_STATE_OPEN;
@@ -261,14 +266,14 @@ int Webrtc::start_source_cb(void* self) {
 }
 
 void Webrtc::async_connect_to_wss() {
-  debug("Webrtc::async_connect_to_wss");
+  LOGGER_DEBUG(this->logger, "Webrtc::async_connect_to_wss");
 
   {
     std::scoped_lock lock(loop_lock_);
     if (loop_) {
       g_main_context_push_thread_default(loop_->get_main_context());
     } else {
-      error("Webrtc::async_connect_to_wss::Mainloop object is uninitialized");
+      LOGGER_ERROR(this->logger, "Webrtc::async_connect_to_wss::Mainloop object is uninitialized");
       return;
     }
   }
@@ -283,7 +288,7 @@ void Webrtc::async_connect_to_wss() {
 
   SoupMessage* message = soup_message_new(SOUP_METHOD_GET, signaling_server_.c_str());
 
-  debug("Webrtc::async_connect_to_wss::Connecting...");
+  LOGGER_DEBUG(this->logger, "Webrtc::async_connect_to_wss::Connecting...");
   soup_session_websocket_connect_async(session,
                                        message,
                                        nullptr,
@@ -298,7 +303,7 @@ void Webrtc::on_connection_closed(SoupWebsocketConnection* connection G_GNUC_UNU
 }
 
 void Webrtc::connection_closed() {
-  debug("Webrtc::connection_closed");
+  LOGGER_DEBUG(this->logger, "Webrtc::connection_closed");
   g_signal_handler_disconnect(connection_.get(), wss_closed_handler_id_);
   g_signal_handler_disconnect(connection_.get(), wss_message_handler_id_);
   connection_.reset(nullptr);
@@ -313,28 +318,29 @@ void Webrtc::on_server_connected(SoupSession* session,
 }
 
 void Webrtc::server_connected(SoupSession* session, GAsyncResult* res) {
-  debug("Webrtc::server_connected");
+  LOGGER_DEBUG(this->logger, "Webrtc::server_connected");
 
   GError* err = nullptr;
   connection_.reset(soup_session_websocket_connect_finish(session, res, &err));
 
   if (err) {
-    error("Webrtc::server_connected::[%]", err->message);
+    LOGGER_ERROR(this->logger, "Webrtc::server_connected::[{}]", err->message);
     g_error_free(err);
     return;
   }
 
   if (!connection_) {
-    error("Webrtc::server_connected::Connection object is uninitialized");
+    LOGGER_ERROR(this->logger, "Webrtc::server_connected::Connection object is uninitialized");
     return;
   }
 
-  debug("Webrtc::server_connected::Successfully connected to the server");
+  LOGGER_DEBUG(this->logger, "Webrtc::server_connected::Successfully connected to the server");
 
   wss_closed_handler_id_ =
       g_signal_connect(connection_.get(), "closed", G_CALLBACK(Webrtc::on_connection_closed), this);
   if (wss_closed_handler_id_ <= 0) {
-    error(
+    LOGGER_ERROR(
+        this->logger,
         "Webrtc::server_connected::Couldn't subscribe to 'closed' signals on the websocket "
         "connection object");
     return;
@@ -343,7 +349,8 @@ void Webrtc::server_connected(SoupSession* session, GAsyncResult* res) {
   wss_message_handler_id_ =
       g_signal_connect(connection_.get(), "message", G_CALLBACK(Webrtc::on_wss_message), this);
   if (wss_message_handler_id_ <= 0) {
-    error(
+    LOGGER_ERROR(
+        this->logger,
         "Webrtc::server_connected::Couldn't subscribe to 'message' signals on the webscocket "
         "connection object");
     g_signal_handler_disconnect(connection_.get(), wss_closed_handler_id_);
@@ -361,17 +368,18 @@ void Webrtc::on_wss_message(SoupWebsocketConnection* con G_GNUC_UNUSED,
 }
 
 void Webrtc::wss_message(GBytes* message, SoupWebsocketDataType type) {
-  debug("Webrtc::wss_message");
+  LOGGER_DEBUG(this->logger, "Webrtc::wss_message");
 
   if (stopping_) {
-    warning("Webrtc::wss_message::Stop task launched. Ignoring messsage");
+    LOGGER_WARN(this->logger, "Webrtc::wss_message::Stop task launched. Ignoring messsage");
     return;
   }
 
   std::string text;
   switch (type) {
     case SOUP_WEBSOCKET_DATA_BINARY:
-      error("Webrtc::wss_message::Unsupported type SOUP_WEBSOCKET_DATA_BINARY");
+      LOGGER_ERROR(this->logger,
+                   "Webrtc::wss_message::Unsupported type SOUP_WEBSOCKET_DATA_BINARY");
       return;
     case SOUP_WEBSOCKET_DATA_TEXT: {
       gsize size;
@@ -380,80 +388,96 @@ void Webrtc::wss_message(GBytes* message, SoupWebsocketDataType type) {
       break;
     }
     default:
-      error("Webrtc::wss_message::Ignoring message of unknown type [%]", text);
+      LOGGER_ERROR(
+          this->logger, "Webrtc::wss_message::Ignoring message of unknown type [{}]", text);
       return;
   }
 
-  debug("Webrtc::wss_message::[%]", text);
+  LOGGER_DEBUG(this->logger, "Webrtc::wss_message::[{}]", text);
 
   if (text == "HELLO") {
-    debug("Webrtc::registered_for_signaling");
+    LOGGER_DEBUG(this->logger, "Webrtc::registered_for_signaling");
     join_room();
   } else if (stringutils::starts_with(text, "ROOM_")) {
     if (stringutils::starts_with(text, "ROOM_OK")) {
-      debug("Webrtc::room_joined");
+      LOGGER_DEBUG(this->logger, "Webrtc::room_joined");
       if (!start_pipeline()) {
-        error("Webrtc::wss_message::Couldn't start pipeline");
+        LOGGER_ERROR(this->logger, "Webrtc::wss_message::Couldn't start pipeline");
         return;
       }
 
       if (text != "ROOM_OK ") {
         auto parts = stringutils::split_string(text, " ");
 
-        debug("Webrtc::wss_message::Found [%] users in the room", std::to_string(parts.size()));
+        LOGGER_DEBUG(this->logger,
+                     "Webrtc::wss_message::Found [{}] users in the room",
+                     std::to_string(parts.size()));
 
         for (std::size_t idx = 1; idx < parts.size(); ++idx) {
           if (!call_peer(parts[idx])) {
-            error("Webrtc::wss_message::Call to [%] failed", parts[idx]);
+            LOGGER_ERROR(this->logger, "Webrtc::wss_message::Call to [{}] failed", parts[idx]);
           }
         }
       } else {
-        debug("Webrtc::wss_message::No other user in the room");
+        LOGGER_DEBUG(this->logger, "Webrtc::wss_message::No other user in the room");
       }
     } else if (stringutils::starts_with(text, "ROOM_PEER_")) {
       if (stringutils::starts_with(text, "ROOM_PEER_MSG")) {
         auto parts = stringutils::split_string(text, " ", 3);
         if (!peer_registered(parts[1])) {
-          error("Webrtc::wss_message::Ignoring message from unknown peer [%]", parts[1]);
+          LOGGER_ERROR(this->logger,
+                       "Webrtc::wss_message::Ignoring message from unknown peer [{}]",
+                       parts[1]);
           return;
         }
 
         if (!peer_message(parts[1], parts[2])) {
-          error("Webrtc::wss_message::Failed to handle message [%] from [%]\n", parts[2], parts[1]);
+          LOGGER_ERROR(this->logger,
+                       "Webrtc::wss_message::Failed to handle message [{}] from [{}]",
+                       parts[2],
+                       parts[1]);
           return;
         }
       } else if (stringutils::starts_with(text, "ROOM_PEER_JOINED")) {
         auto parts = stringutils::split_string(text, " ", 2);
-        debug("Webrtc::wss_message::[%] joined the room", parts[1]);
+        LOGGER_DEBUG(this->logger, "Webrtc::wss_message::[{}] joined the room", parts[1]);
         if (!add_peer_to_pipeline(parts[1])) {
-          error("Webrtc::wss_message::Couldn't add peer [%] to the pipeline", parts[1]);
+          LOGGER_ERROR(this->logger,
+                       "Webrtc::wss_message::Couldn't add peer [{}] to the pipeline",
+                       parts[1]);
           return;
         }
       } else if (stringutils::starts_with(text, "ROOM_PEER_LEFT")) {
         auto parts = stringutils::split_string(text, " ", 2);
-        debug("Webrtc::wss_message::[%] left the room", parts[1]);
+        LOGGER_DEBUG(this->logger, "Webrtc::wss_message::[{}] left the room", parts[1]);
         if (peer_registered(parts[1])) {
           remove_peer_from_pipeline(parts[1]);
         }
       } else {
-        error("Webrtc::wss_message::Ignoring unparsable message [%]", text);
+        LOGGER_ERROR(this->logger, "Webrtc::wss_message::Ignoring unparsable message [{}]", text);
       }
     }
   }
 }
 
 bool Webrtc::peer_message(const std::string& peer, const std::string& message) {
-  debug("Webrtc::peer_message");
+  LOGGER_DEBUG(this->logger, "Webrtc::peer_message");
 
   unique_gobject<JsonParser> parser(json_parser_new());
   if (!json_parser_load_from_data(parser.get(), message.c_str(), message.length(), nullptr)) {
-    error("Webrtc::peer_message::Ignoring unparsable message [%] from [%]", message, peer);
+    LOGGER_ERROR(this->logger,
+                 "Webrtc::peer_message::Ignoring unparsable message [{}] from [{}]",
+                 message,
+                 peer);
     return false;
   }
 
   JsonNode* root = json_parser_get_root(parser.get());  // observer_ptr
   if (!JSON_NODE_HOLDS_OBJECT(root)) {
-    error("Webrtc::peer_message::Ignoring unparsable (empty?) message [%] from [%]", message, peer);
+    LOGGER_ERROR(this->logger,
+                 "Webrtc::peer_message::Ignoring unparsable (empty?) message [{}] from [{}]",
+                 message,
+                 peer);
     return false;
   }
 
@@ -462,37 +486,43 @@ bool Webrtc::peer_message(const std::string& peer, const std::string& message) {
   if (json_object_has_member(object, "sdp")) {
     JsonObject* child = json_object_get_object_member(object, "sdp");
 
+    std::string sdp = std::string(json_object_get_string_member(child, "sdp"));
+    std::string type = "";
+
     if (!json_object_has_member(child, "type")) {
-      error("Webrtc::peer_message::SDP message received without {type}");
+      type = std::string(json_object_get_string_member(child, "type"));
+      LOGGER_ERROR(this->logger, "Webrtc::peer_message::SDP message received without {}", type);
       return false;
     }
 
-    auto type = std::string(json_object_get_string_member(child, "type"));
-    auto sdp = std::string(json_object_get_string_member(child, "sdp"));
-
-    debug("Webrtc::peer_message::sdp::[type: [%] - [description: [%]", type, sdp);
+    LOGGER_DEBUG(
+        this->logger, "Webrtc::peer_message::sdp::[type: [{}] - [description: [{}]", type, sdp);
 
     if (type == "offer") {
       if (json_object_has_member(object, "satid") &&
           json_object_get_string_member(object, "satid") == WEBCLIENT_MAGIC_ID) {
-        debug("Webrtc::peer_message::Incoming call from SAT Web client, returning call");
+        LOGGER_DEBUG(this->logger,
+                     "Webrtc::peer_message::Incoming call from SAT Web client, returning call");
         return_call(peer);
       } else {
         if (!handle_remote_sdp(peer, sdp.c_str(), GST_WEBRTC_SDP_TYPE_OFFER)) {
-          error("Webrtc::peer_message::Failed to handle remote SDP offer [%] from [%]",
-                message,
-                peer);
+          LOGGER_ERROR(this->logger,
+                       "Webrtc::peer_message::Failed to handle remote SDP offer [{}] from [{}]",
+                       message,
+                       peer);
           return false;
         }
       }
     } else if (type == "answer") {
       if (!handle_remote_sdp(peer, sdp.c_str(), GST_WEBRTC_SDP_TYPE_ANSWER)) {
-        error(
-            "Webrtc::peer_message::Failed to handle remote SDP answer [%] from [%]", message, peer);
+        LOGGER_ERROR(this->logger,
+                     "Webrtc::peer_message::Failed to handle remote SDP answer [{}] from [{}]",
+                     message,
+                     peer);
         return false;
       }
     } else {
-      error("Webrtc::peer_message::Invalid sdp type");
+      LOGGER_ERROR(this->logger, "Webrtc::peer_message::Invalid sdp type");
       return false;
     }
   } else if (json_object_has_member(object, "ice")) {
@@ -500,20 +530,25 @@ bool Webrtc::peer_message(const std::string& peer, const std::string& message) {
     const gchar* candidate = json_object_get_string_member(child, "candidate");
     int mline = json_object_get_int_member(child, "sdpMLineIndex");
 
-    debug("Webrtc::peer_message::ice:[mline: [%] - [candidate: [%]",
-          std::to_string(mline),
-          candidate);
+    LOGGER_DEBUG(this->logger,
+                 "Webrtc::peer_message::ice:[mline: [{}] - [candidate: [{}]",
+                 std::to_string(mline),
+                 candidate);
 
     unique_gst<GstElement> webrtc(
         gst_bin_get_by_name(GST_BIN(pipeline_->get_pipeline()), peer.c_str()));
     if (!webrtc) {
-      error("Webrtc::peer_message::Couldn't get webrtcbin for peer [%]", peer);
+      LOGGER_ERROR(
+          this->logger, "Webrtc::peer_message::Couldn't get webrtcbin for peer [{}]", peer);
       return false;
     }
 
     g_signal_emit_by_name(webrtc.get(), "add-ice-candidate", mline, candidate);
   } else {
-    error("Webrtc::peer_message::Ignoring unknown JSON message [%] from [%]", message, peer);
+    LOGGER_ERROR(this->logger,
+                 "Webrtc::peer_message::Ignoring unknown JSON message [{}] from [{}]",
+                 message,
+                 peer);
     return false;
   }
 
@@ -521,15 +556,16 @@ bool Webrtc::peer_message(const std::string& peer, const std::string& message) {
 }
 
 bool Webrtc::return_call(const std::string& peer) {
-  debug("Webrtc::return_call::[%]", peer);
+  LOGGER_DEBUG(this->logger, "Webrtc::return_call::[{}]", peer);
 
   if (!send_command(peer, SAT_COMMAND_TYPE, STOP_CALL_COMMAND)) {
-    error("Webrtc::return_call::Failed to send stop call command to peer [%]", peer);
+    LOGGER_ERROR(
+        this->logger, "Webrtc::return_call::Failed to send stop call command to peer [{}]", peer);
     return false;
   }
 
   if (!remove_peer_from_pipeline(peer)) {
-    error("Webrtc::return::Failed to remove peer [%] from pipeline", peer);
+    LOGGER_ERROR(this->logger, "Webrtc::return::Failed to remove peer [{}] from pipeline", peer);
     return false;
   }
 
@@ -539,30 +575,32 @@ bool Webrtc::return_call(const std::string& peer) {
 bool Webrtc::handle_remote_sdp(const std::string& peer,
                                const std::string& text,
                                GstWebRTCSDPType type) {
-  debug("Webrtc::handle_remote_sdp");
+  LOGGER_DEBUG(this->logger, "Webrtc::handle_remote_sdp");
 
   GstSDPMessage* sdp;
 
   if (gst_sdp_message_new(&sdp) != GST_SDP_OK) {
-    error("Webrtc::handle_remote_sdp::Couldn't create GstSDPMessage object");
+    LOGGER_ERROR(this->logger, "Webrtc::handle_remote_sdp::Couldn't create GstSDPMessage object");
     return false;
   }
 
   if (gst_sdp_message_parse_buffer((guint8*)text.c_str(), text.length(), sdp) != GST_SDP_OK) {
-    error("Webrtc::handle_remote_sdp::Couldn't parse sdp message [%]", text);
+    LOGGER_ERROR(this->logger, "Webrtc::handle_remote_sdp::Couldn't parse sdp message [{}]", text);
     return false;
   }
 
   GstWebRTCSessionDescription* description = gst_webrtc_session_description_new(type, sdp);
   if (!description) {
-    error("Webrtc::handle_remote_sdp::Couldn't create GstWebRTCSessionDescription object");
+    LOGGER_ERROR(this->logger,
+                 "Webrtc::handle_remote_sdp::Couldn't create GstWebRTCSessionDescription object");
     return false;
   }
 
   unique_gst<GstElement> webrtc(
       gst_bin_get_by_name(GST_BIN(pipeline_->get_pipeline()), peer.c_str()));
   if (!webrtc) {
-    error("Webrtc::handle_remote_sdp::Couldn't get webrtcbin for peer [%]", peer);
+    LOGGER_ERROR(
+        this->logger, "Webrtc::handle_remote_sdp::Couldn't get webrtcbin for peer [{}]", peer);
     return false;
   }
 
@@ -588,10 +626,10 @@ void Webrtc::on_remote_description_set(GstPromise* promise, bundle_t* data) {
 }
 
 void Webrtc::remote_description_set(GstPromise* promise, unique_bundle_p data) {
-  debug("Webrtc::remote_description_set");
+  LOGGER_DEBUG(this->logger, "Webrtc::remote_description_set");
 
   if (stopping_) {
-    warning("Webrtc::remote_description_set::Stop task launched. Ignoring.");
+    LOGGER_WARN(this->logger, "Webrtc::remote_description_set::Stop task launched. Ignoring.");
     return;
   }
 
@@ -600,7 +638,8 @@ void Webrtc::remote_description_set(GstPromise* promise, unique_bundle_p data) {
   unique_gst<GstElement> webrtc(
       gst_bin_get_by_name(GST_BIN(pipeline_->get_pipeline()), peer.c_str()));
   if (!webrtc) {
-    error("Webrtc::remote_description_set::Couldn't get webrtcbin for peer [%]", peer);
+    LOGGER_ERROR(
+        this->logger, "Webrtc::remote_description_set::Couldn't get webrtcbin for peer [{}]", peer);
     return;
   }
 
@@ -617,15 +656,15 @@ void Webrtc::on_answer_created(GstPromise* promise, bundle_t* data) {
 }
 
 void Webrtc::answer_created(GstPromise* promise, unique_bundle_p data) {
-  debug("Webrtc::answer_created");
+  LOGGER_DEBUG(this->logger, "Webrtc::answer_created");
 
   if (stopping_) {
-    warning("Webrtc::answer_created::Stop task launched. Ignoring.");
+    LOGGER_WARN(this->logger, "Webrtc::answer_created::Stop task launched. Ignoring.");
     return;
   }
 
   if (gst_promise_wait(promise) != GST_PROMISE_RESULT_REPLIED) {
-    error("Webrtc::answer_created::No result set on promise");
+    LOGGER_ERROR(this->logger, "Webrtc::answer_created::No result set on promise");
     return;
   }
 
@@ -639,7 +678,8 @@ void Webrtc::answer_created(GstPromise* promise, unique_bundle_p data) {
   unique_gst<GstElement> webrtc(
       gst_bin_get_by_name(GST_BIN(pipeline_->get_pipeline()), peer.c_str()));
   if (!webrtc) {
-    error("Webrtc::answer_created::Couldn't get webrtcbin for peer [%]", peer);
+    LOGGER_ERROR(
+        this->logger, "Webrtc::answer_created::Couldn't get webrtcbin for peer [{}]", peer);
     return;
   }
 
@@ -647,7 +687,7 @@ void Webrtc::answer_created(GstPromise* promise, unique_bundle_p data) {
   promise = gst_promise_new_with_change_func(
       (GstPromiseChangeFunc)on_local_description_set, (gpointer)(data.release()), nullptr);
 
-  debug("Webrtc::answer_created::Setting local description[%]", peer);
+  LOGGER_DEBUG(this->logger, "Webrtc::answer_created::Setting local description [{}]", peer);
   g_signal_emit_by_name(webrtc.get(), "set-local-description", sdp, promise);
 }
 
@@ -657,13 +697,14 @@ bool Webrtc::peer_registered(const std::string& peer) const {
 
 
 bool Webrtc::register_for_signaling() {
-  debug("Webrtc::register_for_signaling");
+  LOGGER_DEBUG(this->logger, "Webrtc::register_for_signaling");
 
   if (soup_websocket_connection_get_state(connection_.get()) != SOUP_WEBSOCKET_STATE_OPEN) {
     return false;
   }
 
-  debug("Webrtc::register_for_signaling::Registering with server as [%]", username_);
+  LOGGER_DEBUG(
+      this->logger, "Webrtc::register_for_signaling::Registering with server as [{}]", username_);
 
   std::string hello = "HELLO " + username_;
   send_text(hello);
@@ -675,7 +716,7 @@ bool Webrtc::join_room() {
     return false;
   }
 
-  debug("Webrtc::join_room::Joining room: [%]", room_.c_str());
+  LOGGER_DEBUG(this->logger, "Webrtc::join_room::Joining room: [{}]", room_.c_str());
 
   std::string msg = "ROOM " + room_;
   send_text(msg);
@@ -685,7 +726,7 @@ bool Webrtc::join_room() {
 
 
 bool Webrtc::start_pipeline() {
-  debug("Webrtc::start_pipeline");
+  LOGGER_DEBUG(this->logger, "Webrtc::start_pipeline");
 
   std::string pipe = "tee name=videotee ! queue ! fakesink " + video_ +
                      " ! videoconvert ! queue ! vp8enc ! rtpvp8pay ! queue ! " +
@@ -699,7 +740,7 @@ bool Webrtc::start_pipeline() {
       pipe.c_str(), false, nullptr, GST_PARSE_FLAG_NO_SINGLE_ELEMENT_BINS, &err);
 
   if (err) {
-    error("Webrtc::start_pipeline::[%]", err->message);
+    LOGGER_ERROR(this->logger, "Webrtc::start_pipeline::[{}]", err->message);
     g_error_free(err);
     return false;
   }
@@ -708,7 +749,7 @@ bool Webrtc::start_pipeline() {
 
   pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, nullptr);
   if (!pipeline_) {
-    error("Webrtc::start_pipeline::Failed to create pipeline object");
+    LOGGER_ERROR(this->logger, "Webrtc::start_pipeline::Failed to create pipeline object");
     return false;
   }
 
@@ -728,9 +769,9 @@ bool Webrtc::start_pipeline() {
 
 
   if (auto added = gst_bin_add(GST_BIN(pipeline_->get_pipeline()), el); added) {
-    debug("Webrtc::start_pipeline::Added streams to pipeline");
+    LOGGER_DEBUG(this->logger, "Webrtc::start_pipeline::Added streams to pipeline");
   } else {
-    error("Webrtc::start_pipeline::Failed to add streams to pipeline");
+    LOGGER_ERROR(this->logger, "Webrtc::start_pipeline::Failed to add streams to pipeline");
     return false;
   }
 
@@ -740,13 +781,13 @@ bool Webrtc::start_pipeline() {
 }
 
 bool Webrtc::call_peer(const std::string& peer) {
-  debug("Webrtc::call_peer::[%]", peer);
+  LOGGER_DEBUG(this->logger, "Webrtc::call_peer::[{}]", peer);
 
   add_peer_to_pipeline(peer);
 
   GstElement* webrtc = gst_bin_get_by_name(GST_BIN(pipeline_->get_pipeline()), peer.c_str());
   if (!webrtc) {
-    error("Webrtc::call_peer::Couldn't get webrtcbin for peer [%]", peer);
+    LOGGER_ERROR(this->logger, "Webrtc::call_peer::Couldn't get webrtcbin for peer [{}]", peer);
     return false;
   }
 
@@ -755,28 +796,32 @@ bool Webrtc::call_peer(const std::string& peer) {
                                        (gpointer) new bundle_t(this, peer, nullptr),
                                        nullptr);
 
-  debug("Webrtc::call_peer::Creating offer");
+  LOGGER_DEBUG(this->logger, "Webrtc::call_peer::Creating offer");
   g_signal_emit_by_name(webrtc, "create-offer", nullptr, promise);
   return true;
 }
 
 bool Webrtc::remove_peer_from_pipeline(const std::string& peer) {
-  debug("Webrtc::remove_peer_from_pipeline:[%]", peer);
+  LOGGER_DEBUG(this->logger, "Webrtc::remove_peer_from_pipeline: [{}]", peer);
 
   if (!peer_registered(peer)) {
-    debug("Webrtc::remove_peer_from_pipeline:[%]: is not registered", peer);
+    LOGGER_DEBUG(this->logger, "Webrtc::remove_peer_from_pipeline: [{}] is not registered", peer);
     return true;
   }
 
   unique_gst_element audio_tee(gst_bin_get_by_name(GST_BIN(pipeline_->get_pipeline()), "audiotee"));
   if (!audio_tee) {
-    error("Webrtc::remove_peer_from_pipeline:[%]:Couldn't retrieve tee [audiotee]", peer);
+    LOGGER_ERROR(this->logger,
+                 "Webrtc::remove_peer_from_pipeline:[{}]:Couldn't retrieve tee [audiotee]",
+                 peer);
     return false;
   }
 
   unique_gst_element video_tee(gst_bin_get_by_name(GST_BIN(pipeline_->get_pipeline()), "videotee"));
   if (!video_tee) {
-    error("Webrtc::remove_peer_from_pipeline:[%]:Couldn't retrieve tee [videotee]", peer);
+    LOGGER_ERROR(this->logger,
+                 "Webrtc::remove_peer_from_pipeline:[{}]:Couldn't retrieve tee [videotee]",
+                 peer);
     return false;
   }
 
@@ -784,15 +829,20 @@ bool Webrtc::remove_peer_from_pipeline(const std::string& peer) {
   if (!tee_bin) {
     tee_bin.reset(GST_ELEMENT(gst_element_get_parent(video_tee.get())));
     if (!tee_bin) {
-      error("Webrtc::remove_peer_from_pipeline:[%]:Failed to retrieve the bin containing the tees", peer);
+      LOGGER_ERROR(
+          this->logger,
+          "Webrtc::remove_peer_from_pipeline:[{}]:Failed to retrieve the bin containing the tees",
+          peer);
       return false;
     }
   }
 
   unique_gst_element webrtc(gst_bin_get_by_name(GST_BIN(pipeline_->get_pipeline()), peer.c_str()));
   if (!webrtc) {
-    error("Webrtc::remove_peer_from_pipeline:[%]:Failed to retrieve webrtcbin element for peer",
-          peer);
+    LOGGER_ERROR(
+        this->logger,
+        "Webrtc::remove_peer_from_pipeline:[{}]:Failed to retrieve webrtcbin element for peer",
+        peer);
     return false;
   }
 
@@ -802,21 +852,26 @@ bool Webrtc::remove_peer_from_pipeline(const std::string& peer) {
   std::unique_ptr<GstElement, decltype(&gst_object_unref)> audio_queue(
       gst_bin_get_by_name(GST_BIN(pipeline_->get_pipeline()), audio_qname.c_str()), gst_object_unref);
   if (!audio_queue) {
-    error("Webrtc::remove_peer_from_pipeline:[%]:Failed to retrieve audio queue", peer);
+    LOGGER_ERROR(this->logger,
+                 "Webrtc::remove_peer_from_pipeline:[{}]:Failed to retrieve audio queue",
+                 peer);
     return false;
   }
 
   unique_gst<GstPad> audio_sinkpad(gst_element_get_static_pad(audio_queue.get(), "sink"));
   if (!audio_sinkpad) {
-    error("Webrtc::remove_peer_from_pipeline:[%]:Failed to retrieve static pad 'sink' from queue",
-          peer);
+    LOGGER_ERROR(
+        this->logger,
+        "Webrtc::remove_peer_from_pipeline:[{}]:Failed to retrieve static pad 'sink' from queue",
+        peer);
     return false;
   }
 
   unique_gst<GstPad> audio_srcpad(gst_pad_get_peer(audio_sinkpad.get()));
   if (!audio_srcpad) {
-    error(
-        "Webrtc::remove_peer_from_pipeline:[%]:Failed to retrieve corresponding sink for static "
+    LOGGER_ERROR(
+        this->logger,
+        "Webrtc::remove_peer_from_pipeline:[{}]:Failed to retrieve corresponding sink for static "
         "sink pad",
         peer);
     return false;
@@ -831,21 +886,26 @@ bool Webrtc::remove_peer_from_pipeline(const std::string& peer) {
   std::unique_ptr<GstElement, decltype(&gst_object_unref)> video_queue(
       gst_bin_get_by_name(GST_BIN(pipeline_->get_pipeline()), video_qname.c_str()), gst_object_unref);
   if (!video_queue) {
-    error("Webrtc::remove_peer_from_pipeline:[%]:Failed to retrieve video queue", peer);
+    LOGGER_ERROR(this->logger,
+                 "Webrtc::remove_peer_from_pipeline:[{}]:Failed to retrieve video queue",
+                 peer);
     return false;
   }
 
   unique_gst<GstPad> video_sinkpad(gst_element_get_static_pad(video_queue.get(), "sink"));
   if (!video_sinkpad) {
-    error("Webrtc::remove_peer_from_pipeline:[%]:Failed to retrieve static pad 'sink' from queue",
-          peer);
+    LOGGER_ERROR(
+        this->logger,
+        "Webrtc::remove_peer_from_pipeline:[{}]:Failed to retrieve static pad 'sink' from queue",
+        peer);
     return false;
   }
 
   unique_gst<GstPad> video_srcpad(gst_pad_get_peer(video_sinkpad.get()));
   if (!video_srcpad) {
-    error(
-        "Webrtc::remove_peer_from_pipeline:[%]:Failed to retrieve corresponding sink for static "
+    LOGGER_ERROR(
+        this->logger,
+        "Webrtc::remove_peer_from_pipeline:[{}]:Failed to retrieve corresponding sink for static "
         "sink pad",
         peer);
     return false;
@@ -868,7 +928,7 @@ bool Webrtc::remove_peer_from_pipeline(const std::string& peer) {
 }
 
 bool Webrtc::add_peer_to_pipeline(const std::string& peer) {
-  debug("Webrtc::add_peer_to_pipeline");
+  LOGGER_DEBUG(this->logger, "Webrtc::add_peer_to_pipeline");
 
   bool success = false;
   On_scope_exit {
@@ -879,7 +939,7 @@ bool Webrtc::add_peer_to_pipeline(const std::string& peer) {
   };
 
   if (peer_registered(peer)) {
-    debug("Webrtc::add_peer_to_pipeline::[%] is already registered", peer);
+    LOGGER_DEBUG(this->logger, "Webrtc::add_peer_to_pipeline::[{}] is already registered", peer);
     return true;
   }
 
@@ -894,14 +954,16 @@ bool Webrtc::add_peer_to_pipeline(const std::string& peer) {
   unique_gst<GstElement> audio_tee(
       gst_bin_get_by_name(GST_BIN(pipeline_->get_pipeline()), "audiotee"));
   if (!audio_tee) {
-    error("Webrtc::add_peer_to_pipeline::Couldn't get tee: [audiotee] from pipeline");
+    LOGGER_ERROR(this->logger,
+                 "Webrtc::add_peer_to_pipeline::Couldn't get tee: [audiotee] from pipeline");
     return false;
   }
 
   unique_gst<GstElement> video_tee(
       gst_bin_get_by_name(GST_BIN(pipeline_->get_pipeline()), "videotee"));
   if (!video_tee) {
-    error("Webrtc::add_peer_to_pipeline::Couldn't get tee: [videotee] from pipeline");
+    LOGGER_ERROR(this->logger,
+                 "Webrtc::add_peer_to_pipeline::Couldn't get tee: [videotee] from pipeline");
     return false;
   }
 
@@ -909,7 +971,8 @@ bool Webrtc::add_peer_to_pipeline(const std::string& peer) {
   if (!tee_bin) {
     tee_bin.reset(GST_ELEMENT(gst_element_get_parent(video_tee.get())));
     if (!tee_bin) {
-      error("Webrtc::add_peer_to_pipeline::Couldn't get bin container the a/v tees");
+      LOGGER_ERROR(this->logger,
+                   "Webrtc::add_peer_to_pipeline::Couldn't get bin container the a/v tees");
       return false;
     }
   }
@@ -923,35 +986,49 @@ bool Webrtc::add_peer_to_pipeline(const std::string& peer) {
   {
     unique_gst<GstPad> audio_srcpad(gst_element_get_static_pad(audio_queue, "src"));
     if (!audio_srcpad) {
-      error("Webrtc::add_peer_to_pipeline::Couldn't get 'src' from queue [%]", audio_qname);
+      LOGGER_ERROR(this->logger,
+                   "Webrtc::add_peer_to_pipeline::Couldn't get 'src' from queue [{}]",
+                   audio_qname);
       return false;
     }
 
     unique_gst<GstPad> audio_sinkpad(gst_element_get_request_pad(webrtc, "sink_%u"));
     if (!audio_sinkpad) {
-      error("Webrtc::add_peer_to_pipeline:[%]:Couldn't get 'sink_%u' pad from peer's webrtcbin", peer);
+      LOGGER_ERROR(
+          this->logger,
+          "Webrtc::add_peer_to_pipeline:[{}]:Couldn't get 'sink_%u' pad from peer's webrtcbin",
+          peer);
       return false;
     }
 
     if (gst_pad_link(audio_srcpad.get(), audio_sinkpad.get()) != GST_PAD_LINK_OK) {
-      error("Webrtc::add_peer_to_pipeline::Failed to link audio pads for peer [%]", peer);
+      LOGGER_ERROR(this->logger,
+                   "Webrtc::add_peer_to_pipeline::Failed to link audio pads for peer [{}]",
+                   peer);
       return false;
     }
 
     unique_gst<GstPad> video_srcpad(gst_element_get_static_pad(video_queue, "src"));
     if (!video_srcpad) {
-      error("Webrtc::add_peer_to_pipeline::Couldn't get 'src' from queue [%]", video_qname);
+      LOGGER_ERROR(this->logger,
+                   "Webrtc::add_peer_to_pipeline::Couldn't get 'src' from queue [{}]",
+                   video_qname);
       return false;
     }
 
     unique_gst<GstPad> video_sinkpad(gst_element_get_request_pad(webrtc, "sink_%u"));
     if (!video_sinkpad) {
-      error("Webrtc::add_peer_to_pipeline:[%]:Couldn't get 'sink_%u' pad from peer's webrtcbin", peer);
+      LOGGER_ERROR(
+          this->logger,
+          "Webrtc::add_peer_to_pipeline:[{}]:Couldn't get 'sink_%u' pad from peer's webrtcbin",
+          peer);
       return false;
     }
 
     if (gst_pad_link(video_srcpad.get(), video_sinkpad.get()) != GST_PAD_LINK_OK) {
-      error("Webrtc::add_peer_to_pipeline::Failed to link video pads for peer [%]", peer);
+      LOGGER_ERROR(this->logger,
+                   "Webrtc::add_peer_to_pipeline::Failed to link video pads for peer [{}]",
+                   peer);
       return false;
     }
   }
@@ -964,37 +1041,45 @@ bool Webrtc::add_peer_to_pipeline(const std::string& peer) {
     // -------------    ---------------
     unique_gst<GstPad> audio_srcpad(gst_element_get_request_pad(audio_tee.get(), "src_%u"));
     if (!audio_srcpad) {
-      error("Webrtc::add_peer_to_pipeline::Failed to retrieve 'src_%u' pad from [audiotee]");
+      LOGGER_ERROR(this->logger,
+                   "Webrtc::add_peer_to_pipeline::Failed to retrieve 'src_%u' pad from [audiotee]");
       return false;
     }
 
     unique_gst<GstPad> audio_sinkpad(gst_element_get_static_pad(audio_queue, "sink"));
     if (!audio_sinkpad) {
-      error("Webrtc::add_peer_to_pipeline::Failed to retrieve 'sink' pad from queue [%]",
-            audio_qname);
+      LOGGER_ERROR(this->logger,
+                   "Webrtc::add_peer_to_pipeline::Failed to retrieve 'sink' pad from queue [{}]",
+                   audio_qname);
       return false;
     }
 
     if (gst_pad_link(audio_srcpad.get(), audio_sinkpad.get()) != GST_PAD_LINK_OK) {
-      error("Webrtc::add_peer_to_pipeline::Failed to link audio pads for peer [%]", peer);
+      LOGGER_ERROR(this->logger,
+                   "Webrtc::add_peer_to_pipeline::Failed to link audio pads for peer [{}]",
+                   peer);
       return false;
     }
 
     unique_gst<GstPad> video_srcpad(gst_element_get_request_pad(video_tee.get(), "src_%u"));
     if (!video_srcpad) {
-      error("Webrtc::add_peer_to_pipeline::Failed to retrieve 'src_%u' pad from [videotee]");
+      LOGGER_ERROR(this->logger,
+                   "Webrtc::add_peer_to_pipeline::Failed to retrieve 'src_%u' pad from [videotee]");
       return false;
     }
 
     unique_gst<GstPad> video_sinkpad(gst_element_get_static_pad(video_queue, "sink"));
     if (!video_sinkpad) {
-      error("Webrtc::add_peer_to_pipeline::Failed to retrieve 'sink' pad from queue [%]",
-            video_qname);
+      LOGGER_ERROR(this->logger,
+                   "Webrtc::add_peer_to_pipeline::Failed to retrieve 'sink' pad from queue [{}]",
+                   video_qname);
       return false;
     }
 
     if (gst_pad_link(video_srcpad.get(), video_sinkpad.get()) != GST_PAD_LINK_OK) {
-      error("Webrtc::add_peer_to_pipeline::Failed to link video pads for peer [%]", peer);
+      LOGGER_ERROR(this->logger,
+                   "Webrtc::add_peer_to_pipeline::Failed to link video pads for peer [{}]",
+                   peer);
       return false;
     }
   }
@@ -1003,19 +1088,20 @@ bool Webrtc::add_peer_to_pipeline(const std::string& peer) {
   auto ice_signal_id = g_signal_connect(
       webrtc, "on-ice-candidate", G_CALLBACK(on_ice_candidate_collected), (gpointer)data.get());
   if (ice_signal_id <= 0) {
-    error(
-        "Webrtc::add_peer_to_pipeline::Couldn't subscribe to 'on-ice-candidate' signal on "
-        "webrtcbin for peer [%]",
-        peer);
+    LOGGER_ERROR(this->logger,
+                 "Webrtc::add_peer_to_pipeline::Couldn't subscribe to 'on-ice-candidate' signal on "
+                 "webrtcbin for peer [{}]",
+                 peer);
     return false;
   }
 
   auto pad_signal_id =
       g_signal_connect(webrtc, "pad-added", G_CALLBACK(on_pad_added), (gpointer)data.get());
   if (pad_signal_id <= 0) {
-    error(
+    LOGGER_ERROR(
+        this->logger,
         "Webrtc::add_peer_to_pipeline::Couldn't subscribe to 'pad-added' signal on webrtcbin for "
-        "peer [%]",
+        "peer [{}]",
         peer);
     g_signal_handler_disconnect(webrtc, ice_signal_id);
     return false;
@@ -1026,7 +1112,9 @@ bool Webrtc::add_peer_to_pipeline(const std::string& peer) {
   if (!(gst_element_sync_state_with_parent(audio_queue) &&
         gst_element_sync_state_with_parent(video_queue) &&
         gst_element_sync_state_with_parent(webrtc))) {
-    error("Webrtc::add_peer_to_pipeline::Failed to sync new elements' states with their parent");
+    LOGGER_ERROR(
+        this->logger,
+        "Webrtc::add_peer_to_pipeline::Failed to sync new elements' states with their parent");
     return false;
   }
 
@@ -1049,15 +1137,15 @@ void Webrtc::on_pad_added(GstElement* webrtc G_GNUC_UNUSED, GstPad* pad, bundle_
 }
 
 void Webrtc::pad_added(GstPad* pad, bundle_t* data) {
-  debug("Webrtc::pad_added");
+  LOGGER_DEBUG(this->logger, "Webrtc::pad_added");
 
   if (stopping_) {
-    warning("Webrtc::pad_added::Stop task launched. Ignoring.");
+    LOGGER_WARN(this->logger, "Webrtc::pad_added::Stop task launched. Ignoring.");
     return;
   }
 
   if (GST_PAD_DIRECTION(pad) != GST_PAD_SRC) {
-    error("Webrtc::pad_added::Pad doesn't have direction GST_PAD_SRC");
+    LOGGER_ERROR(this->logger, "Webrtc::pad_added::Pad doesn't have direction GST_PAD_SRC");
     return;
   }
 
@@ -1066,13 +1154,17 @@ void Webrtc::pad_added(GstPad* pad, bundle_t* data) {
 
   unique_gst<GstElement> tee(gst_bin_get_by_name(GST_BIN(pipeline_->get_pipeline()), "videotee"));
   if (!tee) {
-    error("Webrtc::pad_added:[%]:Failed to retrieve [videotee] from pipeline", GST_PAD_NAME(pad));
+    LOGGER_ERROR(this->logger,
+                 "Webrtc::pad_added:[{}]:Failed to retrieve [videotee] from pipeline",
+                 GST_PAD_NAME(pad));
     return;
   }
 
   unique_gst<GstElement> tee_parent(GST_ELEMENT(gst_element_get_parent(tee.get())));
   if (!tee_parent) {
-    error("Webrtc::pad_added:[%]:Failed to retrieve [videotee]'s parent", GST_PAD_NAME(pad));
+    LOGGER_ERROR(this->logger,
+                 "Webrtc::pad_added:[{}]:Failed to retrieve [videotee]'s parent",
+                 GST_PAD_NAME(pad));
     return;
   }
 
@@ -1091,17 +1183,20 @@ void Webrtc::on_decodebin_pad_added(GstElement* decodebin G_GNUC_UNUSED,
 }
 
 void Webrtc::decodebin_pad_added(GstPad* pad, bundle_t* data) {
-  debug("Webrtc::pad_added");
+  LOGGER_DEBUG(this->logger, "Webrtc::pad_added");
 
   if (stopping_) {
-    warning("Webrtc::decodebin_pad_added::Stop task launched. Ignoring.");
+    LOGGER_WARN(this->logger, "Webrtc::decodebin_pad_added::Stop task launched. Ignoring.");
     return;
   }
 
   auto peer = std::get<const std::string>(*data);
 
   if (!gst_pad_has_current_caps(pad)) {
-    error("Webrtc::decodebin_pad_added:[%]:Ignoring pad [%] with no caps", peer, GST_PAD_NAME(pad));
+    LOGGER_ERROR(this->logger,
+                 "Webrtc::decodebin_pad_added:[{}]:Ignoring pad [{}] with no caps",
+                 peer,
+                 GST_PAD_NAME(pad));
     return;
   }
 
@@ -1110,13 +1205,17 @@ void Webrtc::decodebin_pad_added(GstPad* pad, bundle_t* data) {
 
   unique_gst_element tee(gst_bin_get_by_name(GST_BIN(pipeline_->get_pipeline()), "videotee"));
   if (!tee) {
-    error("Webrtc::decodebin_pad_added:[%]:Failed to retrieve [videotee] from pipeline", peer);
+    LOGGER_ERROR(this->logger,
+                 "Webrtc::decodebin_pad_added:[{}]:Failed to retrieve [videotee] from pipeline",
+                 peer);
     return;
   }
 
   unique_gst_element tee_parent(GST_ELEMENT(gst_element_get_parent(tee.get())));
   if (!tee_parent) {
-    error("Webrtc::decodebin_pad_added:[%]:Failed to retrieve [videotee]'s parent", peer);
+    LOGGER_ERROR(this->logger,
+                 "Webrtc::decodebin_pad_added:[{}]:Failed to retrieve [videotee]'s parent",
+                 peer);
     return;
   }
 
@@ -1129,24 +1228,29 @@ void Webrtc::decodebin_pad_added(GstPad* pad, bundle_t* data) {
     converter = gst_element_factory_make("audioconvert", nullptr);
     suffix = "webrtc-audio";
   } else {
-    error("Webrtc::decodebin_pad_added::Ignoring unsupported pad [%]", GST_PAD_NAME(pad));
+    LOGGER_ERROR(this->logger,
+                 "Webrtc::decodebin_pad_added::Ignoring unsupported pad [{}]",
+                 GST_PAD_NAME(pad));
     return;
   }
 
   if (!converter) {
-    error("Webrtc::decodebin_pad_added:[%]:Failed to create converter element", peer);
+    LOGGER_ERROR(
+        this->logger, "Webrtc::decodebin_pad_added:[{}]:Failed to create converter element", peer);
     return;
   }
 
   gst::UGstElem sink("shmdatasink");
   if (!sink.get_raw()) {
-    error("Webrtc::decodebin_pad_added:[%]:Failed to create sink element", peer);
+    LOGGER_ERROR(
+        this->logger, "Webrtc::decodebin_pad_added:[{}]:Failed to create sink element", peer);
     return;
   }
 
   GstElement* pqueue = gst_element_factory_make("queue", nullptr);
   if (!pqueue) {
-    error("Webrtc::decodebin_pad_added:[%]:Failed to make queue element", peer);
+    LOGGER_ERROR(
+        this->logger, "Webrtc::decodebin_pad_added:[{}]:Failed to make queue element", peer);
     return;
   }
 
@@ -1168,7 +1272,8 @@ void Webrtc::decodebin_pad_added(GstPad* pad, bundle_t* data) {
   GstPad* qpad = gst_element_get_static_pad(pqueue, "sink");
 
   if (gst_pad_link(pad, qpad) != GST_PAD_LINK_OK) {
-    error("Webrtc::pad_added:[%]:Failed to link pad to the queue's sink", peer);
+    LOGGER_ERROR(
+        this->logger, "Webrtc::pad_added:[{}]:Failed to link pad to the queue's sink", peer);
     return;
   }
 }
@@ -1179,15 +1284,15 @@ void Webrtc::on_offer_created(GstPromise* promise, bundle_t* data) {
 }
 
 void Webrtc::offer_created(GstPromise* promise, bundle_t* data) {
-  debug("Webrtc::offer_created");
+  LOGGER_DEBUG(this->logger, "Webrtc::offer_created");
 
   if (stopping_) {
-    warning("Webrtc::offer_created::Stop task launched. Ignoring.");
+    LOGGER_WARN(this->logger, "Webrtc::offer_created::Stop task launched. Ignoring.");
     return;
   }
 
   if (gst_promise_wait(promise) != GST_PROMISE_RESULT_REPLIED) {
-    error("Webrtc::offer_created::No result reply set on promise");
+    LOGGER_ERROR(this->logger, "Webrtc::offer_created::No result reply set on promise");
     return;
   }
 
@@ -1201,14 +1306,14 @@ void Webrtc::offer_created(GstPromise* promise, bundle_t* data) {
   unique_gst<GstElement> webrtc(
       gst_bin_get_by_name(GST_BIN(pipeline_->get_pipeline()), peer.c_str()));
   if (!webrtc) {
-    error("Webrtc::offer_created::Couldn't get webrtcbin for peer [%]", peer);
+    LOGGER_ERROR(this->logger, "Webrtc::offer_created::Couldn't get webrtcbin for peer [{}]", peer);
     return;
   }
 
   gst_promise_unref(promise);
   promise = gst_promise_new_with_change_func(
       (GstPromiseChangeFunc)on_local_description_set, (gpointer)data, nullptr);
-  debug("Webrtc::offer_created::Setting local description[%]", peer);
+  LOGGER_DEBUG(this->logger, "Webrtc::offer_created::Setting local description[{}]", peer);
 
   g_signal_emit_by_name(webrtc.get(), "set-local-description", sdp, promise);
 }
@@ -1219,18 +1324,20 @@ void Webrtc::on_local_description_set(GstPromise* promise, bundle_t* data) {
 }
 
 void Webrtc::local_description_set(GstPromise* promise, unique_bundle_p data) {
-  debug("Webrtc::local_description_set");
+  LOGGER_DEBUG(this->logger, "Webrtc::local_description_set");
   gst_promise_unref(promise);
 
   auto [self, peer, sdp] = *data;
   if (!send_sdp(peer, sdp)) {
-    error("Webrtc::local_description_set::Failed to send sdp message to peer [%]", peer);
+    LOGGER_ERROR(this->logger,
+                 "Webrtc::local_description_set::Failed to send sdp message to peer [{}]",
+                 peer);
     return;
   }
 }
 
 bool Webrtc::send_sdp(const std::string& peer, GstWebRTCSessionDescription* description) {
-  debug("Webrtc::send_sdp");
+  LOGGER_DEBUG(this->logger, "Webrtc::send_sdp");
 
   const gchar* type;
   if (description->type == GST_WEBRTC_SDP_TYPE_OFFER) {
@@ -1238,12 +1345,13 @@ bool Webrtc::send_sdp(const std::string& peer, GstWebRTCSessionDescription* desc
   } else if (description->type == GST_WEBRTC_SDP_TYPE_ANSWER) {
     type = "answer";
   } else {
-    error("Webrtc::send_sdp::Ignoring unsupported sdp type [%]",
-          gst_webrtc_sdp_type_to_string(description->type));
+    LOGGER_ERROR(this->logger,
+                 "Webrtc::send_sdp::Ignoring unsupported sdp type [{}]",
+                 gst_webrtc_sdp_type_to_string(description->type));
     return false;
   }
 
-  debug("Webrtc::send_sdp::type::[%]", type);
+  LOGGER_DEBUG(this->logger, "Webrtc::send_sdp::type::[{}]", type);
 
   std::string text(gst_sdp_message_as_text(description->sdp));
 
@@ -1259,7 +1367,7 @@ bool Webrtc::send_sdp(const std::string& peer, GstWebRTCSessionDescription* desc
 }
 
 bool Webrtc::send_ice(const std::string& peer, guint mlineindex, const std::string& candidate) {
-  debug("Webrtc::send_ice::[%]", peer);
+  LOGGER_DEBUG(this->logger, "Webrtc::send_ice::[{}]", peer);
   unique_json_object ice(json_object_new());
 
   json_object_set_string_member(ice.get(), "candidate", g_strdup(candidate.c_str()));
@@ -1285,7 +1393,7 @@ bool Webrtc::send_command(const std::string& peer,
 }
 
 bool Webrtc::send_peer_msg(const std::string& peer, const std::string& text) {
-  debug("Webrtc::send_peer_msg");
+  LOGGER_DEBUG(this->logger, "Webrtc::send_peer_msg");
 
   std::string msg = "ROOM_PEER_MSG " + std::string(peer) + " " + std::string(text);
 
@@ -1293,15 +1401,15 @@ bool Webrtc::send_peer_msg(const std::string& peer, const std::string& text) {
 }
 
 bool Webrtc::send_text(const std::string& text) {
-  debug("Webrtc::send_text");
+  LOGGER_DEBUG(this->logger, "Webrtc::send_text");
 
   if (stopping_) {
-    warning("Webrtc::send_text::Stop task launched. Ignoring.");
+    LOGGER_WARN(this->logger, "Webrtc::send_text::Stop task launched. Ignoring.");
     return false;
   }
 
-  debug("Webrtc::send_text::[%]", text);
-  
+  LOGGER_DEBUG(this->logger, "Webrtc::send_text::[{}]", text);
+
   soup_websocket_connection_send_text(connection_.get(), g_strdup(text.c_str()));
   return true;
 }
@@ -1315,7 +1423,7 @@ std::string Webrtc::json_to_string(JsonObject* object) {
 }
 
 bool Webrtc::on_shmdata_connect(const std::string& shmpath, claw::sfid_t sfid) {
-  debug("Webrtc::on_shmdata_connect");
+  LOGGER_DEBUG(this->logger, "Webrtc::on_shmdata_connect");
 
   auto label = claw_.get_follower_label(sfid);
 
@@ -1369,7 +1477,7 @@ bool Webrtc::on_shmdata_connect(const std::string& shmpath, claw::sfid_t sfid) {
 }
 
 bool Webrtc::on_shmdata_disconnect(claw::sfid_t sfid) {
-  debug("Webrtc::on_shmdata_disconnect");
+  LOGGER_DEBUG(this->logger, "Webrtc::on_shmdata_disconnect");
   auto label = claw_.get_follower_label(sfid);
   if ("video" == label) {
     video_shmsub_.reset();

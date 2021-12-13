@@ -1,6 +1,21 @@
-NEWS
+sNEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
+
+switcher 3.1.0 (2021-12-13)
+---------------------------
+This is an official release in the 3.1 stable series.
+
+New feature:
+* ♻️ add `logs` configuration settings and replace logging system by `spdlog`
+
+Bug fix:
+* ✏️ Fix typo in property description
+
+Improvements:
+* 📝 upgrade doxygen file and exclude unrelated external code from doc
+* Fix #40 The order of cd in INSTALL.md isn't right
+* ⬆️  upgrade python websockets dependency for webrtc
 
 switcher 3.0.4 (2021-11-29)
 ---------------------------

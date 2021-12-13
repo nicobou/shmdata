@@ -24,8 +24,9 @@
 #include <jack/jack.h>
 
 #include <string>
+
 #include "switcher/infotree/information-tree.hpp"
-#include "switcher/logger/base.hpp"
+#include "switcher/logger/logger.hpp"
 #include "switcher/utils/safe-bool-idiom.hpp"
 
 /* The JackServer class implements the control of a jackserver. Default configuration is obtained
@@ -40,10 +41,8 @@ namespace quiddities {
 
 class JackServer : public SafeBoolIdiom {
  public:
-  explicit JackServer(log::Base* logger,
-                      const std::string& name,
-                      const std::string& driver,
-                      bool real_time);
+  static std::shared_ptr<spdlog::logger> logger;
+  explicit JackServer(const std::string& name, const std::string& driver, bool real_time);
   JackServer() = delete;
   ~JackServer();
 
@@ -64,7 +63,6 @@ class JackServer : public SafeBoolIdiom {
 
  private:
   const std::string kDefaultDriver{"alsa"};
-  log::Base* log_;
   jackctl_server_t* server_;
   InfoTree::ptr config_;
   jackctl_driver_t* current_driver_{nullptr};
@@ -72,11 +70,6 @@ class JackServer : public SafeBoolIdiom {
   std::vector<std::string> drivers_{};
   std::vector<std::string> slave_drivers_{};
   std::string default_driver_;
-
-  // unfortunately jack_set_info_function and jack_set_error_function
-  // does not provide user data allowing to sentd context when login,
-  // so jack log handling is global
-  static log::Base* current_jack_log_;
 
   static void jack_info(const char* msg);
   static void jack_error(const char* msg);

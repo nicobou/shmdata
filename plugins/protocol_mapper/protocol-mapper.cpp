@@ -37,19 +37,19 @@ ProtocolMapper::ProtocolMapper(quiddity::Config&& conf)
         config_file_ = val;
         auto file_content = fileutils::get_file_content(val);
         if (file_content.first.empty()) {
-          message("ERROR: %", file_content.second);
+          LOGGER_INFO(this->logger, file_content.second);
           return false;
         }
         auto tree = infotree::json::deserialize(file_content.first);
         if (!tree) {
-          message("ERROR: % is not a valid json file", val);
+          LOGGER_ERROR(this->logger, "{} is not a valid json file", val);
           return false;
         }
         protocol_reader_.reset();
         protocol_reader_ = ProtocolReader::create_protocol_reader(this, tree.get());
 
         if (!protocol_reader_) {
-          warning("Could not create protocol reader (protocol-mapper).");
+          LOGGER_WARN(this->logger, "Could not create protocol reader (protocol-mapper).");
           return false;
         }
 

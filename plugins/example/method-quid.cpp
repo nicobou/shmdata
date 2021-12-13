@@ -88,13 +88,13 @@ MethodQuid::MethodQuid(quiddity::Config&& conf)
                   }
               )"),
           [&](int i, float f, const std::string& str, bool b) {
-            debug("int %", std::to_string(i));
-            debug("float %", std::to_string(f));
-            debug("string %", str);
-            debug("bool %", b ? std::string("true") : std::string("false"));
+            LOGGER_DEBUG(this->logger, "int {:d}", i);
+            LOGGER_DEBUG(this->logger, "float {:f}", f);
+            LOGGER_DEBUG(this->logger, "string {}", str);
+            LOGGER_DEBUG(this->logger, "bool {}", b);
             return 1 == i && 3.14f == f && std::string("is, but not ") == str && b == false;
           })) {
-  debug("hello_id_ %", std::to_string(hello_id_));
+  LOGGER_DEBUG(this->logger, "hello_id_ {}", std::to_string(hello_id_));
 }
 
 }  // namespace quiddities

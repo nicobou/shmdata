@@ -8,10 +8,16 @@
     "turn_user": "bob",
     "turn_pass": "bob's_password"
   },
+  "logs": {
+    "filepath": "/var/log/switcher/switcher.log",
+    "log_level": "warn",
+    "max_files": 3,
+    "max_size": 100
+  },  
   "shm": {
     "directory": "/run/user/1000",
     "prefix": "switcher_"
-  },  
+  },
   "glfwin" : {
     "icon" : "/usr/local/share/scenic/public/assets/images/scenic-icon-512.png"
   },

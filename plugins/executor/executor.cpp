@@ -143,11 +143,11 @@ Executor::~Executor() {
 
 bool Executor::start() {
   if (child_pid_ != 0) {
-    error("executor already started");
+    LOGGER_ERROR(this->logger, "executor already started");
     return false;
   }
   if (command_line_.empty()) {
-    error("command_line must not be empty");
+    LOGGER_ERROR(this->logger, "command_line must not be empty");
     return false;
   }
 
@@ -168,14 +168,16 @@ bool Executor::start() {
   wordexp_t words;
   int status1 = wordexp(args.c_str(), &words, 0);
   if (status1 != 0) {
-    error("error while parsing command line. Error: %", strerror(status1));
+    LOGGER_ERROR(this->logger, "error while parsing command line. Error: {}", strerror(status1));
     wordfree(&words);
     return false;
   }
 
   // Pipes creation and setup
   if (pipe(cout_pipe_) || pipe(cerr_pipe_)) {
-    error("error while setting up interprocess communication. Error: %", strerror(errno));
+    LOGGER_ERROR(this->logger,
+                 "error while setting up interprocess communication. Error: {}",
+                 strerror(errno));
   }
   posix_spawn_file_actions_init(&act_);
   posix_spawn_file_actions_addclose(&act_, cout_pipe_[0]);
@@ -189,7 +191,7 @@ bool Executor::start() {
   user_stopped_ = false;
   int status2 = posix_spawnp(&child_pid_, program.c_str(), &act_, &attr_, words.we_wordv, environ);
   if (status2 != 0) {
-    error("process could not be executed. Error: %", strerror(status2));
+    LOGGER_ERROR(this->logger, "process could not be executed. Error: {}", strerror(status2));
     wordfree(&words);
     return false;
   }
@@ -345,7 +347,7 @@ bool Executor::graft_output(const std::string& type, const std::string& escaped_
   }
 
   if (has_changed) {
-    info("Grafting % in %", escaped_value, type);
+    LOGGER_INFO(this->logger, "Grafting {} in {}", escaped_value, type);
     graft_tree(path, InfoTree::make(escaped_value));
   }
 
@@ -362,7 +364,7 @@ void Executor::clean_up_child_process() {
   posix_spawn_file_actions_destroy(&act_);
 
   if (is_updated) {
-    info("'%' output has been updated.", command_line_);
+    LOGGER_INFO(this->logger, "'{}' output has been updated.", command_line_);
   }
 }
 }  // namespace quiddities

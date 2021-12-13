@@ -39,20 +39,21 @@ Claw::Claw(Quiddity* quid,
       on_disconnect_cb_(on_disconnect_cb) {
   // check specification has been parsed
   if (!static_cast<bool>(connection_spec_)) {
-    quid_->warning("Connection spec error: %", connection_spec_.msg());
+    LOGGER_ERROR(quid_->logger, "Connection spec error: {}", connection_spec_.msg());
     return;
   }
   // check that callbacks for follower connection are installed properly
   if (!connection_spec_.get_follower_labels().empty()) {
     if (!on_connect_cb_) {
-      quid_->warning(
+      LOGGER_WARN(
+          quid_->logger,
           "a follower is specified in connection spec, but no connection callback is configured");
       return;
     }
     if (!on_disconnect_cb_) {
-      quid_->warning(
-          "a follower is specified in connection spec, but no disconnection callback is "
-          "configured");
+      LOGGER_WARN(quid_->logger,
+                  "a follower is specified in connection spec, but no disconnection callback is "
+                  "configured");
       return;
     }
   }
@@ -74,15 +75,18 @@ swid_t Claw::get_swid(const std::string& label) const { return connection_spec_.
 sfid_t Claw::connect(sfid_t local_sfid, quiddity::qid_t writer_quid, swid_t writer_sid) const {
   auto writer_qrox = quid_->qcontainer_->get_qrox(writer_quid);
   if (!writer_qrox) {
-    quid_->warning("Quiddity % not found, cannot connect", std::to_string(writer_quid));
+    LOGGER_WARN(
+        quid_->logger, "Quiddity {} not found, cannot connect", std::to_string(writer_quid));
     return Ids::kInvalid;
   }
   auto shmpath = writer_qrox.get()->claw_.get_writer_shmpath(writer_sid);
   if (shmpath.empty()) {
-    quid_->warning("Shmdata writer % not found, cannot connect", std::to_string(writer_sid));
+    LOGGER_WARN(
+        quid_->logger, "Shmdata writer {} not found, cannot connect", std::to_string(writer_sid));
     return Ids::kInvalid;
   }
-  quid_->debug("connecting quiddity % (follower %) with quiddity % (writer %, shmdata path %)",
+  LOGGER_DEBUG(quid_->logger,
+               "connecting quiddity {} (follower {}) with quiddity {} (writer {}, shmdata path {})",
                quid_->get_nickname(),
                get_follower_label(local_sfid),
                writer_qrox.get()->get_nickname(),
@@ -98,8 +102,9 @@ sfid_t Claw::connect_raw(sfid_t sfid, const std::string& shmpath) const {
     id = connection_spec_.allocate_sfid_from_meta(sfid);
   }
   if (!connection_spec_.is_allocated_follower(id)) {
-    quid_->warning("cannot connect_raw, shmdata follower not found (id requested is %)",
-                   std::to_string(sfid));
+    LOGGER_WARN(quid_->logger,
+                "cannot connect_raw, shmdata follower not found (id requested is {})",
+                std::to_string(sfid));
     return Ids::kInvalid;
   }
   // trigger quiddity callback
@@ -107,7 +112,7 @@ sfid_t Claw::connect_raw(sfid_t sfid, const std::string& shmpath) const {
     if (is_meta) {
       connection_spec_.deallocate_sfid_from_meta(id);
     }
-    quid_->warning("connect callback failed");
+    LOGGER_WARN(quid_->logger, "connect callback failed");
     return Ids::kInvalid;
   }
   // notify new follower
@@ -121,7 +126,7 @@ sfid_t Claw::connect_raw(sfid_t sfid, const std::string& shmpath) const {
 
 bool Claw::disconnect(sfid_t sfid) const {
   if (!connection_spec_.is_allocated_follower(sfid)) {
-    quid_->warning("cannot disconnect (sfid % not allocated)", std::to_string(sfid));
+    LOGGER_WARN(quid_->logger, "cannot disconnect (sfid {} not allocated)", std::to_string(sfid));
     return false;
   }
   if (!(on_disconnect_cb_(sfid))) {
@@ -138,12 +143,14 @@ bool Claw::disconnect(sfid_t sfid) const {
 
 std::string Claw::get_writer_shmpath(swid_t id) const {
   if (!connection_spec_.is_allocated_writer(id)) {
-    quid_->warning("cannot provide shmpath for id % (not allocated)", std::to_string(id));
+    LOGGER_WARN(
+        quid_->logger, "cannot provide shmpath for id {} (not allocated)", std::to_string(id));
     return "";
   }
   if (connection_spec_.is_meta_writer(id)) {
-    quid_->warning("cannot provide shmpath for id % (id refers to a meta Shmdata)",
-                   std::to_string(id));
+    LOGGER_WARN(quid_->logger,
+                "cannot provide shmpath for id {} (id refers to a meta Shmdata)",
+                std::to_string(id));
     return "";
   }
   // check if shmpath is overriden
@@ -154,8 +161,7 @@ std::string Claw::get_writer_shmpath(swid_t id) const {
   // otherwise generate to shmpath
   auto switcher = this->quid_->qcontainer_->get_switcher();
   std::string basepath = (fs::path(switcher->get_shm_dir()) / switcher->get_shm_prefix()).string();
-  return basepath + switcher->get_name() + "_" + std::to_string(quid_->id_) + "_" +
-         std::to_string(id);
+  return basepath + switcher->name + "_" + std::to_string(quid_->id_) + "_" + std::to_string(id);
 }
 
 std::string Claw::get_shmpath_from_writer_label(const std::string& label) const {
@@ -234,7 +240,7 @@ bool Claw::swid_can_do_shmtype(swid_t swid, const ::shmdata::Type& shmtype) cons
 bool Claw::can_do_swid(sfid_t local_sfid, quiddity::qid_t writer_quid, swid_t writer_sid) const {
   auto writer_qrox = quid_->qcontainer_->get_qrox(writer_quid);
   if (!writer_qrox) {
-    quid_->warning("Quiddity % not found", std::to_string(writer_quid));
+    LOGGER_WARN(quid_->logger, "Quiddity {} not found", std::to_string(writer_quid));
     return false;
   }
   auto writer_can_do = writer_qrox.get()->claw_.get_writer_can_do(writer_sid);
@@ -277,7 +283,8 @@ std::vector<::shmdata::Type> Claw::get_writer_can_do(swid_t swid) const {
 sfid_t Claw::connect_quid(sfid_t local_sfid, quiddity::qid_t writer_quid) const {
   auto writer_qrox = quid_->qcontainer_->get_qrox(writer_quid);
   if (!writer_qrox) {
-    quid_->warning("Quiddity % not found, connect connect", std::to_string(writer_quid));
+    LOGGER_WARN(
+        quid_->logger, "Quiddity {} not found, connect connect", std::to_string(writer_quid));
     return Ids::kInvalid;
   }
   swid_t swid = Ids::kInvalid;
@@ -289,7 +296,8 @@ sfid_t Claw::connect_quid(sfid_t local_sfid, quiddity::qid_t writer_quid) const 
     }
   }
   if (Ids::kInvalid == swid) {
-    quid_->debug("No compatible shmdata found, cannot connect % (%) with %",
+    LOGGER_DEBUG(quid_->logger,
+                 "No compatible shmdata found, cannot connect {} ({}) with {}",
                  quid_->get_nickname(),
                  quid_->claw_.get_follower_label(local_sfid),
                  writer_qrox.get()->get_nickname());

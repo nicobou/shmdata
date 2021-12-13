@@ -25,6 +25,8 @@
 #include <shmdata/follower.hpp>
 #include <shmdata/reader.hpp>
 #include <string>
+
+#include "../logger/logger.hpp"
 #include "../utils/periodic-task.hpp"
 #include "./stat.hpp"
 #include "./switcher-logger.hpp"
@@ -34,6 +36,7 @@ namespace shmdata {
 
 class Follower {
  public:
+  std::shared_ptr<spdlog::logger> logger;
   enum class Direction { writer, reader };
   Follower(quiddity::Quiddity* quid,
            const std::string& path,
@@ -53,7 +56,7 @@ class Follower {
   Stat shm_stat_{};
   std::mutex bytes_mutex_{};
   // shmdata follower related members:
-  SwitcherLogger logger_;
+  SwitcherLogger shmlogger_;
   std::string data_type_{};
   ::shmdata::Reader::onData od_;
   ::shmdata::Reader::onServerConnected osc_;

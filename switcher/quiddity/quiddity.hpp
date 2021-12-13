@@ -20,14 +20,12 @@
 #ifndef __SWITCHER_QUIDDITY_H__
 #define __SWITCHER_QUIDDITY_H__
 
-#include <string.h>
-
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "../infotree/information-tree.hpp"
-#include "../logger/logged.hpp"
+#include "../logger/logger.hpp"
 #include "../utils/make-consultable.hpp"
 #include "../utils/safe-bool-idiom.hpp"
 #include "./claw/claw.hpp"
@@ -68,7 +66,7 @@ class Bundle;
 /**
  * The Quiddity class.
  */
-class Quiddity : public log::Logged, public SafeBoolIdiom {
+class Quiddity : public SafeBoolIdiom {
   friend class bundle::Bundle;  // access to props_ in order to forward properties
   friend class Startable;
   friend class claw::Claw;
@@ -85,6 +83,7 @@ class Quiddity : public log::Logged, public SafeBoolIdiom {
   friend struct shmdata::Stat;
 
  public:
+  std::shared_ptr<spdlog::logger> logger;
   using ptr = std::shared_ptr<Quiddity>;
   explicit Quiddity(quiddity::Config&&, claw::Config conf = claw::Config());
   Quiddity() = delete;

@@ -21,8 +21,6 @@
 #include <sstream>
 #include <string>
 #include <switcher/infotree/information-tree.hpp>
-#include <switcher/logger/console.hpp>
-#include <switcher/logger/silent.hpp>
 
 #include "./pyinfotree.hpp"
 #include "./pyquiddity.hpp"
@@ -45,19 +43,17 @@ PyObject* pySwitch::Switcher_new(PyTypeObject* type, PyObject* /*args*/, PyObjec
 int pySwitch::Switcher_init(pySwitchObject* self, PyObject* args, PyObject* kwds) {
   PyObject* name = nullptr;
   PyObject* configFile = nullptr;
-  PyObject* showDebug = nullptr;
+  int debug = 0;
 
   static char* kwlist[] = {(char*)"name", (char*)"config", (char*)"debug", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|OO", kwlist, &name, &configFile, &showDebug)) {
-    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|Op", kwlist, &name, &configFile, &debug))
     return -1;
-  }
+
   self->name = name;
-  if (showDebug && PyBool_Check(showDebug) && showDebug==Py_True) {
-    self->switcher = Switcher::make_switcher<log::Console>(PyUnicode_AsUTF8(self->name));
-  } else {
-    self->switcher = Switcher::make_switcher<log::Silent>(PyUnicode_AsUTF8(self->name));
-  }
+  std::string name_str = PyUnicode_AsUTF8(self->name);
+
+  // init switcher
+  self->switcher = Switcher::make_switcher(name_str, debug);
 
   if (!self->switcher) {
     PyErr_SetString(PyExc_RuntimeError, "Switcher instance could not be created");
@@ -119,7 +115,7 @@ PyDoc_STRVAR(pyswitch_name_doc,
              "Get the name provided to the switcher instance at creation.");
 
 PyObject* pySwitch::name(pySwitchObject* self) {
-  return PyUnicode_FromString(self->switcher.get()->get_name().c_str());
+  return PyUnicode_FromString(self->switcher->name.c_str());
 }
 
 PyDoc_STRVAR(pyswitch_version_doc,
