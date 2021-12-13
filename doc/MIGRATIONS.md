@@ -1,5 +1,30 @@
 This file lists changes to apply when migrating from a switcher version to a new one.
 
+From switcher version 3.0.4 to version 3.1.0
+--------------------------------------------
+
+The logger has been refactored, and is now based on spdlog. This affects switcher core and how Quiddities report logs:
+
+* `warning` is now `LOGGER_WARN`
+* `error` is now `LOGGER_ERROR`
+* `debug` is now `LOGGER_DEBUG`
+* `info` is now `LOGGER_INFO`
+* `message` is now `LOGGER_INFO`
+* The log messages are now using the libfmt format: https://fmt.dev/latest/index.html
+* all the `LOGGER_` are global functions that takes the logger handler as argument
+
+For instance, the following line:
+```
+error("error while setting up interprocess communication. Error: %", strerror(errno));
+```
+Is now refactored as:
+```
+LOGGER_ERROR(this->logger,
+             "error while setting up interprocess communication. Error: {}",
+             strerror(errno));
+```
+
+
 From switcher version 2.3.0 to version 3.0.0
 --------------------------------------------
 
