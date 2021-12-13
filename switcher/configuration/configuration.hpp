@@ -21,18 +21,28 @@
 #define __SWITCHER_CONFIGURATION_H__
 
 #include <filesystem>
+#include <sstream>
 #include <vector>
 
 #include "../infotree/information-tree.hpp"
-#include "../logger/logged.hpp"
+#include "../logger/logger.hpp"
 
 namespace fs = std::filesystem;
 
 namespace switcher {
-class Configuration : public log::Logged {
+
+class Configuration {
  public:
-  using on_loaded_t = std::function<void()>;
-  Configuration(log::Base* log, on_loaded_t on_loaded_cb);
+  // hooks
+  using void_func_t = std::function<void()>;
+  const void_func_t post_load;
+  const void_func_t post_file_sink;
+
+  // logger
+  std::shared_ptr<spdlog::logger> logger;
+
+  // ctor
+  Configuration(bool debug, void_func_t _post_load, void_func_t _post_file_sink);
   Configuration() = delete;
 
   bool from_file(const std::string& file_path);
@@ -64,7 +74,7 @@ class Configuration : public log::Logged {
    *
    * @return The content of an extra configuration file as a string
    */
-  std::string get_extra_config(const std::string &name);
+  std::string get_extra_config(const std::string& name);
 
   /**
    * Get a value in the configuration
@@ -78,20 +88,19 @@ class Configuration : public log::Logged {
   /**
    * Set a value in the configuration
    *
-   * @param branch_path The path of the value in the configuration
-   * @param value The value to set for the key
+   * @param key The configuration key
+   * @param value The value to pair with the key
    *
-   * @return A boolean asserting how the update went
+   * @return A boolean asserting how the pairing went
    */
   template <typename T>
-  bool set_value(const std::string& branch_path, T value) {
-    return configuration_->vgraft(branch_path, value);
+  bool set_value(const std::string& key, T value) {
+    return configuration_->vgraft(key, value);
   };
 
  private:
-  on_loaded_t on_loaded_cb_;
   InfoTree::ptr configuration_{};
-  static const int kMaxConfigurationFileSize{100000000};  // 100Mo
+  static const int kMaxConfigurationFileSize;
 };
 }  // namespace switcher
 

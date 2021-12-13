@@ -25,18 +25,18 @@
 #include <memory>
 #include <utility>
 #include <vector>
+
 #include "./nvenc-api.hpp"
 #include "./nvenc-buffers.hpp"
 #include "cuda/cuda-context.hpp"
-#include "switcher/logger/logged.hpp"
 #include "switcher/utils/safe-bool-idiom.hpp"
 
 namespace switcher {
 namespace quiddities {
-class NVencES : public log::Logged, public SafeBoolIdiom {
+class NVencES : public SafeBoolIdiom {
  public:
-  NVencES(uint32_t device_id, log::Base* log);
-  NVencES(log::Base* log) : NVencES(0, log) {}
+  std::shared_ptr<spdlog::logger> logger;
+  NVencES(uint32_t device_id = 0);
   NVencES() = delete;
   ~NVencES();
   NVencES(const NVencES&) = delete;

@@ -4,13 +4,13 @@
 * Francis Lecavalier
 * François Ubald Brien
 * Ludovic Schreiber
-* Michał Seta
 * Aurélien Perronneau (OpSocket)
+* Michał Seta
 * Hantz-Carly F. Vius
+* Alexandre Quessy
 * Valentin Laurent
 * Sebastien Paquet
 * Mike Wozniewski
-* Alexandre Quessy
 * Patrick Dupuis
 * Olivier Gauthier
 * Marie-Eve Dumas
@@ -18,4 +18,5 @@
 * Thomas Piquet
 * Rostom Mesli
 * Patrick Keroulas
+* Pascale Stark
 * Marc Lavallée

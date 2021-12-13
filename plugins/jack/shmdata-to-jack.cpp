@@ -204,7 +204,8 @@ int ShmdataToJack::jack_process(jack_nframes_t nframes, void* arg) {
 
 void ShmdataToJack::on_xrun(uint num_of_missed_samples) {
   if (!is_constructed_) return;
-  info("jack xrun (delay of % samples)", std::to_string(num_of_missed_samples));
+  LOGGER_INFO(
+      this->logger, "jack xrun (delay of {} samples)", std::to_string(num_of_missed_samples));
   jack_nframes_t jack_buffer_size = jack_client_->get_buffer_size();
   for (auto& it : ring_buffers_) {
     // this is safe since on_xrun is called right before jack_process,
@@ -222,9 +223,6 @@ void ShmdataToJack::on_handoff_cb(GstElement* /*object*/,
   GstCaps* caps = gst_pad_get_current_caps(pad);
   if (nullptr == caps) return;
   On_scope_exit { gst_caps_unref(caps); };
-  // gchar *string_caps = gst_caps_to_string(caps);
-  // On_scope_exit {if (nullptr != string_caps) g_free(string_caps);};
-  // debug("on handoff, negotiated caps is %", std::string(string_caps));
   const GValue* val = gst_structure_get_value(gst_caps_get_structure(caps, 0), "channels");
   const int channels = g_value_get_int(val);
   if (channels != context->channels_) {
@@ -234,7 +232,7 @@ void ShmdataToJack::on_handoff_cb(GstElement* /*object*/,
   // getting buffer infomation:
   GstMapInfo map;
   if (!gst_buffer_map(buf, &map, GST_MAP_READ)) {
-    context->warning("gst_buffer_map failed: canceling audio buffer access");
+    LOGGER_WARN(context->logger, "gst_buffer_map failed: canceling audio buffer access");
     return;
   }
   On_scope_exit { gst_buffer_unmap(buf, &map); };
@@ -247,9 +245,10 @@ void ShmdataToJack::on_handoff_cb(GstElement* /*object*/,
       context->drift_observer_.set_current_time_info(current_time, duration));
   --context->debug_buffer_usage_;
   if (0 == context->debug_buffer_usage_) {
-    context->debug("buffer load is %, ratio is %",
-                   std::to_string(context->ring_buffers_[0].get_usage()),
-                   std::to_string(context->drift_observer_.get_ratio()));
+    LOGGER_DEBUG(context->logger,
+                 "buffer load is {}, ratio is {}",
+                 std::to_string(context->ring_buffers_[0].get_usage()),
+                 std::to_string(context->drift_observer_.get_ratio()));
     context->debug_buffer_usage_ = 1000;
   }
   jack_sample_t* tmp_buf = (jack_sample_t*)map.data;
@@ -260,7 +259,7 @@ void ShmdataToJack::on_handoff_cb(GstElement* /*object*/,
       return resample.linear_get_next_sample();
     });
     if (emplaced != new_size)
-      context->warning("overflow of % samples", std::to_string(new_size - emplaced));
+      LOGGER_WARN(context->logger, "overflow of {} samples", std::to_string(new_size - emplaced));
   }
 }
 
@@ -277,7 +276,8 @@ bool ShmdataToJack::make_elements() {
                           " fakesink silent=true signal-handoffs=true sync=false");
   GstElement* jacksink = gst_parse_bin_from_description(description.c_str(), TRUE, &error);
   if (error != nullptr) {
-    warning("error making gst elements in jacksink: %", std::string(error->message));
+    LOGGER_WARN(
+        this->logger, "error making gst elements in jacksink: {}", std::string(error->message));
     g_error_free(error);
     return false;
   }
@@ -294,7 +294,7 @@ bool ShmdataToJack::make_elements() {
 
 bool ShmdataToJack::start() {
   if (shmpath_.empty()) {
-    warning("cannot start, no shmdata to connect with");
+    LOGGER_WARN(this->logger, "cannot start, no shmdata to connect with");
     return false;
   }
 
@@ -311,12 +311,13 @@ bool ShmdataToJack::start() {
         if (!is_constructed_) return;
         auto thread = std::thread([this]() {
           if (!qcontainer_->remove(get_id()))
-            warning("% did not self destruct after jack shutdown", get_nickname());
+            LOGGER_WARN(
+                this->logger, "% did not self destruct after jack shutdown", get_nickname());
         });
         thread.detach();
       });
   if (!*jack_client_.get()) {
-    message("ERROR: JackClient cannot be instantiated (is jack server running?)");
+    LOGGER_ERROR(this->logger, "JackClient cannot be instantiated (is jack server running?)");
     is_valid_ = false;
     return false;
   }
@@ -397,7 +398,7 @@ bool ShmdataToJack::on_shmdata_disconnect() {
 
 bool ShmdataToJack::on_shmdata_connect(const std::string& shmpath) {
   if (shmpath.empty()) {
-    error("shmpath must not be empty");
+    LOGGER_ERROR(this->logger, "shmpath must not be empty");
     return false;
   }
   if (!shmpath_.empty()) {
@@ -441,15 +442,17 @@ void ShmdataToJack::connect_ports() {
   {
     std::lock_guard<std::mutex> lock(output_ports_mutex_);
     if (ports_to_connect_.size() != output_ports_.size()) {
-      warning("Port number mismatch in shmdata to jack autoconnect, should not happen.");
+      LOGGER_WARN(this->logger,
+                  "Port number mismatch in shmdata to jack autoconnect, should not happen.");
       return;
     }
 
     for (unsigned int i = 0; i < (connect_only_first_ ? 1 : output_ports_.size()); ++i) {
       unsigned int dest_port_index = connect_all_to_first_ ? 0 : i;
-      debug("Connecting % to %",
-            std::string(client_name_ + ":" + output_ports_[i].get_name()),
-            ports_to_connect_[dest_port_index]);
+      LOGGER_DEBUG(this->logger,
+                   "Connecting {} to {}",
+                   std::string(client_name_ + ":" + output_ports_[i].get_name()),
+                   ports_to_connect_[dest_port_index]);
       jack_connect(jack_client_->get_raw(),
                    std::string(client_name_ + ":" + output_ports_[i].get_name()).c_str(),
                    ports_to_connect_[dest_port_index].c_str());

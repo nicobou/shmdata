@@ -143,13 +143,14 @@ bool JackToShmdata::start() {
       [this]() {
         auto thread = std::thread([this]() {
           if (!qcontainer_->remove(get_id()))
-            warning("% did not self destruct after jack shutdown", get_nickname());
+            LOGGER_WARN(
+                this->logger, "{} did not self destruct after jack shutdown", this->get_nickname());
         });
         thread.detach();
       });
 
   if (!*jack_client_.get()) {
-    message("ERROR: JackClient cannot be instantiated (is jack server running?)");
+    LOGGER_ERROR(this->logger, "ackClient cannot be instantiated (is jack server running?)");
     is_valid_ = false;
     return false;
   }
@@ -198,7 +199,7 @@ bool JackToShmdata::start() {
   shm_ = std::make_unique<shmdata::Writer>(
       this, shmpath, buf_.size() * sizeof(jack_sample_t), data_type);
   if (!shm_.get()) {
-    warning("JackToShmdata failed to start");
+    LOGGER_WARN(this->logger, "JackToShmdata failed to start");
     shm_.reset(nullptr);
     return false;
   }
@@ -270,7 +271,8 @@ int JackToShmdata::jack_process(jack_nframes_t nframes, void* arg) {
 }
 
 void JackToShmdata::on_xrun(uint num_of_missed_samples) {
-  warning("jack xrun (delay of % samples)", std::to_string(num_of_missed_samples));
+  LOGGER_WARN(
+      this->logger, "jack xrun (delay of {} samples)", std::to_string(num_of_missed_samples));
 }
 
 void JackToShmdata::update_port_to_connect() {
@@ -278,7 +280,7 @@ void JackToShmdata::update_port_to_connect() {
   ports_to_connect_.clear();
 
   if (!auto_connect_) {
-    warning("Auto-connect for jack is disabled.");
+    LOGGER_WARN(this->logger, "Auto-connect for jack is disabled.");
     return;
   }
 
@@ -294,9 +296,9 @@ void JackToShmdata::connect_ports() {
 
   std::lock_guard<std::mutex> lock(port_to_connect_in_jack_process_mutex_);
   if (ports_to_connect_.size() != input_ports_.size()) {
-    warning(
-        "Port number mismatch in jack to shmdata autoconnect, should not "
-        "happen.");
+    LOGGER_WARN(this->logger,
+                "Port number mismatch in jack to shmdata autoconnect, should not "
+                "happen.");
     return;
   }
   for (size_t i = 0; i < ports_to_connect_.size(); ++i) {

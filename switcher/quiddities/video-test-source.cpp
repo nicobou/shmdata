@@ -174,7 +174,7 @@ bool VideoTestSource::start() {
     if (!gst::UGstElem::renew(videotestsrc_, {"is-live", "pattern"}) ||
         !gst::UGstElem::renew(shmdatasink_, {"socket-path", "extra-caps-properties"}) ||
         !gst::UGstElem::renew(capsfilter_)) {
-      warning("error initializing gst element for videotestsrc");
+      LOGGER_WARN(this->logger, "error initializing gst element for videotestsrc");
       gst_pipeline_.reset();
       return false;
     }

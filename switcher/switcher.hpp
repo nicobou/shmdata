@@ -20,62 +20,87 @@
 #ifndef __SWITCHER_SWITCHER_H__
 #define __SWITCHER_SWITCHER_H__
 
-#include <cstdlib>  // for getenv
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <uuid/uuid.h>
+
+#include <cstdlib>
 #include <filesystem>
 #include <regex>
 #include <string>
 #include <vector>
-#include <memory>
 
-#include "./configuration/configuration.hpp"
-#include "./gst/initialized.hpp"
-#include "./infotree/information-tree.hpp"
-#include "./logger/base.hpp"
-#include "./logger/console.hpp"
-#include "./quiddity/container.hpp"
-#include "./quiddity/factory.hpp"
-#include "./quiddity/quid-id-t.hpp"
-#include "./utils/make-consultable.hpp"
-#include "./utils/string-utils.hpp"
-#include "./session/session.hpp"
+#include "configuration/configuration.hpp"
+#include "gst/initialized.hpp"
+#include "infotree/information-tree.hpp"
+#include "logger/logger.hpp"
+#include "quiddity/container.hpp"
+#include "quiddity/factory.hpp"
+#include "quiddity/quid-id-t.hpp"
+#include "session/session.hpp"
+#include "utils/make-consultable.hpp"
+#include "utils/string-utils.hpp"
 
 namespace fs = std::filesystem;
 
 namespace switcher {
 
-namespace quiddity {
-  namespace bundle {
-    class Bundle;
-  }  // namespace bundle
-}  // namespace quiddity
-
+// forward declarations
+namespace quiddity::bundle {
+class Bundle;
+}  // namespace quiddity::bundle
 namespace session {
-  class Session;
-} // namespace session
+class Session;
+}  // namespace session
 
 using namespace session;
 
 class Switcher : public gst::Initialized {
   friend class quiddity::bundle::Bundle;  // access to qcontainer_ and qfactory_
  public:
+  /**
+   * @brief Universally unique identifier
+   * @details A universally unique identifier is a 128-bit label used for information in computer
+   * systems.
+   */
+  const std::string uuid;
+
+  /**
+   * @brief The name of the Switcher instance
+   * @details A name is given in constructor parameters when `making` a Switcher instance
+   */
+  const std::string name;
+
+  /**
+   * @brief A shared pointer to a registered logger
+   * @details When `making` the Switcher instance, a logger is initialized and outputs only to the
+   * console until the instance is configured. Once the instance can check for `logs` settings, the
+   * logger will also outputs to a log file on the system.
+   */
+  std::shared_ptr<spdlog::logger> logger;
+
+  /**
+   * @brief The session of the Swicher instance
+   * @details Every Switcher instance has its own session to manage session files to keep a
+   *          history of the current state of a Switcher instance.
+   */
+  std::shared_ptr<Session> session;
+
+  /**
+   * @brief Shared pointer type
+   */
   using ptr = std::shared_ptr<Switcher>;
 
+  static Switcher::ptr make_switcher(const std::string& name, bool debug = false);
+  Switcher(const Switcher&) = delete;
   ~Switcher() = default;
 
-  template <typename L = log::Console, typename... Largs>
-  static Switcher::ptr make_switcher(const std::string& name, Largs... args) {
-    Switcher::ptr switcher(new Switcher(name, std::make_unique<L>(std::forward<Largs>(args)...)));
-    switcher->me_ = switcher;
-    return switcher;
-  }
-
   Switcher& operator=(const Switcher&) = delete;
-  Switcher(const Switcher&) = delete;
-  std::string get_name() const;
+
   std::string get_switcher_version() const;
-  void set_control_port(const int port);
-  int get_control_port() const;
   std::string get_switcher_caps() const;
+
+  int get_control_port() const;
+  void set_control_port(const int port);
 
   // State
   InfoTree::ptr get_state() const;
@@ -91,9 +116,6 @@ class Switcher : public gst::Initialized {
   // Quiddity container
   Make_delegate(Switcher, quiddity::Container, qcontainer_.get(), quids);
 
-  // get log
-  log::Base* get_logger() { return log_.get(); }
-
   // shmpaths
   const std::string get_shm_dir() const { return conf_.get_value(".shm.directory"); }
   const std::string get_shm_prefix() const { return conf_.get_value(".shm.prefix"); }
@@ -101,37 +123,37 @@ class Switcher : public gst::Initialized {
   // Bundles
   bool load_bundle_from_config(const std::string& bundle_description);
 
-  // Session
-  std::shared_ptr<Session> session;
-
  private:
+  /**
+   * @brief Generate a universally unique identifier (uuid)
+   * @return A string that contains the generated uuid
+   */
+  std::string make_uuid();
+
+  /**
+   * @brief Initialize the logger and/or add sinks to it
+   * @details When `making` a Switcher instance, this initializes the logger
+   *          and adds a `console sink` to it. If it already is initialized,
+   *          it only push a new `console sink` to the `sinks` vector of
+   *          the logger instance.
+   *
+   * @param debug A boolean that indicates if a `debug` log level should be enforced
+   * @return A shared pointer to the logger
+   */
+  std::shared_ptr<spdlog::logger> make_logger(bool debug = false);
+
+  /**
+   * @brief Deletes the default constructor
+   */
   Switcher() = delete;
-  template <typename L>  // unique_ptr<LOG_TYPE>
-  Switcher(const std::string& name, L&& log)
-      : log_(std::move(log)),
-        qfactory_(log_.get()),
-        conf_(log_.get(),
-              [this]() {
-                apply_gst_configuration();
-                register_bundle_from_configuration();
-              }),
-        qcontainer_(quiddity::Container::make_container(this, &qfactory_, log_.get())),
-        name_(std::regex_replace(name, std::regex("[^[:alnum:]| ]"), "-")) {
-    remove_shm_zombies();
 
-    this->session = std::make_shared<Session>(this);
-
-    // loading plugin located in the SWITCHER_PLUGIN_PATH environment variable
-    const auto path = std::getenv("SWITCHER_PLUGIN_PATH");
-    if (path) {
-      for (const auto& it : stringutils::split_string(path, ":")) {
-        scan_dir_for_plugins(it);
-      }
-    }
-
-    // loading plugin from the default plugin directory
-    scan_dir_for_plugins(qfactory_.get_default_plugin_dir());
-  }
+  /**
+   * @brief Constructor
+   *
+   * @param switcher_name The name of the Switcher instance
+   * @param debug A boolean that indicates if a `debug` log level should be enforced
+   */
+  Switcher(const std::string& switcher_name, bool debug = false);
 
   /**
    * Scan a directory for plugins and load them. The scan is recursive.
@@ -139,16 +161,15 @@ class Switcher : public gst::Initialized {
    * @param path the path of the directory
    */
   void scan_dir_for_plugins(const std::string& path);
+
+  void remove_shm_zombies() const;
   void apply_gst_configuration();
   void register_bundle_from_configuration();
-  void remove_shm_zombies() const;
   static void init_gst();
 
-  mutable std::unique_ptr<log::Base> log_;
-  quiddity::Factory qfactory_;
   Configuration conf_;
+  quiddity::Factory qfactory_;
   quiddity::Container::ptr qcontainer_;
-  std::string name_;
   std::vector<quiddity::qid_t> quiddities_at_reset_{};
   std::weak_ptr<Switcher> me_{};
   int control_port_{0};

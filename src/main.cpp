@@ -22,8 +22,6 @@
 #include <vector>
 
 #include "switcher/infotree/json-serializer.hpp"
-#include "switcher/logger/console.hpp"
-#include "switcher/logger/silent.hpp"
 #include "switcher/quiddity/kind-printer.hpp"
 #include "switcher/switcher.hpp"
 #include "switcher/utils/file-utils.hpp"
@@ -134,11 +132,7 @@ int main(int argc, char* argv[]) {
   if (server_name == nullptr) server_name = "default";
   if (port_number == nullptr) port_number = "27182";
 
-  if (debug) {
-    manager = Switcher::make_switcher<log::Console>(server_name);
-  } else {
-    manager = Switcher::make_switcher<log::Silent>(server_name);
-  }
+  manager = Switcher::make_switcher(server_name, bool(debug));
 
   if (display_version) {
     std::cout << manager->get_switcher_version() << '\n';

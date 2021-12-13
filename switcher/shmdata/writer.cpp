@@ -24,13 +24,13 @@ namespace switcher {
 namespace shmdata {
 
 Writer::Writer(quiddity::Quiddity* quid,
-                             const std::string& path,
-                             size_t memsize,
-                             const std::string& data_descr)
+               const std::string& path,
+               size_t memsize,
+               const std::string& data_descr)
     : quid_(quid),
       shmpath_(path),
       data_type_(data_descr),
-      shmlog_(quid->get_log_ptr()),
+      shmlog_(),
       shm_(shmpath_, memsize, data_type_, &shmlog_),
       task_(shm_ ? std::make_unique<PeriodicTask<>>([this]() { this->update_quid_stats(); },
                                                     Stat::kDefaultUpdateInterval)

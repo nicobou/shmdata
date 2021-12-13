@@ -17,15 +17,17 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#include <string.h>
+#include "./switcher.hpp"
+
 #include <filesystem>
 #include <fstream>
-#include "./switcher.hpp"
-#include "./session/session.hpp"
+#include <string>
+
 #include "./gst/utils.hpp"
 #include "./infotree/json-serializer.hpp"
 #include "./quiddity/bundle/bundle.hpp"
 #include "./quiddity/bundle/description-parser.hpp"
+#include "./session/session.hpp"
 #include "./utils/file-utils.hpp"
 #include "./utils/scope-exit.hpp"
 
@@ -33,7 +35,88 @@ namespace switcher {
 
 namespace fs = std::filesystem;
 
-std::string Switcher::get_name() const { return name_; }
+std::string make_logger_pattern(const std::string& name, const std::string& uuid) {
+  std::ostringstream pattern;
+  pattern << "%Y-%m-%d %H:%M:%S.%e|" << name << "|" << uuid << "|%P|%t|%^%l%$: %v|%s:%#";
+  return pattern.str();
+}
+
+Switcher::ptr Switcher::make_switcher(const std::string& name, bool debug) {
+  Switcher::ptr switcher(new Switcher(name, debug));
+  switcher->me_ = switcher;
+  return switcher;
+}
+
+std::string Switcher::make_uuid() {
+  // declare structure to hold uuid in binary representation
+  uuid_t binary_uuid;
+  // generate a random binary uuid
+  uuid_generate_random(binary_uuid);
+  // declare variable to hold uuid in characters representation
+  char uuid_chars[36];
+  // convert uuid binary to character representation
+  uuid_unparse_lower(binary_uuid, uuid_chars);
+  // cast char array to string
+  return std::string(uuid_chars);
+}
+
+std::shared_ptr<spdlog::logger> Switcher::make_logger(bool debug) {
+  // init sinks
+  auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+
+  // get logger from registry
+  auto logger = spdlog::get("switcher");
+  if (!logger) {
+    // sinks init list to construct logger
+    spdlog::sinks_init_list sinks{console_sink};
+    // init logger from sinks
+    logger = std::make_shared<spdlog::logger>("switcher", sinks);
+    // compute pattern string
+    logger->set_pattern(make_logger_pattern(this->name, this->uuid));
+    // register logger so that it can be accessed globally
+    spdlog::register_logger(logger);
+  } else {
+    // append sinks for the current switcher instance being created
+    auto sinks = logger->sinks();
+    sinks.push_back(console_sink);
+  }
+
+  // set log level for current logger
+  if (debug) logger->set_level(spdlog::level::debug);
+
+  // return shared pointer to the logger
+  return logger;
+}
+
+Switcher::Switcher(const std::string& switcher_name, bool debug)
+    : uuid(this->make_uuid()),
+      name(std::regex_replace(switcher_name, std::regex("[^[:alnum:]| ]"), "-")),
+      logger(this->make_logger(debug)),
+      conf_(
+          debug,
+          // post load hook
+          [this]() {
+            this->apply_gst_configuration();
+            this->register_bundle_from_configuration();
+          },
+          // post file sink hook
+          [this]() { logger->set_pattern(make_logger_pattern(this->name, this->uuid)); }),
+      qfactory_(),
+      qcontainer_(quiddity::Container::make_container(this, &qfactory_)) {
+  // remove shmdata zombies
+  this->remove_shm_zombies();
+
+  // start session
+  this->session = std::make_shared<Session>(this);
+
+  // loading plugin located in the SWITCHER_PLUGIN_PATH environment variable
+  const auto path = std::getenv("SWITCHER_PLUGIN_PATH");
+  if (path)
+    for (const auto& it : stringutils::split_string(path, ":")) scan_dir_for_plugins(it);
+
+  // loading plugin from the default plugin directory
+  scan_dir_for_plugins(this->qfactory_.get_default_plugin_dir());
+}
 
 std::string Switcher::get_switcher_version() const { return SWITCHER_VERSION_STRING; }
 void Switcher::set_control_port(const int port) { control_port_ = port; }
@@ -41,7 +124,7 @@ void Switcher::set_control_port(const int port) { control_port_ = port; }
 int Switcher::get_control_port() const { return control_port_; }
 
 std::string Switcher::get_switcher_caps() const {
-  auto caps_str = "switcher-name=(string)" + get_name();
+  auto caps_str = "switcher-name=(string)" + this->name;
   if (get_control_port() > 0) {
     caps_str += ",control-port=(int)" + std::to_string(get_control_port());
   }
@@ -79,8 +162,8 @@ bool Switcher::load_state(InfoTree* state) {
       std::string quid_kind = quiddities->branch_get_value(it);
       auto created = qcontainer_->create(quid_kind, it, nullptr);
       if (!created) {
-        log_->message("ERROR:error creating quiddity % (kind %): ", it, quid_kind, created.msg());
-        log_->warning("error creating quiddity % (kind %): ", it, quid_kind, created.msg());
+        LOGGER_WARN(
+            this->logger, "error creating quiddity {} (kind {}): ", it, quid_kind, created.msg());
       }
     }
 
@@ -101,8 +184,7 @@ bool Switcher::load_state(InfoTree* state) {
       std::string nickname = nicknames->branch_get_value(it);
       auto nicknamed_quid = qcontainer_->get_quiddity(qcontainer_->get_id(it));
       if (!nicknamed_quid || !nicknamed_quid->set_nickname(nickname)) {
-        log_->message("ERROR:error applying nickname % for %", nickname, it);
-        log_->warning("error applying nickname % for %", nickname, it);
+        LOGGER_WARN(this->logger, "error applying nickname {} for {}", nickname, it);
       }
     }
   }
@@ -120,14 +202,11 @@ bool Switcher::load_state(InfoTree* state) {
           auto quid = qcontainer_->get_quiddity(qcontainer_->get_id(name));
           if (!quid || !quid->prop<MPtr(&quiddity::property::PBag::set_str_str)>(
                            prop, Any::to_string(properties->branch_get_value(name + "." + prop)))) {
-            log_->message("ERROR:failed to apply value, quiddity is %, property is %, value is %",
-                          name,
-                          prop,
-                          Any::to_string(properties->branch_get_value(name + "." + prop)));
-            log_->warning("failed to apply value, quiddity is %, property is %, value is %",
-                          name,
-                          prop,
-                          Any::to_string(properties->branch_get_value(name + "." + prop)));
+            LOGGER_WARN(this->logger,
+                        "failed to apply value, quiddity is {}, property is {}, value is {}",
+                        name,
+                        prop,
+                        Any::to_string(properties->branch_get_value(name + "." + prop)));
           }
         }
       }
@@ -152,13 +231,11 @@ bool Switcher::load_state(InfoTree* state) {
   for (auto& name : quid_to_start) {
     auto quid = qcontainer_->get_quiddity(qcontainer_->get_id(name));
     if (!quid) {
-      log_->message("ERROR:failed to get quiddity %", name);
-      log_->warning("failed to get quiddity %", name);
+      LOGGER_WARN(this->logger, "failed to get quiddity {}", name);
       continue;
     }
     if (!quid || !quid->prop<MPtr(&quiddity::property::PBag::set_str_str)>("started", "true")) {
-      log_->message("ERROR:failed to start quiddity %", name);
-      log_->warning("failed to start quiddity %", name);
+      LOGGER_WARN(this->logger, "failed to start quiddity {}", name);
     }
   }
 
@@ -283,16 +360,18 @@ void Switcher::apply_gst_configuration() {
   for (const auto& plugin : configuration->get_child_keys("gstreamer.primary_priority")) {
     int priority = configuration->branch_get_value("gstreamer.primary_priority." + plugin);
     if (!gst::Initialized::set_plugin_as_primary(plugin, priority)) {
-      log_->warning("Unable to find Gstreamer plugin '%'. Check if plugin is installed.", plugin);
+      LOGGER_WARN(this->logger,
+                  "Unable to find Gstreamer plugin '{}'. Check if plugin is installed.",
+                  plugin);
     }
   }
 }
 
 bool Switcher::load_bundle_from_config(const std::string& bundle_description) {
-  log_->debug("Receiving new bundles configuration: %", bundle_description);
+  LOGGER_DEBUG(this->logger, "Receiving new bundles configuration: {}", bundle_description);
   auto bundles = infotree::json::deserialize(bundle_description);
   if (!bundles) {
-    log_->error("Invalid bundle configuration.");
+    LOGGER_ERROR(this->logger, "Invalid bundle configuration.");
     return false;
   }
 
@@ -301,7 +380,7 @@ bool Switcher::load_bundle_from_config(const std::string& bundle_description) {
   for (const auto& bundle_name : bundles->get_child_keys("bundle")) {
     if (new_configuration.get()->branch_get_copy(".bundle." + bundle_name) !=
         InfoTree::make_null()) {
-      log_->warning("Bundle '%' already exists. Skipping.", bundle_name);
+      LOGGER_WARN(this->logger, "Bundle '{}' already exists. Skipping.", bundle_name);
       continue;
     }
     bundles_added = true;
@@ -312,7 +391,7 @@ bool Switcher::load_bundle_from_config(const std::string& bundle_description) {
   if (bundles_added) {
     conf_.set(new_configuration);
     register_bundle_from_configuration();
-    log_->debug("New bundles added");
+    LOGGER_DEBUG(this->logger, "New bundles added");
   }
   return true;
 }
@@ -323,7 +402,8 @@ void Switcher::register_bundle_from_configuration() {
   auto configuration = conf_.get();
   for (auto& it : configuration->get_child_keys("bundle")) {
     if (std::string::npos != it.find('_')) {
-      log_->warning("underscores are not allowed for quiddity kinds (bundle name %)", it);
+      LOGGER_WARN(
+          this->logger, "underscores are not allowed for quiddity kinds (bundle name {})", it);
       continue;
     }
     std::string long_name = configuration->branch_get_value("bundle." + it + ".doc.long_name");
@@ -334,20 +414,24 @@ void Switcher::register_bundle_from_configuration() {
     if (description.empty()) is_missing = "description";
     if (pipeline.empty()) is_missing = "pipeline";
     if (!is_missing.empty()) {
-      log_->warning("% : % field is missing, cannot create new quiddity kind", it, is_missing);
+      LOGGER_WARN(this->logger,
+                  "{} : {} field is missing, cannot create new quiddity kind",
+                  it,
+                  is_missing);
       continue;
     }
     // check if the pipeline description is correct
     auto spec = quiddity::bundle::DescriptionParser(pipeline, quid_kinds);
     if (!spec) {
-      log_->warning("% : error parsing the pipeline (%)", it, spec.get_parsing_error());
+      LOGGER_WARN(
+          this->logger, "{} : error parsing the pipeline ({})", it, spec.get_parsing_error());
       continue;
     }
     // ok, bundle can be added
     // Bundle names must be unique
     if (!quiddity::DocumentationRegistry::get()->register_doc(
             it, quiddity::Doc(long_name, it, description, "n/a", "n/a"))) {
-      log_->warning("bundle '%' already exists. Skipping.", it);
+      LOGGER_WARN(this->logger, "bundle '{}' already exists. Skipping.", it);
       continue;
     }
 
@@ -360,10 +444,10 @@ void Switcher::register_bundle_from_configuration() {
 
 void Switcher::remove_shm_zombies() const {
   auto files = fileutils::get_shmfiles_from_directory(this->get_shm_dir(),
-                                                      this->get_shm_prefix() + this->get_name());
+                                                      this->get_shm_prefix() + this->name);
   for (auto& it : files) {
     auto res = fileutils::remove(it);
-    if (!res) log_->warning("fail removing shmdata % (%)", it, res.msg());
+    if (!res) LOGGER_WARN(this->logger, "fail removing shmdata {} ({})", it, res.msg());
   }
 }
 
@@ -375,7 +459,9 @@ void Switcher::scan_dir_for_plugins(const std::string& path) {
       if (dir_entry.is_directory()) qfactory_.scan_dir(dir_entry.path());
     }
   } else {
-    log_->warning("Switcher cannot scan % when loading Quiddity plugins (not a directory)", path);
+    LOGGER_WARN(this->logger,
+                "Switcher cannot scan {} when loading Quiddity plugins (not a directory)",
+                path);
   }
 }
 

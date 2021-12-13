@@ -26,7 +26,7 @@
 
 #include "../infotree/information-tree.hpp"
 #include "../infotree/json-serializer.hpp"
-#include "../logger/logged.hpp"
+#include "../logger/logger.hpp"
 #include "../utils/ids.hpp"
 #include "./config.hpp"
 #include "./documentation-registry.hpp"
@@ -40,16 +40,22 @@ class Switcher;
 namespace quiddity {
 class Bundle;
 
-class Container : public log::Logged {
+class Container {
   friend class Bundle;
-
  public:
-  using ptr = std::shared_ptr<Container>;
-  using OnCreateRemoveCb = std::function<void(qid_t)>;
+  /**
+   * @brief A shared pointer to a registered logger
+   */
+  std::shared_ptr<spdlog::logger> logger;
 
-  static Container::ptr make_container(Switcher* switcher,
-                                       quiddity::Factory* factory,
-                                       log::Base* log);
+  /**
+   * @brief Shared pointer type
+   */
+  using ptr = std::shared_ptr<Container>;
+
+  using void_func_t = std::function<void(qid_t)>;
+
+  static Container::ptr make_container(Switcher* switcher, quiddity::Factory* factory);
   Container() = delete;
   virtual ~Container() = default;
   Container(const Container&) = delete;
@@ -83,8 +89,8 @@ class Container : public log::Logged {
   BoolLog quiet_remove(qid_t id);
   std::shared_ptr<Quiddity> get_quiddity(qid_t id);
   Qrox get_qrox(qid_t id);
-  unsigned int register_creation_cb(OnCreateRemoveCb cb);
-  unsigned int register_removal_cb(OnCreateRemoveCb cb);
+  unsigned int register_creation_cb(void_func_t cb);
+  unsigned int register_removal_cb(void_func_t cb);
   void unregister_creation_cb(unsigned int id);
   void unregister_removal_cb(unsigned int id);
   void reset_create_remove_cb();
@@ -146,7 +152,7 @@ class Container : public log::Logged {
   Switcher* get_switcher() { return switcher_; };
 
  private:
-  Container(Switcher* switcher, quiddity::Factory* factory, log::Base* log);
+  Container(Switcher* switcher, quiddity::Factory* factory);
 
   // forwarding accessor and return constructor on error
   std::pair<bool, Quiddity*> find_quiddity(qid_t id) const {
@@ -159,13 +165,13 @@ class Container : public log::Logged {
   // construct result to pass when element has not been found:
   template <typename ReturnType>
   ReturnType construct_error_return(qid_t id) const {
-    warning("quiddity % not found", std::to_string(id));
+    LOGGER_WARN(this->logger, "quiddity % not found", std::to_string(id));
     return ReturnType();
   }
 
   quiddity::Factory* factory_;
-  std::map<unsigned int, OnCreateRemoveCb> on_created_cbs_{};
-  std::map<unsigned int, OnCreateRemoveCb> on_removed_cbs_{};
+  std::map<unsigned int, void_func_t> on_created_cbs_{};
+  std::map<unsigned int, void_func_t> on_removed_cbs_{};
   CounterMap counters_{};
   std::weak_ptr<Container> me_{};
   Switcher* switcher_;

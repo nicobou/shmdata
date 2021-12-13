@@ -24,9 +24,9 @@
 namespace switcher {
 namespace quiddities {
 
-CudaContext::CudaContext(uint32_t device_id, log::Base* log) : log::Logged(log) {
+CudaContext::CudaContext(uint32_t device_id) : logger(spdlog::get("switcher")){
   On_scope_exit {
-    if (!safe_bool_idiom()) warning("cuda context creation failed");
+    if (!safe_bool_idiom()) LOGGER_WARN(this->logger, "cuda context creation failed");
   };
   if (!CuRes(cuInit(0))) return;
   int dev_count = 0;
@@ -45,7 +45,7 @@ CudaContext::CudaContext(uint32_t device_id, log::Base* log) : log::Logged(log) 
 
 CudaContext::~CudaContext() {
   if (safe_bool_idiom() && !CuRes(cuCtxDestroy(cuda_ctx_)))
-    warning("BUG! (destroying cuda context)");
+    LOGGER_WARN(this->logger, "BUG! (destroying cuda context)");
 }
 
 std::vector<std::pair<int, std::string>> CudaContext::get_devices() {
@@ -60,7 +60,7 @@ std::vector<std::pair<int, std::string>> CudaContext::get_devices() {
     if (CuRes(cuDeviceGet(&cdev, i)) && CuRes(cuDeviceGetName(name, sizeof(name), cdev)) &&
         CuRes(cuDeviceComputeCapability(&maj, &min, cdev))) {
       if (((maj << 4) + min) >= 0x30) res.push_back(std::make_pair(i, std::string(name)));
-      // debug("GPU #% supports NVENC: % (%) (Compute SM %.%)",
+      // LOGGER_DEBUG(this->logger, "GPU #% supports NVENC: % (%) (Compute SM %.%)",
       //       std::to_string(i),
       //       std::string((((maj << 4) + min) >= 0x30) ? "yes" : "no"),
       //       name,

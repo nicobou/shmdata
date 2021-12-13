@@ -25,14 +25,15 @@
 
 namespace switcher {
 namespace quiddity {
-Container::ptr Container::make_container(Switcher* switcher, Factory* factory, log::Base* log) {
-  Container::ptr container(new Container(switcher, factory, log));
+Container::ptr Container::make_container(Switcher* switcher, Factory* factory) {
+  Container::ptr container(new Container(switcher, factory));
   container->me_ = container;
+  container->logger = spdlog::get("switcher");
   return container;
 }
 
-Container::Container(Switcher* switcher, Factory* factory, log::Base* log)
-    : log::Logged(log), factory_(factory), switcher_(switcher) {}
+Container::Container(Switcher* switcher, Factory* factory)
+    : factory_(factory), switcher_(switcher) {}
 
 Qrox Container::create(const std::string& quiddity_kind,
                        const std::string& nickname,
@@ -92,14 +93,10 @@ Qrox Container::quiet_create(const std::string& quiddity_kind,
   }
 
   // creation
-  Quiddity::ptr quiddity =
-      factory_->create(quiddity_kind,
-                       Config(cur_id,
-                              nick,
-                              quiddity_kind,
-                              InfoTree::merge(tree.get(), override_config).get(),
-                              this,
-                              get_log_ptr()));
+  Quiddity::ptr quiddity = factory_->create(
+      quiddity_kind,
+      Config(
+          cur_id, nick, quiddity_kind, InfoTree::merge(tree.get(), override_config).get(), this));
   if (!quiddity) {
     ids_.release_last_allocated_id();
     return Qrox(false, "Quiddity creation error");
@@ -184,14 +181,14 @@ InfoTree::ptr Container::get_quiddity_description(qid_t id) {
 Quiddity::ptr Container::get_quiddity(qid_t id) {
   auto it = quiddities_.find(id);
   if (quiddities_.end() == it) {
-    debug("quiddity % not found, cannot provide ptr", std::to_string(id));
+    LOGGER_DEBUG(this->logger, "quiddity {} not found, cannot provide ptr", std::to_string(id));
     Quiddity::ptr empty_quiddity_ptr;
     return empty_quiddity_ptr;
   }
   return it->second;
 }
 
-unsigned int Container::register_creation_cb(OnCreateRemoveCb cb) {
+unsigned int Container::register_creation_cb(void_func_t cb) {
   static unsigned int id = 0;
   id %= std::numeric_limits<unsigned int>::max();
   me_.lock();
@@ -199,7 +196,7 @@ unsigned int Container::register_creation_cb(OnCreateRemoveCb cb) {
   return id;
 }
 
-unsigned int Container::register_removal_cb(OnCreateRemoveCb cb) {
+unsigned int Container::register_removal_cb(void_func_t cb) {
   static unsigned int id = 0;
   id %= std::numeric_limits<unsigned int>::max();
   me_.lock();

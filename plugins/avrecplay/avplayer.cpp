@@ -56,12 +56,12 @@ AVPlayer::AVPlayer(quiddity::Config&& conf)
       "playpath",
       [this](const std::string& val) {
         if (val.empty()) {
-          warning("Empty folder provided for shmdata recorder.");
+          LOGGER_WARN(this->logger, "Empty folder provided for shmdata recorder.");
           return false;
         }
 
         if (!fs::is_directory(fs::status(val))) {
-          warning("The specified folder does not exist (avplayer).");
+          LOGGER_WARN(this->logger, "The specified folder does not exist (avplayer).");
           return false;
         }
 
@@ -122,7 +122,7 @@ bool AVPlayer::start() {
   };
 
   if (error) {
-    warning("Could not create shmdata player: %", std::string(error->message));
+    LOGGER_WARN(this->logger, "Could not create shmdata player: {}", std::string(error->message));
     g_error_free(error);
     return false;
   }

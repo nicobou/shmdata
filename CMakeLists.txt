@@ -8,8 +8,8 @@ project(switcher)
 # Project Variables
 set(SWITCHER_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(SWITCHER_VERSION_MAJOR 3)
-set(SWITCHER_VERSION_MINOR 0)
-set(SWITCHER_VERSION_PATCH 4)
+set(SWITCHER_VERSION_MINOR 1)
+set(SWITCHER_VERSION_PATCH 0)
 set(SWITCHER_VERSION_STRING ${SWITCHER_VERSION_MAJOR}.${SWITCHER_VERSION_MINOR}.${SWITCHER_VERSION_PATCH})
 set(SWITCHER_API_VERSION ${SWITCHER_VERSION_MAJOR}.${SWITCHER_VERSION_MINOR})
 set(SWITCHER_LIBRARY switcher-${SWITCHER_API_VERSION})
@@ -35,7 +35,7 @@ set(CPACK_PACKAGE_NAME ${PACKAGE_NAME})
 set(CPACK_PACKAGE_VENDOR "Metalab - Société des arts technologiques")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${PACKAGE_DESCRIPTION}")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
-SET(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.md")
 set(CPACK_PACKAGE_VERSION_MAJOR "${SWITCHER_VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${SWITCHER_VERSION_MINOR}")
@@ -77,7 +77,7 @@ set(CPACK_COMPONENT_HEADERS_DEPENDS libraries)
 # CPack - Source
 set(CPACK_SOURCE_IGNORE_FILES "/\.hooks/;${CMAKE_SOURCE_DIR}/build;${CMAKE_SOURCE_DIR}/html/;${CMAKE_SOURCE_DIR}/scripts/;.git/;${CPACK_SOURCE_IGNORE_FILES}")
 
-# Add local cmake directory to cmaee module path in case we need it
+# Add local cmake directory to cmake module path in case we need it
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 #
@@ -108,6 +108,10 @@ pkg_check_modules(GST REQUIRED gstreamer-1.0 gstreamer-base-1.0 gstreamer-contro
 pkg_check_modules(GLIB REQUIRED glib-2.0)
 pkg_check_modules(JSONGLIB REQUIRED json-glib-1.0)
 
+# LOGGER
+find_package(spdlog REQUIRED)
+add_compile_definitions(SPDLOG_FMT_EXTERNAL)
+
 # Global stuff
 
 set(COMMON_LIBRARIES
@@ -129,6 +133,8 @@ link_libraries(
     dl
     pthread
     stdc++fs
+    uuid
+    spdlog::spdlog
 )
 
 set(COMMON_INCLUDE_DIRS

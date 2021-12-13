@@ -88,7 +88,7 @@ NVencPlugin::NVencPlugin(quiddity::Config&& conf)
           bitrate_,
           1000000,
           20000000)),
-      es_(std::make_unique<ThreadedWrapper<NVencES>>(get_log_ptr())) {
+      es_(std::make_unique<ThreadedWrapper<NVencES>>(0)) {
   auto devices = CudaContext::get_devices();
   std::vector<std::string> names;
   for (auto& it : devices) {
@@ -96,7 +96,7 @@ NVencPlugin::NVencPlugin(quiddity::Config&& conf)
     names.push_back(std::string("GPU #") + std::to_string(it.first) + " " + it.second);
   }
   if (names.empty()) {
-    message("ERROR:Could not find any NVENC-enabled GPU.");
+    LOGGER_INFO(this->logger, "ERROR:Could not find any NVENC-enabled GPU.");
     is_valid_ = false;
     return;
   }
@@ -125,17 +125,16 @@ NVencPlugin::NVencPlugin(quiddity::Config&& conf)
 
 void NVencPlugin::update_device() {
   es_.reset();
-  es_ = std::make_unique<ThreadedWrapper<NVencES>>(devices_nv_ids_[devices_.get_current_index()],
-                                                   get_log_ptr());
+  es_ = std::make_unique<ThreadedWrapper<NVencES>>(devices_nv_ids_[devices_.get_current_index()]);
   if (!es_.get()->invoke<bool>([](NVencES* ctx) { return ctx->safe_bool_idiom(); })) {
-    message(
-        "ERROR: nvenc failed to create encoding session "
-        "(the total number of simultaneous sessions "
-        "may be reached)");
-    warning(
-        "nvenc failed to create encoding session "
-        "(the total number of simultaneous sessions "
-        "may be reached)");
+    LOGGER_INFO(this->logger,
+                "ERROR: nvenc failed to create encoding session "
+                "(the total number of simultaneous sessions "
+                "may be reached)");
+    LOGGER_WARN(this->logger,
+                "nvenc failed to create encoding session "
+                "(the total number of simultaneous sessions "
+                "may be reached)");
     es_.reset();  // this makes init method failing
     return;
   }
@@ -295,7 +294,7 @@ void NVencPlugin::update_input_formats() {
     else if ("AYUV" == it.first)
       format = "AYUV";
     else
-      warning("format not supported by NVencPlugin :%", it.first);
+      LOGGER_WARN(this->logger, "format not supported by NVencPlugin : {}", it.first);
 
     if (!format.empty()) it.first = std::string("video/x-raw, format=(string)") + format;
   }
@@ -304,8 +303,7 @@ void NVencPlugin::update_input_formats() {
 bool NVencPlugin::on_shmdata_disconnect() {
   shm_.reset(nullptr);
   es_.reset();
-  es_ = std::make_unique<ThreadedWrapper<NVencES>>(devices_nv_ids_[devices_.get_current_index()],
-                                                   get_log_ptr());
+  es_ = std::make_unique<ThreadedWrapper<NVencES>>(devices_nv_ids_[devices_.get_current_index()]);
   shmw_.reset(nullptr);
 
   pmanage<MPtr(&property::PBag::enable)>(devices_id_);
@@ -345,7 +343,7 @@ bool NVencPlugin::on_shmdata_connect(const std::string& shmpath) {
 void NVencPlugin::on_shmreader_data(void* data, size_t size) {
   if (!es_.get()->invoke<bool>(
           [&](NVencES* ctx) { return ctx->copy_to_next_input_buffer(data, size); })) {
-    warning("error copying data to nvenc");
+    LOGGER_WARN(this->logger, "error copying data to nvenc");
     return;
   }
   es_.get()->invoke_async([](NVencES* ctx) { ctx->encode_current_input(); });
@@ -364,22 +362,22 @@ void NVencPlugin::on_shmreader_server_connected(const std::string& data_descr) {
   };
   GstStructure* s = gst_caps_get_structure(caps, 0);
   if (nullptr == s) {
-    warning("cannot get structure from caps (nvenc)");
+    LOGGER_WARN(this->logger, "cannot get structure from caps (nvenc)");
     return;
   }
   gint width = 0, height = 0;
   if (!gst_structure_get_int(s, "width", &width) || !gst_structure_get_int(s, "height", &height)) {
-    warning("cannot get width/height from shmdata description (nvenc)");
+    LOGGER_WARN(this->logger, "cannot get width/height from shmdata description (nvenc)");
     return;
   }
   gint frameNum = 0, frameDen = 0;
   if (!gst_structure_get_fraction(s, "framerate", &frameNum, &frameDen)) {
-    warning("cannot get framerate from shmdata description (nvenc)");
+    LOGGER_WARN(this->logger, "cannot get framerate from shmdata description (nvenc)");
     return;
   }
   const char* format = gst_structure_get_string(s, "format");
   if (nullptr == format) {
-    warning("cannot get video format from shmdata description (nvenc)");
+    LOGGER_WARN(this->logger, "cannot get video format from shmdata description (nvenc)");
     return;
   }
   auto format_str = std::string(format);
@@ -397,7 +395,7 @@ void NVencPlugin::on_shmreader_server_connected(const std::string& data_descr) {
   else if (format_str == "AYUV")
     buf_format = NV_ENC_BUFFER_FORMAT_AYUV;
   else {
-    warning("video format % not supported by switcher nvenc plugin", format_str);
+    LOGGER_WARN(this->logger, "video format {} not supported by switcher nvenc plugin", format_str);
     return;
   }
 

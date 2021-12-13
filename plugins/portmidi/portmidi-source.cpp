@@ -48,7 +48,7 @@ const std::string PortMidiSource::kConnectionSpec(R"(
 PortMidiSource::PortMidiSource(quiddity::Config&& conf)
     : Quiddity(std::forward<quiddity::Config>(conf), {kConnectionSpec}), Startable(this) {
   if (input_devices_enum_.empty()) {
-    message("ERROR:No MIDI capture device detected.");
+    LOGGER_INFO(this->logger, "No MIDI capture device detected.");
     is_valid_ = false;
     return;
   }
@@ -148,7 +148,7 @@ bool PortMidiSource::start() {
   shm_ = std::make_unique<shmdata::Writer>(
       this, claw_.get_shmpath_from_writer_label("midi"), sizeof(PmEvent), "audio/midi");
   if (!shm_.get()) {
-    message("ERROR:Midi failed to start");
+    LOGGER_INFO(this->logger, "Midi failed to start");
     shm_.reset(nullptr);
     return false;
   }
@@ -219,7 +219,7 @@ bool PortMidiSource::next_midi_event_to_property_method(const std::string& long_
 
 bool PortMidiSource::remove_property_method(const std::string& long_name) {
   if (midi_property_contexts_.find(long_name) == midi_property_contexts_.end()) {
-    debug("property % not found for removing", std::string(long_name));
+    LOGGER_DEBUG(this->logger, "property {} not found for removing", std::string(long_name));
     return false;
   }
 
@@ -245,12 +245,11 @@ bool PortMidiSource::make_property(const std::string& property_long_name,
                                    int last_status,
                                    int last_data1) {
   if (midi_channels_.find(std::make_pair(last_status, last_data1)) != midi_channels_.end()) {
-    message(
-        "ERROR:Midi Channels % % is already a property (is currently named "
-        "%)",
-        std::to_string(last_status),
-        std::to_string(last_data1),
-        midi_channels_.find(std::make_pair(last_status, last_data1))->second);
+    LOGGER_INFO(this->logger,
+                "Midi Channels {} {} is already a property (is currently named {})",
+                std::to_string(last_status),
+                std::to_string(last_data1),
+                midi_channels_.find(std::make_pair(last_status, last_data1))->second);
     return false;
   }
   midi_channels_[std::make_pair(last_status, last_data1)] = property_long_name;
