@@ -26,11 +26,11 @@ namespace shmdata {
 class UnixSocketClient : public SafeBoolIdiom {
  public:
   UnixSocketClient(const std::string& path, AbstractLogger* log);
-  ~UnixSocketClient();
+  ~UnixSocketClient() override;
   UnixSocketClient() = delete;
   UnixSocketClient(const UnixSocketClient&) = delete;
   UnixSocketClient& operator=(const UnixSocketClient&) = delete;
-  UnixSocketClient& operator=(UnixSocketClient&&) = default;
+  UnixSocketClient& operator=(UnixSocketClient&&) = delete;
 
   bool start(UnixSocketProtocol::ClientSide* proto);
 

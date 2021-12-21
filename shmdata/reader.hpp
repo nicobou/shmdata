@@ -32,11 +32,11 @@ class Reader : public SafeBoolIdiom {
          onServerConnected osc,
          onServerDisconnected osd,
          AbstractLogger* log);
-  ~Reader() = default;
+  ~Reader() override = default;
   Reader() = delete;
   Reader(const Reader&) = delete;
   Reader& operator=(const Reader&) = delete;
-  Reader& operator=(Reader&&) = default;
+  Reader& operator=(Reader&&) = delete;
 
  private:
   AbstractLogger* log_;
