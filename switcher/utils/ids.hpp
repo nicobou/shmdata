@@ -21,6 +21,7 @@
 #define __SWITCHER_UTILS_IDS_H__
 
 #include <vector>
+#include <cstddef> // for size_t
 
 namespace switcher {
 

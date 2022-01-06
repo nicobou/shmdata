@@ -376,7 +376,7 @@ PyObject* pyQuiddity::invoke_async(pyQuiddityObject* self, PyObject* args, PyObj
           arglist = Py_BuildValue("(OO)", res_object, user_data);
         else
           arglist = Py_BuildValue("(O)", res_object);
-        PyObject* pyobjresult = PyEval_CallObject(cb, arglist);
+        PyObject* pyobjresult = PyObject_CallObject(cb, arglist);
         PyObject* pyerr = PyErr_Occurred();
         if (pyerr != nullptr) {
           PyErr_Print();
@@ -584,7 +584,7 @@ bool pyQuiddity::subscribe_to_signal(pyQuiddityObject* self,
         else
           arglist =
               Py_BuildValue("(O)", pyInfoTree::make_pyobject_from_c_ptr(tmp_tree.get(), false));
-        PyObject* pyobjresult = PyEval_CallObject(cb, arglist);
+        PyObject* pyobjresult = PyObject_CallObject(cb, arglist);
         PyObject* pyerr = PyErr_Occurred();
         if (pyerr != nullptr) PyErr_Print();
         Py_DECREF(arglist);
@@ -632,7 +632,7 @@ bool pyQuiddity::subscribe_to_property(pyQuiddityObject* self,
           arglist = Py_BuildValue(
               "(O)",
               pyInfoTree::any_to_pyobject(quid->prop<MPtr(&property::PBag::get_any)>(prop_id)));
-        PyObject* pyobjresult = PyEval_CallObject(cb, arglist);
+        PyObject* pyobjresult = PyObject_CallObject(cb, arglist);
         PyObject* pyerr = PyErr_Occurred();
         if (pyerr != nullptr) PyErr_Print();
         Py_DECREF(arglist);
