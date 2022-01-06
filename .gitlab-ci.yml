@@ -27,6 +27,7 @@ Docker -- Dependency Image:
   except:
     - develop
     - master
+    - ubuntu22.04
 
 Build -- Ubuntu 20.04:
   stage: build
@@ -37,6 +38,7 @@ Build -- Ubuntu 20.04:
   except:
     - develop
     - master
+    - ubuntu22.04
   artifacts:
     paths:
       - build
@@ -45,6 +47,30 @@ Test -- Ubuntu 20.04:
   stage: test
   image: $CONTAINER_TAG_PREFIX-ubuntu2004
   script:
+    - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y xvfb
+    - make install -sC build && ldconfig
+    - pulseaudio --start
+    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make test -sC build
+  except:
+    - ubuntu22.04
+    - develop
+    - master
+
+Test -- Ubuntu 22.04:
+  stage: test
+  image: ubuntu:22.04
+  script:
+    - ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime
+    - DEBIAN_FRONTEND=noninteractive apt update -y && DEBIAN_FRONTEND=noninteractive apt install -y -qq git cmake build-essential libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev python3-dev
+    - git clone https://gitlab.com/sat-metalab/shmdata.git 
+    - cd shmdata && git checkout develop && mkdir build && cd build 
+    - cmake -DCMAKE_BUILD_TYPE=Release .. 
+    - make -j$(nproc) && make install && ldconfig && cd ../.. 
+    - DEBIAN_FRONTEND=noninteractive apt install -y -qq $(cat deps/apt-build-ubuntu-22.04) $(cat deps/apt-runtime-ubuntu-22.04)
+    - python3 -m pip install -U pip
+    - pip3 install -r deps/pip3-ubuntu22.04 
+    - cmake -B build -DENABLE_GPL="ON" -DPLUGIN_NVENC=OFF -DPLUGIN_WEBRTC=OFF -DCMAKE_BUILD_TYPE="Release"
+    - make -sC build -j`nproc`
     - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y xvfb
     - make install -sC build && ldconfig
     - pulseaudio --start
