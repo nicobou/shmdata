@@ -15,6 +15,7 @@
 #include <cassert>
 #include <array>
 #include <iostream>
+#include <thread>
 #include "shmdata/writer.hpp"
 #include "shmdata/reader.hpp"
 #include "shmdata/console-logger.hpp"
