@@ -116,8 +116,6 @@ int Writer_init(pyshmdata_WriterObject* self, PyObject* args, PyObject* kwds) {
           args, kwds, "O|OOO", kwlist, &path, &datatype, &framesize, &showDebug))
     return -1;
 
-  PyEval_InitThreads();
-
   tmp = self->path;
   Py_INCREF(path);
   self->path = path;
@@ -343,8 +341,6 @@ int Reader_init(pyshmdata_ReaderObject* self, PyObject* args, PyObject* kwds) {
           args, kwds, "O|OOOO", kwlist, &path, &pyFunc, &pyUserData, &pyDropFrames, &showDebug))
     return -1;
 
-  PyEval_InitThreads();
-
   if (path) {
     tmp = self->path;
     Py_INCREF(path);
@@ -377,7 +373,6 @@ int Reader_init(pyshmdata_ReaderObject* self, PyObject* args, PyObject* kwds) {
       self->show_debug_messages = false;
   }
 
-  PyEval_InitThreads();
   auto* state = PyEval_SaveThread();
   self->reader = shmdata_make_follower(PyUnicode_AsUTF8(self->path),
                                        Reader_on_data_handler,
@@ -438,7 +433,7 @@ void Reader_on_data_handler(void* user_data, void* data, size_t data_size) {
                               self->lastBuffer,
                               self->datatype,
                               self->parsed_datatype);
-    PyObject* pyobjresult = PyEval_CallObject(self->callback, arglist);
+    PyObject* pyobjresult = PyObject_CallObject(self->callback, arglist);
     PyObject* pyerr = PyErr_Occurred();
     if (pyerr != nullptr) PyErr_Print();
     Py_DECREF(arglist);

@@ -52,11 +52,11 @@ class Writer : public SafeBoolIdiom {
    * \brief Destruct the Writer and releases resources.
    *
    */
-  ~Writer() = default;
+  ~Writer() override = default;
   Writer() = delete;
   Writer(const Writer&) = delete;
   Writer& operator=(const Writer&) = delete;
-  Writer& operator=(Writer&&) = default;
+  Writer& operator=(Writer&&) = delete;
 
   /**
    * \brief Get currently allocated size of the shared memory used by the writer.
