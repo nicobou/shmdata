@@ -46,6 +46,11 @@ SIPPlugin::SIPPlugin(quiddity::Config&& conf)
             val = atoi(valstr.c_str());
             if (sip_port_ == val && -1 != transport_id_) return true;
             if (val > 65535) return false;
+            if (transport_id_ != -1) {
+              debug("SIP port changed for %, closing existing SIP transport port %", 
+                std::to_string(val), std::to_string(sip_port_));
+              pjsua_transport_close(transport_id_, PJ_FALSE);
+            }
             sip_port_ = val;
             return pjsip_->run<bool>([this]() { return start_sip_transport(); });
           },
@@ -279,6 +284,7 @@ bool SIPPlugin::start_sip_transport() {
     transport_id_ = -1;
     return false;
   }
+  debug("Successfully started SIP transport on port %", std::to_string(cfg.port));
   return true;
 }
 
