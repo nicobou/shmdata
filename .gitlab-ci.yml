@@ -1,4 +1,5 @@
 stages:
+  - build
   - test
   - coverage
   - package
@@ -77,6 +78,9 @@ Debian Package Ubuntu 20.04:
     - libshmdata_latest_amd64.deb
   only:
     - master
+
+include:
+  - remote: 'https://gitlab.com/sat-metalab/distributions/mpa-bionic-arm64-jetson/-/raw/feature/gitlab-ci-package/.gitlab-ci-package.yml'
 
 #
 # Gitlab pages
