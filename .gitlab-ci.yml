@@ -21,7 +21,7 @@ Docker -- Dependency Image:
   image: docker:18-git
   script:
     - git diff HEAD:wrappers/switcherio/requirements.txt origin/develop:wrappers/switcherio/requirements.txt --quiet && git diff HEAD:deps origin/develop:deps --quiet && echo "New docker image build is not required" && exit 0
-    - echo $CI_DEPLOY_PASSWORD | docker login -u $CI_DEPLOY_USER --password-stdin $CI_REGISTRY
+    - echo ${CI_DEPLOY_PASSWORD} | docker login -u ${CI_DEPLOY_USER} --password-stdin ${CI_REGISTRY}
     - docker build -t $CONTAINER_TAG_PREFIX-ubuntu2004 -f dockerfiles/Dockerfile-deps-Ubuntu-20.04 --target build .
     - docker push $CONTAINER_TAG_PREFIX-ubuntu2004
   except:
