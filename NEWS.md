@@ -2,6 +2,23 @@ sNEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 3.1.2 (2022-03-21)
+---------------------------
+This is an official release in the 3.1 stable series.
+
+New Feature:
+* Feat/Add CrashTest quiddity
+
+Bug fixes:
+* Fix missing gstreamer1.0-nice runtime dep for webrtc
+* Fix docker login in CI
+* Fix SIP transport not recreated when setting port property
+
+Improvements:
+* No stdin for docker login in CI
+* Removed build of VRPN client and server, only library is built
+* Update logging to new logger methods
+
 switcher 3.1.0 (2021-12-13)
 ---------------------------
 This is an official release in the 3.1 stable series.
