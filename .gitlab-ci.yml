@@ -21,6 +21,7 @@ Test Ubuntu 22.04:
   except:
     - develop
     - master
+    - /^debian.*$/
 
 Test package Ubuntu 20.04:
   stage: test
