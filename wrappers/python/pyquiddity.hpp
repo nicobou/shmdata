@@ -77,6 +77,8 @@ class pyQuiddity {
   static PyObject* invoke_async(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   // access to user tree
   static PyObject* get_user_tree(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* notify_user_data_grafted(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* notify_user_data_pruned(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   // access to quiddity InfoTree
   static PyObject* get_info(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* get_info_tree_as_json(pyQuiddityObject* self, PyObject* args, PyObject* kwds);

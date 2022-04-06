@@ -282,6 +282,9 @@ PyObject* pyQuiddity::invoke_async(pyQuiddityObject* self, PyObject* args, PyObj
 PyDoc_STRVAR(pyquiddity_get_user_tree_doc,
              "Get the user data tree attached to the Quiddity. Note this tree is saved with the "
              "Quiddity state and can be retrieved when a switcher save file is loaded.\n"
+             "Note that user_tree manipulation does not trigger the user_tree related signals."
+             "Notification are done through the call to notify_user_tree_grafted and "
+             "notify_user_tree_pruned methods.\n"
              "Arguments: none\n"
              "Returns: the user data (InfoTree)\n");
 
@@ -294,6 +297,48 @@ PyObject* pyQuiddity::get_user_tree(pyQuiddityObject* self, PyObject*, PyObject*
 
   auto* tree = quid->user_data<MPtr(&InfoTree::get_tree)>(".").get();
   return pyInfoTree::make_pyobject_from_c_ptr(tree, false);
+}
+
+PyDoc_STRVAR(pyquiddity_notify_user_data_grafted_doc,
+             "Notify the user_tree has been grafted."
+             "Arguments: (path) the path grafted\n"
+             "Returns: None\n");
+
+PyObject* pyQuiddity::notify_user_data_grafted(pyQuiddityObject* self,
+                                               PyObject* args,
+                                               PyObject* kwds) {
+  const char* path = ".";
+  static char* kwlist[] = {(char*)"path", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, &path)) return nullptr;
+  auto quid = self->quid.lock();
+  if (!quid) {
+    PyErr_SetString(PyExc_MemoryError, "Quiddity or parent Switcher has been deleted");
+    return nullptr;
+  }
+
+  quid->notify_user_data_grafted(path);
+  Py_RETURN_NONE;
+}
+
+PyDoc_STRVAR(pyquiddity_notify_user_data_pruned_doc,
+             "Notify the user_tree has been pruned."
+             "Arguments: (path) the path pruned\n"
+             "Returns: None\n");
+
+PyObject* pyQuiddity::notify_user_data_pruned(pyQuiddityObject* self,
+                                              PyObject* args,
+                                              PyObject* kwds) {
+  const char* path = ".";
+  static char* kwlist[] = {(char*)"path", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "|s", kwlist, &path)) return nullptr;
+  auto quid = self->quid.lock();
+  if (!quid) {
+    PyErr_SetString(PyExc_MemoryError, "Quiddity or parent Switcher has been deleted");
+    return nullptr;
+  }
+
+  quid->notify_user_data_pruned(path);
+  Py_RETURN_NONE;
 }
 
 PyDoc_STRVAR(pyquiddity_get_info_doc,
@@ -944,6 +989,14 @@ PyMethodDef pyQuiddity::pyQuiddity_methods[] = {
      (PyCFunction)pyQuiddity::get_user_tree,
      METH_VARARGS | METH_KEYWORDS,
      pyquiddity_get_user_tree_doc},
+    {"notify_user_tree_grafted",
+     (PyCFunction)pyQuiddity::notify_user_data_grafted,
+     METH_VARARGS | METH_KEYWORDS,
+     pyquiddity_notify_user_data_grafted_doc},
+    {"notify_user_tree_pruned",
+     (PyCFunction)pyQuiddity::notify_user_data_pruned,
+     METH_VARARGS | METH_KEYWORDS,
+     pyquiddity_notify_user_data_pruned_doc},
     {"get_info",
      (PyCFunction)pyQuiddity::get_info,
      METH_VARARGS | METH_KEYWORDS,

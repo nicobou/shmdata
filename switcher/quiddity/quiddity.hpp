@@ -141,6 +141,22 @@ class Quiddity : public SafeBoolIdiom {
   std::string get_manager_name();
   std::string get_quiddity_caps();
 
+  /**
+   * Force notification of on-user-data-grafted signal. Note the signal is already triggered when
+   * the user_data tree is grafted with the user_data delegate.
+   *
+   * \param path the grafted path
+   */
+  void notify_user_data_grafted(const std::string& path);
+
+  /**
+   * Force notification of on-user-data-pruned signal. Note the signal is already triggered when
+   * the user_data tree is pruned with the user_data delegate.
+   *
+   * \param path the pruned path
+   */
+  void notify_user_data_pruned(const std::string& path);
+
  private:
   // safe bool idiom implementation
   bool safe_bool_idiom() const { return is_valid_; }

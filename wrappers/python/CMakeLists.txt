@@ -55,5 +55,6 @@ if (WITH_PYTHON)
   add_test(pyquid_switcher_session ${CMAKE_CURRENT_SOURCE_DIR}/examples/12-switcher-session.py)
   add_test(pyquid_shmdata_connection ${CMAKE_CURRENT_SOURCE_DIR}/examples/13-shmdata-connection.py)
   add_test(pyquid_shmdata_dynamic_claws ${CMAKE_CURRENT_SOURCE_DIR}/examples/14-shmdata-dynamic-claws.py)
+  add_test(pyquid_user_tree_signal ${CMAKE_CURRENT_SOURCE_DIR}/examples/15-signal-user-tree.py)
 endif ()
 
