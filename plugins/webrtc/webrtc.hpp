@@ -132,8 +132,6 @@ class Webrtc : public Quiddity, public Startable {
   std::string video_shmpath_{};
   std::unique_ptr<shmdata::Follower> audio_shmsub_{nullptr};
   std::unique_ptr<shmdata::Follower> video_shmsub_{nullptr};
-  std::string audio_{"shmdatasrc socket-path=/tmp/fake name=shmaudio copy-buffers=true do-timestamp=true"};
-  std::string video_{"shmdatasrc socket-path=/tmp/fake name=shmvideo copy-buffers=true do-timestamp=true"};
 
   ThreadedWrapper<> async_this_{};
 

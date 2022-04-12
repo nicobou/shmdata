@@ -728,13 +728,28 @@ bool Webrtc::join_room() {
 bool Webrtc::start_pipeline() {
   LOGGER_DEBUG(this->logger, "Webrtc::start_pipeline");
 
-  std::string pipe = "tee name=videotee ! queue ! fakesink " + video_ +
-                     " ! videoconvert ! queue ! vp8enc ! rtpvp8pay ! queue ! " +
-                     make_caps("video", "VP8", 96) + " ! videotee. " +
-                     "tee name=audiotee ! queue ! fakesink " + audio_ +
-                     " ! audioconvert ! audioresample ! queue ! opusenc ! rtpopuspay ! queue ! " +
-                     make_caps("audio", "OPUS", 96) + " ! audiotee. ";
+  // Constructing the pipeline description
+  std::string pipe;
+  if (!video_shmpath_.empty()) {
+    pipe = pipe + " tee name=videotee ! queue ! fakesink  sync=false " +
+           " shmdatasrc name=shmvideo copy-buffers=true " +
+           " ! videoconvert ! queue ! vp8enc ! rtpvp8pay ! queue ! " +
+           make_caps("video", "VP8", 96) + " ! videotee. ";
+  }
+  if (!audio_shmpath_.empty()) {
+    pipe = pipe + " tee name=audiotee ! queue ! fakesink sync=false " +
+           " shmdatasrc name=shmaudio copy-buffers=true " +
+           " ! audioconvert ! audioresample ! queue ! opusenc ! rtpopuspay ! queue ! " +
+           make_caps("audio", "OPUS", 96) + " ! audiotee. ";
+  }
+  if (pipe.empty()) {
+    LOGGER_WARN(this->logger,
+                "audio and video Shmdata not available : cannot start Webrtc connection");
+    return false;
+  }
+  LOGGER_DEBUG(this->logger, "WebRTC GStreasmer pipeline: [{}]", pipe.c_str());
 
+  // Make the pipeline
   GError* err = nullptr;
   GstElement* el = gst_parse_bin_from_description_full(
       pipe.c_str(), false, nullptr, GST_PARSE_FLAG_NO_SINGLE_ELEMENT_BINS, &err);
