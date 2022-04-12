@@ -731,15 +731,15 @@ bool Webrtc::start_pipeline() {
   // Constructing the pipeline description
   std::string pipe;
   if (!video_shmpath_.empty()) {
-    pipe = pipe + " tee name=videotee ! queue ! fakesink  sync=false " +
-           " shmdatasrc name=shmvideo copy-buffers=true " +
-           " ! videoconvert ! queue ! vp8enc ! rtpvp8pay ! queue ! " +
+    pipe = pipe + " tee name=videotee ! queue ! fakesink  sync=false "
+           "shmdatasrc name=shmvideo copy-buffers=true "
+           "! videoconvert ! queue ! vp8enc ! rtpvp8pay ! queue ! " +
            make_caps("video", "VP8", 96) + " ! videotee. ";
   }
   if (!audio_shmpath_.empty()) {
-    pipe = pipe + " tee name=audiotee ! queue ! fakesink sync=false " +
-           " shmdatasrc name=shmaudio copy-buffers=true " +
-           " ! audioconvert ! audioresample ! queue ! opusenc ! rtpopuspay ! queue ! " +
+    pipe = pipe + " tee name=audiotee ! queue ! fakesink sync=false "
+           "shmdatasrc name=shmaudio copy-buffers=true "
+           "! audioconvert ! audioresample ! queue ! opusenc ! rtpopuspay ! queue ! " +
            make_caps("audio", "OPUS", 96) + " ! audiotee. ";
   }
   if (pipe.empty()) {
