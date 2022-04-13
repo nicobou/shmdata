@@ -128,9 +128,12 @@ time.sleep(0.2)
 assert web1.set('started', True)
 assert web2.set('started', True)
 
-time.sleep(0.2)
-
+time.sleep(2)
+assert dummy1.get('frame-received')
+assert dummy2.get('frame-received')
 server_process.terminate()
 
 # exit
-exit(success)
+if not success:
+    exit(1)
+exit(0)

@@ -486,14 +486,13 @@ bool Webrtc::peer_message(const std::string& peer, const std::string& message) {
   if (json_object_has_member(object, "sdp")) {
     JsonObject* child = json_object_get_object_member(object, "sdp");
 
-    std::string sdp = std::string(json_object_get_string_member(child, "sdp"));
-    std::string type = "";
-
     if (!json_object_has_member(child, "type")) {
-      type = std::string(json_object_get_string_member(child, "type"));
-      LOGGER_ERROR(this->logger, "Webrtc::peer_message::SDP message received without {}", type);
+      LOGGER_ERROR(this->logger, "Webrtc::peer_message::SDP message received without type");
       return false;
     }
+
+    const std::string sdp = std::string(json_object_get_string_member(child, "sdp"));
+    const std::string type = std::string(json_object_get_string_member(child, "type"));
 
     LOGGER_DEBUG(
         this->logger, "Webrtc::peer_message::sdp::[type: [{}] - [description: [{}]", type, sdp);
@@ -1238,10 +1237,10 @@ void Webrtc::decodebin_pad_added(GstPad* pad, bundle_t* data) {
   std::string suffix;
   if (stringutils::starts_with(name, "video")) {
     converter = gst_element_factory_make("videoconvert", nullptr);
-    suffix = "webrtc-video";
+    suffix = "video";
   } else if (stringutils::starts_with(name, "audio")) {
     converter = gst_element_factory_make("audioconvert", nullptr);
-    suffix = "webrtc-audio";
+    suffix = "audio";
   } else {
     LOGGER_ERROR(this->logger,
                  "Webrtc::decodebin_pad_added::Ignoring unsupported pad [{}]",
