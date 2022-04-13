@@ -122,7 +122,9 @@ class Webrtc : public Quiddity, public Startable {
 
   std::unique_ptr<gst::Pipeliner> pipeline_;
   std::mutex pipeline_mutex_{};  // <! avoid concurent access among start/stop and wss messages
+  std::mutex swid_mutex_{};      // <! avoid concurent creation of claws
   unique_gobject<SoupWebsocketConnection> connection_;
+  std::mutex connection_mutex_{};  // <! avoid concurent access of the connection
   std::unique_ptr<gst::GlibMainLoop> loop_;
   std::map<const std::string, peer_data_t> peers_;
 

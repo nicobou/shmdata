@@ -27,6 +27,7 @@ if (PLUGIN_WEBRTC)
   option(WITH_PYTHON "Python Wrapper" ${PYTHON_FOUND})
   if(WITH_PYTHON)
     add_test(pyquid_quid_webrtc ${CMAKE_CURRENT_SOURCE_DIR}/check_quid_webrtc.py)
+    add_test(pyquid_webrtc_multireceiv ${CMAKE_CURRENT_SOURCE_DIR}/check_multi_receiv.py)
   endif()
 
   install(TARGETS webrtc LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins)

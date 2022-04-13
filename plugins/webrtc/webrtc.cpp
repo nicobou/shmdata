@@ -46,12 +46,12 @@ const std::string Webrtc::kConnectionSpec(R"(
 "writer":
   [
     {
-      "label": "audio",
+      "label": "audio%",
       "description": "Audio stream received from the Webrtc session",
       "can_do": ["audio/x-raw"]
     },
     {
-      "label": "video",
+      "label": "video%",
       "description": "Video stream received from the Webrtc session",
       "can_do": [ "video/x-raw" ]
     }
@@ -141,19 +141,20 @@ bool Webrtc::stop() {
     pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, nullptr);
 
     std::unique_ptr<GSource, decltype(&g_source_unref)> source(g_idle_source_new(), g_source_unref);
-
     g_source_set_callback(source.get(), Webrtc::stop_source_cb, this, nullptr);
-
     g_source_attach(source.get(), loop_->get_main_context());
   }  // endlock
 
   SoupWebsocketState state = SOUP_WEBSOCKET_STATE_OPEN;
-  g_object_get(connection_.get(), "state", &state, nullptr);
-  for (auto start = std::chrono::high_resolution_clock::now();
-       connection_ && std::chrono::high_resolution_clock::now() - start < 3000ms &&
-       state != SOUP_WEBSOCKET_STATE_CLOSED;
-       g_object_get(connection_.get(), "state", &state, nullptr),
-            std::this_thread::sleep_for(1ms)) {
+  {
+    std::lock_guard<std::mutex> connection_lock(connection_mutex_);
+    g_object_get(connection_.get(), "state", &state, nullptr);
+    for (auto start = std::chrono::high_resolution_clock::now();
+         connection_ && std::chrono::high_resolution_clock::now() - start < 3000ms &&
+         state != SOUP_WEBSOCKET_STATE_CLOSED;
+         g_object_get(connection_.get(), "state", &state, nullptr),
+              std::this_thread::sleep_for(1ms)) {
+    }
   }
 
   if (state != SOUP_WEBSOCKET_STATE_CLOSED) {
@@ -304,9 +305,12 @@ void Webrtc::on_connection_closed(SoupWebsocketConnection* connection G_GNUC_UNU
 
 void Webrtc::connection_closed() {
   LOGGER_DEBUG(this->logger, "Webrtc::connection_closed");
-  g_signal_handler_disconnect(connection_.get(), wss_closed_handler_id_);
-  g_signal_handler_disconnect(connection_.get(), wss_message_handler_id_);
-  connection_.reset(nullptr);
+  {
+    std::lock_guard<std::mutex> connection_lock(connection_mutex_);
+    g_signal_handler_disconnect(connection_.get(), wss_closed_handler_id_);
+    g_signal_handler_disconnect(connection_.get(), wss_message_handler_id_);
+    connection_.reset(nullptr);
+  }
   stopping_ = false;
 }
 
@@ -321,8 +325,10 @@ void Webrtc::server_connected(SoupSession* session, GAsyncResult* res) {
   LOGGER_DEBUG(this->logger, "Webrtc::server_connected");
 
   GError* err = nullptr;
-  connection_.reset(soup_session_websocket_connect_finish(session, res, &err));
-
+  if (!connection_) {
+    std::lock_guard<std::mutex> connection_lock(connection_mutex_);
+    connection_.reset(soup_session_websocket_connect_finish(session, res, &err));
+  }
   if (err) {
     LOGGER_ERROR(this->logger, "Webrtc::server_connected::[{}]", err->message);
     g_error_free(err);
@@ -336,26 +342,29 @@ void Webrtc::server_connected(SoupSession* session, GAsyncResult* res) {
 
   LOGGER_DEBUG(this->logger, "Webrtc::server_connected::Successfully connected to the server");
 
-  wss_closed_handler_id_ =
-      g_signal_connect(connection_.get(), "closed", G_CALLBACK(Webrtc::on_connection_closed), this);
-  if (wss_closed_handler_id_ <= 0) {
-    LOGGER_ERROR(
-        this->logger,
-        "Webrtc::server_connected::Couldn't subscribe to 'closed' signals on the websocket "
-        "connection object");
-    return;
-  }
+  {
+    std::lock_guard<std::mutex> connection_lock(connection_mutex_);
+    wss_closed_handler_id_ = g_signal_connect(
+        connection_.get(), "closed", G_CALLBACK(Webrtc::on_connection_closed), this);
+    if (wss_closed_handler_id_ <= 0) {
+      LOGGER_ERROR(
+          this->logger,
+          "Webrtc::server_connected::Couldn't subscribe to 'closed' signals on the websocket "
+          "connection object");
+      return;
+    }
 
-  wss_message_handler_id_ =
-      g_signal_connect(connection_.get(), "message", G_CALLBACK(Webrtc::on_wss_message), this);
-  if (wss_message_handler_id_ <= 0) {
-    LOGGER_ERROR(
-        this->logger,
-        "Webrtc::server_connected::Couldn't subscribe to 'message' signals on the webscocket "
-        "connection object");
-    g_signal_handler_disconnect(connection_.get(), wss_closed_handler_id_);
-    return;
-  }
+    wss_message_handler_id_ =
+        g_signal_connect(connection_.get(), "message", G_CALLBACK(Webrtc::on_wss_message), this);
+    if (wss_message_handler_id_ <= 0) {
+      LOGGER_ERROR(
+          this->logger,
+          "Webrtc::server_connected::Couldn't subscribe to 'message' signals on the webscocket "
+          "connection object");
+      g_signal_handler_disconnect(connection_.get(), wss_closed_handler_id_);
+      return;
+    }
+  }  // release connection_lock
 
   register_for_signaling();
 }
@@ -698,8 +707,11 @@ bool Webrtc::peer_registered(const std::string& peer) const {
 bool Webrtc::register_for_signaling() {
   LOGGER_DEBUG(this->logger, "Webrtc::register_for_signaling");
 
-  if (soup_websocket_connection_get_state(connection_.get()) != SOUP_WEBSOCKET_STATE_OPEN) {
-    return false;
+  {
+    std::lock_guard<std::mutex> connection_lock(connection_mutex_);
+    if (soup_websocket_connection_get_state(connection_.get()) != SOUP_WEBSOCKET_STATE_OPEN) {
+      return false;
+    }
   }
 
   LOGGER_DEBUG(
@@ -711,10 +723,12 @@ bool Webrtc::register_for_signaling() {
 }
 
 bool Webrtc::join_room() {
-  if (soup_websocket_connection_get_state(connection_.get()) != SOUP_WEBSOCKET_STATE_OPEN) {
-    return false;
+  {
+    std::lock_guard<std::mutex> connection_lock(connection_mutex_);
+    if (soup_websocket_connection_get_state(connection_.get()) != SOUP_WEBSOCKET_STATE_OPEN) {
+      return false;
+    }
   }
-
   LOGGER_DEBUG(this->logger, "Webrtc::join_room::Joining room: [{}]", room_.c_str());
 
   std::string msg = "ROOM " + room_;
@@ -1237,41 +1251,59 @@ void Webrtc::decodebin_pad_added(GstPad* pad, bundle_t* data) {
   std::string suffix;
   if (stringutils::starts_with(name, "video")) {
     converter = gst_element_factory_make("videoconvert", nullptr);
-    suffix = "video";
+    suffix = "video%";
   } else if (stringutils::starts_with(name, "audio")) {
     converter = gst_element_factory_make("audioconvert", nullptr);
-    suffix = "audio";
+    suffix = "audio%";
   } else {
     LOGGER_ERROR(this->logger,
-                 "Webrtc::decodebin_pad_added::Ignoring unsupported pad [{}]",
+                 "Webrtc::decodebin_pad_added:: ignoring unsupported pad [{}]",
                  GST_PAD_NAME(pad));
     return;
   }
 
   if (!converter) {
     LOGGER_ERROR(
-        this->logger, "Webrtc::decodebin_pad_added:[{}]:Failed to create converter element", peer);
+        this->logger, "Webrtc::decodebin_pad_added:[{}]: failed to create converter element", peer);
     return;
   }
 
   gst::UGstElem sink("shmdatasink");
   if (!sink.get_raw()) {
     LOGGER_ERROR(
-        this->logger, "Webrtc::decodebin_pad_added:[{}]:Failed to create sink element", peer);
+        this->logger, "Webrtc::decodebin_pad_added:[{}]: failed to create sink element", peer);
     return;
   }
 
   GstElement* pqueue = gst_element_factory_make("queue", nullptr);
   if (!pqueue) {
     LOGGER_ERROR(
-        this->logger, "Webrtc::decodebin_pad_added:[{}]:Failed to make queue element", peer);
+        this->logger, "Webrtc::decodebin_pad_added:[{}]: failed to make queue element", peer);
     return;
   }
 
-  g_object_set(G_OBJECT(sink.get_raw()),
-               "socket-path",
-               claw_.get_shmpath_from_writer_label(suffix).c_str(),
-               nullptr);
+  LOGGER_DEBUG(this->logger, "Webrtc::decodebin_pad_added: adding shmdata for peer {}", peer);
+  {
+    std::lock_guard<std::mutex> swid_lock(swid_mutex_);
+    // Claw label will be the peer name with non alphanumeric characters removed
+    auto swid_label = peer + suffix;
+    swid_label.erase(
+        std::remove_if(
+            swid_label.begin(), swid_label.end(), [](char c) { return !std::isalnum(c); }),
+        swid_label.end());
+    auto swid =
+        claw_.add_writer_to_meta(claw_.get_swid(suffix), {swid_label, suffix + " from " + peer});
+    if (swid == Ids::kInvalid) {
+      LOGGER_ERROR(
+          this->logger,
+          "Webrtc::decodebin_pad_added:[{}]: failed to create writer claw [{}] for peer {}",
+          suffix,
+          peer);
+      return;
+    }
+    g_object_set(
+        G_OBJECT(sink.get_raw()), "socket-path", claw_.get_writer_shmpath(swid).c_str(), nullptr);
+  }
   auto extra_caps = get_quiddity_caps();
   g_object_set(G_OBJECT(sink.get_raw()), "extra-caps-properties", extra_caps.c_str(), nullptr);
 
@@ -1382,13 +1414,13 @@ bool Webrtc::send_sdp(const std::string& peer, GstWebRTCSessionDescription* desc
 
 bool Webrtc::send_ice(const std::string& peer, guint mlineindex, const std::string& candidate) {
   LOGGER_DEBUG(this->logger, "Webrtc::send_ice::[{}]", peer);
-  unique_json_object ice(json_object_new());
 
-  json_object_set_string_member(ice.get(), "candidate", g_strdup(candidate.c_str()));
+  unique_json_object ice(json_object_new());
+  json_object_set_string_member(ice.get(), "candidate", candidate.c_str());
   json_object_set_int_member(ice.get(), "sdpMLineIndex", mlineindex);
 
   unique_json_object msg(json_object_new());
-  json_object_set_object_member(msg.get(), "ice", ice.release());
+  json_object_set_object_member(msg.get(), "ice", ice.get());
 
   return send_peer_msg(peer, json_to_string(msg.get()).c_str());
 }
@@ -1424,7 +1456,10 @@ bool Webrtc::send_text(const std::string& text) {
 
   LOGGER_DEBUG(this->logger, "Webrtc::send_text::[{}]", text);
 
-  soup_websocket_connection_send_text(connection_.get(), g_strdup(text.c_str()));
+  {
+    std::lock_guard<std::mutex> connection_lock(connection_mutex_);
+    soup_websocket_connection_send_text(connection_.get(), text.c_str());
+  }
   return true;
 }
 

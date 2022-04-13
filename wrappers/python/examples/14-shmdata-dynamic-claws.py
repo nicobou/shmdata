@@ -38,7 +38,7 @@ fquid = sw.create("dyn-reader-quid")
 assert(fquid.subscribe("on-connection-spec-added", on_con_spec_added, None))
 assert(fquid.subscribe("on-connection-spec-removed", on_con_spec_removed, None))
 
-# chech we can get claws from quiddities
+# check we can get claws from quiddities
 wclaws = wquid.get_writer_claws()
 assert(len(wclaws) == 1)
 # this dyn-writer-quid create two dynamic writers when the "video" property is set to True

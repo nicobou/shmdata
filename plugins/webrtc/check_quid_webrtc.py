@@ -22,15 +22,6 @@ from multiprocessing import Process
 from signaling.simple_server import WebRTCSimpleServer
 from util.generator import Generator
 
-
-success = False
-
-
-def on_frame_received(data, user_data):
-    global success
-    success = True
-
-
 # create a switcher.
 sw = pyquid.Switcher('Webrtc', debug=True)
 assert 'Webrtc' == sw.name()
@@ -72,14 +63,6 @@ assert web1.try_connect(audio)
 
 assert web2.try_connect(vid)
 assert web2.try_connect(audio)
-
-# connect the dummysink to the webrtc quids
-assert dummy1.try_connect(web1)
-assert dummy2.try_connect(web2)
-
-# subscribe to the 'frame-received' property of the dummysinks
-assert dummy1.subscribe('frame-received', on_frame_received, vid)
-assert dummy2.subscribe('frame-received', on_frame_received, vid)
 
 # configure and start the webrtc communication
 
@@ -128,12 +111,14 @@ time.sleep(0.2)
 assert web1.set('started', True)
 assert web2.set('started', True)
 
-time.sleep(2)
+time.sleep(1)
+# connect the dummysink to the webrtc quids
+assert dummy1.try_connect(web1)
+assert dummy2.try_connect(web2)
+time.sleep(1)
 assert dummy1.get('frame-received')
 assert dummy2.get('frame-received')
+
 server_process.terminate()
 
-# exit
-if not success:
-    exit(1)
 exit(0)
