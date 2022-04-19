@@ -13,11 +13,11 @@ liblo7
 libltc11
 libportmidi0
 libpulse-mainloop-glib0
-libpython3.9
+libpython3.10
 libsamplerate0
 libsoup2.4-1
 libspdlog1
-libssl1.1
+libssl3
 libvncclient1
 libvncserver1
 libxcursor1
