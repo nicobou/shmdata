@@ -146,6 +146,12 @@ class Webrtc : public Quiddity, public Startable {
   std::string username_{make_username()};
   property::prop_id_t username_id_;
 
+  std::string stun_server_{"stun://stun.stunprotocol.org:3478"};
+  property::prop_id_t stun_server_id_;
+
+  std::string turn_server_{};
+  property::prop_id_t turn_server_id_;
+
   static constexpr const char* https_aliases[]{"wss", nullptr};
   static inline const std::string WEBCLIENT_MAGIC_ID{"SAT_WebRTC_Client_Web"};
 

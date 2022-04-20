@@ -97,7 +97,27 @@ Webrtc::Webrtc(quiddity::Config&& conf)
           [this]() { return username_; },
           "Username",
           "Username to use on the server",
-          username_)) {}
+          username_)),
+      stun_server_id_(pmanage<MPtr(&property::PBag::make_string)>(
+          "stun_server",
+          [this](const std::string& val) {
+            stun_server_ = val;
+            return true;
+          },
+          [this]() { return stun_server_; },
+          "STUN server",
+          "Address of the STUN server,  e.g. stun://hostname:port",
+          stun_server_)),
+      turn_server_id_(pmanage<MPtr(&property::PBag::make_string)>(
+          "turn_server",
+          [this](const std::string& val) {
+            turn_server_ = val;
+            return true;
+          },
+          [this]() { return turn_server_; },
+          "TURN server",
+          "Address of the TURN server,  e.g. turn(s)://username:password@host:port",
+          turn_server_)) {}
 
 Webrtc::~Webrtc() {
   connection_closed();
@@ -978,6 +998,18 @@ bool Webrtc::add_peer_to_pipeline(const std::string& peer) {
   GstElement* video_queue = gst_element_factory_make("queue", video_qname.c_str());  // observer_ptr
 
   GstElement* webrtc = gst_element_factory_make("webrtcbin", peer.c_str());  // observer_ptr
+
+  // set stun-server address used for srflx ICE candidates
+  g_object_set(G_OBJECT(webrtc),
+              "stun-server",
+              stun_server_.c_str(),
+              nullptr);
+
+  // set turn-server address used for relay ICE candidates
+  g_object_set(G_OBJECT(webrtc),
+              "turn-server",
+              turn_server_.c_str(),
+              nullptr);
 
   unique_gst<GstElement> audio_tee(
       gst_bin_get_by_name(GST_BIN(pipeline_->get_pipeline()), "audiotee"));
