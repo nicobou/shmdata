@@ -109,10 +109,11 @@ pkg_check_modules(GLIB REQUIRED glib-2.0)
 pkg_check_modules(JSONGLIB REQUIRED json-glib-1.0)
 pkg_check_modules(LIBSAMPLERATE samplerate)
 
-if(gstreamer-1.0_VERSION VERSION_LESS "1.20")
+# port for GStreamer "gst_element_get_request_pad" refactoring
+# this enable to build on both ubuntu 20.04 and ubuntu 22.04
+pkg_check_modules(GSTTESTVERSION REQUIRED gstreamer-1.0)
+if(GSTTESTVERSION_VERSION VERSION_LESS "1.20")
  add_definitions(-DHAS_GST_ELEMENT_GET_REQUEST_PAD)
-else()
-  set(HAS_GST_ELEMENT_GET_REQUEST_PAD FALSE)  
 endif()
 
 
