@@ -109,6 +109,13 @@ pkg_check_modules(GLIB REQUIRED glib-2.0)
 pkg_check_modules(JSONGLIB REQUIRED json-glib-1.0)
 pkg_check_modules(LIBSAMPLERATE samplerate)
 
+if(gstreamer-1.0_VERSION VERSION_LESS "1.20")
+ add_definitions(-DHAS_GST_ELEMENT_GET_REQUEST_PAD)
+else()
+  set(HAS_GST_ELEMENT_GET_REQUEST_PAD FALSE)  
+endif()
+
+
 # LOGGER
 find_package(spdlog REQUIRED)
 add_compile_definitions(SPDLOG_FMT_EXTERNAL)
