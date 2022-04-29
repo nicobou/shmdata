@@ -74,6 +74,7 @@ Test -- Ubuntu 22.04:
     - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y xvfb
     - make install -sC build && ldconfig
     - pulseaudio --start
+    - sleep 3600
     - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make test -sC build
   except:
     - develop
