@@ -72,7 +72,7 @@ assert(not fspecs.empty())
 # connection to a WriterClaw
 assert(fclaw.can_do_writer_claw(wquid, wclaw))
 resclaw = fclaw.connect(wquid, wclaw)
-# since flaclaw is not a meta follower, it should return itself
+# since fclaw is not a meta follower, it should return itself
 assert(resclaw == fclaw)
 assert(resclaw.id() == fclaw.id())
 assert(fclaw.disconnect())
