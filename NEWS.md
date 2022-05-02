@@ -2,6 +2,20 @@ sNEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 3.1.4 (2022-05-02)
+---------------------------
+This is an official release in the 3.1 stable series.
+
+New features:
+* ✨ Add STUN/TURN support to webrtc quiddity
+
+Bug fixes:
+* Fix webrtc receives now more than one room participant
+* Fix webrtc regression
+* Fix webrtc freezin audio shmdata when only audio is added to the session
+* Fix RFC tempate typos
+* Fix pyquid subscribe to user-tree signal remain silent
+
 switcher 3.1.2 (2022-03-21)
 ---------------------------
 This is an official release in the 3.1 stable series.
