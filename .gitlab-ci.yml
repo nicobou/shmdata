@@ -45,6 +45,7 @@ Test -- Ubuntu 20.04:
   stage: test
   image: $CONTAINER_TAG_PREFIX-ubuntu2004
   script:
+    - apt-key del 7fa2af80 && apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub
     - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y xvfb
     - make install -sC build && ldconfig
     - pulseaudio --start
@@ -59,6 +60,7 @@ Test -- Package:
   image: $CONTAINER_TAG_PREFIX-ubuntu2004
   script:
     - cmake -B build -DENABLE_GPL=ON -DCMAKE_BUILD_TYPE="Release"
+    - apt-key del 7fa2af80 && apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub
     - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y xvfb
     - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make package_source_test -sC build
   only:
@@ -69,6 +71,7 @@ Coverage -- Package:
   stage: coverage
   image: $CONTAINER_TAG_PREFIX-ubuntu2004
   script:
+    - apt-key del 7fa2af80 && apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub
     - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y lcov zip xvfb
     - rm -rf build && mkdir build && cd build
     - cmake -DTEST_COVERAGE=ON -DENABLE_GPL=ON ..
