@@ -910,3 +910,4 @@ def clear_session(sid: str):
 
 if __name__ == '__main__':
     start_server()
+    loop.close()
