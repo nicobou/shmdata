@@ -166,6 +166,14 @@ InfoTree::ptr Quiddity::user_data_prune_hook(const std::string& path) {
   return res;
 }
 
+void Quiddity::notify_user_data_grafted(const std::string& path) {
+  smanage<MPtr(&signal::SBag::notify)>(on_user_data_grafted_id_, InfoTree::make(path));
+}
+
+void Quiddity::notify_user_data_pruned(const std::string& path) {
+  smanage<MPtr(&signal::SBag::notify)>(on_user_data_pruned_id_, InfoTree::make(path));
+}
+
 void Quiddity::self_destruct() {
   std::unique_lock<std::mutex> lock(self_destruct_mtx_);
   auto thread = std::thread([ this, th_lock = std::move(lock) ]() mutable {

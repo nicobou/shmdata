@@ -12,7 +12,7 @@
 
 ## Impact on already existing code
 
-(Describe the changes that will be needed to be addessed by other parallel or futur developements.)
+(Describe the changes that will be needed to be addressed by other parallel or future developments.)
 
 ## Roadmap
 

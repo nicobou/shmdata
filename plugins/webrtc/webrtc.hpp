@@ -122,7 +122,9 @@ class Webrtc : public Quiddity, public Startable {
 
   std::unique_ptr<gst::Pipeliner> pipeline_;
   std::mutex pipeline_mutex_{};  // <! avoid concurent access among start/stop and wss messages
+  std::mutex swid_mutex_{};      // <! avoid concurent creation of claws
   unique_gobject<SoupWebsocketConnection> connection_;
+  std::mutex connection_mutex_{};  // <! avoid concurent access of the connection
   std::unique_ptr<gst::GlibMainLoop> loop_;
   std::map<const std::string, peer_data_t> peers_;
 
@@ -132,8 +134,6 @@ class Webrtc : public Quiddity, public Startable {
   std::string video_shmpath_{};
   std::unique_ptr<shmdata::Follower> audio_shmsub_{nullptr};
   std::unique_ptr<shmdata::Follower> video_shmsub_{nullptr};
-  std::string audio_{"shmdatasrc socket-path=/tmp/fake name=shmaudio copy-buffers=true do-timestamp=true"};
-  std::string video_{"shmdatasrc socket-path=/tmp/fake name=shmvideo copy-buffers=true do-timestamp=true"};
 
   ThreadedWrapper<> async_this_{};
 
@@ -145,6 +145,12 @@ class Webrtc : public Quiddity, public Startable {
 
   std::string username_{make_username()};
   property::prop_id_t username_id_;
+
+  std::string stun_server_{"stun://stun.stunprotocol.org:3478"};
+  property::prop_id_t stun_server_id_;
+
+  std::string turn_server_{};
+  property::prop_id_t turn_server_id_;
 
   static constexpr const char* https_aliases[]{"wss", nullptr};
   static inline const std::string WEBCLIENT_MAGIC_ID{"SAT_WebRTC_Client_Web"};
