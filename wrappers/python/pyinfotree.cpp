@@ -164,15 +164,7 @@ PyObject* pyInfoTree::graft(pyInfoTreeObject* self, PyObject* args, PyObject* kw
     if (!self->tree->graft(path, InfoTree::make(PyUnicode_AsUTF8(val)))) {
       Py_RETURN_FALSE;
     }
-  } else if (PyDict_Check(val)) {
-    PyObject *obj = PyImport_ImportModule("json"), *method = PyUnicode_FromString("dumps");
-    PyObject* res = PyObject_CallMethodObjArgs(obj, method, val, nullptr);
-    auto tree = infotree::json::deserialize(PyUnicode_AsUTF8(res));
-    // decrement refcounts
-    for (auto& o : {obj, method, res}) Py_XDECREF(o);
-    // graft tree from dumped json
-    if (!self->tree->graft(path, tree)) return nullptr;
-  } else if (PyList_Check(val)) {
+  } else if (PyDict_Check(val) || PyTuple_Check(val) || PyList_Check(val)) {
     PyObject *obj = PyImport_ImportModule("json"), *method = PyUnicode_FromString("dumps");
     PyObject* res = PyObject_CallMethodObjArgs(obj, method, val, nullptr);
     auto tree = infotree::json::deserialize(PyUnicode_AsUTF8(res));
