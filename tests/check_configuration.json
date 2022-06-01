@@ -1,0 +1,15 @@
+{
+  "bundle": {
+    "source-bundle" : {
+			"pipeline" : "videotestsrc name=source <shmw <add_to_start ! videoconvert name=converter <shmw <no_prop  & .source ! videnc name=encoder _codec=8 <shmw",
+			"doc" : {
+			  "long_name" : "My Source Bundle",
+			  "description" : "Encoded video signal"
+			}
+		}
+  },
+  "extraConfig": [
+    "~/.config/scenic/scenic.json",
+    "~/.config/scenic/menus.json"
+  ]
+}

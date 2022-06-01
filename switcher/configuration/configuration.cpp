@@ -37,32 +37,20 @@ const int Configuration::kMaxConfigurationFileSize = 100000000;  // 100MB
 Configuration::Configuration(bool debug, void_func_t _post_load, void_func_t _post_file_sink)
     : post_load(_post_load), post_file_sink(_post_file_sink) {
   // intialize default config tree from the `global configuration file`
-  auto* xdg_config_home_env = std::getenv("XDG_CONFIG_HOME");
-  const auto env_xch = xdg_config_home_env ? std::string(xdg_config_home_env) : std::string();
-  const auto default_xch = fs::path(std::getenv("HOME")) / ".config"; 
-  // global configuration file path
-  const fs::path config_file_path =
-      (!env_xch.empty() ? fs::path(env_xch) : default_xch) / "switcher" / "global.json";
+  const fs::path config_file_path = this->get_default_global_path();
 
   // get global switcher logger
   this->logger = spdlog::get("switcher");
 
   // init configuration from file
   if (!this->from_file(config_file_path))
-    // set an empty config if anything went wrong 
+    // set an empty config if anything went wrong
     this->set(InfoTree::make());
 
   // check for default `logs` settings
   std::string filepath = this->get_value(".logs.filepath");
   if (filepath.empty()) {
-    if (getgid()) {
-      const auto xsh_env = std::getenv("XDG_STATE_HOME");
-      const auto xsh_default_path = fs::path(std::getenv("HOME")) / ".local" / "state";
-      const auto xsh_dir = fs::path(xsh_env ? std::string(xsh_env) : std::string(xsh_default_path));
-      filepath = std::string(xsh_dir / "switcher" / "logs" / "switcher.log");
-    } else {  // running as root, use default log file path
-      filepath = "/var/log/switcher/switcher.log";
-    }
+    filepath = std::string(this->get_default_log_path());
     // configure log file path
     this->set_value(".logs.filepath", filepath);
   }
@@ -150,6 +138,9 @@ bool Configuration::from_file(const std::string& file_path) {
     LOGGER_WARN(this->logger, "configuration tree cannot be constructed from {}", file_path);
     return false;
   }
+
+  file_stream.close();
+
   // writing new configuration
   configuration_ = tree;
 
@@ -160,6 +151,30 @@ bool Configuration::from_file(const std::string& file_path) {
 InfoTree::ptr Configuration::get() { return configuration_; }
 
 void Configuration::set(InfoTree::ptr conf) { configuration_ = conf; }
+
+fs::path Configuration::get_default_global_path() {
+  if (getgid()) {
+    auto* xdg_config_home_env = std::getenv("XDG_CONFIG_HOME");
+    const auto env_xch = xdg_config_home_env ? std::string(xdg_config_home_env) : std::string();
+    const auto default_xch = fs::path(std::getenv("HOME")) / ".config";
+
+    // global configuration file path
+    return (!env_xch.empty() ? fs::path(env_xch) : default_xch) / "switcher" / "global.json";
+  } else {
+    return "/etc/switcher/global.json";
+  }
+}
+
+fs::path Configuration::get_default_log_path() {
+  if (getgid()) {
+    const auto xsh_env = std::getenv("XDG_STATE_HOME");
+    const auto xsh_default_path = fs::path(std::getenv("HOME")) / ".local" / "state";
+    const auto xsh_dir = fs::path(xsh_env ? std::string(xsh_env) : std::string(xsh_default_path));
+    return xsh_dir / "switcher" / "logs" / "switcher.log";
+  } else {  // running as root, use default log file path
+    return "/var/log/switcher/switcher.log";
+  }
+}
 
 std::vector<fs::path> Configuration::list_extra_configs() {
   // the list for extra configuration paths
@@ -182,11 +197,11 @@ std::vector<fs::path> Configuration::list_extra_configs() {
   return extra_configs;
 };
 
-std::string Configuration::get_extra_config(const std::string &name) {
+std::string Configuration::get_extra_config(const std::string& name) {
   // iterate over the vector of extra configurations
   for (const auto& path : this->list_extra_configs()) {
     // compare name with configured extra configuration filename
-    if(name == path.filename())
+    if (name == path.filename())
       // read and return content
       return fu::get_content(path.c_str());
   }

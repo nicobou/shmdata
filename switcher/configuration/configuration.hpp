@@ -68,6 +68,18 @@ class Configuration {
   std::vector<fs::path> list_extra_configs();
 
   /**
+   * Gets the default path of the global configuration file
+   * @return The path of the global configuration file
+   */
+  static fs::path get_default_global_path();
+
+  /**
+   * Gets the default path of the log file
+   * @return The path of the log file
+   */
+  static fs::path get_default_log_path();
+
+  /**
    * Reads the content of an extra configuration file
    *
    * @param name The name of the extra configuration file
