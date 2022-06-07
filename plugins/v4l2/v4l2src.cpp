@@ -70,7 +70,7 @@ void V4L2Src::set_shm_suffix() {
 }
 
 V4L2Src::V4L2Src(quiddity::Config&& conf)
-    : Quiddity(std::forward<quiddity::Config>(conf)),
+    : Quiddity(std::forward<quiddity::Config>(conf), {kConnectionSpec}),
       Startable(this),
       gst_pipeline_(std::make_unique<gst::Pipeliner>(
           nullptr, nullptr, [this](GstObject* gstobj, GError* err) {
