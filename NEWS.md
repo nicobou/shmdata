@@ -2,6 +2,21 @@ sNEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 3.1.6 (2022-06-15)
+---------------------------
+This is an official release in the 3.1 stable series.
+
+Bug fixes:
+* 🐛 Fix midisrc claw cannot be parsed
+* 🐛 Fix connection spec not set in v4l2src
+* 🐛 Fix configuration loading
+* 🐛 Fix glfwin sometimes freeze during destruction
+
+Improvements:
+* ✅ Add unit tests for `pyquid` using `unittest`
+* 👷 update nvidia/cudagl image for CI builds
+* 👷 update nvidia public key in CI
+
 switcher 3.1.4 (2022-05-02)
 ---------------------------
 This is an official release in the 3.1 stable series.
