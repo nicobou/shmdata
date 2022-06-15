@@ -79,3 +79,41 @@ Lists of names for apt packages and python3 modules are maintained into separate
 * Continuous integration stages in gitlab
 
 For apt there are several files, build and runtime dependencies, one for each supported distribution. Build dependencies are required for building switcher while runtime dependencies are required when running switcher. For instance, `libportmidi-dev` goes into the build file while `libportmidi0` goes into the runtime file. This separation is required for switcher packaging, like docker image building for instance.
+
+
+Testing [pyquid](https://gitlab.com/sat-metalab/switcher/-/tree/master/wrappers/python) using [unittest](https://docs.python.org/3/library/unittest.html)
+-----------------------------
+
+To add new tests, just create a new file and integrate a class inheriting from [unittest.TestCase](https://docs.python.org/3/library/unittest.html#unittest.TestCase)
+
+> A test case is the individual unit of testing. It checks for a specific response to a particular set of inputs. unittest provides a base class, TestCase, which may be used to create new test cases.
+
+> You can place the definitions of test cases and test suites in the same modules as the code they are to test (such as `widget.py`), but there are several advantages to placing the test code in a separate module, such as `test_widget.py`:
+> - The test module can be run standalone from the command line.
+> - The test code can more easily be separated from shipped code.
+> - There is less temptation to change test code to fit the code it tests without a good reason.
+> - Test code should be modified much less frequently than the code it tests.
+> - Tested code can be refactored more easily.
+> - Tests for modules written in C must be in separate modules anyway, so why not be consistent?
+> - If the testing strategy changes, there is no need to change the source code.
+
+All test files should go into `wrappers/python/tests` and filenames prefixed with `test_`.
+
+
+Running tests for [pyquid](https://gitlab.com/sat-metalab/switcher/-/tree/master/wrappers/python)
+------------------------
+
+[Switcher](https://gitlab.com/sat-metalab/switcher) and [pyquid](https://gitlab.com/sat-metalab/switcher/-/tree/master/wrappers/python) should be compiled and installed on the system as specified in the [INSTALL](doc/INSTALL.md) documentation
+
+Then, from the package directory `wrappers/python`, you can run a single test case by issuing:
+
+```bash
+python3 -m unittest tests/test_name
+```
+
+To run the full test suite, use:
+
+```bash
+python3 -m unittest
+```
+

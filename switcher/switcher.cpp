@@ -92,17 +92,18 @@ Switcher::Switcher(const std::string& switcher_name, bool debug)
     : uuid(this->make_uuid()),
       name(std::regex_replace(switcher_name, std::regex("[^[:alnum:]| ]"), "-")),
       logger(this->make_logger(debug)),
+      qfactory_(),
+      qcontainer_(quiddity::Container::make_container(this, &qfactory_)),
       conf_(
           debug,
           // post load hook
           [this]() {
             this->apply_gst_configuration();
-            this->register_bundle_from_configuration();
+            // loading bundles from the configuration
+            register_bundle_from_configuration();
           },
           // post file sink hook
-          [this]() { logger->set_pattern(make_logger_pattern(this->name, this->uuid)); }),
-      qfactory_(),
-      qcontainer_(quiddity::Container::make_container(this, &qfactory_)) {
+          [this]() { logger->set_pattern(make_logger_pattern(this->name, this->uuid)); }) {
   // remove shmdata zombies
   this->remove_shm_zombies();
 
@@ -128,7 +129,7 @@ std::string Switcher::get_switcher_caps() const {
   if (get_control_port() > 0) {
     caps_str += ",control-port=(int)" + std::to_string(get_control_port());
   }
-  
+
   return caps_str;
 }
 
@@ -400,6 +401,7 @@ void Switcher::register_bundle_from_configuration() {
   // registering bundle(s) as creatable kind
   auto quid_kinds = qfactory_.get_kinds();
   auto configuration = conf_.get();
+
   for (auto& it : configuration->get_child_keys("bundle")) {
     if (std::string::npos != it.find('_')) {
       LOGGER_WARN(
@@ -420,13 +422,16 @@ void Switcher::register_bundle_from_configuration() {
                   is_missing);
       continue;
     }
+
     // check if the pipeline description is correct
     auto spec = quiddity::bundle::DescriptionParser(pipeline, quid_kinds);
+
     if (!spec) {
       LOGGER_WARN(
           this->logger, "{} : error parsing the pipeline ({})", it, spec.get_parsing_error());
       continue;
     }
+
     // ok, bundle can be added
     // Bundle names must be unique
     if (!quiddity::DocumentationRegistry::get()->register_doc(

@@ -42,6 +42,7 @@ const std::string PortMidiSource::kConnectionSpec(R"(
       "description": "Midi Stream",
       "can_do": ["audio/midi"]
     }
+]
 }
 )");
 

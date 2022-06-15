@@ -130,22 +130,12 @@ void GLFWRenderer::subscribe_to_render_loop(GLFWVideo* window) {
 
 void GLFWRenderer::unsubscribe_from_render_loop(GLFWVideo* window) {
   // Wait for the render loop to be done with the window before destroying it.
-  std::unique_lock<std::mutex> lock(subscription_mutex_);
-  unsubscribers_.push_back(window);
-  cond_subscription_.wait(lock);
+    std::lock_guard<std::mutex> lock(rendering_task_mutex_);
+    auto renderer = rendering_tasks_.find(window);
+    if (renderer != rendering_tasks_.end()) rendering_tasks_.erase(renderer);
 }
 
 GLFWRenderer::rendering_tasks_t GLFWRenderer::pop_rendering_tasks() {
-  // Check if any window asked to be unsubscribed from the render loop.
-  std::lock_guard<std::mutex> lock(subscription_mutex_);
-  for (auto& unsubscriber : unsubscribers_) {
-    std::lock_guard<std::mutex> lock(rendering_task_mutex_);
-    auto renderer = rendering_tasks_.find(unsubscriber);
-    if (renderer != rendering_tasks_.end()) rendering_tasks_.erase(renderer);
-  }
-  cond_subscription_.notify_all();
-
-  unsubscribers_.clear();
   // construct copy for caller, and remove lambdas
   rendering_tasks_t ret;
   {

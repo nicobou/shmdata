@@ -107,14 +107,14 @@ class Switcher : public gst::Initialized {
   bool load_state(InfoTree* state);
   void reset_state(bool remove_created_quiddities);
 
-  // Configuration
-  Make_delegate(Switcher, Configuration, &conf_, conf);
-
   // Quiddity Factory
   Make_delegate(Switcher, quiddity::Factory, &qfactory_, factory);
 
   // Quiddity container
   Make_delegate(Switcher, quiddity::Container, qcontainer_.get(), quids);
+
+  // Configuration
+  Make_delegate(Switcher, Configuration, &conf_, conf);
 
   // shmpaths
   const std::string get_shm_dir() const { return conf_.get_value(".shm.directory"); }
@@ -167,9 +167,9 @@ class Switcher : public gst::Initialized {
   void register_bundle_from_configuration();
   static void init_gst();
 
-  Configuration conf_;
   quiddity::Factory qfactory_;
   quiddity::Container::ptr qcontainer_;
+  Configuration conf_;
   std::vector<quiddity::qid_t> quiddities_at_reset_{};
   std::weak_ptr<Switcher> me_{};
   int control_port_{0};

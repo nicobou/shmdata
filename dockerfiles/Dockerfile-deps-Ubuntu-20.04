@@ -1,4 +1,4 @@
-FROM nvidia/cudagl:11.1-base-ubuntu20.04 AS build
+FROM nvidia/cudagl:11.4.2-base-ubuntu20.04 AS build
 LABEL MAINTAINER="Metalab <metalab-dev@sat.qc.ca>"
 
 # Set switcher paths, we want the commands to run

@@ -44,10 +44,7 @@ class GLFWRenderer {
   rendering_tasks_t pop_rendering_tasks();
 
   rendering_tasks_t rendering_tasks_;
-  std::vector<GLFWVideo*> unsubscribers_;
-  std::mutex subscription_mutex_{};
   std::mutex rendering_task_mutex_{};
-  std::condition_variable cond_subscription_{};
   std::atomic<bool> running_{true};
   GLFWVideo* current_window_{nullptr};
   std::future<void> gl_loop_;

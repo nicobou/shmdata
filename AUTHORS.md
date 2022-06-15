@@ -8,8 +8,8 @@
 * Michał Seta
 * Hantz-Carly F. Vius
 * Olivier Gauthier
-* Alexandre Quessy
 * Valentin Laurent
+* Alexandre Quessy
 * Sebastien Paquet
 * Mike Wozniewski
 * Patrick Dupuis

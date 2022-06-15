@@ -7,7 +7,7 @@ add_feature_info("wrapper-python" WITH_PYTHON "Python Wrapper")
 if (WITH_PYTHON)
   find_package(PythonInterp 3 REQUIRED)
   pkg_check_modules(PYTHON REQUIRED python3)
-  
+
   link_directories(${PYTHON_LIBRARY_DIRS})
   add_compile_options(${PYTHON_CFLAGS})
   add_compile_options("-Wno-missing-field-initializers")
@@ -35,12 +35,12 @@ if (WITH_PYTHON)
   )
 
   # COMPUTE INSTALL PATH FOR PYQUID
-  execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sysconfig; print(sysconfig.get_config_var('DESTSHARED'))" OUTPUT_VARIABLE DESTSHARED OUTPUT_STRIP_TRAILING_WHITESPACE) 
+  execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sysconfig; print(sysconfig.get_config_var('DESTSHARED'))" OUTPUT_VARIABLE DESTSHARED OUTPUT_STRIP_TRAILING_WHITESPACE)
 
   # INSTALL
   install(TARGETS pyquid LIBRARY DESTINATION ${DESTSHARED})
 
-  # TESTS
+  # ADD EXAMPLE TESTS
   add_test(pyquid_basic ${CMAKE_CURRENT_SOURCE_DIR}/examples/01-basic.py)
   add_test(pyquid_introspection ${CMAKE_CURRENT_SOURCE_DIR}/examples/02-introspection.py)
   add_test(pyquid_infotree ${CMAKE_CURRENT_SOURCE_DIR}/examples/03-infotree.py)
@@ -56,5 +56,9 @@ if (WITH_PYTHON)
   add_test(pyquid_shmdata_connection ${CMAKE_CURRENT_SOURCE_DIR}/examples/13-shmdata-connection.py)
   add_test(pyquid_shmdata_dynamic_claws ${CMAKE_CURRENT_SOURCE_DIR}/examples/14-shmdata-dynamic-claws.py)
   add_test(pyquid_user_tree_signal ${CMAKE_CURRENT_SOURCE_DIR}/examples/15-signal-user-tree.py)
-endif ()
 
+  # ADD UNIT TESTS
+  add_test(NAME pyquid_unittest
+           COMMAND ${PYTHON_EXECUTABLE} -m unittest
+           WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+endif ()
