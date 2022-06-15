@@ -22,11 +22,13 @@
 
 #include <memory>
 #include <mutex>
-#include "./audio-ring-buffer.hpp"
-#include "./drift-observer.hpp"
+
 #include "./jack-client.hpp"
 #include "switcher/gst/pipeliner.hpp"
 #include "switcher/shmdata/gst-tree-updater.hpp"
+#include "switcher/utils/audio-resampler.hpp"
+#include "switcher/utils/audio-ring-buffer.hpp"
+#include "switcher/utils/drift-observer.hpp"
 
 namespace switcher {
 namespace quiddities {
@@ -57,6 +59,8 @@ class ShmdataToJack : public Quiddity {
   // jack sample is the time unit, assuming gst pipeline has the same sample
   // rate:
   DriftObserver<jack_nframes_t> drift_observer_{};
+  // resampler for drift correction
+  std::unique_ptr<AudioResampler<jack_sample_t>> audio_resampler_{};
 
   // properties
   std::string client_name_{};

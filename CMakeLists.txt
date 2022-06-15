@@ -107,6 +107,7 @@ pkg_check_modules(SHMDATA REQUIRED shmdata-${SHMDATA_REQUIRED_VERSION})
 pkg_check_modules(GST REQUIRED gstreamer-1.0 gstreamer-base-1.0 gstreamer-controller-1.0 gstreamer-sdp-1.0 gstreamer-video-1.0)
 pkg_check_modules(GLIB REQUIRED glib-2.0)
 pkg_check_modules(JSONGLIB REQUIRED json-glib-1.0)
+pkg_check_modules(LIBSAMPLERATE samplerate)
 
 # LOGGER
 find_package(spdlog REQUIRED)

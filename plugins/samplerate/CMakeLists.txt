@@ -1,7 +1,5 @@
 # PLUGIN
 
-pkg_check_modules(LIBSAMPLERATE samplerate)
-
 set(PLUGIN_NAME "resample")
 set(PLUGIN_DESCRIPTION "Libsamplerate")
 
