@@ -26,7 +26,7 @@ static std::atomic_int done(0);
 static ConsoleLogger logger;
 
 // a struct with contiguous data storage 
-using Frame = struct {
+using Frame = struct frame_t {
   size_t count{0};
   std::array<int, 3> data{{3, 1, 4}};
   // no vector ! vector.data is contiguous, but not vector
