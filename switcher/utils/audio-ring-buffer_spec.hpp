@@ -62,6 +62,28 @@ std::size_t AudioRingBuffer<SampleType>::pop_samples(std::size_t num, SampleType
 }
 
 template <typename SampleType>
+std::size_t AudioRingBuffer<SampleType>::pop_samples_as_channel(std::size_t num,
+                                                                SampleType* dest,
+                                                                unsigned int chan,
+                                                                unsigned int total_chan) {
+  std::size_t available = buffer_size_ - available_size_.load();
+  std::size_t res = num;
+  if (available < num) res = available;
+  if (0 == res) return res;
+  if (nullptr == dest) {
+    read_ = (read_ + res) % buffer_size_;
+    return res;
+  }
+  for (std::size_t i = 0; i < res; ++i) {
+    dest[(i * total_chan) + (chan - 1)] = buffer_[read_];
+    ++read_;
+    if (buffer_size_ == read_) read_ = 0;
+  }
+  available_size_.fetch_add(res);
+  return res;
+}
+
+template <typename SampleType>
 std::size_t AudioRingBuffer<SampleType>::get_usage() {
   return buffer_size_ - available_size_.load();
 }

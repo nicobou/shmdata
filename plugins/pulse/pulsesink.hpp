@@ -22,14 +22,18 @@
 
 #include <pulse/glib-mainloop.h>
 #include <pulse/pulseaudio.h>
+
 #include <condition_variable>
 #include <mutex>
 #include <vector>
+
 #include "switcher/gst/glibmainloop.hpp"
-#include "switcher/gst/pipeliner.hpp"
-#include "switcher/gst/unique-gst-element.hpp"
 #include "switcher/quiddity/quiddity.hpp"
-#include "switcher/shmdata/gst-tree-updater.hpp"
+#include "switcher/shmdata/caps/audio-caps.hpp"
+#include "switcher/shmdata/follower.hpp"
+#include "switcher/utils/audio-resampler.hpp"
+#include "switcher/utils/audio-ring-buffer.hpp"
+#include "switcher/utils/drift-observer.hpp"
 
 namespace switcher {
 namespace quiddities {
@@ -54,19 +58,23 @@ class PulseSink : public Quiddity {
   } DeviceDescription;
 
   static const std::string kConnectionSpec;  //!< Shmdata specifications
+  std::vector<AudioRingBuffer<float>> ring_buffers_{};  // one per channel
+  bool pa_stream_is_on_{false};  // in order to wait for saving audio from shmdata into the ring
+                                 // buffers. If not, initial latency may increase
+  unsigned long int pa_ts_{0};   // frame timestamp manual computed from pulse audio stream playback
+  // time unit, FIXME : assuming same sample rate for both shmdata audio and pulseaudio :(
+  DriftObserver<long int> drift_observer_{};
+  // resampler for drift correction
+  std::unique_ptr<AudioResampler<float>> audio_resampler_{};
+  unsigned int debug_buffer_usage_{1000};
+
   std::unique_ptr<gst::GlibMainLoop> mainloop_;
-  // gst pipeline:
-  std::unique_ptr<gst::Pipeliner> gst_pipeline_;
-  // shmsubscriber (publishing to the information-tree):
-  std::unique_ptr<shmdata::GstTreeUpdater> shm_sub_{nullptr};
   // internal use:
   std::string shmpath_{};
-  gst::UGstElem shmsrc_{"shmdatasrc"};
-  gst::UGstElem audioconvert_{"audioconvert"};
-  gst::UGstElem pulsesink_{"pulsesink"};
   pa_glib_mainloop* pa_glib_mainloop_{nullptr};
   pa_mainloop_api* pa_mainloop_api_{nullptr};
   pa_context* pa_context_{nullptr};
+  pa_stream* pa_stream_{nullptr};
   char* server_{nullptr};
   std::vector<DeviceDescription> devices_{};  // indexed by pulse_device_name
   std::mutex devices_mutex_{};
@@ -75,14 +83,18 @@ class PulseSink : public Quiddity {
   //  property:
   property::Selection<> devices_enum_{{"none"}, 0};
   property::prop_id_t devices_enum_id_{0};
-  property::prop_id_t volume_id_{0};
-  property::prop_id_t mute_id_{0};
   // quit
   std::mutex quit_mutex_{};
   std::condition_variable quit_cond_{};
+  // Shmdata follower
+  shmdata::caps::AudioCaps shmf_caps_{""};
+  std::unique_ptr<shmdata::Follower> shmf_{nullptr};
 
-  bool on_shmdata_connect(const std::string& shmpath);
+  bool on_shmdata_connect(const std::string& shmdata_path);
   bool on_shmdata_disconnect();
+  void on_shmreader_connected(const std::string& shmdata_caps);
+  void on_shmreader_disconnected();
+  void on_shmreader_data(void* data, size_t data_size);
   bool remake_elements();
   void make_device_description(pa_context* pulse_context);
   void update_output_device();
@@ -97,6 +109,9 @@ class PulseSink : public Quiddity {
                                    void* userdata);
   static gboolean async_get_pulse_devices(void* user_data);
   static gboolean quit_pulse(void* user_data);
+  static gboolean async_create_stream(void* user_data);
+  static gboolean async_remove_stream(void* user_data);
+  static void stream_write_cb(pa_stream* p, size_t nbytes, void* userdata);
 };
 
 SWITCHER_DECLARE_PLUGIN(PulseSink);
