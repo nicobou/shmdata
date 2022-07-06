@@ -427,10 +427,11 @@ void ShmdataToJack::on_channel_update(unsigned int channels) {
     for (unsigned int i = 0; i < channels; ++i) output_ports_.emplace_back(*jack_client_, i);
     update_ports_to_connect();
     // replacing ring buffers
-    std::vector<AudioRingBuffer<jack_sample_t>> tmp(channels);
+    std::vector<utils::AudioRingBuffer<jack_sample_t>> tmp(channels);
     std::swap(ring_buffers_, tmp);
     // restarting resampler
-    audio_resampler_ = std::make_unique<AudioResampler<jack_sample_t>>(this->logger, channels);
+    audio_resampler_ =
+        std::make_unique<utils::AudioResampler<jack_sample_t>>(this->logger, channels);
   }  // unlocking output_ports_
 }
 

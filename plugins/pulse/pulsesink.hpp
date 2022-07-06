@@ -38,12 +38,20 @@
 namespace switcher {
 namespace quiddities {
 using namespace quiddity;
+
+/**
+ * Pulsesink quiddity. It reads an audio Shmdata, and play it through pulseaudio.
+ **/
 class PulseSink : public Quiddity {
  public:
+  /**
+   * Construct a PulseSink object.
+   */
   PulseSink(quiddity::Config&&);
+  /**
+   * Destruct a PulseSink object.
+   */
   ~PulseSink();
-  PulseSink(const PulseSink&) = delete;
-  PulseSink& operator=(const PulseSink&) = delete;
 
  private:
   typedef struct {
@@ -57,38 +65,40 @@ class PulseSink : public Quiddity {
     std::string active_port_{};
   } DeviceDescription;
 
-  static const std::string kConnectionSpec;  //!< Shmdata specifications
-  std::vector<AudioRingBuffer<float>> ring_buffers_{};  // one per channel
-  bool pa_stream_is_on_{false};  // in order to wait for saving audio from shmdata into the ring
-                                 // buffers. If not, initial latency may increase
-  unsigned long int pa_ts_{0};   // frame timestamp manual computed from pulse audio stream playback
-  // time unit, FIXME : assuming same sample rate for both shmdata audio and pulseaudio :(
-  DriftObserver<long int> drift_observer_{};
-  // resampler for drift correction
-  std::unique_ptr<AudioResampler<float>> audio_resampler_{};
-  unsigned int debug_buffer_usage_{1000};
+  static const std::string kConnectionSpec;  //!< Shmdata specifications.
+  std::vector<utils::AudioRingBuffer<float>>
+      ring_buffers_{};           //!< One ring buffer per audio channel.
+  bool pa_stream_is_on_{false};  //!< Track the pulse audio stream in order to wait for storing
+                                 // Shmdata audio into the ring
+                                 //!< buffers. If not, initial latency may be high.
+  unsigned long int pa_ts_{
+      0};  //!< Frame timestamp, manually computed from pulse audio stream playback.
+  utils::DriftObserver<long int>
+      drift_observer_{};  //!< Observe audio drift in order to apply correction.
+  std::unique_ptr<utils::AudioResampler<float>>
+      audio_resampler_{};  //!< Resampler for drift correction.
+  unsigned int debug_buffer_usage_{
+      1000};  //!< Output log message about buffer usage each debug_buffer_usage_ buffers
 
-  std::unique_ptr<gst::GlibMainLoop> mainloop_;
-  // internal use:
-  std::string shmpath_{};
-  pa_glib_mainloop* pa_glib_mainloop_{nullptr};
-  pa_mainloop_api* pa_mainloop_api_{nullptr};
-  pa_context* pa_context_{nullptr};
-  pa_stream* pa_stream_{nullptr};
-  char* server_{nullptr};
-  std::vector<DeviceDescription> devices_{};  // indexed by pulse_device_name
+  std::unique_ptr<gst::GlibMainLoop> mainloop_;  //!< A mainloop for calls to pulse audio functions.
+  std::string shmpath_{};                        //!< Shmdata path to read.
+  pa_glib_mainloop* pa_glib_mainloop_{nullptr};  //!< Pulse audio mainloop.
+  pa_mainloop_api* pa_mainloop_api_{nullptr};    //!< Pulse audio mainloop API.
+  pa_context* pa_context_{nullptr};              //!< Pulse audio context.
+  pa_stream* pa_stream_{nullptr};                //!< Playback stream.
+  char* server_{nullptr};                        //!< Pulse audio server.
+  std::vector<DeviceDescription>
+      devices_{};  //!< List of audio devices, indexed by pulse_device_name.
   std::mutex devices_mutex_{};
   std::condition_variable devices_cond_{};
   bool connected_to_pulse_{false};
-  //  property:
-  property::Selection<> devices_enum_{{"none"}, 0};
-  property::prop_id_t devices_enum_id_{0};
-  // quit
+  property::Selection<> devices_enum_{{"none"},
+                                      0};   //!< Quiddity property for audio device selection.
+  property::prop_id_t devices_enum_id_{0};  //!< Id of the audio device selection property.
   std::mutex quit_mutex_{};
   std::condition_variable quit_cond_{};
-  // Shmdata follower
-  shmdata::caps::AudioCaps shmf_caps_{""};
-  std::unique_ptr<shmdata::Follower> shmf_{nullptr};
+  shmdata::caps::AudioCaps shmf_caps_{""};            //!< Audio caps of the Shmdata.
+  std::unique_ptr<shmdata::Follower> shmf_{nullptr};  //!< Shmdata follower.
 
   bool on_shmdata_connect(const std::string& shmdata_path);
   bool on_shmdata_disconnect();

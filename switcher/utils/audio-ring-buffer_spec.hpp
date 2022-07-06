@@ -20,7 +20,7 @@
 #include <iostream>
 
 namespace switcher {
-namespace quiddities {
+namespace utils {
 
 template <typename SampleType>
 AudioRingBuffer<SampleType>::AudioRingBuffer(std::size_t size_in_sample)
@@ -98,5 +98,5 @@ std::size_t AudioRingBuffer<SampleType>::shrink_to(std::size_t size) {
   return res;
 }
 
-}  // namespace quiddities
+}  // namespace utils
 }  // namespace switcher

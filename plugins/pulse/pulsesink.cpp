@@ -356,10 +356,11 @@ void PulseSink::on_shmreader_connected(const std::string& shmdata_caps) {
   }
 
   // replacing ring buffers
-  std::vector<AudioRingBuffer<float>> tmp(shmf_caps_.channels());
+  std::vector<utils::AudioRingBuffer<float>> tmp(shmf_caps_.channels());
   std::swap(ring_buffers_, tmp);
   // restarting resampler
-  audio_resampler_ = std::make_unique<AudioResampler<float>>(this->logger, shmf_caps_.channels());
+  audio_resampler_ =
+      std::make_unique<utils::AudioResampler<float>>(this->logger, shmf_caps_.channels());
   // creating the pulseaudio stream
   gst::utils::g_idle_add_full_with_context(
       mainloop_->get_main_context(), G_PRIORITY_DEFAULT_IDLE, async_create_stream, this, nullptr);

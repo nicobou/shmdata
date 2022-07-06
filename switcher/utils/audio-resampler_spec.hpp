@@ -23,7 +23,7 @@
 #include "../logger/logger.hpp"
 
 namespace switcher {
-namespace quiddities {
+namespace utils {
 
 template <typename SampleT>
 AudioResampler<SampleT>::AudioResampler(std::shared_ptr<spdlog::logger> logger,
@@ -67,5 +67,5 @@ float AudioResampler<SampleT>::get_sample(std::size_t pos, unsigned int channel_
   return resampled_[pos * number_of_channels_ + channel_number];
 }
 
-}  // namespace quiddities
+}  // namespace utils
 }  // namespace switcher
