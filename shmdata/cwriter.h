@@ -36,6 +36,7 @@ extern "C" {
    * \param   on_client_disconnect  Callback to be triggered when a follower disconnects.
    * \param   user_data             Pointer to user data passed to connect and disconnect callbacks.
    * \param   log                   Log object where to write internal logs.
+   * \param   unix_permission       Permission to apply to the internal Unix socket, shared memory and semaphore.
    *
    * \return the created ShmdataWriter
    */
@@ -46,7 +47,8 @@ extern "C" {
                                     void (*on_client_connected)(void* user_data, int id),
                                     void (*on_client_disconnected)(void* user_data, int id),
                                     void* user_data,
-                                    ShmdataLogger log);
+                                    ShmdataLogger log,
+                                    mode_t unix_permission);
 
   /**
    * \brief Delete the ShmdataWriter and release associated ressources.

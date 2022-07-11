@@ -21,16 +21,18 @@ Writer::Writer(const std::string& path,
                const std::string& data_descr,
                AbstractLogger* log,
                UnixSocketProtocol::ServerSide::onClientConnect on_client_connect,
-               UnixSocketProtocol::ServerSide::onClientDisconnect on_client_disconnect)
+               UnixSocketProtocol::ServerSide::onClientDisconnect on_client_disconnect,
+               mode_t unix_permission)
     : path_(path),
       connect_data_(memsize, data_descr),
       proto_(on_client_connect, on_client_disconnect, [this]() { return this->connect_data_; }),
-      srv_(new UnixSocketServer(path, &proto_, log, [&](int) { sem_->cancel_commited_reader(); })),
+      srv_(new UnixSocketServer(path, &proto_, log, [&](int) { sem_->cancel_commited_reader(); }, unix_permission)),
       shm_(new sysVShm(ftok(path.c_str(), 'n'),
                        memsize,
                        log,
-                       /*owner = */ true)),
-      sem_(new sysVSem(ftok(path.c_str(), 'm'), log, /*owner = */ true)),
+                       /*owner = */ true,
+                       unix_permission)),
+      sem_(new sysVSem(ftok(path.c_str(), 'm'), log, /*owner = */ true, unix_permission)),
       log_(log),
       alloc_size_(memsize) {
   if (!(*srv_.get()) || !(*shm_.get()) || !(*sem_.get())) {
@@ -45,17 +47,18 @@ Writer::Writer(const std::string& path,
       can_read = static_cast<bool>(inspector);
     }
     if (!can_read) {
-      log_->debug("writer detected a dead shmdata, will clean and retry");
+      log_->debug("writer detected a dead Shmdata, will clean and retry");
       force_sockserv_cleaning(path, log);
       srv_.reset(
-          new UnixSocketServer(path, &proto_, log, [&](int) { sem_->cancel_commited_reader(); }));
+          new UnixSocketServer(path, &proto_, log, [&](int) { sem_->cancel_commited_reader(); }, unix_permission));
       force_shm_cleaning(ftok(path.c_str(), 'n'), log);
       shm_.reset(new sysVShm(ftok(path.c_str(), 'n'),
                              memsize,
                              log,
-                             /*owner = */ true));
+                             /*owner = */ true,
+                             unix_permission));
       force_semaphore_cleaning(ftok(path.c_str(), 'm'), log);
-      sem_.reset(new sysVSem(ftok(path.c_str(), 'm'), log, /*owner = */ true));
+      sem_.reset(new sysVSem(ftok(path.c_str(), 'm'), log, /*owner = */ true, unix_permission));
       is_valid_ = (*srv_.get()) && (*shm_.get()) && (*sem_.get());
     } else {
       log_->error("an other writer is using the same path");

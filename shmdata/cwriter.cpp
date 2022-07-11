@@ -22,7 +22,8 @@ struct CWriter {
           ShmdataLogger log,
           void (*on_client_connected)(void* user_data, int id),
           void (*on_client_disconnected)(void* user_data, int id),
-          void* user_data)
+          void* user_data,
+          mode_t unix_permission)
       : on_client_connected_(on_client_connected),
         on_client_disconnected_(on_client_disconnected),
         user_data_(user_data),
@@ -35,7 +36,8 @@ struct CWriter {
                 },
                 [&](int id) {
                   if (nullptr != on_client_disconnected_) on_client_disconnected_(user_data_, id);
-                }) {}
+                },
+                unix_permission) {}
   void (*on_client_connected_)(void*, int);
   void (*on_client_disconnected_)(void*, int);
   void* user_data_;
@@ -51,14 +53,16 @@ ShmdataWriter shmdata_make_writer(const char* path,
                                   void (*on_client_connected)(void* user_data, int id),
                                   void (*on_client_disconnected)(void* user_data, int id),
                                   void* user_data,
-                                  ShmdataLogger log) {
+                                  ShmdataLogger log,
+                                  mode_t unix_permission) {
   CWriter* res = new CWriter(path,
                              memsize,
                              type_descr,
                              static_cast<AbstractLogger*>(log),
                              on_client_connected,
                              on_client_disconnected,
-                             user_data);
+                             user_data,
+                             unix_permission);
   if (res->writer_) return static_cast<void*>(res);
   delete res;
   return nullptr;

@@ -44,10 +44,10 @@ static struct sembuf write_end[] = {{0, -1, 0},    // decr reader
                                     {1, -1, 0}};   // decr writer
 }  // namespace semops
 
-sysVSem::sysVSem(key_t key, AbstractLogger* log, bool owner)
+sysVSem::sysVSem(key_t key, AbstractLogger* log, bool owner, mode_t unix_permission)
     : key_(key),
       owner_(owner),
-      semid_(semget(key_, 2, owner ? IPC_CREAT | IPC_EXCL | 0666 : 0)),
+      semid_(semget(key_, 2, owner ? IPC_CREAT | IPC_EXCL | unix_permission : 0)),
       log_(log) {
   if (semid_ < 0) {
     int err = errno;

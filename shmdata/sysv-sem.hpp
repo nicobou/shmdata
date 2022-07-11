@@ -31,7 +31,7 @@ class sysVSem : public SafeBoolIdiom {
   friend ReadLock;
 
  public:
-  sysVSem(key_t key, AbstractLogger* log, bool owner = false);
+  sysVSem(key_t key, AbstractLogger* log, bool owner = false, mode_t unix_permission = 0600);
   ~sysVSem();
   sysVSem() = delete;
   sysVSem(const sysVSem&) = delete;

@@ -32,6 +32,9 @@ add_test(check-sysv-shm check-sysv-shm)
 add_executable(check-type-parser check-type-parser.cpp)
 add_test(check-type-parser check-type-parser)
 
+add_executable(check-unix-perms check-unix-perms.cpp)
+add_test(check-unix-perms check-unix-perms)
+
 add_executable(check-unix-socket check-unix-socket.cpp)
 add_test(check-unix-socket check-unix-socket)
 
@@ -46,4 +49,3 @@ set_tests_properties(check-sdflow PROPERTIES ENVIRONMENT "PATH=${CMAKE_BINARY_DI
 
 add_test(NAME check-sdcrash COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/check-sdcrash.sh)
 set_tests_properties(check-sdcrash PROPERTIES ENVIRONMENT "PATH=${CMAKE_BINARY_DIR}/utils:${PATH}")
-

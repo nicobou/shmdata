@@ -96,7 +96,8 @@ int main (int argc, char *argv[]) {
                                NULL,
                                NULL,
                                NULL,
-                               logger);
+                               logger,
+                               0600);
   if (!writer ){
     printf("writer failed: quit without trying to write\n");
     return 1;
