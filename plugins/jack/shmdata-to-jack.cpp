@@ -252,7 +252,7 @@ void ShmdataToJack::on_handoff_cb(GstElement* /*object*/,
                  std::to_string(context->drift_observer_.get_ratio()));
     context->debug_buffer_usage_ = 1000;
   }
-  // keep latency under 10ms
+  // Smoothly reduce latency if the ring buffer contain more than 10ms of audio
   if (context->ring_buffers_[0].get_usage() > context->jack_client_->get_sample_rate() * 0.01) {
     new_size *= 0.9999;
   }

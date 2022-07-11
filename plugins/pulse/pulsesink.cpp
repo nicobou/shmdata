@@ -327,7 +327,7 @@ void PulseSink::on_shmreader_data(void* raw_data, size_t data_size) {
                  std::to_string(drift_observer_.get_ratio()));
     debug_buffer_usage_ = 1000;
   }
-  // keep latency under 10ms
+  // Smoothly reduce latency if the ring buffer contain more than 10ms of audio
   if (ring_buffers_[0].get_usage() > shmf_caps_.samplerate() * 0.01) {
     new_size *= 0.9999;
   }
