@@ -27,22 +27,75 @@ namespace switcher {
 namespace shmdata {
 namespace caps {
 
+/**
+ * A class for parsing audio caps in Shmdata. If parsed with success, several informations can be
+ * obtained like the sample format, the number of channels and the samplerate specified in the
+ * original caps.
+ *
+ * Once constructed, the caps can be tested like a boolean value, thanks to the SafeBoolIdiom. Any
+ * error message can be retrieved with the error_msg method.
+ */
 class AudioCaps : public SafeBoolIdiom {
  public:
   AudioCaps() = delete;
+  /**
+   * Construct an AudioCaps object.
+   * \param caps String formated caps.
+   **/
   AudioCaps(const std::string& caps);
 
+  /**
+   * Get the caps.
+   * \return Caps.
+   */
   std::string get() const;
+  /**
+   * Get number of channels for the audio Shmdata.
+   * \return Number of channels.
+   **/
   unsigned int channels() const;
+  /**
+   * Test is audio format is unsigned.
+   * \return True if unsigned, false otherwise.
+   **/
   bool is_unsigned() const;
+  /**
+   * Test is audio format is signed.
+   * \return True if signed, false otherwise.
+   **/
   bool is_signed() const;
+  /**
+   * Test is audio format is float.
+   * \return True if float, false otherwise.
+   **/
   bool is_float() const;
+  /**
+   * Get the samplerate.
+   * \return Samplerate.
+   */
   unsigned int samplerate() const;
+  /**
+   * Get format size in number of bits.
+   * \return Size.
+   */
   unsigned int format_size() const;
+  /**
+   * Get format size in number of bytes.
+   * \return Size.
+   */
   unsigned int format_size_in_bytes() const;
+  /**
+   * Get parsing error message.
+   * \return Message.
+   */
   std::string error_msg() const;
-
+  /**
+   * Set a new samplerate.
+   **/
   void set_samplerate(unsigned int rate);
+  /**
+   * Set format as float.
+   **/
   void set_float();
 
  private:
