@@ -52,12 +52,58 @@ std::size_t AudioRingBuffer<SampleType>::pop_samples(std::size_t num, SampleType
     read_ = (read_ + res) % buffer_size_;
     return res;
   }
-  for (std::size_t i = 0; i < res; ++i) {
-    dest[i] = buffer_[read_];
-    ++read_;
-    if (buffer_size_ == read_) read_ = 0;
+  auto first_read = buffer_size_ - read_;
+  if (first_read >= num) {  // one copy is enought
+    std::memcpy(static_cast<void*>(dest), buffer_.data() + read_, num * sizeof(SampleType));
+    read_ += num;
+  } else {  // copy the end of the buffer, then the remaining samples located at the beginning
+    std::memcpy(static_cast<void*>(dest), buffer_.data() + read_, first_read * sizeof(SampleType));
+    std::memcpy(static_cast<void*>(dest + first_read),
+                buffer_.data(),
+                (num - first_read) * sizeof(SampleType));
+    read_ = num - first_read;
   }
   available_size_.fetch_add(res);
+  return res;
+}
+
+template <typename SampleType>
+std::size_t AudioRingBuffer<SampleType>::read_samples(std::size_t num, SampleType* dest) {
+  std::size_t available = buffer_size_ - available_size_.load();
+  std::size_t res = num;
+  if (available < num) res = available;
+  if (0 == res || nullptr == dest) {
+    return 0;
+  }
+  auto first_read = buffer_size_ - read_;
+  if (first_read >= num) {  // one copy is enought
+    std::memcpy(static_cast<void*>(dest), buffer_.data() + read_, num * sizeof(SampleType));
+  } else {  // copy the end of the buffer, then the remaining samples at the beginning
+    std::memcpy(static_cast<void*>(dest), buffer_.data() + read_, first_read * sizeof(SampleType));
+    std::memcpy(static_cast<void*>(dest + first_read),
+                buffer_.data(),
+                (num - first_read) * sizeof(SampleType));
+  }
+  return res;
+}
+
+template <typename SampleType>
+std::size_t AudioRingBuffer<SampleType>::read_samples_as_channel(std::size_t num,
+                                                                 SampleType* dest,
+                                                                 unsigned int chan,
+                                                                 unsigned int total_chan) {
+  std::size_t available = buffer_size_ - available_size_.load();
+  std::size_t res = num;
+  if (available < num) res = available;
+  if (0 == res || nullptr == dest) {
+    return 0;
+  }
+  auto read = read_;
+  for (std::size_t i = 0; i < res; ++i) {
+    dest[(i * total_chan) + (chan - 1)] = buffer_[read];
+    ++read;
+    if (buffer_size_ == read) read = 0;
+  }
   return res;
 }
 

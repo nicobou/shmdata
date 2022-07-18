@@ -54,16 +54,17 @@ class AudioRingBuffer {
    **/
   std::size_t put_samples(std::size_t num, std::function<SampleType()> sample_factory);
   /**
-   * Pop samples from the ring buffer to a user-provided buffer.
+   * Pop or remove samples from the ring buffer to a user-provided buffer.
    * \param   num              Number of sample to pop.
-   * \param   dest             Buffer where to add the sample. It must be previously allocated.
+   * \param   dest             Buffer where to add the sample. It must be previously allocated. If
+   *                           null, samples are just removed from the ring buffer.
    * \return Number of sample actually processed.
    **/
   std::size_t pop_samples(std::size_t num, SampleType* dest);
   /**
    * Pop samples from the ring buffer to a user-provided buffer. Instead of writing sample at each
-   *sequential positions in the destination buffer, write the sample as if samples from the ring
-   *buffer are a specific channel of interleaved audio.
+   * sequential positions in the destination buffer, write the sample as if samples from the ring
+   * buffer are a specific channel of interleaved audio.
    * \param   num              Number of sample to pop.
    * \param   dest             Buffer where to add the sample. It must be previously allocated.
    * \param   chan             Channel position the sample should accupy in the destination
@@ -76,8 +77,32 @@ class AudioRingBuffer {
                                      unsigned int chan,
                                      unsigned int total_chans);
   /**
+   * Read samples from the ring buffer to a user-provided buffer. A call to read_sample does not
+   * remove samples from the ring buffer. A call to pop_sample should be preferred if the sample has to
+   * be removed. Otherwise, a call to remove_sample can be used.
+   * \param   num              Number of sample to read.
+   * \param   dest             Buffer where to add the sample. It must be previously allocated.
+   * \return Number of sample actually processed.
+   **/
+  std::size_t read_samples(std::size_t num, SampleType* dest);
+  /**
+   * Read samples from the ring buffer to a user-provided buffer. Instead of writing sample at each
+   * sequential positions in the destination buffer, write the sample as if samples from the ring
+   * buffer are a specific channel of interleaved audio.
+   * \param   num              Number of sample to read.
+   * \param   dest             Buffer where to add the sample. It must be previously allocated.
+   * \param   chan             Channel position the sample should accupy in the destination
+   *                           buffer. First channel is number 1.
+   * \param   total_chan       Number of channels targeted by the destination buffer.
+   * \return Number of sample actually processed.
+   **/
+  std::size_t read_samples_as_channel(std::size_t num,
+                                      SampleType* dest,
+                                      unsigned int chan,
+                                      unsigned int total_chans);
+  /**
    * Shrink the ring buffer. Removing starts from the older sample.
-   * \param size             Number of sample to remove.
+   * \param size             Number of sample to keep in the ring buffer.
    * \return Number of samples dropped.
    **/
   std::size_t shrink_to(std::size_t size);
