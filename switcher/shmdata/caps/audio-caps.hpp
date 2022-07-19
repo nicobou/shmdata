@@ -50,27 +50,27 @@ class AudioCaps : public SafeBoolIdiom {
    */
   std::string get() const;
   /**
-   * Get number of channels for the audio Shmdata.
+   * Get the number of channels for the audio Shmdata.
    * \return Number of channels.
    **/
   unsigned int channels() const;
   /**
-   * Test is audio format is unsigned.
+   * Test if audio format is unsigned.
    * \return True if unsigned, false otherwise.
    **/
   bool is_unsigned() const;
   /**
-   * Test is audio format is signed.
+   * Test if audio format is signed.
    * \return True if signed, false otherwise.
    **/
   bool is_signed() const;
   /**
-   * Test is audio format is float.
+   * Test if audio format is float.
    * \return True if float, false otherwise.
    **/
   bool is_float() const;
   /**
-   * Get the samplerate.
+   * Get the sample rate.
    * \return Samplerate.
    */
   unsigned int samplerate() const;
@@ -85,16 +85,16 @@ class AudioCaps : public SafeBoolIdiom {
    */
   unsigned int format_size_in_bytes() const;
   /**
-   * Get parsing error message.
+   * Get the parsing error message.
    * \return Message.
    */
   std::string error_msg() const;
   /**
-   * Set a new samplerate.
+   * Set a new sample rate.
    **/
   void set_samplerate(unsigned int rate);
   /**
-   * Set format as float.
+   * Set the format as float.
    **/
   void set_float();
 
