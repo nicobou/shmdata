@@ -36,7 +36,7 @@ namespace property {
 /**
  * Selection is a type of property for Quiddity.
  *
- * Selection is a list of named and indexed entries. =The Selection API allows for select an entry
+ * Selection is a list of named and indexed entries. The Selection API allows for select an entry
  and request the currently selected one.
  *
  * Selection can be done from index or name, but index should be prefered for better performance.
@@ -62,7 +62,7 @@ class Selection {
   /**
    * Construct a Selection with list of attached paired with the list of names.
    *
-   * \param list      pair of list name with attached object list.
+   * \param list      Pair of list name with attached object list.
    * \param selection Index of the default selected entry.
    */
   Selection(std::pair<std::vector<std::string> /*names*/, std::vector<T /*attached*/>>&& list,
@@ -72,7 +72,7 @@ class Selection {
   /**
    * Construct a Selection with attached object.
    *
-   * \param list      List of name for the entries.
+   * \param list      List of all name for each entry.
    * \param attached  List of object attached with entries. The list is expected to have the same
    *                  size as the list of entries.
    * \param selection Index of the default selected entry.
