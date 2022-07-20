@@ -21,7 +21,7 @@ kind_list = sw.list_kinds()
 assert 0 < len(kind_list)
 
 # load custom kinds (bundles)
-description = '''{
+description = {
     "bundle": {
         "testBundle" : {
             "pipeline" : "dummy name=Test",
@@ -33,7 +33,7 @@ description = '''{
             }
         }
     }
-}'''
+}
 
 sw.load_bundles(description)
 kinds = sw.list_kinds()

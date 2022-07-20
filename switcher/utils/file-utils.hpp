@@ -53,6 +53,8 @@ std::pair<std::string, std::string> get_file_content(const std::string& file_pat
 BoolLog save(const std::string& content, const std::string& file_path);
 std::string get_content(const std::string& file_path);
 
+std::string expand_home_path(const std::string& file_path);
+
 }  // namespace fileutils
 }  // namespace switcher
 #endif

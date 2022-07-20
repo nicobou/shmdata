@@ -397,6 +397,40 @@ bool Switcher::load_bundle_from_config(const std::string& bundle_description) {
   return true;
 }
 
+bool Switcher::register_bundle(InfoTree::ptr bundle_tree) {
+  // retrieve available kinds vector
+  auto kinds = qfactory_.get_kinds();
+  // retrieve pointer to switcher configuration
+  auto config = conf_.get();
+  // retrieve bundle name from tree
+  auto name = bundle_tree->get_child_keys(".").front();
+
+  // register bundle in switcher configuration
+  if (!config->graft("bundle", bundle_tree)) {
+    LOGGER_ERROR(this->logger, "cannot register bundle `{}` into configuration", name);
+    return false;
+  }
+
+  return true;
+};
+
+bool Switcher::unregister_bundle(InfoTree::ptr bundle_tree) {
+  // retrieve available kinds vector
+  auto kinds = qfactory_.get_kinds();
+  // retrieve pointer to switcher configuration
+  auto config = conf_.get();
+  // retrieve bundle name from tree
+  auto name = bundle_tree->get_child_keys(".").front();
+
+  // register bundle in switcher configuration
+  if (!config->prune("bundle." + name)) {
+    LOGGER_ERROR(this->logger, "cannot prune bundle `{}` from configuration", name);
+    return false;
+  }
+
+  return true;
+};
+
 void Switcher::register_bundle_from_configuration() {
   // registering bundle(s) as creatable kind
   auto quid_kinds = qfactory_.get_kinds();

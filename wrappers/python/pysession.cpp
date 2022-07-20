@@ -68,23 +68,19 @@ int pySession::tp_init(SessionObject* self, PyObject* args, PyObject* Py_UNUSED(
 
 PyObject* pySession::save_as(SessionObject* self, PyObject* args, PyObject* Py_UNUSED(kwargs)) {
   const char* filename = nullptr;
-  if (!PyArg_ParseTuple(args, "s", &filename)) {
-    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
-    return nullptr;
-  }
+  if (!PyArg_ParseTuple(args, "s", &filename)) return nullptr;
   // call C++ session method
   const std::string result = self->csession->save_as(filename);
-  // return filepath of the newly created file
-  return !result.empty() ? PyUnicode_FromString(result.c_str()) : PyUnicode_FromString("");
+  if (result.empty())
+    return nullptr;
+  else
+    return PyUnicode_FromString(result.c_str());
 };
 
 PyObject* pySession::copy(SessionObject* self, PyObject* args, PyObject* Py_UNUSED(kwargs)) {
   const char *src = nullptr, *dst = nullptr;
   // parse positional and keyword arguments
-  if (!PyArg_ParseTuple(args, "ss", &src, &dst)) {
-    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
-    return nullptr;
-  }
+  if (!PyArg_ParseTuple(args, "ss", &src, &dst)) return nullptr;
   // call C++ session method and return a python boolean
   if(self->csession->copy(src, dst))
     Py_RETURN_TRUE;
@@ -106,10 +102,7 @@ PyObject* pySession::list(SessionObject* self,
 
 PyObject* pySession::remove(SessionObject* self, PyObject* args, PyObject* Py_UNUSED(kwargs)) {
   const char* filename = nullptr;
-  if (!PyArg_ParseTuple(args, "s", &filename)) {
-    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
-    return nullptr;
-  }
+  if (!PyArg_ParseTuple(args, "s", &filename)) return nullptr;
   // call C++ session method and return a python boolean
   if(self->csession->remove(filename))
     Py_RETURN_TRUE;
@@ -119,10 +112,7 @@ PyObject* pySession::remove(SessionObject* self, PyObject* args, PyObject* Py_UN
 
 PyObject* pySession::read(SessionObject* self, PyObject* args, PyObject* Py_UNUSED(kwargs)) {
   const char* filename = nullptr;
-  if (!PyArg_ParseTuple(args, "s", &filename)) {
-    PyErr_SetString(PyExc_TypeError, "error parsing arguments");
-    return nullptr;
-  }
+  if (!PyArg_ParseTuple(args, "s", &filename)) return nullptr;
   // call C++ session method and return a python boolean
   if(self->csession->read(filename))
     Py_RETURN_TRUE;

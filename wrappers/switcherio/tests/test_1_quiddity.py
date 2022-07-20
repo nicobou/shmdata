@@ -1,6 +1,16 @@
+#!/usr/bin/env python3
+
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation; either version 2.1
+# of the License, or (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+
 from .base import SocketIOTestCase
-import json
-import pyquid
 import time
 
 
@@ -19,26 +29,19 @@ class QuiddityTestCase(SocketIOTestCase):
       - quiddity.list
     """
 
-    server_name = 'SocketIOServerTest'
-    websocket_url = "ws://localhost:8000?version=Test"
-
     # registering some generic event callbacks for testing purposes
     events = [
         'quiddity.created',
         'quiddity.deleted',
         'nickname.updated'
     ]
-    # data sent by the server will be eventually available
-    # as soon as the signal callback gets triggered
-    rcvd_data = None
 
     # test quiddity data
     test_quid = {
-        "type": "dummy",
-        "name": "test1",
+        "kind": "dummy",
         "nickname": "test_name",
-        "props": {},
-        "data": {"testData": True}
+        "properties": {},
+        "user_data": {"testData": True}
     }
 
     def test_01_quiddity_create(self):
@@ -46,13 +49,13 @@ class QuiddityTestCase(SocketIOTestCase):
         err, res = self.sio.call('quiddity.create', data=data)
         time.sleep(1)
         self.assertIsNone(err)
-        self.assertIsInstance(res, str)
+        self.assertIsInstance(res, dict)
 
     def test_02_property_set(self):
         err, res = self.sio.call('quiddity.create', data=('videotestsrc', 'vid1'))
         time.sleep(1)
         self.assertIsNone(err)
-        self.assertIsInstance(res, str)
+        self.assertIsInstance(res, dict)
         data = (2, 'started', True)
         err, res = self.sio.call('property.set', data=data)
         time.sleep(1)
@@ -69,8 +72,10 @@ class QuiddityTestCase(SocketIOTestCase):
         time.sleep(1)
         self.assertIsNone(err)
         self.assertTrue(res)
-        self.assertIsInstance(self.rcvd_data[0], int)
-        self.assertEqual(self.rcvd_data[1], "video1")
+        event, updated_data = self.rcvd_data.pop()
+        self.assertEqual('nickname.updated', event)
+        self.assertIsInstance(updated_data[0], int)
+        self.assertEqual(updated_data[1], "video1")
 
     def test_05_nickname_get(self):
         err, res = self.sio.call('nickname.get', data=2)
@@ -82,7 +87,7 @@ class QuiddityTestCase(SocketIOTestCase):
         err, res = self.sio.call('quiddity.create', data=('glfwin', 'win'))
         time.sleep(1)
         self.assertIsNone(err)
-        self.assertIsInstance(res, str)
+        self.assertIsInstance(res, dict)
         err, res = self.sio.call('quiddity.connect', data=(3, 2))
         self.assertIsNone(err)
         self.assertTrue(res)
@@ -91,23 +96,17 @@ class QuiddityTestCase(SocketIOTestCase):
         err, res = self.sio.call('quiddity.create', data=('methodquid', 'mquid'))
         time.sleep(1)
         self.assertIsNone(err)
-        self.assertIsInstance(res, str)
+        self.assertIsInstance(res, dict)
         err, res = self.sio.call('quiddity.invoke', data=(4, 'hello', ['Albert Camus']))
         time.sleep(1)
         self.assertIsNone(err)
         self.assertIsInstance(res, str)
 
     def test_08_quiddity_delete(self):
-        err, res = self.sio.call('quiddity.delete', data='mquid')
+        err, res = self.sio.call('quiddity.delete', data=4)
         time.sleep(1)
         self.assertIsNone(err)
         self.assertTrue(res)
+        event, deleted_data = self.rcvd_data.pop()
         self.sio.logger.debug(self.rcvd_data)
-        self.assertIsInstance(self.rcvd_data[0], int)
-
-    def test_09_quiddity_list(self):
-        err, res = self.sio.call('quiddity.list')
-        time.sleep(1)
-        self.assertIsNone(err)
-        self.assertIsInstance(res, str)
-        self.assertIsInstance(json.loads(res), list)
+        self.assertIsInstance(deleted_data[0], int)

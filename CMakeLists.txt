@@ -23,7 +23,7 @@ set(PACKAGE_VERSION ${SWITCHER_VERSION_STRING})
 
 # Compilation
 set(CMAKE_CXX_STANDARD 17)
-set(DATADIR ${CMAKE_INSTALL_PREFIX}/share/switcher/)
+set(DATADIR ${CMAKE_INSTALL_PREFIX}/share/switcher)
 
 set(TEST_COVERAGE OFF CACHE BOOL "Enable test coverage")
 if (TEST_COVERAGE)

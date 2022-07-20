@@ -190,9 +190,19 @@ BoolLog fileutils::save(const std::string& content, const std::string& file_path
   return true;
 }
 
+std::string fileutils::expand_home_path(const std::string& file_path) {
+  if (file_path.length() > 0 && file_path.at(0) == '~') {
+    return std::getenv("HOME") + file_path.substr(1, file_path.length());
+  } else {
+    return file_path;
+  }
+}
+
 std::string fileutils::get_content(const std::string& file_path) {
   // opening file
-  std::ifstream file_stream(file_path);
+  auto expended_path = fileutils::expand_home_path(file_path);
+  std::ifstream file_stream(expended_path);
+
   if (!file_stream) {
     return std::string();
   }
