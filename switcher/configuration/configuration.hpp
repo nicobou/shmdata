@@ -33,21 +33,44 @@ namespace switcher {
 
 class Configuration {
  public:
-  // hooks
   using void_func_t = std::function<void()>;
-  const void_func_t post_load;
-  const void_func_t post_file_sink;
 
-  // logger
-  std::shared_ptr<spdlog::logger> logger;
-
-  // ctor
-  Configuration(bool debug, void_func_t _post_load, void_func_t _post_file_sink);
+  /**
+   * Construct a Configuration. Callback are triggered by the constructor, the from_file and
+   * from_tree methods.
+   *
+   * \param debug Set the debug level to debug if True.
+   * \param post_load Callback to be called once the configuration has been updated.
+   * \param post_file_sink Callback called after log configuration. It is dedicated to
+   *                       set to logger pattern.
+   **/
+  Configuration(bool debug, void_func_t post_load, void_func_t post_file_sink);
   Configuration() = delete;
 
+  /**
+   * Load a new configuration from a file. If required configurations are missing,
+   * they will be set with default values.
+   *
+   * \param file_path Path to the configuration file.
+   *
+   * \return True if new configuration has been loaded, false otherwise.
+   */
   bool from_file(const std::string& file_path);
-  InfoTree::ptr get();
-  void set(InfoTree::ptr conf);
+
+  /**
+   * Load a new configuration from an InfoTree. If required configurations are missing,
+   * they will be set with default values.
+   *
+   * \param tree Tree containing a configuration.
+   *
+   * \return True if new configuration has been loaded, false otherwise.
+   */
+  bool from_tree(const InfoTree* tree);
+
+  /**
+   * Get the Information tree with the configuration.
+   **/
+  const InfoTree::ptr get();
 
   /**
    * Retrieves a vector of configured path(s) for the `extraConfig` key.
@@ -111,6 +134,12 @@ class Configuration {
   };
 
  private:
+  void set_defaults();
+
+  bool debug_;
+  const void_func_t post_load_;
+  const void_func_t post_file_sink_;
+  std::shared_ptr<spdlog::logger> logger_;
   InfoTree::ptr configuration_{};
   static const int kMaxConfigurationFileSize;
 };

@@ -49,8 +49,8 @@ Bundle::Bundle(quiddity::Config&& conf)
     manager_->qfactory_.scan_dir(it);
   }
 
-  manager_->conf<MPtr(&Configuration::set)>(
-      qcontainer_->get_switcher()->conf<MPtr(&Configuration::get)>());
+  manager_->conf<MPtr(&Configuration::from_tree)>(
+      qcontainer_->get_switcher()->conf<MPtr(&Configuration::get)>().get());
 
   if (!config<MPtr(&InfoTree::branch_has_data)>("pipeline")) {
     LOGGER_WARN(this->logger, "bundle description is missing the pipeline description");

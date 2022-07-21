@@ -390,7 +390,7 @@ bool Switcher::load_bundle_from_config(const std::string& bundle_description) {
   }
 
   if (bundles_added) {
-    conf_.set(new_configuration);
+    conf_.from_tree(new_configuration.get());
     register_bundle_from_configuration();
     LOGGER_DEBUG(this->logger, "New bundles added");
   }
