@@ -137,14 +137,6 @@ int pyQuiddity::Quiddity_init(pyQuiddityObject* self, PyObject* args, PyObject* 
 
   self->interpreter_state = PyThreadState_Get()->interp;
 
-  // @NOTE: Deprecated function which does nothing.
-  // In Python 3.6 and older, this function created the GIL if it didn’t exist.
-  // Changed in version 3.9: The function now does nothing.
-  // Changed in version 3.7: This function is now called by Py_Initialize(), so you don’t have to
-  // call it yourself anymore. Changed in version 3.2: This function cannot be called before
-  // Py_Initialize() anymore. Deprecated since version 3.9, will be removed in version 3.11.
-  PyEval_InitThreads();
-
   // notify quiddity created
   switcher->quids<MPtr(&quiddity::Container::notify_quiddity_created)>(quid.get());
 
