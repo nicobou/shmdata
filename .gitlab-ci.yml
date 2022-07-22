@@ -45,7 +45,6 @@ Test -- Ubuntu 20.04:
   stage: test
   image: $CONTAINER_TAG_PREFIX-ubuntu2004
   script:
-    - apt-key del 7fa2af80 && apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub
     - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y xvfb
     - make install -sC build && ldconfig
     - pulseaudio --start
@@ -92,7 +91,7 @@ Coverage -- Package:
 Debian -- Package:
   stage: deploy
   image: $CONTAINER_TAG_PREFIX-ubuntu2004
-  script: 
+  script:
     - DEBIAN_FRONTEND=noninteractive apt update -y
     - rm -rf build && mkdir build && cd build
     - cmake -DENABLE_GPL=ON -DCMAKE_INSTALL_PREFIX=/usr ..
@@ -105,4 +104,3 @@ Debian -- Package:
   only:
     - master
     - test-switcher-ci
-
