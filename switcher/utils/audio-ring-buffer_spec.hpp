@@ -50,6 +50,7 @@ std::size_t AudioRingBuffer<SampleType>::pop_samples(std::size_t num, SampleType
   if (0 == res) return res;
   if (nullptr == dest) {
     read_ = (read_ + res) % buffer_size_;
+    available_size_.fetch_add(res);
     return res;
   }
   auto first_read = buffer_size_ - read_;
