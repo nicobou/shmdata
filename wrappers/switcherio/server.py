@@ -58,7 +58,7 @@ def on_quiddity_created(quid_id: int) -> None:
         set_signal_subscriptions(quid)
         set_property_subscriptions(quid)
 
-        asyncio.create_task(sio.emit('quiddity.created', json.loads(str(quid))))
+        asyncio.create_task(sio.emit('quiddity.created', get_quiddity_model(quid)))
     except Exception as e:
         sio.logger.exception(e)
 
@@ -263,8 +263,31 @@ def start_server() -> None:
     web.run_app(app, port=port, loop=loop)
 
 
+def get_quiddity_model(quid: pyquid.Quiddity) -> dict:
+    """Get the full model of a quiddity
+
+    Arguments:
+        quid {pyquid.Quiddity} -- A quiddity object from pyquid
+
+    Returns:
+        dict -- The quiddity model as a dictionnary
+    """
+    model = json.loads(str(quid))
+
+    model['nickname'] = quid.nickname()
+    model['infoTree'] = json.loads(str(quid.get_info_tree_as_json()))
+    model['connectionSpecs'] = json.loads(str(quid.get_connection_specs()))
+    model['userTree'] = json.loads(str(quid.get_user_tree()))
+
+    # the json model should contain empty trees instead of null values
+    if model['userTree'] is None:
+        model['userTree'] = {}
+
+    return model
+
 # Generic Event Handlers
 # ======================
+
 
 @sio.event
 def connect(sid: str, environ: Dict[str, Any]) -> None:
@@ -504,11 +527,13 @@ def create_quiddity(
 
         # user_data
         if user_data is not None:
-            tree = pyquid.InfoTree(json.dumps(user_data))
-            quid.get_user_tree().graft('.', tree)
+            for key, sub_tree in user_data.items():
+                tree = pyquid.InfoTree(json.dumps(sub_tree))
+                quid.get_user_tree().graft(key, tree)
+
             sw.get_quid(quid.id()).notify_user_tree_grafted('.')
 
-        return None, json.loads(str(quid))
+        return None, get_quiddity_model(quid)
     except Exception as e:
         sio.logger.exception(e)
         return f'{e} for `{kind}` kind', None

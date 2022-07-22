@@ -67,6 +67,10 @@ class UserTreeTestCase(TreeTestCase):
         'user_tree.pruned'
     ]
 
+    def test_create_quid_with_data(self):
+        err, res = self.sio.call('user_tree.get', data=(self.videotest_id))
+        self.assertEqual(res['testData'], True)
+
     def test_set_user_tree(self):
         err, res = self.sio.call('user_tree.graft', data=(self.videotest_id, 'testData', False))
         self.assertIsNone(err)
