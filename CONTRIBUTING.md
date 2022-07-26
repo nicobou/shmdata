@@ -21,9 +21,14 @@ The preferred way of asking question to us is through sending an email at metala
 
 ## Feature Requests
 
-Please create a new Gitlab issue for any major changes and enhancements that you wish to make. Please provide the feature you would like to see, why it is important to you, and how it will work. Discuss your ideas transparently and get developer feedback before proceeding. Such major changes should be discussed first in a Gitlab issue.
+Please create a new Gitlab issue, using the "feature_request" description template, for a new feature that you wish to contribute or see added to the project. Please provide the feature you would like to see, why it is important to you, and how it will work. Discuss your ideas transparently and get developer feedback before proceeding. 
 
 Small changes can directly be crafted and submitted to the repository as a Merge Request. See the section about the [Merge Request Process](#merge-request-process).
+
+## Major changes and enhancements
+
+Please create a new Gitlab issue, using the "rfc" description template, for a major changes or enhancement to the project. Such major changes should be discussed first in a Gitlab issue.
+
 
 ## Reporting Bugs
 
@@ -31,9 +36,9 @@ Small changes can directly be crafted and submitted to the repository as a Merge
 
 Before you submit your issue, please [search the issue tracker](https://gitlab.com/sat-metalab/shmdata/-/issues) - maybe your question or issue has already been identified or addressed.
 
-If you find a bug in the source code, you can help us by [submitting an issue to the GitLab issue tracker](https://gitlab.com/sat-metalab/shmdata/-/issues). Even better, you can submit a Merge Request with a fix.
+If you find a bug in the source code, you can help us by [submitting an issue to the GitLab issue tracker](https://gitlab.com/sat-metalab/shmdata/-/issues). In the issue, the bug must be described using the "bug_report" description template. Then, you can submit a Merge Request with a fix adding "close #10" in the merge request description (10 being here the example bug number, it must be replaced with the actual bug_report number). 
 
-Please include as much information as possible in your issue: branch name and version, OS version, expected and observed behavior, system information, log files, etc. Most importantly, provide a step-by-step procedure on how to reproduce your bug.
+Please include as much information as possible in your issue: branch name and version, OS version, expected and observed behaviour, system information, log files, etc. Most importantly, provide a step-by-step procedure on how to reproduce your bug.
 
 ## Adding tests
 
