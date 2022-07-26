@@ -2,6 +2,36 @@ sNEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 3.1.8 (2022-07-26)
+---------------------------
+This is an official release in the 3.1 stable series.
+
+Bug fixes:
+* ✅ fix make package_source_test for pyquid not loading module when not installed
+* ✏️fix typo for shmdata path description
+* 🐛 fix audio ring buffer no updating available size when dest is nullptr
+* 🚑️fix missing include in audio-ring-buffer
+
+New features:
+* ✨ add print infotgree in swquidinfo
+* ✨ add read_sample to the audio ring buffer class
+* ✨ add set-before option in swquid-infop
+
+Documentation:
+* 📝 add doxygen doc for AudioRingBuffer, AudioResample, DriftObserver, PulseSink and ShmdataToJack
+* 📝 doxygen for selection (type of Quiddity property)
+* 📝 add doc for AudioCaps
+
+Improvements:
+* ⚡️moved audio ring buffer, drif observer and resampler from jack plugin to utils. Use libsamplerate instead of custom resampling
+* ⚡️pulsesink uses shmdata, pulse low level API and Switcher classes for audio drift correction
+* ⚡️code simplification of async tasks in threaded wrapper
+* ✨ SwitcherIO: API improvements
+* ✨ improve quiddity creation from swio
+* 📝 update doxygen file
+* 📦 update nvidia keys
+
+
 switcher 3.1.6 (2022-06-15)
 ---------------------------
 This is an official release in the 3.1 stable series.
