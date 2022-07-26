@@ -18,7 +18,7 @@
  */
 
 #include "./shmdata-to-jack.hpp"
-#include "./audio-resampler.hpp"
+
 #include "switcher/gst/utils.hpp"
 #include "switcher/quiddity/container.hpp"
 #include "switcher/quiddity/property/gprop-to-prop.hpp"
@@ -186,6 +186,7 @@ int ShmdataToJack::jack_process(jack_nframes_t nframes, void* arg) {
       if (context->ring_buffers_.empty() ||
           (num_channels > 0 && context->ring_buffers_[0].get_usage() < nframes)) {
         write_zero = true;
+        LOGGER_INFO(context->logger, "ring buffer empty");
       }
       for (unsigned int i = 0; i < context->output_ports_.size(); ++i) {
         jack_sample_t* buf = static_cast<jack_sample_t*>(
@@ -251,12 +252,19 @@ void ShmdataToJack::on_handoff_cb(GstElement* /*object*/,
                  std::to_string(context->drift_observer_.get_ratio()));
     context->debug_buffer_usage_ = 1000;
   }
+  // Smoothly reduce latency if the ring buffer contain more than 10ms of audio
+  if (context->ring_buffers_[0].get_usage() > context->jack_client_->get_sample_rate() * 0.01) {
+    new_size *= 0.9999;
+  }
+
   jack_sample_t* tmp_buf = (jack_sample_t*)map.data;
+  context->audio_resampler_->do_resample(duration, new_size, tmp_buf);
   for (int i = 0; i < channels; ++i) {
-    AudioResampler<jack_sample_t> resample(duration, new_size, tmp_buf, i, channels);
-    auto emplaced = context->ring_buffers_[i].put_samples(new_size, [&resample]() {
-      // return resample.zero_pole_get_next_sample();
-      return resample.linear_get_next_sample();
+    std::size_t cur_pos = 0;
+    auto emplaced = context->ring_buffers_[i].put_samples(new_size, [&]() {
+      auto pos = cur_pos;
+      ++cur_pos;
+      return context->audio_resampler_->get_sample(pos, i);
     });
     if (emplaced != new_size)
       LOGGER_WARN(context->logger, "overflow of {} samples", std::to_string(new_size - emplaced));
@@ -419,8 +427,11 @@ void ShmdataToJack::on_channel_update(unsigned int channels) {
     for (unsigned int i = 0; i < channels; ++i) output_ports_.emplace_back(*jack_client_, i);
     update_ports_to_connect();
     // replacing ring buffers
-    std::vector<AudioRingBuffer<jack_sample_t>> tmp(channels);
+    std::vector<utils::AudioRingBuffer<jack_sample_t>> tmp(channels);
     std::swap(ring_buffers_, tmp);
+    // restarting resampler
+    audio_resampler_ =
+        std::make_unique<utils::AudioResampler<jack_sample_t>>(this->logger, channels);
   }  // unlocking output_ports_
 }
 

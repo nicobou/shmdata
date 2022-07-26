@@ -26,11 +26,15 @@
 
 #include <map>
 
+#include "./pybundle.hpp"
+#include "./pylogger.hpp"
 #include "./pysession.hpp"
 #include "switcher/session/session.hpp"
 #include "switcher/switcher.hpp"
 
 using namespace switcher;
+
+PyObject* InterpType(const char* type_name, const char* module_name);
 
 class pySwitch {
  public:
@@ -42,6 +46,8 @@ class pySwitch {
   using pySwitchObject = struct {
     PyObject_HEAD PyObject* name{nullptr};
     Switcher::ptr switcher{};
+    PyObject* bundles{nullptr};
+    PyObject* logger{nullptr};
     PyObject* quiddities{nullptr};
     PyObject* session{nullptr};
     std::unique_ptr<sig_registering_t> sig_reg{};
@@ -60,12 +66,13 @@ class pySwitch {
   static int Switcher_init(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* name(pySwitchObject* self);
   static PyObject* version(pySwitchObject* self);
+
   // quiddity life
-  static PyObject* load_bundles(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* create(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* remove(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* get_quid(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* get_quid_id(pySwitchObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* load_bundles(pySwitchObject* self, PyObject* args, PyObject* kwds);
   // state saving
   static PyObject* get_state(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* load_state(pySwitchObject* self, PyObject* args, PyObject* kwds);
@@ -86,5 +93,9 @@ class pySwitch {
   static PyObject* subscribe(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static bool unsubscribe_from_signal(pySwitchObject* self, const std::string signal_name);
   static PyObject* unsubscribe(pySwitchObject* self, PyObject* args, PyObject* kwds);
+
+  static PyObject* list_extra_configs(pySwitchObject* self, PyObject* args, PyObject* kwds);
+  static PyObject* read_extra_config(pySwitchObject* self, PyObject* args, PyObject* kwds);
 };
+
 #endif

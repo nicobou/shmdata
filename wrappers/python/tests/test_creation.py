@@ -35,19 +35,20 @@ class CreationTestCase(unittest.TestCase):
         self.assertTrue(len(sw.list_kinds()) > 0)
 
     def test_load_custom_kinds(self):
-        description = '''{
+        description = {
             "bundle": {
-                "testBundle" : {
-                    "pipeline" : "dummy name=Test",
-                    "doc" : {
-                        "long_name" : "Test",
-                        "category" : "test",
-                        "tags" : "writer",
-                        "description" : "Test"
+                "testBundle": {
+                    "pipeline": "dummy name=Test",
+                    "doc": {
+                        "long_name": "Test",
+                        "category": "test",
+                        "tags": "writer",
+                        "description": "Test"
                     }
                 }
             }
-        }'''
+        }
+
         sw.load_bundles(description)
         self.assertTrue("testBundle" in sw.list_kinds())
 

@@ -32,13 +32,18 @@ PyMODINIT_FUNC PyInit_pyquid(void) {
   if (PyType_Ready(&pySwitch::pyType) < 0) return nullptr;
   if (PyType_Ready(&pyQuiddity::pyType) < 0) return nullptr;
   if (PyType_Ready(&pyInfoTree::pyType) < 0) return nullptr;
+  if (PyType_Ready(&BundleManager::pyType) < 0) return nullptr;
   if (PyType_Ready(&pySession::pyType) < 0) return nullptr;
+  if (PyType_Ready(&pyLogger::pyType) < 0) return nullptr;
   if (PyType_Ready(&pyWriterClaw::pyType) < 0) return nullptr;
   if (PyType_Ready(&pyFollowerClaw::pyType) < 0) return nullptr;
 
   m = PyModule_Create(&pyquid_quidmodule);
   if (m == nullptr) return nullptr;
 
+  PyObject* BundleType = InterpType("Bundle", "bundles.py");
+  Py_INCREF(BundleType);
+  PyModule_AddObject(m, "Bundle", BundleType);
   Py_INCREF(&pySwitch::pyType);
   PyModule_AddObject(m, "Switcher", reinterpret_cast<PyObject*>(&pySwitch::pyType));
   Py_INCREF(&pyQuiddity::pyType);

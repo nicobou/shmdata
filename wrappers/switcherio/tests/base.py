@@ -1,3 +1,15 @@
+#!/usr/bin/env python3
+
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation; either version 2.1
+# of the License, or (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+
 import logging
 import multiprocessing
 import pyquid
@@ -19,17 +31,16 @@ class SocketIOTestCase(unittest.TestCase):
     events = []
     # data sent by the server will be eventually available
     # as soon as the signal callback gets triggered
-    rcvd_data = None
+    rcvd_data = []
 
     @classmethod
-    def callback(cls, *data):
-        cls.rcvd_data = data
+    def callback(cls, event, *data):
+        cls.rcvd_data.append((event, *data))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # register event callbacks for the socketio client
-        for e in self.events:
-            self.sio.on(e, self.__class__.callback)
+        self.sio.on('*', lambda ev, *d: self.__class__.callback(ev, d))
         # setup logging formatter
         formatter = logging.Formatter('%(name)s: %(message)s')
         self.sio.logger.handlers[0].setFormatter(formatter)
@@ -56,4 +67,4 @@ class SocketIOTestCase(unittest.TestCase):
         cls._subproc.terminate()
 
     def tearDown(self):
-        self.rcvd_data = None
+        self.rcvd_data = []

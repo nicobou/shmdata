@@ -6,17 +6,17 @@
 * Ludovic Schreiber
 * Aurélien Perronneau (OpSocket)
 * Michał Seta
+* Valentin Laurent
 * Hantz-Carly F. Vius
 * Olivier Gauthier
-* Valentin Laurent
 * Alexandre Quessy
 * Sebastien Paquet
 * Mike Wozniewski
 * Patrick Dupuis
 * Marie-Eve Dumas
+* Pascale Stark
 * Jerome Berthelin
 * Thomas Piquet
 * Rostom Mesli
 * Patrick Keroulas
-* Pascale Stark
 * Marc Lavallée

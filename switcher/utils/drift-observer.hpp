@@ -21,16 +21,47 @@
 #define __SWITCHER_DRIFT_OBSERVER_H__
 
 namespace switcher {
-namespace quiddities {
+namespace utils {
+
+/**
+ * A drift observer class. Drift is computed from user-poevided calls with timing. The class
+ * internaly tracks these timing and keeps a ratio that can be requested. A smoothing factor is
+ * available in order to avoid the ration to follow possible hight variation in the user provided
+ * timings, possibly due to buffer size.
+ *
+ * This class has been designed to be used with AudioRingBuffer and AudioResampler.
+ *
+ * The is a data race among calls to set_current_time_info and set_smoothing_factor. Accordingly, it
+ * is suggested to call these methods from the same thread.
+ *
+ * \tparam TimeType Type of the clock used. It can be used with sample numbers.
+ */
 template <typename TimeType>
 class DriftObserver {
  public:
   DriftObserver() = default;
   ~DriftObserver() = default;
-  void set_smoothing_factor(const double& sf);  // data race with set_current_time_info
-  // this is returning the duration this duration should have
+  /**
+   * Set the smoothing_factor.
+   * \param sf Smoothing factor.
+   */
+  void set_smoothing_factor(const double& sf);
+  /**
+   * Set new timing info. This method must be called periodically in order to efficiently observe
+   * the drift. \param date Clock value for this instant. \param duration Expected duration until
+   * the next call to set_current_time_info \return Corrected duration until the next call to
+   * set_current_time_info
+   */
   TimeType set_current_time_info(const TimeType date, const TimeType duration);
+  /**
+   * Get the current ratio.
+   * \return Ratio
+   **/
   double get_ratio() const { return ratio_; }
+  /**
+   * Get the current smoothing factor.
+   * \param Smoothing factor.
+   **/
   double get_smoothing_factor() const { return smoothing_factor_; }
 
  private:
@@ -41,7 +72,7 @@ class DriftObserver {
   double smoothing_factor_{0.0001};
 };
 
-}  // namespace quiddities
+}  // namespace utils
 }  // namespace switcher
 #include "./drift-observer_spec.hpp"
 #endif

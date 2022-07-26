@@ -123,6 +123,9 @@ class Switcher : public gst::Initialized {
   // Bundles
   bool load_bundle_from_config(const std::string& bundle_description);
 
+  bool register_bundle(InfoTree::ptr bundle_tree);
+  bool unregister_bundle(InfoTree::ptr bundle_tree);
+
  private:
   /**
    * @brief Generate a universally unique identifier (uuid)

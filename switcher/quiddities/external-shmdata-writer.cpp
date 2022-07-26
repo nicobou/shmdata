@@ -59,7 +59,7 @@ ExternalWriter::ExternalWriter(quiddity::Config&& conf)
       },
       [this]() { return shmdata_path_; },
       "Shmdata Path",
-      "Path Of The Shmdata The Include",
+      "Path Of The Shmdata",
       "");
 }
 

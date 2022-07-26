@@ -1,13 +1,17 @@
 FROM nvidia/cudagl:11.4.2-base-ubuntu20.04 AS build
 LABEL MAINTAINER="Metalab <metalab-dev@sat.qc.ca>"
 
+ARG NVIDIA_KEYS="https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub"
+
 # Set switcher paths, we want the commands to run
 # from the root switcher sources directory
 WORKDIR "/opt/switcher"
 COPY . "/opt/switcher"
 
 # Install common dependencies
-RUN apt update -y \
+RUN apt-key del 7fa2af80 \
+    && apt-key adv --fetch-keys "${NVIDIA_KEYS}" \
+    && apt update -y \
     # install shmdata
     && DEBIAN_FRONTEND=noninteractive apt install -y -qq \
         git cmake build-essential \
@@ -22,7 +26,7 @@ RUN apt update -y \
         $(cat deps/apt-runtime-ubuntu-20.04) \
         $(cat deps/apt-build-nvidia-deps-ubuntu-20.04) \
         $(cat deps/apt-runtime-nvidia-deps-ubuntu-20.04) \
-    # install python dependencies 
+    # install python dependencies
     && python3 -m pip install -U pip \
     && apt-get remove -y --purge python3-pip \
     && pip3 install -r deps/pip3-ubuntu20.04 \
@@ -30,4 +34,4 @@ RUN apt update -y \
     && apt-get clean \
     && apt-get autoclean \
     && apt-get autoremove -y \
-    && rm -rf /var/lib/{apt,dpkg,cache,log}/ 
+    && rm -rf /var/lib/{apt,dpkg,cache,log}/

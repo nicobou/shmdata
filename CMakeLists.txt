@@ -9,7 +9,7 @@ project(switcher)
 set(SWITCHER_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(SWITCHER_VERSION_MAJOR 3)
 set(SWITCHER_VERSION_MINOR 1)
-set(SWITCHER_VERSION_PATCH 6)
+set(SWITCHER_VERSION_PATCH 8)
 set(SWITCHER_VERSION_STRING ${SWITCHER_VERSION_MAJOR}.${SWITCHER_VERSION_MINOR}.${SWITCHER_VERSION_PATCH})
 set(SWITCHER_API_VERSION ${SWITCHER_VERSION_MAJOR}.${SWITCHER_VERSION_MINOR})
 set(SWITCHER_LIBRARY switcher-${SWITCHER_API_VERSION})
@@ -23,7 +23,7 @@ set(PACKAGE_VERSION ${SWITCHER_VERSION_STRING})
 
 # Compilation
 set(CMAKE_CXX_STANDARD 17)
-set(DATADIR ${CMAKE_INSTALL_PREFIX}/share/switcher/)
+set(DATADIR ${CMAKE_INSTALL_PREFIX}/share/switcher)
 
 set(TEST_COVERAGE OFF CACHE BOOL "Enable test coverage")
 if (TEST_COVERAGE)
@@ -107,6 +107,7 @@ pkg_check_modules(SHMDATA REQUIRED shmdata-${SHMDATA_REQUIRED_VERSION})
 pkg_check_modules(GST REQUIRED gstreamer-1.0 gstreamer-base-1.0 gstreamer-controller-1.0 gstreamer-sdp-1.0 gstreamer-video-1.0)
 pkg_check_modules(GLIB REQUIRED glib-2.0)
 pkg_check_modules(JSONGLIB REQUIRED json-glib-1.0)
+pkg_check_modules(LIBSAMPLERATE samplerate)
 
 # LOGGER
 find_package(spdlog REQUIRED)

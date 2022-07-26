@@ -51,6 +51,33 @@ SignalQuid::SignalQuid(quiddity::Config&& conf)
         prune_tree(".zetremendouskey", true);
         return true;
       });
+  mmanage<MPtr(&method::MBag::make_method<std::function<bool()>>)>(
+      "do-graft-tree",
+      infotree::json::deserialize(
+          R"(
+                  {
+                   "name" : "Do graft information three",
+                   "description" : "graft string \"world\" at path \"hello\". This triggers on-tree-grafted signal",
+                   "arguments" : []
+                  }
+              )"),
+      [&]() {
+        graft_tree(".hello", InfoTree::make("world"), true);
+        return true;
+      });
+  mmanage<MPtr(&method::MBag::make_method<std::function<bool()>>)>("do-prune-tree",
+                                                                   infotree::json::deserialize(
+                                                                       R"(
+                  {
+                   "name" : "Do prune information three",
+                   "description" : "prune path \"hello\". This triggers on-tree-pruned signal",
+                   "arguments" : []
+                  }
+              )"),
+                                                                   [&]() {
+                                                                     prune_tree(".hello", true);
+                                                                     return true;
+                                                                   });
 }
 
 }  // namespace quiddities

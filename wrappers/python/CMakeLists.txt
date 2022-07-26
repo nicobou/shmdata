@@ -12,6 +12,15 @@ if (WITH_PYTHON)
   add_compile_options(${PYTHON_CFLAGS})
   add_compile_options("-Wno-missing-field-initializers")
 
+  # PYQUID_SCRIPTS can be configured using -DPYQUID_SCRIPTS=/path/to/pyquid/scripts in the cmake command line
+  set(PYQUID_SCRIPTS ${CMAKE_INSTALL_PREFIX}/${SWITCHER_LIBRARY}/pyquid)
+  set(PYQUID_SCRIPTS_LOCAL ${CMAKE_CURRENT_SOURCE_DIR})
+
+  # compile time definition to locate pyquid scripts for interpreted types
+  add_compile_definitions(PYQUID_SCRIPTS_DIR="${PYQUID_SCRIPTS}")
+  add_compile_definitions(PYQUID_SCRIPTS_DIR_LOCAL="${PYQUID_SCRIPTS_LOCAL}")
+
+
   add_library(pyquid SHARED
     pyfclaw.cpp
     pyinfotree.cpp
@@ -19,7 +28,9 @@ if (WITH_PYTHON)
     pyquiddity.cpp
     pysession.cpp
     pyswitch.cpp
+    pylogger.cpp
     pywclaw.cpp
+    pybundle.cpp
   )
 
   set_target_properties(pyquid PROPERTIES PREFIX "")
@@ -34,11 +45,15 @@ if (WITH_PYTHON)
     PRIVATE ${PYTHON_LIBRARIES}
   )
 
+
   # COMPUTE INSTALL PATH FOR PYQUID
   execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sysconfig; print(sysconfig.get_config_var('DESTSHARED'))" OUTPUT_VARIABLE DESTSHARED OUTPUT_STRIP_TRAILING_WHITESPACE)
 
   # INSTALL
   install(TARGETS pyquid LIBRARY DESTINATION ${DESTSHARED})
+
+  # python scripts
+  install(FILES signals.py props.py bundles.py DESTINATION ${SWITCHER_LIBRARY}/pyquid)
 
   # ADD EXAMPLE TESTS
   add_test(pyquid_basic ${CMAKE_CURRENT_SOURCE_DIR}/examples/01-basic.py)
