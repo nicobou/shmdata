@@ -14,9 +14,12 @@ if (WITH_PYTHON)
 
   # PYQUID_SCRIPTS can be configured using -DPYQUID_SCRIPTS=/path/to/pyquid/scripts in the cmake command line
   set(PYQUID_SCRIPTS ${CMAKE_INSTALL_PREFIX}/${SWITCHER_LIBRARY}/pyquid)
+  set(PYQUID_SCRIPTS_LOCAL ${CMAKE_CURRENT_SOURCE_DIR})
 
   # compile time definition to locate pyquid scripts for interpreted types
   add_compile_definitions(PYQUID_SCRIPTS_DIR="${PYQUID_SCRIPTS}")
+  add_compile_definitions(PYQUID_SCRIPTS_DIR_LOCAL="${PYQUID_SCRIPTS_LOCAL}")
+
 
   add_library(pyquid SHARED
     pyfclaw.cpp

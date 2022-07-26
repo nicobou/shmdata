@@ -27,10 +27,14 @@
 
 PyObject* InterpType(const char* type_name, const char* module_name) {
   PyObject *key = PyUnicode_FromString(type_name), *globals = PyEval_GetGlobals();
+  auto path = fs::path(PYQUID_SCRIPTS_DIR) / module_name;
+  if (!fs::exists(path)) {
+    // use source files instead of installed files
+    path = fs::path(PYQUID_SCRIPTS_DIR_LOCAL) / module_name;
+  }
   if (!PyDict_Contains(globals, key)) {
     PyObject *func = PyDict_GetItemString(PyEval_GetBuiltins(), "open"),
-             *meth = PyUnicode_FromString("read"),
-             *fname = PyUnicode_FromString((fs::path(PYQUID_SCRIPTS_DIR) / module_name).c_str()),
+             *meth = PyUnicode_FromString("read"), *fname = PyUnicode_FromString(path.c_str()),
              *file = PyObject_CallFunctionObjArgs(func, fname, nullptr);
     // read content from opened file
     PyObject* content = PyObject_CallMethodObjArgs(file, meth, nullptr);
