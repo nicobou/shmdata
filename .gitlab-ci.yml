@@ -24,70 +24,71 @@ Docker -- Dependency Image:
     - docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY}
     - docker build -t $CONTAINER_TAG_PREFIX-ubuntu2004 -f dockerfiles/Dockerfile-deps-Ubuntu-20.04 --target build .
     - docker push $CONTAINER_TAG_PREFIX-ubuntu2004
+    - docker build -t $CONTAINER_TAG_PREFIX-ubuntu2204 -f dockerfiles/Dockerfile-deps-Ubuntu-22.04 --target build .
+    - docker push $CONTAINER_TAG_PREFIX-ubuntu2204
   except:
     - develop
     - master
-    - ubuntu22.04
 
 Build -- Ubuntu 20.04:
   stage: build
   image: $CONTAINER_TAG_PREFIX-ubuntu2004
   script:
-    - cmake -B build -DENABLE_GPL="ON" -DCMAKE_BUILD_TYPE="Release"
-    - make -sC build -j`nproc`
+    - cmake -B build20.04 -DENABLE_GPL="ON" -DCMAKE_BUILD_TYPE="Release"
+    - make -sC build20.04 -j`nproc`
   except:
     - develop
     - master
-    - ubuntu22.04
   artifacts:
     paths:
-      - build
+      - build20.04
+
+Build -- Ubuntu 22.04:
+  stage: build
+  image: $CONTAINER_TAG_PREFIX-ubuntu2204
+  script:
+    - cmake -B build22.04 -DENABLE_GPL="ON" -DPLUGIN_NVENC=OFF -DPLUGIN_WEBRTC=OFF -DWITH_SWITCHERIO=OFF -DCMAKE_BUILD_TYPE="Release"
+    - make -sC build22.04 -j`nproc`
+  except:
+    - develop
+    - master
+  artifacts:
+    paths:
+      - build22.04
 
 Test -- Ubuntu 20.04:
   stage: test
   image: $CONTAINER_TAG_PREFIX-ubuntu2004
   script:
     - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y xvfb
-    - make install -sC build && ldconfig
+    - make install -sC build20.04 && ldconfig
     - pulseaudio --start
-    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make test -sC build
+    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make test -sC build20.04
   except:
-    - ubuntu22.04
     - develop
     - master
 
 Test -- Ubuntu 22.04:
   stage: test
-  image: ubuntu:22.04
+  image: $CONTAINER_TAG_PREFIX-ubuntu2204
   script:
-    - ln -fs /usr/share/zoneinfo/America/New_York /etc/localtime
-    - DEBIAN_FRONTEND=noninteractive apt update -y && DEBIAN_FRONTEND=noninteractive apt install -y -qq git cmake build-essential libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev python3-dev
-    - git clone https://gitlab.com/sat-metalab/shmdata.git 
-    - cd shmdata && git checkout develop && mkdir build && cd build 
-    - cmake -DCMAKE_BUILD_TYPE=Release .. 
-    - make -j$(nproc) && make install && ldconfig && cd ../.. 
-    - DEBIAN_FRONTEND=noninteractive apt install -y -qq $(cat deps/apt-build-ubuntu-22.04) $(cat deps/apt-runtime-ubuntu-22.04)
-    - python3 -m pip install -U pip
-    - pip3 install -r deps/pip3-ubuntu22.04 
-    - cmake -B build -DENABLE_GPL="ON" -DPLUGIN_NVENC=OFF -DPLUGIN_WEBRTC=OFF -DWITH_SWITCHERIO=OFF -DCMAKE_BUILD_TYPE="Release"
-    - make -sC build -j`nproc`
     - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y xvfb
-    - make install -sC build && ldconfig
+    - make install -sC build22.04 && ldconfig
     - pulseaudio --start
-    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make test -sC build
+    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make test -sC build22.04
   except:
     - develop
     - master
 
 # Package
-Test -- Package:
+Test -- Package Ubuntu 20.04:
   stage: test
   image: $CONTAINER_TAG_PREFIX-ubuntu2004
   script:
-    - cmake -B build -DENABLE_GPL=ON -DCMAKE_BUILD_TYPE="Release"
+    - cmake -B build20.04 -DENABLE_GPL=ON -DCMAKE_BUILD_TYPE="Release"
     - apt-key del 7fa2af80 && apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub
     - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y xvfb
-    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make package_source_test -sC build
+    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make package_source_test -sC build20.04
   only:
     - develop
     - test-switcher-ci
@@ -114,7 +115,7 @@ Coverage -- Package:
     - test-switcher-ci
 
 # Debian Package
-Debian -- Package:
+Debian -- Package Ubuntu 20.04:
   stage: deploy
   image: $CONTAINER_TAG_PREFIX-ubuntu2004
   script:
@@ -127,6 +128,23 @@ Debian -- Package:
     name: "switcher_package_${CI_BUILD_REF_NAME}"
     paths:
     - switcher_ubuntu20.04_latest_amd64.deb
+  only:
+    - master
+    - test-switcher-ci
+
+Debian -- Package Ubuntu 22.04:
+  stage: deploy
+  image: $CONTAINER_TAG_PREFIX-ubuntu2204
+  script:
+    - DEBIAN_FRONTEND=noninteractive apt update -y
+    - rm -rf build && mkdir build && cd build
+    - cmake -DENABLE_GPL=ON -DPLUGIN_NVENC=OFF -DPLUGIN_WEBRTC=OFF -DWITH_SWITCHERIO=OFF -DCMAKE_INSTALL_PREFIX=/usr ..
+    - make -j`nproc` package
+    - mv *.deb ../switcher_ubuntu22.04_latest_amd64.deb
+  artifacts:
+    name: "switcher_package_${CI_BUILD_REF_NAME}"
+    paths:
+    - switcher_ubuntu22.04_latest_amd64.deb
   only:
     - master
     - test-switcher-ci
