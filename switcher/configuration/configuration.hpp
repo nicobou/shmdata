@@ -36,7 +36,7 @@ class Configuration {
   using void_func_t = std::function<void()>;
 
   /**
-   * Construct a Configuration. Callback are triggered by the constructor, the from_file and
+   * Construct a Configuration. Callbacks are triggered by the constructor, the from_file and
    * from_tree methods.
    *
    * \param debug Set the debug level to debug if True.
