@@ -69,7 +69,7 @@ Test -- Ubuntu 22.04:
     - DEBIAN_FRONTEND=noninteractive apt install -y -qq $(cat deps/apt-build-ubuntu-22.04) $(cat deps/apt-runtime-ubuntu-22.04)
     - python3 -m pip install -U pip
     - pip3 install -r deps/pip3-ubuntu22.04 
-    - cmake -B build -DENABLE_GPL="ON" -DPLUGIN_NVENC=OFF -DCMAKE_BUILD_TYPE="Release"
+    - cmake -B build -DENABLE_GPL="ON" -DPLUGIN_NVENC=OFF -DPLUGIN_WEBRTC=OFF -DWITH_SWITCHERIO=OFF -DCMAKE_BUILD_TYPE="Release"
     - make -sC build -j`nproc`
     - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y xvfb
     - make install -sC build && ldconfig
