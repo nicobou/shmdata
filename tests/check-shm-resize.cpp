@@ -41,7 +41,9 @@ void writer(AbstractLogger *logger) {
     std::cout << "********* copy_to_shm" << std::endl;
     auto i = 1;
     while (i < 30) {
-      assert(w.copy_to_shm(&data, i * sizeof(int)));
+      auto newsize = i * sizeof(int);
+      assert(w.copy_to_shm(&data, newsize));
+      assert(w.alloc_size() == newsize);
       i++;
     }
     std::cout << "********* get_one_write_access_ptr_resize" << std::endl;
@@ -49,6 +51,7 @@ void writer(AbstractLogger *logger) {
       auto newsize = i * sizeof(int);
       OneWriteAccess *access = w.get_one_write_access_ptr_resize(newsize);
       assert(access);
+      assert(w.alloc_size() == newsize);
       std::memcpy(access->get_mem(), &data, newsize);
       access->notify_clients(newsize);
       delete(access);
@@ -59,6 +62,7 @@ void writer(AbstractLogger *logger) {
       auto newsize = i * sizeof(int);
       auto access = w.get_one_write_access_resize(newsize);
       assert(access);
+      assert(w.alloc_size() == newsize);
       std::memcpy(access->get_mem(), &data, newsize);
       access->notify_clients(newsize);
       i++;

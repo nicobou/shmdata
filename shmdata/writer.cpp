@@ -91,10 +91,12 @@ bool Writer::copy_to_shm(const void* data, size_t size) {
       shm_.reset();
       shm_.reset(new sysVShm(ftok(path_.c_str(), 'n'), size, log_, /*owner = */ true));
       connect_data_.shm_size_ = size;
+      alloc_size_ = size;
       if (!shm_) {
-        log_->warning("error resizing shared memory");
+        log_->error("resizing shared memory failed");
         return false;
       }
+      
     }
     auto num_readers = srv_->notify_update(size);
     if (0 < num_readers) {
@@ -126,6 +128,7 @@ std::unique_ptr<OneWriteAccess> Writer::get_one_write_access_resize(size_t new_s
   shm_.reset(new sysVShm(ftok(path_.c_str(), 'n'), new_size, log_, /*owner = */ true));
   res->mem_ = shm_->get_mem();
   connect_data_.shm_size_ = new_size;
+  alloc_size_ = new_size;
   return res;
 }
 
@@ -139,6 +142,7 @@ OneWriteAccess* Writer::get_one_write_access_ptr_resize(size_t new_size) {
   shm_.reset(new sysVShm(ftok(path_.c_str(), 'n'), new_size, log_, /*owner = */ true));
   res->mem_ = shm_->get_mem();
   connect_data_.shm_size_ = new_size;
+  alloc_size_ = new_size;
   return res;
 }
 
@@ -155,6 +159,7 @@ size_t OneWriteAccess::shm_resize(size_t new_size) {
   if (!writer_->shm_) return 0;
   mem_ = writer_->shm_->get_mem();
   writer_->connect_data_.shm_size_ = new_size;
+  writer_->alloc_size_ = new_size;
   return new_size;
 }
 
