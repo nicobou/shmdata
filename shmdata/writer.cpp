@@ -120,12 +120,14 @@ OneWriteAccess* Writer::get_one_write_access_ptr() {
 std::unique_ptr<OneWriteAccess> Writer::get_one_write_access_resize(size_t new_size) {
   auto res = std::unique_ptr<OneWriteAccess>(
       new OneWriteAccess(this, sem_.get(), nullptr, srv_.get(), log_));
-  log_->debug("resizing shmdata (%) from % bytes to % bytes",
-              path_,
-              std::to_string(connect_data_.shm_size_),
-              std::to_string(new_size));
-  shm_.reset();
-  shm_.reset(new sysVShm(ftok(path_.c_str(), 'n'), new_size, log_, /*owner = */ true));
+  if (shm_->get_size() != new_size) {
+    log_->debug("resizing shmdata (%) from % bytes to % bytes",
+                path_,
+                std::to_string(connect_data_.shm_size_),
+                std::to_string(new_size));
+    shm_.reset();
+    shm_.reset(new sysVShm(ftok(path_.c_str(), 'n'), new_size, log_, /*owner = */ true));
+  }
   res->mem_ = shm_->get_mem();
   connect_data_.shm_size_ = new_size;
   alloc_size_ = new_size;
