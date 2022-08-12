@@ -38,7 +38,7 @@ void leave(int sig) {
 }
 
 void usage(const char *prog_name){
-  printf("usage: %s [-d] [-f] [-v] shmpath\n", prog_name);
+  printf("usage: %s [-d] [-f] [-v] [-c] shmpath\n", prog_name);
   exit(1);
 }
 
@@ -46,13 +46,17 @@ int main (int argc, char *argv[]) {
   bool debug = false;
   bool show_frame_timings = false;
   bool show_version = false;
+  bool cartridge_return = false;
   char *shmpath = nullptr;
 
   opterr = 0;
   int c = 0;
-  while ((c = getopt (argc, argv, "dfv")) != -1)
+  while ((c = getopt (argc, argv, "cdfv")) != -1)
     switch (c)
       {
+        case 'c':
+          cartridge_return = true;
+          break;
         case 'd':
           debug = true;
           break;
@@ -92,7 +96,7 @@ int main (int argc, char *argv[]) {
 
     follower.reset(
         new Follower(shmpath,
-                     [&frame_count, &frames_time, show_frame_timings](void *data, size_t size){
+                     [&frame_count, &frames_time, show_frame_timings, cartridge_return](void *data, size_t size){
                        float frame_duration = 0.f;
                        float framerate = 0.f;
                        if (show_frame_timings) {
@@ -110,6 +114,8 @@ int main (int argc, char *argv[]) {
                          }
                        }
 
+                       if(cartridge_return)
+                         std::cout << '\r';
                        std::cout << frame_count;
 
                        if (show_frame_timings) {
@@ -136,10 +142,13 @@ int main (int argc, char *argv[]) {
                        }
                        if (!etc.empty())
                          std::cout << etc;
-                       std::cout <<  std::endl;
+                       if (cartridge_return)
+                         std::cout <<  std::flush;
+                       else
+                         std::cout <<  std::endl;
                      },
                      [&](const std::string &str){
-                       std::cout << "connected: type " << str <<std::endl;
+                       std::cout << "connected: type " << str << std::endl;
                      },
                      [&](){
                        std::cout << "disconnected" << std::endl;
