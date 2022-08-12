@@ -134,16 +134,13 @@ int main (int argc, char *argv[]) {
                        else
                          ++frame_count;
                        std::string etc;
-                       auto end = max_val_displayed;
                        char *vals = static_cast<char *>(data);
-                       if (end * sizeof(char) > size) {
-                         end = size;
-                       } else
-                         etc = "...";
-                       while (0 != end) { 
-                         std::printf("%02X", vals[end] & 0xff );
-                         --end;
+                       auto val_index = 0u;
+                       while (val_index < max_val_displayed && val_index * sizeof(char) < size) { 
+                         std::printf("%02X", vals[val_index] & 0xff );
+                         ++val_index;
                        }
+                       if (val_index != size / sizeof(char)) std::printf("...");
                        if (!etc.empty())
                          std::cout << etc;
                        if (cartridge_return)
