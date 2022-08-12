@@ -38,7 +38,7 @@ void leave(int sig) {
 }
 
 void usage(const char *prog_name){
-  printf("usage: %s [-d] [-f] [-v] [-c] shmpath\n", prog_name);
+  printf("usage: %s [-d] [-f] [-v] [-c] [-m max_val_displayed] shmpath\n", prog_name);
   exit(1);
 }
 
@@ -47,11 +47,12 @@ int main (int argc, char *argv[]) {
   bool show_frame_timings = false;
   bool show_version = false;
   bool cartridge_return = false;
+  auto max_val_displayed = 15u;
   char *shmpath = nullptr;
 
   opterr = 0;
   int c = 0;
-  while ((c = getopt (argc, argv, "cdfv")) != -1)
+  while ((c = getopt (argc, argv, "cdfvm:")) != -1)
     switch (c)
       {
         case 'c':
@@ -62,6 +63,9 @@ int main (int argc, char *argv[]) {
           break;
         case 'f':
           show_frame_timings = true;
+          break;
+        case 'm':
+          max_val_displayed = static_cast<unsigned int>(atoi(optarg));
           break;
         case 'v':
           show_version = true;
@@ -96,7 +100,7 @@ int main (int argc, char *argv[]) {
 
     follower.reset(
         new Follower(shmpath,
-                     [&frame_count, &frames_time, show_frame_timings, cartridge_return](void *data, size_t size){
+                     [&](void *data, size_t size){
                        float frame_duration = 0.f;
                        float framerate = 0.f;
                        if (show_frame_timings) {
@@ -130,7 +134,7 @@ int main (int argc, char *argv[]) {
                        else
                          ++frame_count;
                        std::string etc;
-                       auto end = 15u;
+                       auto end = max_val_displayed;
                        char *vals = static_cast<char *>(data);
                        if (end * sizeof(char) > size) {
                          end = size;
