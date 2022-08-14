@@ -60,8 +60,25 @@ void leave(int sig) {
 }
 
 void usage(const char *prog_name){
-  printf("usage: %s [-d] [-t] [-v] [-c] [-m max_val_displayed] [-f format] [-n] shmpath\n", prog_name);
-  printf("format: x hexadecimal, f float, i16 int16_t, c char \n");
+  printf("usage: %s [OPTIONS] shmpath\n", prog_name);
+  printf(R""""(
+sdflow prints data from an existing Shmdata.
+It aims at providing a debugging tool with the Shmdata library.
+
+OPTIONS:
+  -f format  print values using 'format',
+               'x'   for hexadecimal
+               'f'   for float
+               'i16' for integer 16bits
+               'c'   for char
+  -m num     print first 'num' values for each frame (default is 12)
+  -c         print shmdata type and then information about last frame (carriage return)
+  -t         print frame timing information (delay and frame-per-seconds)
+  -n         print data only (no frame number, no size and no timing information)
+  -d         print debug option
+  -v         print Shmdata version and exits
+
+)"""");
   exit(1);
 }
 
@@ -70,14 +87,14 @@ int main (int argc, char *argv[]) {
   bool show_frame_timings = false;
   bool show_version = false;
   bool cartridge_return = false;
-  auto max_val_displayed = 15u;
+  auto max_val_displayed = 12u;
   char *shmpath = nullptr;
   std::string format = "x";
   bool print_info = true;
   
   opterr = 0;
   int c = 0;
-  while ((c = getopt (argc, argv, "cdf:tvm:l:n")) != -1)
+  while ((c = getopt (argc, argv, "cdf:tvm:n")) != -1)
     switch (c)
       {
         case 'c':
@@ -171,7 +188,7 @@ int main (int argc, char *argv[]) {
                          print_vals<float>(data, max_val_displayed, size, "% 1.2f ");
                        } else if (format == "c") {
                          print_vals<char>(data, max_val_displayed, size, "%c");
-                       } else if (format == "i") {
+                       } else if (format == "i16") {
                          print_vals<int16_t>(data, max_val_displayed, size, "% 05d ");
                        } else {
                          print_vals<char>(data, max_val_displayed, size, "%02x ");
@@ -195,4 +212,3 @@ int main (int argc, char *argv[]) {
   }
   return 0;
 }
-
