@@ -80,11 +80,24 @@ class UserTreeTestCase(TreeTestCase):
     def test_get_user_tree(self):
         # add some data in the user tree
         self.sio.call('user_tree.graft', data=(self.videotest_id, 'testData', True))
+        self.sio.call('user_tree.graft', data=(self.videotest_id, 'testTree.value', 4))
+
         # get a non empty user tree
         err, res = self.sio.call('user_tree.get', data=(self.videotest_id))
         self.assertIsNone(err)
         self.assertIsInstance(res, dict)
         self.assertEqual(res['testData'], True)
+
+        # query a non empty value
+        err, res = self.sio.call('user_tree.get', data=(self.videotest_id, 'testTree.value'))
+        self.assertIsNone(err)
+        self.assertIsInstance(res, int)
+        self.assertEqual(res, 4)
+
+        # query an empty value
+        err, res = self.sio.call('user_tree.get', data=(self.videotest_id, 'testTree.fail'))
+        self.assertIsNone(err)
+        self.assertEqual(res, None)
 
     def test_user_tree_grafted(self):
         err, res = self.sio.call('user_tree.graft', data=(self.videotest_id, 'testData', False))
@@ -147,10 +160,21 @@ class InfoTreeTestCase(TreeTestCase):
     ]
 
     def test_get_info_tree(self):
+        # get a non empty user tree
         err, res = self.sio.call('info_tree.get', data=(self.videotest_id))
         self.assertIsNone(err)
         self.assertIsInstance(res, dict)
         self.assertIsInstance(res['property'], list)
+
+        # query a non empty value
+        err, res = self.sio.call('info_tree.get', data=(self.videotest_id, 'property'))
+        self.assertIsNone(err)
+        self.assertIsInstance(res, list)
+
+        # query an empty value
+        err, res = self.sio.call('info_tree.get', data=(self.videotest_id, 'fail'))
+        self.assertIsNone(err)
+        self.assertEqual(res, None)
 
     def test_info_tree_grafted(self):
         err, res = self.sio.call('quiddity.invoke', data=(
@@ -169,6 +193,3 @@ class InfoTreeTestCase(TreeTestCase):
         event, pruned_data = self.rcvd_data.pop()
         self.assertEqual(event, 'info_tree.pruned')
         self.assertIsNotNone(pruned_data)
-        # id, path, value = pruned_data
-        # self.assertEqual(id, self.created_id)
-        # self.assertEqual(path, '.')  # not sure
