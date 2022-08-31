@@ -88,7 +88,11 @@ class QuiddityTestCase(SocketIOTestCase):
         time.sleep(1)
         self.assertIsNone(err)
         self.assertIsInstance(res, dict)
-        err, res = self.sio.call('quiddity.connect', data=(3, 2))
+        err, sfid = self.sio.call('quiddity.connect', data=(2, 3))
+        self.assertIsNone(err)
+        self.assertIsInstance(sfid, int)
+        time.sleep(1)
+        err, res = self.sio.call('quiddity.disconnect', data=(3, sfid))
         self.assertIsNone(err)
         self.assertTrue(res)
 

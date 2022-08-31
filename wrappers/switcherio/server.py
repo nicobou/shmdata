@@ -578,16 +578,51 @@ def connect_quiddity(
         dst_id {int} -- The destination quiddity identifier to connect the source to
 
     Returns:
-        tuple -- The error and response for this event
+        tuple -- The error or claw id for this event
     """
     src = sw.get_quid(src_id)
     dst = sw.get_quid(dst_id)
     try:
-        src.try_connect(dst)
-        return None, True
+        fclaw = dst.try_connect(src)
+        return None, fclaw.id()
     except Exception as e:
         sio.logger.exception(e)
         return f"Could not connect quiddities `{src.nickname()}` and `{dst.nickname()}`", False
+
+
+@sio.on('quiddity.disconnect')
+def disconnect_quiddity(
+    sid: str,
+    dst_id: int,
+    fclaw_id: Optional[int]
+) -> Tuple[Optional[str], bool]:
+    """Disconnect a destination quiddity and specific connection
+
+    Decorators:
+        sio.on
+
+    Arguments:
+        sid {str} -- The session identifier assigned to the client
+        dst_id {int} -- The destination quiddity identifier that is connected
+        fclaw_id {int} -- The connected follower claw id
+
+    Returns:
+        tuple -- The error and response for this event
+    """
+    dst = sw.get_quid(dst_id)
+    is_disconnected = False
+
+    try:
+        fclaws = [claw for claw in dst.get_follower_claws() if claw.id() == fclaw_id]
+
+        if len(fclaws) != 1:
+            raise Exception("Could not find connected claw")
+        else:
+            is_disconnected = fclaws[0].disconnect()
+        return None, is_disconnected
+    except Exception as e:
+        sio.logger.exception(e)
+        return f"Could not disconnect quiddity `{dst.nickname()}`", is_disconnected
 
 
 @sio.on('quiddity.invoke')

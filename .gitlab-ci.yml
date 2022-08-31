@@ -5,7 +5,7 @@ services:
 
 variables:
   BUILD_DIR: /opt/switcher
-  CONTAINER_TAG_PREFIX: $CI_REGISTRY/sat-metalab/switcher:deps
+  CONTAINER_TAG_PREFIX: $CI_REGISTRY_IMAGE:deps
   CTEST_OUTPUT_ON_FAILURE: '1'
   GIT_SUBMODULE_STRATEGY: recursive
 
