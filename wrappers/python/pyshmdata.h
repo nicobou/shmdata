@@ -30,7 +30,7 @@ extern "C" {
 
 /*************/
 // Any-data-writer
-typedef struct {
+typedef struct pyshmdata_WriterObject_t {
   PyObject_HEAD PyObject* path{NULL};
   PyObject* datatype{NULL};
   PyObject* framesize{NULL};
@@ -47,7 +47,7 @@ PyObject* Writer_push(pyshmdata_WriterObject* self, PyObject* args, PyObject* kw
 
 /*************/
 // Any-data-reader
-typedef struct {
+typedef struct pyshmdata_ReaderObject_t {
   PyObject_HEAD PyObject* path{NULL};
   PyObject* datatype{NULL};
   PyObject* parsed_datatype{NULL};
