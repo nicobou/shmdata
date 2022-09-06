@@ -32,7 +32,8 @@ class sysVShm : public SafeBoolIdiom {
   sysVShm& operator=(const sysVShm&) = delete;
   sysVShm& operator=(sysVShm&&) = default;
 
-  void* get_mem() { return shm_; };
+  void* get_mem() { return shm_; }
+  std::size_t get_size() const { return size_; }
   // Maximum size in bytes for a shared memory segment
   static unsigned long get_shmmax(AbstractLogger* log);
   // System-wide limit on the number of shared memory segments
