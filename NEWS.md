@@ -2,6 +2,39 @@ sNEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 3.1.10 (2022-09-06)
+---------------------------
+This is an official release in the 3.1 stable series.
+
+Bug fixes:
+* 👷 be more lenient with shmdata delay test for CI performances
+* 🐛 fix pyquid session segfault
+* fix gst_element_get_request_pad not available after gstreamer version 1.20
+* 🐛 fix claw description for dynamic shmdata writer filled with label instead of description
+* 🐛 fix default configuration is lost when configuration is loaded from a file
+* 👷 disable WEBRTC plugin and SWITCHERIO build and test for Ubuntu 22.04
+
+New Features:
+* ⬆️  port to Ubuntu 22.04
+* ✨ add a query argument on top of the user_tree and info_tree APIs in swIO
+* ✨ add a disconnect api for the quiddity
+
+Improvements:
+* add build Docker image for dependencies in Ubuntu 22.04, and build debian package for ubuntu 22.04
+* 🔧 add a cmake option for Switcher IO, and remove forced installation of SwitcherIO python dependencies during cmake configuration
+* remove deprecated and useless PyEval_InitThreads
+* removed asyncio.get_event_loop in webrtc python tests
+* add gstreamer1.0-nice inubuntu 22.04  dependency
+* fix deprecation warning with asyncio
+* 👷 add 22.04 into CI
+* ✅ check_configuration ensures shm.prefix and log configuration are not lost after configuration reload
+* shmshot: do not quit in callback
+
+Documentation:
+* 🚸 add an example that registers to sip
+* 📝 add doc for build and install for Ubuntu 22.04
+* updated runtime deps for ubuntu 22.04
+
 switcher 3.1.8 (2022-07-26)
 ---------------------------
 This is an official release in the 3.1 stable series.
