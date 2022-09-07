@@ -137,14 +137,6 @@ int pyQuiddity::Quiddity_init(pyQuiddityObject* self, PyObject* args, PyObject* 
 
   self->interpreter_state = PyThreadState_Get()->interp;
 
-  // @NOTE: Deprecated function which does nothing.
-  // In Python 3.6 and older, this function created the GIL if it didn’t exist.
-  // Changed in version 3.9: The function now does nothing.
-  // Changed in version 3.7: This function is now called by Py_Initialize(), so you don’t have to
-  // call it yourself anymore. Changed in version 3.2: This function cannot be called before
-  // Py_Initialize() anymore. Deprecated since version 3.9, will be removed in version 3.11.
-  PyEval_InitThreads();
-
   // notify quiddity created
   switcher->quids<MPtr(&quiddity::Container::notify_quiddity_created)>(quid.get());
 
@@ -376,7 +368,7 @@ PyObject* pyQuiddity::invoke_async(pyQuiddityObject* self, PyObject* args, PyObj
           arglist = Py_BuildValue("(OO)", res_object, user_data);
         else
           arglist = Py_BuildValue("(O)", res_object);
-        PyObject* pyobjresult = PyEval_CallObject(cb, arglist);
+        PyObject* pyobjresult = PyObject_CallObject(cb, arglist);
         PyObject* pyerr = PyErr_Occurred();
         if (pyerr != nullptr) {
           PyErr_Print();
@@ -584,7 +576,7 @@ bool pyQuiddity::subscribe_to_signal(pyQuiddityObject* self,
         else
           arglist =
               Py_BuildValue("(O)", pyInfoTree::make_pyobject_from_c_ptr(tmp_tree.get(), false));
-        PyObject* pyobjresult = PyEval_CallObject(cb, arglist);
+        PyObject* pyobjresult = PyObject_CallObject(cb, arglist);
         PyObject* pyerr = PyErr_Occurred();
         if (pyerr != nullptr) PyErr_Print();
         Py_DECREF(arglist);
@@ -632,7 +624,7 @@ bool pyQuiddity::subscribe_to_property(pyQuiddityObject* self,
           arglist = Py_BuildValue(
               "(O)",
               pyInfoTree::any_to_pyobject(quid->prop<MPtr(&property::PBag::get_any)>(prop_id)));
-        PyObject* pyobjresult = PyEval_CallObject(cb, arglist);
+        PyObject* pyobjresult = PyObject_CallObject(cb, arglist);
         PyObject* pyerr = PyErr_Occurred();
         if (pyerr != nullptr) PyErr_Print();
         Py_DECREF(arglist);

@@ -19,6 +19,40 @@ sudo apt install switcher-doc # documentation
 sudo apt install switcher-plugins-nvidia # install the nvidia video encoding Quiddity
 ```
 
+## Quick build and installation (Ubuntu 22.04)
+
+Build and install **switcher** from the command line:
+
+```bash
+# clone repository
+sudo apt install git
+git clone https://gitlab.com/sat-metalab/switcher.git
+
+cd switcher
+
+# uncomment to checkout a specific version
+# git checkout 2.1.38
+
+# install dependencies
+sudo apt install $(cat ./deps/apt-{build,runtime}-ubuntu-22.04)
+
+# nvidia dependencies: uncomment next line to build video encoding with the nvidia graphics card
+# sudo apt install $(cat ./deps/apt-{build,runtime}-nvidia-deps-ubuntu-22.04)
+
+# python dependencies
+pip3 install -r ./deps/pip3-ubuntu22.04
+
+# update or initialize git submodules recursively
+git submodule update --init --recursive
+
+# Generate make recipes
+cmake -B build -DENABLE_GPL=ON -DCMAKE_BUILD_TYPE=Release # replace "Release" by "Debug" for development
+
+# compile and install program on the system
+make -sC build -j`nproc`
+sudo make install -sC build && sudo ldconfig
+```
+
 ## Quick build and installation (Ubuntu 20.04)
 
 Build and install **switcher** from the command line:
@@ -105,10 +139,11 @@ Note: if you wish to use GPU-accelerated video decoding, you will also need to b
     $ make test
 ```
 
-* To generate installation packages (as configured in `CMakeLists.txt`):
+* To generate debian installation packages (as configured in `CMakeLists.txt`):
 
 ```
-    $ make package
+    $ sudo apt install file
+    $ make package # <- generate a debian package
 ```
 
 * To generate a source package:

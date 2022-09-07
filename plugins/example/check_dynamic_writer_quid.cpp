@@ -82,6 +82,14 @@ int main() {
         auto meta_shmdata_swid = dynw->claw<MPtr(&Claw::get_swid)>("video%");
         conspec_tree->cfor_each_in_array("writer", [&](const InfoTree* tree) {
           const auto label = tree->branch_get_value("label").as<std::string>();
+          // check descriptions
+          if (label == "videoA")
+            assert(tree->branch_get_value("description").as<std::string>() ==
+                   "A is a video Shmdata");
+          if (label == "videoB")
+            assert(tree->branch_get_value("description").as<std::string>() ==
+                   "B is a video Shmdata");
+          // check from_swid is correct
           const auto from_swid = tree->branch_get_value("from_swid").as<swid_t>();
           if (label == "videoA" || label == "videoB") {
             swids.emplace_back(tree->branch_get_value("swid"));

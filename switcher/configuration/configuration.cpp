@@ -35,18 +35,72 @@ namespace fu = fileutils;
 const int Configuration::kMaxConfigurationFileSize = 100000000;  // 100MB
 
 Configuration::Configuration(bool debug, void_func_t _post_load, void_func_t _post_file_sink)
-    : post_load(_post_load), post_file_sink(_post_file_sink) {
+    : debug_(debug),
+      post_load_(_post_load),
+      post_file_sink_(_post_file_sink),
+      logger_(spdlog::get("switcher")) {
   // intialize default config tree from the `global configuration file`
   const fs::path config_file_path = this->get_default_global_path();
 
-  // get global switcher logger
-  this->logger = spdlog::get("switcher");
-
   // init configuration from file
-  if (!this->from_file(config_file_path))
-    // set an empty config if anything went wrong
-    this->set(InfoTree::make());
+  if (!this->from_file(config_file_path)) {
+    // set a default config if anything went wrong
+    configuration_ = InfoTree::make();
+    set_defaults();
+  }
+}
 
+bool Configuration::from_file(const std::string& file_path) {
+  // check for file existance on disk
+  if (!fs::is_regular_file(file_path)) {
+    LOGGER_DEBUG(logger_, "file {} does not exist", file_path);
+    return false;
+  }
+  // opening file
+  std::ifstream file_stream(file_path);
+  if (!file_stream) {
+    LOGGER_DEBUG(logger_, "cannot open {} for loading configuration", file_path);
+    return false;
+  }
+  // get file content into a string
+  std::string config;
+  file_stream.seekg(0, std::ios::end);
+  auto size = file_stream.tellg();
+  if (0 == size) {
+    LOGGER_WARN(logger_, "file {} is empty", file_path);
+    return false;
+  }
+  if (size > kMaxConfigurationFileSize) {
+    LOGGER_WARN(
+        logger_, "file {} is too large, max is {:d} bytes", file_path, kMaxConfigurationFileSize);
+    return false;
+  }
+  config.reserve(size);
+  file_stream.seekg(0, std::ios::beg);
+  config.assign((std::istreambuf_iterator<char>(file_stream)), std::istreambuf_iterator<char>());
+  // building the tree
+  auto tree = infotree::json::deserialize(config);
+  if (!tree) {
+    LOGGER_WARN(logger_, "configuration tree cannot be constructed from {}", file_path);
+    return false;
+  }
+
+  file_stream.close();
+
+  // writing new configuration
+  configuration_ = tree;
+
+  set_defaults();
+  return true;
+}
+
+bool Configuration::from_tree(const InfoTree* tree) {
+  configuration_ = InfoTree::copy(tree);
+  set_defaults();
+  return true;
+}
+
+void Configuration::set_defaults() {
   // check for default `logs` settings
   std::string filepath = this->get_value(".logs.filepath");
   if (filepath.empty()) {
@@ -73,20 +127,20 @@ Configuration::Configuration(bool debug, void_func_t _post_load, void_func_t _po
   // append file sink into logger `sinks` vector
   auto file_sink =
       std::make_shared<spdlog::sinks::rotating_file_sink_mt>(filepath, max_size, max_files);
-  this->logger->sinks().push_back(file_sink);
+  logger_->sinks().push_back(file_sink);
 
   // set logger pattern
-  post_file_sink();
+  post_file_sink_();
 
   // check log level
   const std::string level_name = this->get_value(".logs.log_level");
   auto level = spdlog::level::from_str(level_name);
-  this->logger->set_level(level);
+  logger_->set_level(level);
 
   // debug takes priority over configured log level
-  if (debug && level > spdlog::level::debug) {
+  if (debug_ && level > spdlog::level::debug) {
     this->set_value(".logs.log_level", "debug");
-    this->logger->set_level(spdlog::level::debug);
+    logger_->set_level(spdlog::level::debug);
   }
 
   // check for default `shm` settings
@@ -100,57 +154,11 @@ Configuration::Configuration(bool debug, void_func_t _post_load, void_func_t _po
 
   std::string shmprefix = this->get_value(".shm.prefix");
   if (shmprefix.empty()) this->set_value(".shm.prefix", "switcher_");
+
+  post_load_();
 }
 
-bool Configuration::from_file(const std::string& file_path) {
-  // check for file existance on disk
-  if (!fs::is_regular_file(file_path)) {
-    LOGGER_DEBUG(this->logger, "file {} does not exist", file_path);
-    return false;
-  }
-  // opening file
-  std::ifstream file_stream(file_path);
-  if (!file_stream) {
-    LOGGER_DEBUG(this->logger, "cannot open {} for loading configuration", file_path);
-    return false;
-  }
-  // get file content into a string
-  std::string config;
-  file_stream.seekg(0, std::ios::end);
-  auto size = file_stream.tellg();
-  if (0 == size) {
-    LOGGER_WARN(this->logger, "file {} is empty", file_path);
-    return false;
-  }
-  if (size > kMaxConfigurationFileSize) {
-    LOGGER_WARN(this->logger,
-                "file {} is too large, max is {:d} bytes",
-                file_path,
-                kMaxConfigurationFileSize);
-    return false;
-  }
-  config.reserve(size);
-  file_stream.seekg(0, std::ios::beg);
-  config.assign((std::istreambuf_iterator<char>(file_stream)), std::istreambuf_iterator<char>());
-  // building the tree
-  auto tree = infotree::json::deserialize(config);
-  if (!tree) {
-    LOGGER_WARN(this->logger, "configuration tree cannot be constructed from {}", file_path);
-    return false;
-  }
-
-  file_stream.close();
-
-  // writing new configuration
-  configuration_ = tree;
-
-  post_load();
-  return true;
-}
-
-InfoTree::ptr Configuration::get() { return configuration_; }
-
-void Configuration::set(InfoTree::ptr conf) { configuration_ = conf; }
+const InfoTree::ptr Configuration::get() { return configuration_; }
 
 fs::path Configuration::get_default_global_path() {
   if (getgid()) {
@@ -179,16 +187,14 @@ fs::path Configuration::get_default_log_path() {
 std::vector<fs::path> Configuration::list_extra_configs() {
   // the list for extra configuration paths
   std::vector<fs::path> extra_configs;
-  // retrieve raw pointer to current configuration instance
-  const auto config_tree = this->get();
   // check if value for config key is a string
-  auto path = config_tree->branch_get_value("extraConfig");
+  auto path = configuration_->branch_get_value("extraConfig");
   if (path.is<std::string>()) {
     // append it to extra configs list
     extra_configs.push_back(fs::path(path));
   } else {
     // might be an array
-    auto paths = config_tree->copy_leaf_values("extraConfig");
+    auto paths = configuration_->copy_leaf_values("extraConfig");
     for (auto& it : paths) {
       // append it to extra configs list
       extra_configs.push_back(fs::path(it));
@@ -205,7 +211,7 @@ std::string Configuration::get_extra_config(const std::string& name) {
       // read and return content
       return fu::get_content(path.c_str());
   }
-  LOGGER_WARN(this->logger, "extra configuration {} was not found", name);
+  LOGGER_WARN(logger_, "extra configuration {} was not found", name);
   // extra configuration identified by `name` was not found
   return std::string();
 }

@@ -9,7 +9,7 @@ project(switcher)
 set(SWITCHER_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(SWITCHER_VERSION_MAJOR 3)
 set(SWITCHER_VERSION_MINOR 1)
-set(SWITCHER_VERSION_PATCH 8)
+set(SWITCHER_VERSION_PATCH 10)
 set(SWITCHER_VERSION_STRING ${SWITCHER_VERSION_MAJOR}.${SWITCHER_VERSION_MINOR}.${SWITCHER_VERSION_PATCH})
 set(SWITCHER_API_VERSION ${SWITCHER_VERSION_MAJOR}.${SWITCHER_VERSION_MINOR})
 set(SWITCHER_LIBRARY switcher-${SWITCHER_API_VERSION})
@@ -108,6 +108,14 @@ pkg_check_modules(GST REQUIRED gstreamer-1.0 gstreamer-base-1.0 gstreamer-contro
 pkg_check_modules(GLIB REQUIRED glib-2.0)
 pkg_check_modules(JSONGLIB REQUIRED json-glib-1.0)
 pkg_check_modules(LIBSAMPLERATE samplerate)
+
+# port for GStreamer "gst_element_get_request_pad" refactoring
+# this enable to build on both ubuntu 20.04 and ubuntu 22.04
+pkg_check_modules(GSTTESTVERSION REQUIRED gstreamer-1.0)
+if(GSTTESTVERSION_VERSION VERSION_LESS "1.20")
+ add_definitions(-DHAS_GST_ELEMENT_GET_REQUEST_PAD)
+endif()
+
 
 # LOGGER
 find_package(spdlog REQUIRED)

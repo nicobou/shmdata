@@ -578,16 +578,51 @@ def connect_quiddity(
         dst_id {int} -- The destination quiddity identifier to connect the source to
 
     Returns:
-        tuple -- The error and response for this event
+        tuple -- The error or claw id for this event
     """
     src = sw.get_quid(src_id)
     dst = sw.get_quid(dst_id)
     try:
-        src.try_connect(dst)
-        return None, True
+        fclaw = dst.try_connect(src)
+        return None, fclaw.id()
     except Exception as e:
         sio.logger.exception(e)
         return f"Could not connect quiddities `{src.nickname()}` and `{dst.nickname()}`", False
+
+
+@sio.on('quiddity.disconnect')
+def disconnect_quiddity(
+    sid: str,
+    dst_id: int,
+    fclaw_id: Optional[int]
+) -> Tuple[Optional[str], bool]:
+    """Disconnect a destination quiddity and specific connection
+
+    Decorators:
+        sio.on
+
+    Arguments:
+        sid {str} -- The session identifier assigned to the client
+        dst_id {int} -- The destination quiddity identifier that is connected
+        fclaw_id {int} -- The connected follower claw id
+
+    Returns:
+        tuple -- The error and response for this event
+    """
+    dst = sw.get_quid(dst_id)
+    is_disconnected = False
+
+    try:
+        fclaws = [claw for claw in dst.get_follower_claws() if claw.id() == fclaw_id]
+
+        if len(fclaws) != 1:
+            raise Exception("Could not find connected claw")
+        else:
+            is_disconnected = fclaws[0].disconnect()
+        return None, is_disconnected
+    except Exception as e:
+        sio.logger.exception(e)
+        return f"Could not disconnect quiddity `{dst.nickname()}`", is_disconnected
 
 
 @sio.on('quiddity.invoke')
@@ -624,7 +659,11 @@ async def invoke_quiddity_method(
 # ========
 
 @sio.on('info_tree.get')
-def get_quiddity_info_tree(sid: str, quid_id: int) -> Tuple[Optional[str], Optional[str]]:
+def get_quiddity_info_tree(
+    sid: str,
+    quid_id: int,
+    tree_path: Optional[str] = None
+) -> Tuple[Optional[str], Optional[str]]:
     """Retrieves the info tree (read only) of a quiddity.
 
    Decorators:
@@ -633,20 +672,33 @@ def get_quiddity_info_tree(sid: str, quid_id: int) -> Tuple[Optional[str], Optio
    Arguments:
         sid {str} -- The session identifier assigned to the client
         quid_id {int} -- The quiddity identifier
+        tree_path {Optional[str]} -- Get a value from a path of the tree
 
    Returns:
         tuple -- The error and response for this event
     """
     try:
-        info_tree = sw.get_quid(quid_id).get_info_tree_as_json()
-        return None, json.loads(str(info_tree))
+        quid = sw.get_quid(quid_id)
+        info_tree = {}
+
+        if not tree_path:
+            full_tree = quid.get_info_tree_as_json()
+            info_tree = json.loads(str(full_tree))
+        else:
+            info_tree = quid.get_info(tree_path)
+
+        return None, info_tree
     except Exception as e:
         sio.logger.exception(e)
         return str(e), None
 
 
 @sio.on('user_tree.get')
-def get_quiddity_user_tree(sid: str, quid_id: int) -> Tuple[Optional[str], Optional[str]]:
+def get_quiddity_user_tree(
+    sid: str,
+    quid_id: int,
+    tree_path: Optional[str] = None
+) -> Tuple[Optional[str], Optional[str]]:
     """Retrieves the user tree of a quiddity.
 
    Decorators:
@@ -655,7 +707,7 @@ def get_quiddity_user_tree(sid: str, quid_id: int) -> Tuple[Optional[str], Optio
    Arguments:
         sid {str} -- The session identifier assigned to the client
         quid_id {int} -- The quiddity identifier
-
+        tree_path {Optional[str]} -- Get a value from a path of the tree
    Returns:
         tuple -- The error and response for this event
     """
@@ -664,8 +716,13 @@ def get_quiddity_user_tree(sid: str, quid_id: int) -> Tuple[Optional[str], Optio
 
         if user_tree == 'null':
             user_tree = {}
+        elif tree_path is not None:
+            user_tree = user_tree.get(tree_path)
 
         return None, json.loads(str(user_tree))
+    except ValueError:
+        # if this is not a json, this is None or a primitive value
+        return None, user_tree
     except Exception as e:
         sio.logger.exception(e)
         return str(e), None
@@ -910,3 +967,4 @@ def clear_session(sid: str):
 
 if __name__ == '__main__':
     start_server()
+    loop.close()

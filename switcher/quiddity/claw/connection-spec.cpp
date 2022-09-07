@@ -310,7 +310,7 @@ swid_t ConnectionSpec::allocate_swid_from_meta(swid_t swid, const shm_spec_t& sp
   InfoTree::ptr writer_tree = InfoTree::make();
   writer_tree->vgraft("label", label);
   writer_tree->vgraft("swid", id);
-  writer_tree->vgraft("description", spec.label);
+  writer_tree->vgraft("description", spec.description);
   writer_tree->vgraft("from_swid", swid);
   if (spec.can_dos.empty()) {
     const auto& it = writer_can_do_.find(swid);

@@ -5,7 +5,7 @@ services:
 
 variables:
   BUILD_DIR: /opt/switcher
-  CONTAINER_TAG_PREFIX: $CI_REGISTRY/sat-metalab/switcher:deps
+  CONTAINER_TAG_PREFIX: $CI_REGISTRY_IMAGE:deps
   CTEST_OUTPUT_ON_FAILURE: '1'
   GIT_SUBMODULE_STRATEGY: recursive
 
@@ -24,6 +24,8 @@ Docker -- Dependency Image:
     - docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY}
     - docker build -t $CONTAINER_TAG_PREFIX-ubuntu2004 -f dockerfiles/Dockerfile-deps-Ubuntu-20.04 --target build .
     - docker push $CONTAINER_TAG_PREFIX-ubuntu2004
+    - docker build -t $CONTAINER_TAG_PREFIX-ubuntu2204 -f dockerfiles/Dockerfile-deps-Ubuntu-22.04 --target build .
+    - docker push $CONTAINER_TAG_PREFIX-ubuntu2204
   except:
     - develop
     - master
@@ -32,36 +34,61 @@ Build -- Ubuntu 20.04:
   stage: build
   image: $CONTAINER_TAG_PREFIX-ubuntu2004
   script:
-    - cmake -B build -DENABLE_GPL="ON" -DCMAKE_BUILD_TYPE="Release"
-    - make -sC build -j`nproc`
+    - cmake -B build20.04 -DENABLE_GPL="ON" -DCMAKE_BUILD_TYPE="Release"
+    - make -sC build20.04 -j`nproc`
   except:
     - develop
     - master
   artifacts:
     paths:
-      - build
+      - build20.04
+
+Build -- Ubuntu 22.04:
+  stage: build
+  image: $CONTAINER_TAG_PREFIX-ubuntu2204
+  script:
+    - cmake -B build22.04 -DENABLE_GPL="ON" -DPLUGIN_NVENC=OFF -DPLUGIN_WEBRTC=OFF -DWITH_SWITCHERIO=OFF -DCMAKE_BUILD_TYPE="Release"
+    - make -sC build22.04 -j`nproc`
+  except:
+    - develop
+    - master
+  artifacts:
+    paths:
+      - build22.04
 
 Test -- Ubuntu 20.04:
   stage: test
   image: $CONTAINER_TAG_PREFIX-ubuntu2004
   script:
     - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y xvfb
-    - make install -sC build && ldconfig
+    - make install -sC build20.04 && ldconfig
     - pulseaudio --start
-    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make test -sC build
+    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make test -sC build20.04
+  except:
+    - develop
+    - master
+
+Test -- Ubuntu 22.04:
+  stage: test
+  image: $CONTAINER_TAG_PREFIX-ubuntu2204
+  script:
+    - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y xvfb
+    - make install -sC build22.04 && ldconfig
+    - pulseaudio --start
+    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make test -sC build22.04
   except:
     - develop
     - master
 
 # Package
-Test -- Package:
+Test -- Package Ubuntu 20.04:
   stage: test
   image: $CONTAINER_TAG_PREFIX-ubuntu2004
   script:
-    - cmake -B build -DENABLE_GPL=ON -DCMAKE_BUILD_TYPE="Release"
+    - cmake -B build20.04 -DENABLE_GPL=ON -DCMAKE_BUILD_TYPE="Release"
     - apt-key del 7fa2af80 && apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub
     - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y xvfb
-    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make package_source_test -sC build
+    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make package_source_test -sC build20.04
   only:
     - develop
     - test-switcher-ci
@@ -88,7 +115,7 @@ Coverage -- Package:
     - test-switcher-ci
 
 # Debian Package
-Debian -- Package:
+Debian -- Package Ubuntu 20.04:
   stage: deploy
   image: $CONTAINER_TAG_PREFIX-ubuntu2004
   script:
@@ -101,6 +128,23 @@ Debian -- Package:
     name: "switcher_package_${CI_BUILD_REF_NAME}"
     paths:
     - switcher_ubuntu20.04_latest_amd64.deb
+  only:
+    - master
+    - test-switcher-ci
+
+Debian -- Package Ubuntu 22.04:
+  stage: deploy
+  image: $CONTAINER_TAG_PREFIX-ubuntu2204
+  script:
+    - DEBIAN_FRONTEND=noninteractive apt update -y
+    - rm -rf build && mkdir build && cd build
+    - cmake -DENABLE_GPL=ON -DPLUGIN_NVENC=OFF -DPLUGIN_WEBRTC=OFF -DWITH_SWITCHERIO=OFF -DCMAKE_INSTALL_PREFIX=/usr ..
+    - make -j`nproc` package
+    - mv *.deb ../switcher_ubuntu22.04_latest_amd64.deb
+  artifacts:
+    name: "switcher_package_${CI_BUILD_REF_NAME}"
+    paths:
+    - switcher_ubuntu22.04_latest_amd64.deb
   only:
     - master
     - test-switcher-ci

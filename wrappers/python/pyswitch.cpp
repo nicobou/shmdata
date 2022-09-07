@@ -525,8 +525,7 @@ bool pySwitch::subscribe_to_signal(pySwitchObject* self,
       arglist = Py_BuildValue("(nO)", id, user_data);
     else
       arglist = Py_BuildValue("(n)", id);
-
-    PyObject* pyobjresult = PyEval_CallObject(cb, arglist);
+    PyObject* pyobjresult = PyObject_CallObject(cb, arglist);
     PyObject* pyerr = PyErr_Occurred();
     if (pyerr != nullptr) PyErr_Print();
     Py_DECREF(arglist);

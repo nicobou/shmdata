@@ -120,7 +120,7 @@ class Claw : public SafeBoolIdiom {
   sfid_t connect_quid(sfid_t local_sfid, quiddity::qid_t writer_quid) const;
 
   /**
-   * Connect with an other Quiddity. The method is automatically finding
+   * Connect with another Quiddity. The method is automatically finding
    * the first compatible shmdata writer available with the target Quiddity.
    *
    * \param writer_quid the identifier of the Quiddity hosting the Shmdata writer
@@ -322,7 +322,8 @@ class Claw : public SafeBoolIdiom {
    */
 
   swid_t add_writer_to_meta(swid_t id, const shm_spec_t& spec);
-  /*
+
+  /**
    * Remove a writer from a meta writer specification.
    * It updates the connection specification.
    * This method is suposed to be used from Quiddity plugins.

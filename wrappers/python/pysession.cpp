@@ -58,6 +58,7 @@ int pySession::tp_init(SessionObject* self, PyObject* args, PyObject* Py_UNUSED(
   }
 
   self->pyswitch = pyswitch;
+  Py_INCREF(self->pyswitch);
   auto pyswitch_obj = reinterpret_cast<pySwitch::pySwitchObject*>(pyswitch);
   // initialize csession for switcher
   self->csession = pyswitch_obj->switcher.get()->session;

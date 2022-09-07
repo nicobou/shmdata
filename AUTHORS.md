@@ -5,8 +5,8 @@
 * François Ubald Brien
 * Ludovic Schreiber
 * Aurélien Perronneau (OpSocket)
-* Michał Seta
 * Valentin Laurent
+* Michał Seta
 * Hantz-Carly F. Vius
 * Olivier Gauthier
 * Alexandre Quessy

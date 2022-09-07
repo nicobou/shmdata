@@ -95,9 +95,9 @@ int main() {
           auto reception_time = std::chrono::duration_cast<std::chrono::milliseconds>(
                                     std::chrono::system_clock::now().time_since_epoch())
                                     .count();
-          // We are a bit more lenient with the 120ms margin because of the setup time of the test
+          // We are a bit more lenient with the 200ms margin because of the setup time of the test
           // and the CI possibly low performance.
-          if (std::abs(reception_time - start_time - 1000) < 120) notify_success();
+          if (std::abs(reception_time - start_time - 1000) < 200) notify_success();
         },
         nullptr,
         nullptr,

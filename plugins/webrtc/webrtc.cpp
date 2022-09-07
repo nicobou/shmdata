@@ -1052,7 +1052,11 @@ bool Webrtc::add_peer_to_pipeline(const std::string& peer) {
       return false;
     }
 
+#ifdef HAS_GST_ELEMENT_GET_REQUEST_PAD
     unique_gst<GstPad> audio_sinkpad(gst_element_get_request_pad(webrtc, "sink_%u"));
+#else
+    unique_gst<GstPad> audio_sinkpad(gst_element_request_pad_simple(webrtc, "sink_%u"));
+#endif
     if (!audio_sinkpad) {
       LOGGER_ERROR(
           this->logger,
@@ -1076,7 +1080,11 @@ bool Webrtc::add_peer_to_pipeline(const std::string& peer) {
       return false;
     }
 
+#ifdef HAS_GST_ELEMENT_GET_REQUEST_PAD
     unique_gst<GstPad> video_sinkpad(gst_element_get_request_pad(webrtc, "sink_%u"));
+#else
+    unique_gst<GstPad> video_sinkpad(gst_element_request_pad_simple(webrtc, "sink_%u"));
+#endif
     if (!video_sinkpad) {
       LOGGER_ERROR(
           this->logger,
@@ -1099,7 +1107,11 @@ bool Webrtc::add_peer_to_pipeline(const std::string& peer) {
     // -------------    ===============
     // | video tee |--->| video queue |
     // -------------    ---------------
+#ifdef HAS_GST_ELEMENT_GET_REQUEST_PAD
     unique_gst<GstPad> audio_srcpad(gst_element_get_request_pad(audio_tee.get(), "src_%u"));
+#else
+    unique_gst<GstPad> audio_srcpad(gst_element_request_pad_simple(audio_tee.get(), "src_%u"));
+#endif
     if (!audio_srcpad) {
       LOGGER_ERROR(this->logger,
                    "Webrtc::add_peer_to_pipeline::Failed to retrieve 'src_%u' pad from [audiotee]");
@@ -1121,7 +1133,11 @@ bool Webrtc::add_peer_to_pipeline(const std::string& peer) {
       return false;
     }
 
+#ifdef HAS_GST_ELEMENT_GET_REQUEST_PAD
     unique_gst<GstPad> video_srcpad(gst_element_get_request_pad(video_tee.get(), "src_%u"));
+#else
+    unique_gst<GstPad> video_srcpad(gst_element_request_pad_simple(video_tee.get(), "src_%u"));
+#endif
     if (!video_srcpad) {
       LOGGER_ERROR(this->logger,
                    "Webrtc::add_peer_to_pipeline::Failed to retrieve 'src_%u' pad from [videotee]");
