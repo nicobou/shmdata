@@ -147,6 +147,43 @@ def on_info_tree_pruned(tree_path: pyquid.InfoTree, quid_id: int) -> None:
     asyncio.run_coroutine_threadsafe(sio.emit('info_tree.pruned', (quid_id, path)), loop)
 
 
+def on_connection_spec_added(tree_path: pyquid.InfoTree, quid_id: int) -> None:
+    """Switcher callback to notify clients that a connection spec is added.
+
+    Arguments:
+        tree_path {InfoTree} -- An `InfoTree` that contains the updated connection spec.
+        quid_id {int} -- The identifier of the updated `Quiddity`.
+    """
+    if quid_id not in sw.list_ids():
+        return
+
+    quid = sw.get_quid(quid_id)
+    path = tree_path.get()
+    value = quid.get_info_tree_as_json(path)
+
+    sio.logger.debug(f'`{quid_id}` has a connection spec added at `{path}`')
+
+    asyncio.run_coroutine_threadsafe(
+        sio.emit('connection_spec.added', (quid_id, path, value)), loop)
+
+
+def on_connection_spec_removed(tree_path: pyquid.InfoTree, quid_id: int) -> None:
+    """Switcher callback to notify clients that a connection spec is removed.
+
+    Arguments:
+        tree_path {InfoTree} -- An `InfoTree` that contains the updated connection spec.
+        quid_id {int} -- The identifier of the updated `Quiddity`.
+    """
+    if quid_id not in sw.list_ids():
+        return
+    path = tree_path.get()
+
+    sio.logger.debug(f'`{quid_id}` has a connection spec removed at `{path}`')
+
+    asyncio.run_coroutine_threadsafe(
+        sio.emit('connection_spec.removed', (quid_id, path)), loop)
+
+
 def on_property_updated(value: Any, prop_data: Dict[str, str]) -> None:
     """Switcher callback to notify clients of the successful property update.
 
@@ -200,7 +237,9 @@ def set_signal_subscriptions(quid: pyquid.Quiddity) -> None:
         'on-user-data-grafted': on_user_tree_grafted,
         'on-user-data-pruned': on_user_tree_pruned,
         'on-tree-grafted': on_info_tree_grafted,
-        'on-tree-pruned': on_info_tree_pruned
+        'on-tree-pruned': on_info_tree_pruned,
+        'on-connection-spec-added': on_connection_spec_added,
+        'on-connection-spec-removed': on_connection_spec_removed
     }
 
     for signal, method in quiddity_signals.items():
@@ -716,7 +755,7 @@ def get_quiddity_user_tree(
 
         if user_tree == 'null':
             user_tree = {}
-        elif tree_path is not None:
+        elif tree_path:
             user_tree = user_tree.get(tree_path)
 
         return None, json.loads(str(user_tree))
