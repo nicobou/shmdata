@@ -27,9 +27,16 @@ Shmdata is intended to be used as an extension to applications in order to enabl
 
 ### Installation
 
-On ubuntu 20.04, shmdata can be installed as follows:
+On ubuntu 20.04 (amd64), shmdata can be installed as follows:
 ```
-sudo add-apt-repository ppa:sat-metalab/metalab
+sudo apt install -y coreutils wget && \
+wget -qO - https://sat-mtl.gitlab.io/distribution/mpa-focal-amd64-nvidia/sat-metalab-mpa-keyring.gpg \
+    | gpg --dearmor \
+    | sudo dd of=/usr/share/keyrings/sat-metalab-mpa-keyring.gpg && \
+echo 'deb [ arch=amd64, signed-by=/usr/share/keyrings/sat-metalab-mpa-keyring.gpg ] https://sat-mtl.gitlab.io/distribution/mpa-focal-amd64-nvidia/debs/ sat-metalab main' \
+    | sudo tee /etc/apt/sources.list.d/sat-metalab-mpa.list && \
+echo 'deb [ arch=amd64, signed-by=/usr/share/keyrings/sat-metalab-mpa-keyring.gpg ] https://sat-mtl.gitlab.io/distribution/mpa-datasets/debs/ sat-metalab main' \
+    | sudo tee /etc/apt/sources.list.d/sat-metalab-mpa-datasets.list && \
 sudo apt-get update
 sudo apt install libshmdata
 ```
