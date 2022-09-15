@@ -1,7 +1,7 @@
 Shmdata, a library to share any flows of data frames between processes 
 ======================================================================
 
-[![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0) [![pipeline status](https://gitlab.com/sat-metalab/shmdata/badges/develop/pipeline.svg)](https://gitlab.com/sat-metalab/shmdata/commits/develop) [![coverage report](https://gitlab.com/sat-metalab/shmdata/badges/develop/coverage.svg)](https://gitlab.com/sat-metalab/shmdata/commits/develop)
+[![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0) [![pipeline status](https://gitlab.com/sat-mtl/tools/shmdata/badges/develop/pipeline.svg)](https://gitlab.com/sat-mtl/tools/shmdata/commits/develop) [![coverage report](https://gitlab.com/sat-mtl/tools/shmdata/badges/develop/coverage.svg)](https://gitlab.com/sat-mtl/tools/shmdata/commits/develop)
 
 For a more complete documentation, go visit the [official website](https://sat-metalab.gitlab.io/shmdata).
 
@@ -14,7 +14,7 @@ A library to share streams of framed data between processes via shared memory. I
 
 The communication paradigm is 1 to many, i.e., one writer is making available data frames to several followers. Followers and writers can hot connect & disconnect. Shmdata transmission supports buffer resizing. Each shmdata has a type specified with a string description, itself published by the shmdata writer at each reconnection. The type is specified as a user-defined string. Although left to the user, we encourage type specification to follow GStreamer 1.0 caps specification format, for instance "audio/x-raw,format=S16LE,channels=2,layout=interleaved". 
 
-Note the existence of [NDI2shmdata](https://gitlab.com/sat-metalab/ndi2shmdata) that converts shmdata to [NewTek's NDI](http://ndi.newtek.com), and _vice versa_.
+Note the existence of [NDI2shmdata](https://gitlab.com/sat-mtl/tools/ndi2shmdata) that converts shmdata to [NewTek's NDI](http://ndi.newtek.com), and _vice versa_.
 
 ## Technical consideration
 
