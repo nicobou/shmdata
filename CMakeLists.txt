@@ -18,7 +18,7 @@ set(SHMDATA_REQUIRED_VERSION 1.3)
 # Package (pkg-config) Information
 set(PACKAGE_NAME switcher)
 set(PACKAGE_DESCRIPTION "Switcher for audio, video, data and network streams")
-set(PACKAGE_URL "https://gitlab.com/sat-metalab/switcher")
+set(PACKAGE_URL "https://gitlab.com/sat-mtl/tools/switcher")
 set(PACKAGE_VERSION ${SWITCHER_VERSION_STRING})
 
 # Compilation
@@ -48,7 +48,7 @@ set(CPACK_COMPONENTS_ALL applications libraries headers)
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 set(CPACK_DEBIAN_PACKAGE_NAME "${CPACK_PACKAGE_NAME}")
 set(CPACK_DEBIAN_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION}")
-set(CPACK_DEBIAN_PROJECT_HOMEPAGE "https://gitlab.com/sat-metalab/switcher/")
+set(CPACK_DEBIAN_PROJECT_HOMEPAGE "https://gitlab.com/sat-mtl/tools/switcher/")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "${CPACK_PACKAGE_VENDOR} <nbouillot@sat.qc.ca>")
 set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Switcher is an integration environment, able to interoperate with other software and protocols. Switcher provides low latency streaming of multichannel audio, video and data through IP networks. Switcher provides managing of several instances of services (called Quiddities). A Quiddity can be created and removed dynamically and can be controlled through property get/set as well as method invocations and information tree monitoring. Switcher provides introspection mechanisms to help write higher level software written in python3 or C++. Switcher can save and load the state of quiddities.

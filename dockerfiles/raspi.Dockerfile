@@ -1,4 +1,4 @@
-ARG SHMDATA_IMAGE="registry.gitlab.com/sat-metalab/shmdata"
+ARG SHMDATA_IMAGE="registry.gitlab.com/sat-mtl/tools/shmdata"
 ARG SHMDATA_TAG="develop"
 
 FROM ${SHMDATA_IMAGE}:${SHMDATA_TAG} AS dependencies

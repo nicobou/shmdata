@@ -3,9 +3,9 @@ Writing custom quiddity bundles
 
 Bundles offer a great way to save and reuse quiddity settings.
 
-To create a custom bundle, simply add an object identified by a custom type as a key to the [Switcher configuration file](configuration.md) within the `bundles` object. The type of the custom bundle will then be used by [Switcher](https://gitlab.com/sat-metalab/switcher) upon instantiation of a bundle quiddity.
+To create a custom bundle, simply add an object identified by a custom type as a key to the [Switcher configuration file](configuration.md) within the `bundles` object. The type of the custom bundle will then be used by [Switcher](https://gitlab.com/sat-mtl/tools/switcher) upon instantiation of a bundle quiddity.
 
-Each specification of a custom bundle has mandatory configuration keys which are `pipeline` to combine quiddities and `doc` to describe the bundle and define its behavior in [Switcher](https://gitlab.com/sat-metalab/switcher).
+Each specification of a custom bundle has mandatory configuration keys which are `pipeline` to combine quiddities and `doc` to describe the bundle and define its behavior in [Switcher](https://gitlab.com/sat-mtl/tools/switcher).
 
 The [dummy-switcher.json](dummy-switcher.json) provides some bundle specification examples.
 
@@ -27,7 +27,7 @@ A standard bundle specification might looks like this:
 }
 ```
 
-A custom type (e.g. `DummyVideo`) is required for [Switcher](https://gitlab.com/sat-metalab/switcher) to create a `Quiddity Bundle`.  
+A custom type (e.g. `DummyVideo`) is required for [Switcher](https://gitlab.com/sat-mtl/tools/switcher) to create a `Quiddity Bundle`.  
 
 Instances of this bundle will be created using this type (ex. `switcher-ctrl -C DummyVideo dummy`). No whitespaces or underscores allowed.
 
@@ -48,7 +48,7 @@ The `pipeline` field is the heart of the bundle. This is where the combination o
 
 To add a quiddity, simply add its `type` (i.e. `audiotestsrc`) followed by the mandatory `name` property.
 
-> Note that the `name` property is used by [Switcher](https://gitlab.com/sat-metalab/switcher) to name a quiddity instance. This is used, among other things, to manage [shmdata](https://gitlab.com/sat-metalab/shmdata) socket file names under the `/tmp` directory.
+> Note that the `name` property is used by [Switcher](https://gitlab.com/sat-mtl/tools/switcher) to name a quiddity instance. This is used, among other things, to manage [shmdata](https://gitlab.com/sat-mtl/tools/shmdata) socket file names under the `/tmp` directory.
 
 According to the existing properties for a type of quiddity, any of these can be specified using a `property=value` convention and separated by a space. Refer to the infotree of a specific quiddity to get a detailed list of its properties.
 
@@ -101,7 +101,7 @@ Five different tags exist that can be found in the **reference table** below:
 | `<shmr`  | Defines the pipeline's shmdata reader, aka the entry point for shmdata in the pipeline.<br/>A maximum of one reader may be specified in a pipeline. Shmdatas connected to the bundle will be forwarded to the quiddity marked with this tag. |
 | `<shmw` | Define the pipeline's shmdata writers, aka quiddities that will produce (write) shmdata in the pipeline.<br/><br/>A quiddity marked with this tag will see its shmdata exposed by the bundle, so that it can be used by other quiddities. If a quiddity creates shmdata but is not marked with this tag, then its shmdata will NOT be accessible outside of the bundle. There is no minimum or maximum number of shmdata writers in a pipeline. |
 | `<add_to_start` | Quiddities marked with this tag will be bound to the bundle's `started` property. If at least one `<add_to_start` property is present in the pipeline, a global `started` property will be created for the bundle.<br/><br/>When this property is set to `true`, every quiddity in the pipeline marked with this tag will also have their `started` property set to `true`. Inversely, when the global `started` is set to `false`, every quiddity marked with this tag will be set to `started=false`.<br/><br/>Each quiddity marked with this tag will also have their individual `started` property removed: their `started` state will be entirely dependant on the `started` property state of the bundle. |
-| `<top_level` | By default, each quiddity's properties will have a `parent` metadata. By default, the value of this `parent` field will be the `name` of the quiddity to which it belongs (ex: Considering a `v4l2src` named "VideoTest", the parent of `v4l2src`'s `pixel_format` property will be `VideoTest`).<br/><br/>However, when adding the `<top_level` tag for a quiddity, each of its properties will have an empty `parent` field. Each property will be "top level" (ie. they don't have a parent quiddity above them).<br/><br/>This tag is useful for [Scenic](https://gitlab.com/sat-mtl/telepresence/scenic), since the `parent` field affects the way a quiddity's properties will be displayed in [Scenic](https://gitlab.com/sat-mtl/telepresence/scenic). But aside from that, this tag does nothing else in [Switcher](https://gitlab.com/sat-metalab/switcher). |
+| `<top_level` | By default, each quiddity's properties will have a `parent` metadata. By default, the value of this `parent` field will be the `name` of the quiddity to which it belongs (ex: Considering a `v4l2src` named "VideoTest", the parent of `v4l2src`'s `pixel_format` property will be `VideoTest`).<br/><br/>However, when adding the `<top_level` tag for a quiddity, each of its properties will have an empty `parent` field. Each property will be "top level" (ie. they don't have a parent quiddity above them).<br/><br/>This tag is useful for [Scenic](https://gitlab.com/sat-mtl/telepresence/scenic), since the `parent` field affects the way a quiddity's properties will be displayed in [Scenic](https://gitlab.com/sat-mtl/telepresence/scenic). But aside from that, this tag does nothing else in [Switcher](https://gitlab.com/sat-mtl/tools/switcher). |
 | `<no_prop` | This tag will **exclude** all properties of a quiddity. Excluded properties will not show up in [Scenic](https://gitlab.com/sat-mtl/telepresence/scenic) and will not be listed when running `switcher-ctrl -t`. In addition, excluded properties cannot be modified and their values cannot be displayed in any way. In short, excluded properties will *disappear*. This tag is closely linked with the underscore (`_`) tag modifier. |
 
 <details>
@@ -135,7 +135,7 @@ In this pipeline:
 "pipeline" : "executor name=Exec <no_prop <shmr command_line=somecommand _autostart=false periodic=false"
 ```
 
-* The `executor` quiddity will read shmdata, and is the entry point for [shmdata](https://gitlab.com/sat-metalab/shmdata) in the pipeline.
+* The `executor` quiddity will read shmdata, and is the entry point for [shmdata](https://gitlab.com/sat-mtl/tools/shmdata) in the pipeline.
 * All properties of `executor` are excluded, except for `autostart`. However, `periodic` will still be set to `false` and `command_line` will be set to `somecommand` before being excluded.
 
 </details>
@@ -172,7 +172,7 @@ In the above pipeline:
 
 ### `Group` property
 
-The `group` property can be added to any quiddity. It is optional; its purpose is to override the `parent` value of each of the quiddity's properties with its value. The value of `group` is arbitrary. The effects are similar to the `<top_level`: it affects the way [Scenic](https://gitlab.com/sat-mtl/telepresence/scenic) displays properties, but it is not of much use in [Switcher](https://gitlab.com/sat-metalab/switcher).
+The `group` property can be added to any quiddity. It is optional; its purpose is to override the `parent` value of each of the quiddity's properties with its value. The value of `group` is arbitrary. The effects are similar to the `<top_level`: it affects the way [Scenic](https://gitlab.com/sat-mtl/telepresence/scenic) displays properties, but it is not of much use in [Switcher](https://gitlab.com/sat-mtl/tools/switcher).
 
 ### Escaping
 
@@ -197,7 +197,7 @@ For more information, see the [Executor](../plugins/executor/README.md) quiddity
 
 ## 🏷 Documentation field
 
-The `doc` field helps to describe the bundle and define its behavior in [Switcher](https://gitlab.com/sat-metalab/switcher).
+The `doc` field helps to describe the bundle and define its behavior in [Switcher](https://gitlab.com/sat-mtl/tools/switcher).
 
 Both `long_name` and `description` field values are arbitrary.
 
@@ -225,12 +225,12 @@ It is recommended to try and use one of the categories above, but its value can 
 
 ### Tags
 
-Tags define the bundle's roles and how it will behave in [Switcher](https://gitlab.com/sat-metalab/switcher). One or more of the following tags may be specified:
+Tags define the bundle's roles and how it will behave in [Switcher](https://gitlab.com/sat-mtl/tools/switcher). One or more of the following tags may be specified:
 
 * `reader`: Bundle will act as a destination (it reads shmdata)
 * `writer`: Bundle will act as a source (it writes shmdata)
 
-Additional tags exist, that are specific to a certain kind of usage, either in [Switcher](https://gitlab.com/sat-metalab/switcher) or in [Scenic](https://gitlab.com/sat-mtl/telepresence/scenic):
+Additional tags exist, that are specific to a certain kind of usage, either in [Switcher](https://gitlab.com/sat-mtl/tools/switcher) or in [Scenic](https://gitlab.com/sat-mtl/telepresence/scenic):
 
 * `occasional-writer`: Bundle will occasionally write shmdata
 * `device`: Bundle is attached to a device (ex: a MIDI keyboard)

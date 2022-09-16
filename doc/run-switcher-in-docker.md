@@ -78,7 +78,7 @@ docker run --runtime=nvidia --rm nvidia/cuda:9.0-base nvidia-smi
 
 ## Run `switcher` from built images
 
-A docker image of `switcher` is built into its [registry](https://gitlab.com/sat-metalab/switcher/container_registry). You can start building your own library on top of this image by pulling it.
+A docker image of `switcher` is built into its [registry](https://gitlab.com/sat-mtl/tools/switcher/container_registry). You can start building your own library on top of this image by pulling it.
 
 Three tags of this image are provided :
 
@@ -88,9 +88,9 @@ Three tags of this image are provided :
 | [develop][develop] | development | Clean image based on the `develop` branch and build with `Debug` flag  |
 | [ci][ci]           | testing     | Image used for CI and used for unit tests                              |
 
-[master]: registry.gitlab.com/sat-metalab/switcher:master
-[develop]: registry.gitlab.com/sat-metalab/switcher:develop
-[ci]: registry.gitlab.com/sat-metalab/switcher:ci
+[master]: registry.gitlab.com/sat-mtl/tools/switcher:master
+[develop]: registry.gitlab.com/sat-mtl/tools/switcher:develop
+[ci]: registry.gitlab.com/sat-mtl/tools/switcher:ci
 
 ### Run `switcher` from remote image with nvidia support
 
@@ -105,7 +105,7 @@ docker run \
   -v /tmp/.X11-unix:/tmp/.X11-unix \
   -e DISPLAY \
   -e NVIDIA_VISIBLE_DEVICES=all \
-  -it registry.gitlab.com/sat-metalab/switcher:develop \ # or use tag develop
+  -it registry.gitlab.com/sat-mtl/tools/switcher:develop \ # or use tag develop
   bash
 ```
 
@@ -138,7 +138,7 @@ docker run \
 ```bash
 docker run \
   --device /dev/snd \
-  -it registry.gitlab.com/sat-metalab/switcher:develop \
+  -it registry.gitlab.com/sat-mtl/tools/switcher:develop \
   /bin/bash
 ```
 
@@ -148,7 +148,7 @@ docker run \
 docker run \
   --volume=/dev/shm:/dev/shm:rw \
   --user=$(cat /etc/passwd | grep $(whoami) | cut -d":" -f3) \
-  -it registry.gitlab.com/sat-metalab/switcher:develop \
+  -it registry.gitlab.com/sat-mtl/tools/switcher:develop \
   /bin/bash
 ```
 
@@ -156,14 +156,14 @@ docker run \
 
 You need to build three images: [`shmdata`][shmdata_docker], `switcher` and [`scenic`][scenic_docker]. Each one depends on the previous.
 
-[shmdata_docker]: https://gitlab.com/sat-metalab/shmdata/tree/develop#docker-images
+[shmdata_docker]: https://gitlab.com/sat-mtl/tools/shmdata/tree/develop#docker-images
 [scenic_docker]: https://gitlab.com/sat-mtl/telepresence/scenic
 
 The `switcher` image uses [mutli-stage builds][docker-multi-stage] with three stages : `dependencies`, `build` and `clean`. Theses stages use some build arguments :
 
 | arguments       | stages              | description                              | default         |
 |-----------------|---------------------|------------------------------------------|-----------------|
-| SHMDATA_IMAGE   | `dependencies`      | The `shmdata` base image                 | `registry.gitlab.com/sat-metalab/shmdata`
+| SHMDATA_IMAGE   | `dependencies`      | The `shmdata` base image                 | `registry.gitlab.com/sat-mtl/tools/shmdata`
 | SHMDATA_TAG     | `dependencies`      | The **tag** of the `shmdata` base image  | `develop`       |
 | BUILD_DIR       | `build` and `clean` | Where `shmdata` source is copied         | `/opt/switcher` |
 | BUILD_TYPE      | `build`             | The build type of `shmdata`              | `Release`       |
@@ -225,7 +225,7 @@ You can build you own images:
 
 ```bash
 # Build the shmdata image
-git clone https://gitlab.com/sat-metalab/shmdata.git && cd shmdata
+git clone https://gitlab.com/sat-mtl/tools/shmdata.git && cd shmdata
 
 docker build \
   --tag=shmdata:raspi \
@@ -233,7 +233,7 @@ docker build \
   .
 
 # Build the switcher image
-git clone https://gitlab.com/sat-metalab/switcher.git && cd switcher
+git clone https://gitlab.com/sat-mtl/tools/switcher.git && cd switcher
 
 docker build \
   --tag=switcher:raspi \

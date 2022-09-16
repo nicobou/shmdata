@@ -451,7 +451,7 @@ async def set_switcher_bundles(sid: str, bundles: Union[str, dict]) -> Tuple[Opt
     """Set Switcher bundles from a json encoded string description
 
     The description of bundles must be **valid** as specified
-    in [Writing Bundles](https://gitlab.com/sat-metalab/switcher/-/blob/master/doc/writing-bundles.md).
+    in [Writing Bundles](https://gitlab.com/sat-mtl/tools/switcher/-/blob/master/doc/writing-bundles.md).
 
     Decorators:
         sio.on
