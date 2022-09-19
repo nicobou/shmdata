@@ -1,6 +1,19 @@
-sNEWS
+NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
+
+switcher 3.1.12 (2022-09-19)
+---------------------------
+This is an official release in the 3.1 stable series.
+
+New features:
+* ✨ add apt depedency file for nvidia on Ubuntu 22.04
+* ✨ add connection spec callbacks in swIO
+
+Improvements:
+* 📝 update URLs for Scenic repositories
+* 📝 update with new gitlab URL for Switcher
+* 🍱 name for Vanshita Verma in the authors script
 
 switcher 3.1.10 (2022-09-06)
 ---------------------------
