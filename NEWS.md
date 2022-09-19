@@ -2,6 +2,24 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.3.66 (2022-09-06)
+---------------------------
+This is an official release in the 1.3 stable series.
+
+Bug fixes:
+* 🐛 fix alloc_size_ not updated after resize
+* 🐛 fix sdflow displaying end of buffer instead of beginning
+
+New features:
+* ✨ add format option (char, int16, float and hex) to sdflow, add also option (-n) to not print only data without frame information
+* ✨ add option to choose the number of values displayed per frame in sdflow
+* ✨ add cartridge return option to sdflow
+
+Improvements:
+* ✅ add latency test
+* 📝 improve sdflow usage documentation
+* ⚡️ do not resize when asked new size is already the allocated size
+
 shmdata 1.3.64 (2022-07-26)
 ---------------------------
 This is an official release in the 1.3 stable series.
