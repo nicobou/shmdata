@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Ubuntu packaging script
+Ubuntu packaging script. This script does the following:
+1 - Clone Shmdata in a new directory
+2 - Merge master branch into debian/master
+3 - Update debian/changelog with new package version
+4 - Commit changes in the debian/master branch
+5 - Ask the user if the updated debian/master branch needs to be pushed. 
+    If yes, the Shmdata CI will build and publish the new package.
 
 Usage: ./package_ubuntu.py
 
-Arguments:
-  -p, --ppa[=PPA]   Allows for specifying the PPA to upload to. Defaults to ppa:sat-metalab/metalab
 """
 
 import atexit
@@ -23,69 +27,12 @@ libs_root_path = os.path.join(os.path.expanduser("~"), "src", "releases")
 version_file = "CMakeLists.txt"
 
 version_pattern = "set\({}_VERSION_(\S+)\s+(\d+)\)"
-git_path = "git@gitlab.com:sat-metalab"
-ppa_path = "ppa:sat-metalab/metalab"
+git_path = "git@gitlab.com:sat-mtl/tools"
 remote_repo = "origin"
 bringup_branch = "master"
 debian_branch_prefix = "debian"
 changelog_file = "changelog"
 success = True
-
-
-def dpkg_buildpackage() -> int:
-    """
-    Build Debian binary package locally with dpkg-buildpackage
-
-    :return: Return the exit code of the command
-    """
-    return subprocess.call("dpkg-buildpackage -us -uc", shell=True)
-
-
-def debuild() -> int:
-    """
-    Build the Debian source package
-
-    :return: Return the exit code of the command
-    """
-    return subprocess.call("debuild -S -sa", shell=True)
-
-
-def dput(ppa: str, lib: str, version: List[int]) -> int:
-    """
-    Upload the Debian source package to the PPA
-
-    :param ppa: PPA URL to upload to
-    :param lib: Library name
-    :param version: Library version
-
-    :return: Return the exit code of the command
-    """
-    version_str = f"{version[0]}.{version[1]}.{version[2]}"
-    return subprocess.call(f"dput {ppa} {lib}_{version_str}-1_source.changes", shell=True)
-
-
-def gbp_pq(command: str) -> int:
-    """
-    Runs the given git-buildpackage patch queue command
-
-    :param command: Command to append to `gbp pq`
-
-    :return: Return the exit code of the command
-    """
-    return subprocess.call(f"gbp pq {command}", shell=True)
-
-
-def git_archive(lib: str, version: List[int]) -> int:
-    """
-    Create an archive of the current git branch
-
-    :param lib: Library to archive
-    :param version: Library version
-
-    :return: Return the exit code of the command
-    """
-    version_str = f"{version[0]}.{version[1]}.{version[2]}"
-    return subprocess.call(f"git archive --format=tar.gz --prefix={lib}-{version_str}/ HEAD > ../{lib}_{version_str}.orig.tar.gz", shell=True)
 
 
 def git_clean() -> None:
@@ -152,7 +99,7 @@ def git_merge(branch_name: str, force: bool = False) -> int:
 def git_tag(tag_name: str) -> int:
     """
     Tag the current commit
-    
+
     :param tag_name: Tag name
 
     :return: Return the exit code of the command
@@ -202,7 +149,8 @@ def get_git_config(property: str, default_value: str) -> str:
     :return: Return the exit code of the command
     """
     config_property = default_value
-    git_config_full = subprocess.check_output("git config --list", shell=True, encoding="utf-8").strip().split("\n")
+    git_config_full = subprocess.check_output(
+        "git config --list", shell=True, encoding="utf-8").strip().split("\n")
     for config in git_config_full:
         prop = config.split("=")
         if len(prop) < 2:
@@ -305,20 +253,10 @@ def usage() -> None:
 
 
 if __name__ == "__main__":
-    assert(sys.version_info[0] == 3 and sys.version_info[1] > 6), f"This script must be ran with at least Python 3.7, detected Python {sys.version_info[0]}.{sys.version_info[1]}"
-
-    # Get command line arguments
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "p:", ["ppa="])
-    except getopt.GetoptError as err:
-        print(err)
-        usage()
-        exit(2)
+    assert(sys.version_info[0] == 3 and sys.version_info[1] >
+           6), f"This script must be ran with at least Python 3.7, detected Python {sys.version_info[0]}.{sys.version_info[1]}"
 
     cleanup_folder()  # Always remove the folder when launching the script.
-    for option, arg in opts:
-        if option in ["-p", "--ppa"]:
-            ppa_path = arg
 
     lib = "shmdata"
     debian_master_branch = f"{debian_branch_prefix}/master"
@@ -326,47 +264,32 @@ if __name__ == "__main__":
     os.mkdir(libs_root_path)
     os.chdir(libs_root_path)
 
-    assert git_clone(f"{git_path}/{lib}.git") == 0, f"Could not fetch codebase for library {lib} at {libs_root_path}"
+    assert git_clone(
+        f"{git_path}/{lib}.git") == 0, f"Could not fetch codebase for library {lib} at {libs_root_path}"
     os.chdir(os.path.join(libs_root_path, lib))
 
     git_checkout(bringup_branch)
 
     release_version = parse_version_number(lib, version_pattern.format(lib.upper()))
-    git_archive(f"lib{lib}", release_version)
 
     git_checkout(debian_master_branch)
 
     print(f"Merging the {bringup_branch} into {debian_master_branch}")
-    gbp_pq("import")
     git_checkout(debian_master_branch)
     git_merge(bringup_branch)
-    gbp_pq("rebase")
-    gbp_pq("export")
-    gbp_pq("drop")
     git_add(["debian/patches"])
     git_commit("Updated patches")
 
     update_changelog(f"lib{lib}", release_version)
 
-    print("Test building binary package locally.")
-    assert dpkg_buildpackage() == 0, f"Could not build binary package for {lib} locally"
-    git_clean()
-
-    assert debuild() == 0, f"Could not build source package for {lib}"
-
-    print("Uploading the source package to the PPA.")
-    do_push=input(f"Do you want to push {lib} to the PPA {ppa_path}? [y/N]")
-    if do_push == "y":
-        os.chdir(libs_root_path)
-        assert dput(ppa_path, f"lib{lib}", release_version) == 0, f"Could not upload package source for {lib}"
-        os.chdir(os.path.join(libs_root_path, lib))
-
     print("Committing the modifications to the source repository.")
-    do_commit=input(f"Do you want to push updates to {lib} on branch {debian_master_branch} to {remote_repo}? [y/N]")
+    do_commit = input(
+        f"Do you want to push updates to {lib} on branch {debian_master_branch} to {remote_repo}? [y/N]")
     if do_commit == "y":
         git_commit(f"🔖 Updated package from upstream to version {release_version}")
         git_tag(f"debian/{release_version[0]}.{release_version[1]}.{release_version[2]}")
-        assert git_push(remote_repo, debian_master_branch) == 0, f"Failed to push branch {debian_master_branch} to {remote_repo}"
+        assert git_push(
+            remote_repo, debian_master_branch) == 0, f"Failed to push branch {debian_master_branch} to {remote_repo}"
 
     print("Cleaning up temporary files")
     success = True

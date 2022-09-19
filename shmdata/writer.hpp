@@ -15,6 +15,7 @@
 
 #include <memory>
 #include <string>
+
 #include "./abstract-logger.hpp"
 #include "./safe-bool-idiom.hpp"
 #include "shmdata/sysv-sem.hpp"
@@ -40,6 +41,7 @@ class Writer : public SafeBoolIdiom {
    * \param   log                   Log object where to write internal logs.
    * \param   on_client_connect     Callback to be triggered when a follower connects.
    * \param   on_client_disconnect  Callback to be triggered when a follower disconnects.
+   * \param   unix_permission       Permission to apply to the internal Unix socket, shared memory and semaphore.
    * 
    */
   Writer(const std::string& path,
@@ -47,7 +49,8 @@ class Writer : public SafeBoolIdiom {
          const std::string& data_descr,
          AbstractLogger* log,
          UnixSocketProtocol::ServerSide::onClientConnect on_client_connect = nullptr,
-         UnixSocketProtocol::ServerSide::onClientDisconnect on_client_disconnect = nullptr);
+         UnixSocketProtocol::ServerSide::onClientDisconnect on_client_disconnect = nullptr,
+         mode_t unix_permission = 0660);
   /**
    * \brief Destruct the Writer and releases resources.
    *

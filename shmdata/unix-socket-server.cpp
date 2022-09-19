@@ -50,6 +50,7 @@ UnixSocketServer::UnixSocketServer(const std::string& path,
                                    UnixSocketProtocol::ServerSide* proto,
                                    AbstractLogger* log,
                                    std::function<void(int)> on_client_error,
+                                   mode_t unix_permission,
                                    int max_pending_cnx)
     : log_(log),
       path_(path),
@@ -76,6 +77,7 @@ UnixSocketServer::UnixSocketServer(const std::string& path,
   } else {
     is_binded_ = true;
   }
+  chmod(path_.c_str(), unix_permission);
   if (listen(socket_.fd_, max_pending_cnx_) < 0) {
     int err = errno;
     log_->error("listen: % (%)", strerror(err), path_);

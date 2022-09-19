@@ -25,7 +25,11 @@ bool force_shm_cleaning(key_t key, AbstractLogger* log);
 
 class sysVShm : public SafeBoolIdiom {
  public:
-  sysVShm(key_t key, size_t size, AbstractLogger* log, bool owner = false);
+  sysVShm(key_t key,
+          size_t size,
+          AbstractLogger* log,
+          bool owner = false,
+          mode_t unix_permission = 0600);
   ~sysVShm();
   sysVShm() = delete;
   sysVShm(const sysVShm&) = delete;

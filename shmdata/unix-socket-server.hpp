@@ -36,6 +36,7 @@ class UnixSocketServer : public SafeBoolIdiom {
                    UnixSocketProtocol::ServerSide* proto,
                    AbstractLogger* log,
                    std::function<void(int)> on_client_error = [](int) {},
+                   mode_t unix_permissions = 0600,
                    int max_pending_cnx = 10);
   ~UnixSocketServer();
   UnixSocketServer() = delete;

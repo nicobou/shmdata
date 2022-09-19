@@ -44,11 +44,11 @@ bool force_shm_cleaning(key_t key, AbstractLogger* log) {
   return true;
 }
 
-sysVShm::sysVShm(key_t key, size_t size, AbstractLogger* log, bool owner)
+sysVShm::sysVShm(key_t key, size_t size, AbstractLogger* log, bool owner, mode_t unix_permission)
     : log_(log),
       key_(key),
       size_(size),
-      shmid_(shmget(key_, size_, owner ? (IPC_CREAT | IPC_EXCL | 0666) : 0)),
+      shmid_(shmget(key_, size_, owner ? (IPC_CREAT | IPC_EXCL | unix_permission) : 0)),
       owner_(owner) {
   if (-1 == key_) {
     int err = errno;

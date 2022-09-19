@@ -2,6 +2,19 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.3.68 (2022-09-19)
+---------------------------
+This is an official release in the 1.3 stable series.
+
+New feature:
+* ✨ Adding Unix permissions setting to CPP and C writer
+
+Improvements:
+* 📝 update to the new repo URL
+* 📦️update package_ubuntu.py in order to work with Metalab MPA
+* 📝 update install instruction with Metalab mpa
+* 👷 print test output on failure in CI
+
 shmdata 1.3.66 (2022-09-06)
 ---------------------------
 This is an official release in the 1.3 stable series.
