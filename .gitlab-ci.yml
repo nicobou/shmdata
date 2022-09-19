@@ -1,3 +1,6 @@
+variables:
+  CTEST_OUTPUT_ON_FAILURE: '1'
+
 stages:
   - build
   - test
@@ -98,7 +101,7 @@ pages:
     - DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends file
     # Build the new website
     - DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends ca-certificates python3-pip git build-essential 
-    - git clone https://gitlab.com/sat-mtl/metalab/documentations/shmdata.git shmdata-doc
+    - git clone https://gitlab.com/sat-mtl/documentation/shmdata.git shmdata-doc
     - pushd shmdata-doc
     - git pull origin master # Make sure to be up-to-date
     - pip install -U sphinx

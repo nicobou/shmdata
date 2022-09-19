@@ -787,7 +787,8 @@ static gboolean gst_shmdata_sink_on_caps (GstBaseSink *sink, GstCaps *caps){
                                         &gst_shmdata_sink_on_client_connected,
                                         &gst_shmdata_sink_on_client_disconnected,
                                         self,
-                                        self->shmlogger); 
+                                        self->shmlogger,
+                                        0600); 
   if (NULL == self->shmwriter) { 
     GST_ELEMENT_ERROR (self, RESOURCE, OPEN_READ_WRITE, 
         ("Could not make shmdata writer."), (NULL)); 

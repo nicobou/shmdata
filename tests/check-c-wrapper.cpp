@@ -79,7 +79,8 @@ int main () {
                                                NULL,
                                                NULL,
                                                NULL,
-                                               logger);
+                                               logger,
+                                               0600);
     assert(NULL != writer); 
     usleep(50000);
     Frame frame;

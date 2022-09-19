@@ -148,7 +148,7 @@ int Writer_init(pyshmdata_WriterObject* self, PyObject* args, PyObject* kwds) {
 
   auto* state = PyEval_SaveThread();
   self->writer = shmdata_make_writer(
-      strPath.c_str(), size, strDatatype.c_str(), nullptr, nullptr, nullptr, self->logger);
+      strPath.c_str(), size, strDatatype.c_str(), nullptr, nullptr, nullptr, self->logger, 0600);
   PyEval_RestoreThread(state);
   if (!self->writer) {
     return -1;

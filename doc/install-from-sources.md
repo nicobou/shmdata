@@ -6,7 +6,7 @@ Follow these instructions to build and install the library on Debian GNU/Linux o
     $ sudo apt install libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev
     $ # to build python wrappers 
     $ sudo apt install python3-dev
-    $ git clone https://gitlab.com/sat-metalab/shmdata.git
+    $ git clone https://gitlab.com/sat-mtl/tools/shmdata.git
     $ cd shmdata
     $ mkdir build
     $ cd build
