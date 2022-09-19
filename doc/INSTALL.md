@@ -1,7 +1,7 @@
 INSTALL   
 =======
 
-> **Note**: Ensure **[Shmdata](https://gitlab.com/sat-metalab/shmdata)** is already installed before proceeding.
+> **Note**: Ensure **[Shmdata](https://gitlab.com/sat-mtl/tools/shmdata)** is already installed before proceeding.
 
 ## Install package
 
@@ -26,7 +26,7 @@ Build and install **switcher** from the command line:
 ```bash
 # clone repository
 sudo apt install git
-git clone https://gitlab.com/sat-metalab/switcher.git
+git clone https://gitlab.com/sat-mtl/tools/switcher.git
 
 cd switcher
 
@@ -60,7 +60,7 @@ Build and install **switcher** from the command line:
 ```bash
 # clone repository
 sudo apt install git
-git clone https://gitlab.com/sat-metalab/switcher.git
+git clone https://gitlab.com/sat-mtl/tools/switcher.git
 
 cd switcher
 

@@ -18,9 +18,9 @@ Contributing
 
 Contributing to switcher is achieved through Gitlab's Merge Request (MR) system. This include contribution by the core team. We also welcome external contributions through the contribution process described here.
 
-Please send your merge request to [switcher repository](https://gitlab.com/sat-metalab/switcher). If you do not know how to make a merge request, gitlab provides some [help about creating a merge request](https://docs.gitlab.com/ee/gitlab-basics/add-merge-request.html).
+Please send your merge request to [switcher repository](https://gitlab.com/sat-mtl/tools/switcher). If you do not know how to make a merge request, gitlab provides some [help about creating a merge request](https://docs.gitlab.com/ee/gitlab-basics/add-merge-request.html).
 
-Merge request must refer to a gitlab issue in the [switcher issues list](https://gitlab.com/sat-metalab/switcher/-/issues). If your merge request does not refer to a gitlab issue, you may be asked to fill an issue before a decision is made. 
+Merge request must refer to a gitlab issue in the [switcher issues list](https://gitlab.com/sat-mtl/tools/switcher/-/issues). If your merge request does not refer to a gitlab issue, you may be asked to fill an issue before a decision is made. 
 
 Switcher has several issue types:
 
@@ -56,7 +56,7 @@ rm -rf hooks && ln -s ../.hooks hooks
 Branching Strategy With Git
 ---------------------------
 
-The [master](https://gitlab.com/sat-metalab/switcher/tree/master) branch contains switcher releases. Validated new developments are into the [develop](https://gitlab.com/sat-metalab/switcher/tree/develop) branch.
+The [master](https://gitlab.com/sat-mtl/tools/switcher/tree/master) branch contains switcher releases. Validated new developments are into the [develop](https://gitlab.com/sat-mtl/tools/switcher/tree/develop) branch.
 
 Modifications are made in a dedicated branch that needs to be merged into the develop branch through a gitlab merge request. When your modification is ready, you need to prepare your merge request as follows:
 * Update your develop branch. 
@@ -81,7 +81,7 @@ Lists of names for apt packages and python3 modules are maintained into separate
 For apt there are several files, build and runtime dependencies, one for each supported distribution. Build dependencies are required for building switcher while runtime dependencies are required when running switcher. For instance, `libportmidi-dev` goes into the build file while `libportmidi0` goes into the runtime file. This separation is required for switcher packaging, like docker image building for instance.
 
 
-Testing [pyquid](https://gitlab.com/sat-metalab/switcher/-/tree/master/wrappers/python) using [unittest](https://docs.python.org/3/library/unittest.html)
+Testing [pyquid](https://gitlab.com/sat-mtl/tools/switcher/-/tree/master/wrappers/python) using [unittest](https://docs.python.org/3/library/unittest.html)
 -----------------------------
 
 To add new tests, just create a new file and integrate a class inheriting from [unittest.TestCase](https://docs.python.org/3/library/unittest.html#unittest.TestCase)
@@ -100,10 +100,10 @@ To add new tests, just create a new file and integrate a class inheriting from [
 All test files should go into `wrappers/python/tests` and filenames prefixed with `test_`.
 
 
-Running tests for [pyquid](https://gitlab.com/sat-metalab/switcher/-/tree/master/wrappers/python)
+Running tests for [pyquid](https://gitlab.com/sat-mtl/tools/switcher/-/tree/master/wrappers/python)
 ------------------------
 
-[Switcher](https://gitlab.com/sat-metalab/switcher) and [pyquid](https://gitlab.com/sat-metalab/switcher/-/tree/master/wrappers/python) should be compiled and installed on the system as specified in the [INSTALL](doc/INSTALL.md) documentation
+[Switcher](https://gitlab.com/sat-mtl/tools/switcher) and [pyquid](https://gitlab.com/sat-mtl/tools/switcher/-/tree/master/wrappers/python) should be compiled and installed on the system as specified in the [INSTALL](doc/INSTALL.md) documentation
 
 Then, from the package directory `wrappers/python`, you can run a single test case by issuing:
 

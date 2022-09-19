@@ -27,7 +27,7 @@ version_file = "CMakeLists.txt"
 
 version_pattern = "set\({}_VERSION_(\S+)\s+(\d+)\)"
 shmdata_require_pattern = "set\(SHMDATA_REQUIRED_VERSION (\d+\.\d+)\)"
-git_path = "git@gitlab.com:sat-metalab"
+git_path = "git@gitlab.com:sat-mtl/tools"
 remote_repo = "origin"
 bringup_branch = "master"
 working_branch = "develop"
@@ -146,7 +146,8 @@ def commit_version_number(lib: str, new_version: List[int], regex_pattern: str) 
         assert git_commit(f"🔖 Shmdata version change to {new_version[0]}.{new_version[1]}") == 0, \
             "Failed to commit shmdata version number."
     else:
-        assert git_commit(f"🔖 Version {new_version[0]}.{new_version[1]}.{new_version[2]}") == 0, "Failed to commit version number."
+        assert git_commit(
+            f"🔖 Version {new_version[0]}.{new_version[1]}.{new_version[2]}") == 0, "Failed to commit version number."
 
 
 def git_push(remote_repo: str, remote_branch: str) -> int:
@@ -194,7 +195,8 @@ def git_submodule_update() -> int:
 
 def get_git_config(property: str, default_value: str) -> str:
     config_property = default_value
-    git_config_full = subprocess.check_output("git config --list", shell=True, encoding="utf-8").strip().split("\n")
+    git_config_full = subprocess.check_output(
+        "git config --list", shell=True, encoding="utf-8").strip().split("\n")
     for config in git_config_full:
         prop = config.split("=")
         if len(prop) < 2:
@@ -211,8 +213,10 @@ def update_changelog(lib: str, version: List[int]) -> None:
     authors_file_name = "AUTHORS.md"
 
     git_checkout(working_branch)
-    latest_tag = subprocess.check_output("git describe --tags --abbrev=0", shell=True, encoding="utf-8")
-    tag_date = subprocess.check_output(f"git log -1 --format=%ai {latest_tag}", shell=True, encoding="utf-8")
+    latest_tag = subprocess.check_output(
+        "git describe --tags --abbrev=0", shell=True, encoding="utf-8")
+    tag_date = subprocess.check_output(
+        f"git log -1 --format=%ai {latest_tag}", shell=True, encoding="utf-8")
     commits = re.split(
         r"[a-z0-9]{40} ",
         subprocess.check_output(f"git log --pretty=oneline --first-parent --since=\"{tag_date}\" | tr -d '\n'", shell=True, encoding="utf-8").strip()
