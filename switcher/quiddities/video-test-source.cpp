@@ -119,6 +119,9 @@ VideoTestSource::VideoTestSource(quiddity::Config&& conf)
   // We do this so that width and height properties states are correct.
   pmanage<MPtr(&property::PBag::set_to_current)>(resolutions_id_);
 
+  // Apply default pixel format
+  pmanage<MPtr(&property::PBag::set<property::IndexOrName>)>(formats_id_, cDefaultPixelFormat);
+
   if (!videotestsrc_ || !capsfilter_ || !shmdatasink_) {
     is_valid_ = false;
     return;

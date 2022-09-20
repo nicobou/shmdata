@@ -66,8 +66,7 @@ int main() {
       return 0; // no NVENC-enabled GPU as been detected
     }
 
-    Switcher::ptr manager = Switcher::make_switcher("test_manager");
-
+    Switcher::ptr manager = Switcher::make_switcher("test_manager", true);
 
     // testing if two nvenc can be created simultaneously
     std::vector<std::string> nvencs;
