@@ -58,8 +58,8 @@ int main () {
                                   << reading_time - *writing_time
                                   << "μs" 
                                   << std::endl;
-                        // assert transmission is less than than a millisecond
-                        assert(reading_time - *writing_time < 1000);
+                        // assert transmission is less than than 10 milliseconds
+                        assert(reading_time - *writing_time < 10000);
                       },
                       nullptr,
                       nullptr,
