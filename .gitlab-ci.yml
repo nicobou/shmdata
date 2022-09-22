@@ -85,6 +85,7 @@ Debian Package Ubuntu 20.04:
 
 include:
   # - remote: 'https://gitlab.com/sat-mtl/distribution/mpa-bionic-arm64-jetson/-/raw/main/.gitlab-ci-package.yml'
+  - remote: 'https://gitlab.com/sat-mtl/distribution/mpa-bullseye-arm64-rpi/-/raw/main/.gitlab-ci-package.yml'
   - remote: 'https://gitlab.com/sat-mtl/distribution/mpa-focal-amd64-nvidia/-/raw/main/.gitlab-ci-package.yml'
   - remote: 'https://gitlab.com/sat-mtl/distribution/mpa-focal-arm64-jetson/-/raw/main/.gitlab-ci-package.yml'
   - remote: 'https://gitlab.com/sat-mtl/distribution/mpa-jammy-amd64-nvidia/-/raw/main/.gitlab-ci-package.yml'
