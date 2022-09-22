@@ -45,7 +45,7 @@ Test package Ubuntu 20.04:
 coverage:
   stage: coverage
   image: ubuntu:20.04
-  script: 
+  script:
     - DEBIAN_FRONTEND=noninteractive apt update -y
     - DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends lcov zip
     - DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends cmake build-essential git libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-base python3-dev
@@ -68,7 +68,7 @@ coverage:
 Debian Package Ubuntu 20.04:
   stage: package
   image: ubuntu:20.04
-  script: 
+  script:
     - DEBIAN_FRONTEND=noninteractive apt update -y
     - DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends file
     - DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends cmake build-essential git libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-base python3-dev
@@ -101,7 +101,7 @@ pages:
     - DEBIAN_FRONTEND=noninteractive apt update -y
     - DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends file
     # Build the new website
-    - DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends ca-certificates python3-pip git build-essential 
+    - DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends ca-certificates python3-pip git build-essential
     - git clone https://gitlab.com/sat-mtl/documentation/shmdata.git shmdata-doc
     - pushd shmdata-doc
     - git pull origin master # Make sure to be up-to-date
