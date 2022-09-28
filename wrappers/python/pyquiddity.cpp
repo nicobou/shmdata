@@ -1043,22 +1043,16 @@ PyObject* pyQuiddity::tp_repr(pyQuiddityObject* self) {
 }
 
 PyObject* pyQuiddity::tp_str(pyQuiddityObject* self) {
-  auto pyswitch = self->switcher;
-  if (!pyswitch) {
-    PyErr_SetString(PyExc_MemoryError, "parent Switcher has been deleted");
-    return nullptr;
-  }
-  // cast switcher object instance to c struct
-  auto switcher = reinterpret_cast<pySwitch::pySwitchObject*>(pyswitch)->switcher;
   // retrieve c++ quiddity instance
   auto quid = self->quid.lock();
   if (!quid) {
     PyErr_SetString(PyExc_MemoryError, "Quiddity or parent Switcher has been deleted");
     return nullptr;
   }
+
   // compute string
-  auto str = infotree::json::serialize(
-      switcher->quids<MPtr(&quiddity::Container::get_quiddity_description)>(quid->get_id()).get());
+  auto str = infotree::json::serialize(quid->get_description().get());
+
   // return unicode object from string
   return PyUnicode_FromString(str.c_str());
 }
