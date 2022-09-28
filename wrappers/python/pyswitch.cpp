@@ -60,8 +60,8 @@ PyObject* pySwitch::Switcher_new(PyTypeObject* type, PyObject* /*args*/, PyObjec
   self = (pySwitchObject*)type->tp_alloc(type, 0);
   if (self != nullptr) {
     self->name = PyUnicode_FromString("default");
-    self->quiddities = PyList_New(0);
-    if (self->name == nullptr || self->quiddities == nullptr) {
+
+    if (self->name == nullptr) {
       Py_XDECREF(self);
       return nullptr;
     }
@@ -102,6 +102,7 @@ int pySwitch::Switcher_init(pySwitchObject* self, PyObject* args, PyObject* kwds
   self->logger = get_logger_descriptor(self);
   self->session = get_session_descriptor(self);
   self->bundles = get_bundles_descriptor(self);
+  self->quiddities = get_quiddities_descriptor(self);
 
   self->interpreter_state = PyThreadState_Get()->interp;
   return 0;
@@ -120,6 +121,12 @@ PyObject* pySwitch::get_session_descriptor(pySwitchObject* self) {
 
 PyObject* pySwitch::get_bundles_descriptor(pySwitchObject* self) {
   return PyObject_CallFunctionObjArgs(reinterpret_cast<PyObject*>(&BundleManager::pyType),
+                                      reinterpret_cast<PyObject*>(self),
+                                      nullptr);
+}
+
+PyObject* pySwitch::get_quiddities_descriptor(pySwitchObject* self) {
+  return PyObject_CallFunctionObjArgs(reinterpret_cast<PyObject*>(&pyQuiddities::pyType),
                                       reinterpret_cast<PyObject*>(self),
                                       nullptr);
 }
@@ -236,7 +243,7 @@ PyObject* pySwitch::create(pySwitchObject* self, PyObject* args, PyObject* kwds)
   auto capsule = PyCapsule_New(static_cast<void*>(quid.get()), nullptr, nullptr);
   On_scope_exit { Py_XDECREF(capsule); };
 
-  PyObject* arg_list = Py_BuildValue("(OO)", self, capsule);
+  PyObject* arg_list = Py_BuildValue("(O)", capsule);
   PyObject* py_quiddity = PyObject_CallObject((PyObject*)&pyQuiddity::pyType, arg_list);
 
   Py_XDECREF(arg_list);
@@ -258,15 +265,6 @@ PyObject* pySwitch::remove(pySwitchObject* self, PyObject* args, PyObject* kwds)
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "l", kwlist, &id)) {
     PyErr_SetString(PyExc_TypeError, "error parsing arguments");
     return nullptr;
-  }
-
-  for (Py_ssize_t i = 0; i < PyList_Size(self->quiddities); ++i) {
-    auto quid = reinterpret_cast<pyQuiddity::pyQuiddityObject*>(PyList_GetItem(self->quiddities, i))
-                    ->quid.lock();
-    if (quid && quid->get_id() == id) {
-      PyList_SetSlice(self->quiddities, i, i + 1, nullptr);
-      break;
-    }
   }
 
   if (!self->switcher->quids<MPtr(&quiddity::Container::remove)>(id)) {
@@ -297,7 +295,7 @@ PyObject* pySwitch::get_quid(pySwitchObject* self, PyObject* args, PyObject* kwd
 
   On_scope_exit { Py_XDECREF(capsule); };
 
-  auto arg_list = Py_BuildValue("(OO)", self, capsule);
+  auto arg_list = Py_BuildValue("(O)", capsule);
   auto py_quiddity = PyObject_CallObject((PyObject*)&pyQuiddity::pyType, arg_list);
 
   Py_XDECREF(arg_list);
@@ -352,11 +350,6 @@ PyObject* pySwitch::reset_state(pySwitchObject* self, PyObject* args, PyObject* 
   if (!PyArg_ParseTupleAndKeywords(args, kwds, "|p", kwlist, &clear)) {
     PyErr_SetString(PyExc_TypeError, "error parsing arguments");
     return nullptr;
-  }
-
-  // also reset references of quiddities
-  for (Py_ssize_t i = PyList_Size(self->quiddities) - 1; i >= 0; --i) {
-    PyList_SetSlice(self->quiddities, i, i + 1, nullptr);
   }
 
   self->switcher->reset_state(clear ? true : false);

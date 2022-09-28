@@ -38,12 +38,11 @@ PyObject* pyQuiddity::tp_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /
 }
 
 int pyQuiddity::Quiddity_init(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
-  PyObject* pyswitch = nullptr;
   PyObject* quid_capsule = nullptr;
 
-  static char* kwlist[] = {(char*)"switcher", (char*)"quid_c_ptr", nullptr};
+  static char* kwlist[] = {(char*)"quid_c_ptr", nullptr};
 
-  if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO", kwlist, &pyswitch, &quid_capsule)) {
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &quid_capsule)) {
     return -1;
   }
 
@@ -54,10 +53,6 @@ int pyQuiddity::Quiddity_init(pyQuiddityObject* self, PyObject* args, PyObject* 
     PyErr_Format(PyExc_RuntimeError, "Failed to init pyQuiddity object");
     return -1;
   }
-
-  // append quiddity into quiddities list
-  auto pyswitchobj = reinterpret_cast<pySwitch::pySwitchObject*>(pyswitch);
-  PyList_Append(pyswitchobj->quiddities, reinterpret_cast<PyObject*>(self));
 
   // initialize descriptor and set `props` attribute on type instance
   self->props = get_property_descriptor(self);
@@ -878,19 +873,8 @@ PyObject* pyQuiddity::get_signal_id(pyQuiddityObject* self, PyObject* args, PyOb
 }
 
 void pyQuiddity::Quiddity_dealloc(pyQuiddityObject* self) {
-  // cast switcher object instance to C struct
-  auto switcher = reinterpret_cast<pySwitch::pySwitchObject*>(self->switcher);
-  // remove quiddity from quiddities list
-  if (switcher->quiddities) {
-    PyObject* obj = reinterpret_cast<PyObject*>(self);
-    for (Py_ssize_t i = 0; i < PyList_Size(switcher->quiddities); i++) {
-      if (PyList_GetItem(switcher->quiddities, i) == obj) {
-        PyList_SetSlice(switcher->quiddities, i, i + 1, nullptr);
-        break;
-      }
-    }
-  }
   auto quid = self->quid.lock();
+
   if (quid) {
     // cleaning signal subscription
     for (const auto& it : self->sig_reg->callbacks) {

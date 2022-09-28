@@ -29,6 +29,8 @@
 #include "./pybundle.hpp"
 #include "./pylogger.hpp"
 #include "./pysession.hpp"
+#include "./pyquiddities.hpp"
+
 #include "switcher/session/session.hpp"
 #include "switcher/switcher.hpp"
 
@@ -119,6 +121,16 @@ class pySwitch {
    * @return The descriptor object
    */
   static PyObject* get_bundles_descriptor(pySwitchObject* self);
+
+  /**
+   * @brief Get the quiddities descriptor of the pySwitch object
+   * @param self The pySwitch instance to initialize
+   * @details This descriptor is an interface on top of the `get_quiddities`
+   *          method. It is wrapping all instanciated quiddities into
+   *          pyQuiddity objects.
+   * @return The descriptor object
+   */
+  static PyObject* get_quiddities_descriptor(pySwitchObject* self);
 
   // quiddity life
   static PyObject* create(pySwitchObject* self, PyObject* args, PyObject* kwds);
