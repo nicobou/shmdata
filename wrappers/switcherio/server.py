@@ -296,7 +296,10 @@ def set_switcher_instance(instance: pyquid.Switcher) -> None:
 def start_server() -> None:
     global loop
     if sw is None:
-        set_switcher_instance(pyquid.Switcher('switcher-ws'))
+        set_switcher_instance(
+            Switcher('switcher-ws'),
+            debug=True
+        )
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     web.run_app(app, port=port, loop=loop)
@@ -374,8 +377,24 @@ def disconnect(sid: str) -> None:
     sio.logger.info(f'Client disconnected (SID: {sid})')
 
 
+@sio.event
+def connect_error(data):
+    """Log an error when the event `connect_error` is detected
+
+       Some API details can be checked here:
+       https://python-socketio.readthedocs.io/en/latest/client.html?highlight=connect_error#connect-connect-error-and-disconnect-event-handlers for implementation details.
+
+    Decorators:
+        sio.event
+
+    Arguments:
+        data {str} -- Hints on the connection failure
+    """
+    sio.logger.error(f'Connection failed because {data}')
+
 # Switcher API
 # ============
+
 
 @sio.on('switcher.name')
 def get_switcher_name(sid: str) -> Tuple[None, str]:
