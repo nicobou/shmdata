@@ -39,108 +39,86 @@ PyObject* pyQuiddity::tp_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /
 
 int pyQuiddity::Quiddity_init(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
   PyObject* pyswitch = nullptr;
-  char* kind = nullptr;
-  char* nickname = nullptr;
-  PyObject* pyinfotree = nullptr;
+  PyObject* quid_capsule = nullptr;
 
-  static char* kwlist[] = {
-      (char*)"switcher", (char*)"kind", (char*)"nickname", (char*)"config", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(
-          args, kwds, "Os|sO", kwlist, &pyswitch, &kind, &nickname, &pyinfotree))
-    return -1;
+  static char* kwlist[] = {(char*)"switcher", (char*)"quid_c_ptr", nullptr};
 
-  // pointer to type object
-  PyObject* type = nullptr;
-
-  // pyswitch type check
-  type = reinterpret_cast<PyObject*>(&pySwitch::pyType);
-  if (pyswitch && !PyObject_IsInstance(pyswitch, type)) {
-    PyErr_SetString(PyExc_TypeError, "argument `switcher` is not an instance of pyquid.Switcher");
-    return -1;
-  }
-  // pyinfotree type check
-  type = reinterpret_cast<PyObject*>(&pyInfoTree::pyType);
-  if (pyinfotree && !PyObject_IsInstance(pyinfotree, type)) {
-    PyErr_SetString(PyExc_TypeError, "argument `config` is not an instance of pyquid.InfoTree");
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "OO", kwlist, &pyswitch, &quid_capsule)) {
     return -1;
   }
 
-  // store reference to switcher object instance
-  self->switcher = pyswitch;
-
-  // cast switcher object pointer to C struct pointer
-  auto pyswitchobj = reinterpret_cast<pySwitch::pySwitchObject*>(pyswitch);
-
-  // get C++ switcher instance
-  auto switcher = pyswitchobj->switcher.get();
-
-  // create a quiddity without calling creation callbacks
-  auto qrox = switcher->quids<MPtr(&quiddity::Container::quiet_create)>(
-      kind,
-      nickname ? nickname : std::string(),
-      pyinfotree ? reinterpret_cast<pyInfoTree::pyInfoTreeObject*>(pyinfotree)->tree : nullptr);
-
-  // try to retrieve a pointer to quiddity
-  auto quid_ptr = switcher->quids<MPtr(&quiddity::Container::get_quiddity)>(qrox.get_id());
-
-  // check for pointer to quiddity
-  if (quid_ptr) {
-    self->quid = quid_ptr;
-  } else {
-    PyErr_Format(PyExc_RuntimeError, "%s", qrox.msg().c_str());
+  try {
+    Quiddity* raw_quid = static_cast<Quiddity*>(PyCapsule_GetPointer(quid_capsule, nullptr));
+    self->quid = raw_quid->get_weak_ptr_to_this();
+  } catch (const std::exception&) {
+    PyErr_Format(PyExc_RuntimeError, "Failed to init pyQuiddity object");
     return -1;
   }
 
   // append quiddity into quiddities list
-  PyObject* obj = reinterpret_cast<PyObject*>(self);
-  PyList_Append(pyswitchobj->quiddities, obj);
+  auto pyswitchobj = reinterpret_cast<pySwitch::pySwitchObject*>(pyswitch);
+  PyList_Append(pyswitchobj->quiddities, reinterpret_cast<PyObject*>(self));
 
-  // pointer to interpreted types
-  PyObject* cls = nullptr;
-
-  // get pointer to props descriptor
-  if (!(cls = InterpType("PropsDescriptor", "props.py"))) return -1;
-
-  // compute defaults for props descriptor initialization
-  PyObject* defaults = PyDict_New();
-  auto quid = self->quid.lock();
-  auto names = quid->prop<MPtr(&property::PBag::get_names)>();
-  for (auto& n : names) {
-    auto key = n.second.c_str();
-    PyObject* value =
-        pyInfoTree::any_to_pyobject(quid->prop<MPtr(&property::PBag::get_any)>(n.first));
-    PyDict_SetItemString(defaults, key, value);
-    Py_XDECREF(value);
-  }
   // initialize descriptor and set `props` attribute on type instance
-  self->props = PyObject_CallFunctionObjArgs(cls, self, defaults, nullptr);
-  // decrement refcount
-  for (auto& o : {cls, defaults}) Py_XDECREF(o);
+  self->props = get_property_descriptor(self);
 
-  // get pointer to signals descriptor
-  if (!(cls = InterpType("SignalsDescriptor", "signals.py"))) return -1;
-  // compute defaults for signals descriptor initialization
-  PyObject* registry_type = InterpType("SignalRegistry", "signals.py");
-  if (!registry_type) return -1;
-
-  PyObject* registry = PyObject_CallFunctionObjArgs(registry_type, nullptr);
-  defaults = Py_BuildValue("{s:O}", "quiddity_updated", registry);
   // initialize descriptor and set `signals` attribute on type instance
-  self->signals = PyObject_CallFunctionObjArgs(cls, defaults, nullptr);
-  // decrement refcounts
-  for (auto& o : {cls, defaults, registry_type}) Py_XDECREF(o);
+  self->signals = get_signal_descriptor(self);
 
   // signal registering and async invocations
   self->sig_reg = std::make_unique<sig_registering_t>();
   self->prop_reg = std::make_unique<prop_registering_t>();
   self->async_invocations = std::make_unique<std::list<std::future<void>>>();
-
   self->interpreter_state = PyThreadState_Get()->interp;
 
-  // notify quiddity created
-  switcher->quids<MPtr(&quiddity::Container::notify_quiddity_created)>(quid.get());
-
   return 0;
+}
+
+PyObject* pyQuiddity::get_property_descriptor(pyQuiddityObject* self) {
+  // get pointer to props descriptor
+  PyObject* descriptor_type = InterpType("PropsDescriptor", "props.py");
+  if (!descriptor_type) return nullptr;
+
+  // compute defaults for props descriptor initialization
+  PyObject* default_props = PyDict_New();
+
+  auto quid = self->quid.lock();
+  auto names = quid->prop<MPtr(&property::PBag::get_names)>();
+
+  for (auto& n : names) {
+    auto key = n.second.c_str();
+    PyObject* value = pyInfoTree::any_to_pyobject(quid->prop<MPtr(&property::PBag::get_any)>(n.first));
+    PyDict_SetItemString(default_props, key, value);
+    Py_XDECREF(value);
+  }
+
+  // initialize descriptor and set `props` attribute on type instance
+  auto props = PyObject_CallFunctionObjArgs(descriptor_type, self, default_props, nullptr);
+
+  // decrement refcount
+  for (auto& o : {descriptor_type, default_props}) Py_XDECREF(o);
+
+  return props;
+}
+
+PyObject* pyQuiddity::get_signal_descriptor(pyQuiddityObject* self) {
+  // compute defaults for signals descriptor initialization
+  PyObject* descriptor_type = InterpType("SignalRegistry", "signals.py");
+  if (!descriptor_type) return nullptr;
+
+  // compute defaults for signal descriptor initialization
+  PyObject* default_signals = PyDict_New();
+
+  PyObject* registry = PyObject_CallFunctionObjArgs(descriptor_type, nullptr);
+  default_signals = Py_BuildValue("{s:O}", "quiddity_updated", registry);
+
+  // initialize descriptor and set `signals` attribute on type instance
+  auto signals = PyObject_CallFunctionObjArgs(descriptor_type, default_signals, nullptr);
+
+  // decrement refcounts
+  for (auto& o : {default_signals, descriptor_type}) Py_XDECREF(o);
+
+  return signals;
 }
 
 PyDoc_STRVAR(pyquiddity_set_doc,

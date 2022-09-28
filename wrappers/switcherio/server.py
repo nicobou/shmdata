@@ -537,7 +537,7 @@ def create_quiddity(
     kind: str,
     nickname: Optional[str] = None,
     properties: Optional[Dict[str, Any]] = None,
-    user_data: Optional[Dict[str, Any]] = None
+    user_tree: Optional[Dict[str, Any]] = None
 ) -> Tuple[Optional[str], Optional[str]]:
     """Create a quiddity instance
 
@@ -551,7 +551,7 @@ def create_quiddity(
     Keyword Arguments:
         nickname {Optional[str]} -- [description] (default: {None})
         properties {Optional[Dict[str, Any]]} -- [description] (default: {None})
-        user_data {Optional[Dict[str, Any]]} -- [description] (default: {None})
+        user_tree {Optional[Dict[str, Any]]} -- [description] (default: {None})
 
     Returns:
         tuple -- The error and response for this event
@@ -565,12 +565,12 @@ def create_quiddity(
                 quid.set(prop, value)
 
         # user_data
-        if user_data is not None:
-            for key, sub_tree in user_data.items():
+        if user_tree is not None:
+            for key, sub_tree in user_tree.items():
                 tree = pyquid.InfoTree(json.dumps(sub_tree))
                 quid.get_user_tree().graft(key, tree)
 
-            sw.get_quid(quid.id()).notify_user_tree_grafted('.')
+            quid.notify_user_tree_grafted('.')
 
         return None, get_quiddity_model(quid)
     except Exception as e:
