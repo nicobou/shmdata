@@ -12,13 +12,13 @@
 
 from aiohttp import web
 import asyncio
-import functools
 import json
 import os
-import pyquid
 import socketio
-from typing import Any, Dict, List, Optional, Tuple, Union
 import logging
+
+from pyquid import Switcher, InfoTree, Quiddity
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 # Server creation
 # ===============
@@ -34,7 +34,7 @@ sio = socketio.AsyncServer(logger=True,
                            cors_allowed_origins='*')
 sio.attach(app)
 
-sw: Optional[pyquid.Switcher] = None
+sw: Optional[Switcher] = None
 loop: asyncio.BaseEventLoop = None
 
 formatter = logging.Formatter('%(name)s: %(message)s')
@@ -88,7 +88,7 @@ def on_quiddity_updated(quid_id: int, updated: Optional[dict]) -> None:
     asyncio.create_task(sio.emit('quiddity.updated', quid_id, updated))
 
 
-def on_user_tree_grafted(tree_path: pyquid.InfoTree, quid_id: int) -> None:
+def on_user_tree_grafted(tree_path: InfoTree, quid_id: int) -> None:
     """Switcher callback to notify clients that the user_tree is grafted
 
     Arguments:
@@ -102,7 +102,7 @@ def on_user_tree_grafted(tree_path: pyquid.InfoTree, quid_id: int) -> None:
         sio.emit('user_tree.grafted', (quid_id, path, value)), loop)
 
 
-def on_user_tree_pruned(tree_path: pyquid.InfoTree, quid_id: int) -> None:
+def on_user_tree_pruned(tree_path: InfoTree, quid_id: int) -> None:
     """Switcher callback to notify clients that the user_tree is pruned
 
     Arguments:
@@ -114,7 +114,7 @@ def on_user_tree_pruned(tree_path: pyquid.InfoTree, quid_id: int) -> None:
         sio.emit('user_tree.pruned', (quid_id, path)), loop)
 
 
-def on_info_tree_grafted(tree_path: pyquid.InfoTree, quid_id: int) -> None:
+def on_info_tree_grafted(tree_path: InfoTree, quid_id: int) -> None:
     """Switcher callback to notify clients that the info_tree is updated
 
     Arguments:
@@ -132,7 +132,7 @@ def on_info_tree_grafted(tree_path: pyquid.InfoTree, quid_id: int) -> None:
         sio.emit('info_tree.grafted', (quid_id, path, value)), loop)
 
 
-def on_info_tree_pruned(tree_path: pyquid.InfoTree, quid_id: int) -> None:
+def on_info_tree_pruned(tree_path: InfoTree, quid_id: int) -> None:
     """Switcher callback to notify clients that the info_tree is pruned
 
     Arguments:
@@ -147,7 +147,7 @@ def on_info_tree_pruned(tree_path: pyquid.InfoTree, quid_id: int) -> None:
     asyncio.run_coroutine_threadsafe(sio.emit('info_tree.pruned', (quid_id, path)), loop)
 
 
-def on_connection_spec_added(tree_path: pyquid.InfoTree, quid_id: int) -> None:
+def on_connection_spec_added(tree_path: InfoTree, quid_id: int) -> None:
     """Switcher callback to notify clients that a connection spec is added.
 
     Arguments:
@@ -167,7 +167,7 @@ def on_connection_spec_added(tree_path: pyquid.InfoTree, quid_id: int) -> None:
         sio.emit('connection_spec.added', (quid_id, path, value)), loop)
 
 
-def on_connection_spec_removed(tree_path: pyquid.InfoTree, quid_id: int) -> None:
+def on_connection_spec_removed(tree_path: InfoTree, quid_id: int) -> None:
     """Switcher callback to notify clients that a connection spec is removed.
 
     Arguments:
@@ -226,7 +226,7 @@ def on_nickname_updated(nickname: str, quid_id: int) -> None:
 
 
 # Subscriptions
-def set_signal_subscriptions(quid: pyquid.Quiddity) -> None:
+def set_signal_subscriptions(quid: Quiddity) -> None:
     """
     Arguments:
         quid {pyquid.Quiddity} -- [description]
@@ -251,7 +251,7 @@ def set_signal_subscriptions(quid: pyquid.Quiddity) -> None:
                             f'signal of `{repr(quid)}`')
 
 
-def set_property_subscriptions(quid: pyquid.Quiddity) -> None:
+def set_property_subscriptions(quid: Quiddity) -> None:
     for prop in json.loads(quid.get_info_tree_as_json(".property")):
         prop_data = {
             'quid_id': quid.id(),
@@ -266,7 +266,7 @@ def set_property_subscriptions(quid: pyquid.Quiddity) -> None:
                             f'on `{repr(quid)}`')
 
 
-def remove_property_subscriptions(quid: pyquid.Quiddity) -> None:
+def remove_property_subscriptions(quid: Quiddity) -> None:
     props = json.loads(quid.get_info_tree_as_json(".property"))
     for prop in props:
         if not quid.unsubscribe(prop['id']):
@@ -276,7 +276,7 @@ def remove_property_subscriptions(quid: pyquid.Quiddity) -> None:
 
 
 # Utilities
-def set_switcher_instance(instance: pyquid.Switcher) -> None:
+def set_switcher_instance(instance: Switcher) -> None:
     global sw
     if sw is not None:
         sw.unsubscribe("on-quiddity-created")
@@ -305,7 +305,7 @@ def start_server() -> None:
     web.run_app(app, port=port, loop=loop)
 
 
-def get_quiddity_model(quid: pyquid.Quiddity) -> dict:
+def get_quiddity_model(quid: Quiddity) -> dict:
     """Get the full model of a quiddity
 
     Arguments:
@@ -589,7 +589,7 @@ def create_quiddity(
         # user_data
         if user_tree is not None:
             for key, sub_tree in user_tree.items():
-                tree = pyquid.InfoTree(json.dumps(sub_tree))
+                tree = InfoTree(json.dumps(sub_tree))
                 quid.get_user_tree().graft(key, tree)
 
             quid.notify_user_tree_grafted('.')
