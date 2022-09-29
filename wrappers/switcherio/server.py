@@ -17,6 +17,8 @@ import os
 import socketio
 import logging
 
+from argparse import ArgumentParser
+
 from pyquid import Switcher, InfoTree, Quiddity
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -293,13 +295,13 @@ def set_switcher_instance(instance: Switcher) -> None:
     sw.subscribe("on-quiddity-removed", on_quiddity_deleted)
 
 
-def start_server() -> None:
+def start_server(debug: bool = False) -> None:
     global loop
+
     if sw is None:
-        set_switcher_instance(
-            Switcher('switcher-ws'),
-            debug=True
-        )
+        set_switcher_instance(Switcher(name='switcher-ws',
+                                       debug=debug))
+
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     web.run_app(app, port=port, loop=loop)
@@ -1110,5 +1112,19 @@ def read_session(sid: str, session_name: str):
 
 
 if __name__ == '__main__':
-    start_server()
+    parser = ArgumentParser(
+        prog="swIO",
+        description="Run a Server.IO service on top of a switcher instance",
+        epilog="This program is still experimental and unstable")
+
+    parser.add_argument(
+        '--debug',
+        help="enable the debug logger",
+        type=bool,
+        nargs='?',
+        default=False,
+        const=True)
+
+    args = parser.parse_args()
+    start_server(debug=args.debug)
     loop.close()
