@@ -325,6 +325,9 @@ def get_quiddity_model(quid: pyquid.Quiddity) -> dict:
     if model['userTree'] is None:
         model['userTree'] = {}
 
+    if model['connectionSpecs'] is None:
+        model['connectionSpecs'] = {}
+
     return model
 
 # Generic Event Handlers
@@ -1018,6 +1021,89 @@ def clear_session(sid: str):
         for qid in sw.list_ids():
             sw.remove(qid)
         return None, True
+    except Exception as e:
+        sio.logger.exception(e)
+        return str(e), False
+
+
+@sio.on('session.list')
+def list_sessions(sid: str):
+    """Get a list of all session files.
+
+    Decorators:
+        sio.on
+
+    Arguments:
+        sid {str} -- The session identifier assigned to the client
+
+    Returns:
+        tuple -- The error and response for this event
+    """
+    try:
+        return None, sw.session.list()
+    except Exception as e:
+        sio.logger.exception(e)
+        return str(e), False
+
+
+@sio.on('session.save_as')
+def save_session_as(sid: str, session_name: str):
+    """Save a session as file.
+
+    Decorators:
+        sio.on
+
+    Arguments:
+        sid {str} -- The session identifier assigned to the client
+        session_name {str} -- The name of the session
+
+    Returns:
+        tuple -- The error and response for this event
+    """
+    try:
+        return None, sw.session.save_as(session_name)
+    except Exception as e:
+        sio.logger.exception(e)
+        return str(e), False
+
+
+@sio.on('session.remove')
+def remove_session(sid: str, session_name: str):
+    """Remove the file of a session.
+
+    Decorators:
+        sio.on
+
+    Arguments:
+        sid {str} -- The session identifier assigned to the client
+        session_name {str} -- The name of the session
+
+    Returns:
+        tuple -- The error and response for this event
+    """
+    try:
+        return None, sw.session.remove(session_name)
+    except Exception as e:
+        sio.logger.exception(e)
+        return str(e), False
+
+
+@sio.on('session.read')
+def read_session(sid: str, session_name: str):
+    """Read the file of a session.
+
+    Decorators:
+        sio.on
+
+    Arguments:
+        sid {str} -- The session identifier assigned to the client
+        session_name {str} -- The name of the session
+
+    Returns:
+        tuple -- The error and response for this event
+    """
+    try:
+        return None, sw.session.read(session_name)
     except Exception as e:
         sio.logger.exception(e)
         return str(e), False
