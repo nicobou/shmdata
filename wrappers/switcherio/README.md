@@ -64,6 +64,10 @@ In order to debug the `switcher` instance from `switcherio`, you can use gdb:
 
 ```bash
 gdb --args python3 wrappers/switcherio/server.py
+pdb -m python3 wrappers/switcherio/server.py
+
+# if you feel adventurous...
+gdb --args python3 -m pdb wrappers/switcherio/server.py
 ```
 
 # Testing `switcherio`
