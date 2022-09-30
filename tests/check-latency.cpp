@@ -50,10 +50,10 @@ int main () {
                         // const auto reading_time = std::chrono::steady_clock::now().duration;
                         const auto now = std::chrono::steady_clock::now();
                         const auto reading_time =
-                            std::chrono::duration_cast<std::chrono::microseconds, long int>(
+                            std::chrono::duration_cast<std::chrono::microseconds, int64_t>(
                                 now.time_since_epoch())
                                 .count();
-                        auto writing_time = static_cast<long int*>(data);
+                        auto writing_time = static_cast<int64_t*>(data);
                         std::cout << "latency "
                                   << reading_time - *writing_time
                                   << "μs" 
@@ -69,8 +69,8 @@ int main () {
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
     while (0 != i--) {
       const auto start = std::chrono::steady_clock::now();
-      const auto duration = std::chrono::duration_cast<std::chrono::microseconds, long int>(start.time_since_epoch()).count();
-      assert(w.copy_to_shm(&duration, sizeof(long int)));
+      const auto duration = std::chrono::duration_cast<std::chrono::microseconds, int64_t>(start.time_since_epoch()).count();
+      assert(w.copy_to_shm(&duration, sizeof(int64_t)));
     }
   }
   return 0;
