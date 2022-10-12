@@ -329,12 +329,9 @@ PyObject* pyQuiddity::invoke_async(pyQuiddityObject* self, PyObject* args, PyObj
         auto quid = self->quid.lock();
         auto res = quid->meth<MPtr(&method::MBag::invoke_any)>(
             quid->meth<MPtr(&method::MBag::get_id)>(meth), tuple_args);
-        bool has_gil = (1 == PyGILState_Check()) ? true : false;
-        PyThreadState* m_state = nullptr;
-        if (!has_gil) {
-          m_state = PyThreadState_New(self->interpreter_state);
-          PyEval_RestoreThread(m_state);
-        }
+
+        auto gstate = PyGILState_Ensure();
+
         PyObject* res_object = pyInfoTree::any_to_pyobject(res.any());
         PyObject* arglist;
         if (user_data)
@@ -351,11 +348,9 @@ PyObject* pyQuiddity::invoke_async(pyQuiddityObject* self, PyObject* args, PyObj
         Py_DECREF(res_object);
         Py_DECREF(arglist);
         Py_XDECREF(pyobjresult);
-        if (!has_gil) {
-          PyEval_SaveThread();
-          PyThreadState_Clear(m_state);
-          PyThreadState_Delete(m_state);
-        }
+        
+        /* Release the thread. No Python API allowed beyond this point. */
+        PyGILState_Release(gstate);
       }));
 
   // cleaning old invocations
@@ -535,12 +530,8 @@ bool pyQuiddity::subscribe_to_signal(pyQuiddityObject* self,
   if (0 == sig_id) return false;
   auto reg_id = quid->sig<MPtr(&signal::SBag::subscribe)>(
       sig_id, [cb, user_data, self](const InfoTree::ptr& tree) {
-        bool has_gil = (1 == PyGILState_Check()) ? true : false;
-        PyThreadState* m_state = nullptr;
-        if (!has_gil) {
-          m_state = PyThreadState_New(self->interpreter_state);
-          PyEval_RestoreThread(m_state);
-        }
+        auto gstate = PyGILState_Ensure();
+
         PyObject* arglist;
         auto tmp_tree = tree->get_copy();
         if (user_data)
@@ -554,11 +545,9 @@ bool pyQuiddity::subscribe_to_signal(pyQuiddityObject* self,
         if (pyerr != nullptr) PyErr_Print();
         Py_DECREF(arglist);
         Py_XDECREF(pyobjresult);
-        if (!has_gil) {
-          PyEval_SaveThread();
-          PyThreadState_Clear(m_state);
-          PyThreadState_Delete(m_state);
-        }
+
+        /* Release the thread. No Python API allowed beyond this point. */
+        PyGILState_Release(gstate);
       });
   if (0 == reg_id) return false;
   Py_INCREF(cb);
@@ -581,12 +570,8 @@ bool pyQuiddity::subscribe_to_property(pyQuiddityObject* self,
   if (0 == prop_id) return false;
   auto reg_id =
       quid->prop<MPtr(&property::PBag::subscribe)>(prop_id, [prop_id, cb, self, user_data, quid]() {
-        bool has_gil = (1 == PyGILState_Check()) ? true : false;
-        PyThreadState* m_state;
-        if (!has_gil) {
-          m_state = PyThreadState_New(self->interpreter_state);
-          PyEval_RestoreThread(m_state);
-        }
+        auto gstate = PyGILState_Ensure();
+
         PyObject* arglist;
         if (user_data)
           arglist = Py_BuildValue(
@@ -602,11 +587,9 @@ bool pyQuiddity::subscribe_to_property(pyQuiddityObject* self,
         if (pyerr != nullptr) PyErr_Print();
         Py_DECREF(arglist);
         Py_XDECREF(pyobjresult);
-        if (!has_gil) {
-          PyEval_SaveThread();
-          PyThreadState_Clear(m_state);
-          PyThreadState_Delete(m_state);
-        }
+
+        /* Release the thread. No Python API allowed beyond this point. */
+        PyGILState_Release(gstate);
       });
   if (0 == reg_id) return false;
   Py_INCREF(cb);

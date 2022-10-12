@@ -521,17 +521,7 @@ bool pySwitch::subscribe_to_signal(pySwitchObject* self,
                                    PyObject* cb,
                                    PyObject* user_data) {
   auto signalCb = [cb, user_data, self](quiddity::qid_t id) {
-    bool has_gil = (1 == PyGILState_Check()) ? true : false;
-
-    // save the thread state in a local variable
-    PyThreadState* m_state = nullptr;
-
-    if (!has_gil) {
-      // create a new thread state for the the interpreter interp
-      m_state = PyThreadState_New(self->interpreter_state);
-      // Acquire the GIL and set the thread state to tstate, which must not be NULL
-      PyEval_RestoreThread(m_state);
-    }
+    auto gstate = PyGILState_Ensure();
 
     // call the python callback
     PyObject* arglist;
@@ -547,18 +537,8 @@ bool pySwitch::subscribe_to_signal(pySwitchObject* self,
     Py_DECREF(arglist);
     Py_XDECREF(pyobjresult);
 
-    if (!has_gil) {
-      // release the global interpreter lock and reset the thread state to NULL
-      PyEval_SaveThread();
-      if (m_state) {
-        // Reset all information in a thread state object
-        // The global interpreter lock must be held
-        PyThreadState_Clear(m_state);
-        // Destroy a thread state object
-        // The global interpreter lock need not be held
-        PyThreadState_Delete(m_state);
-      }
-    }
+    /* Release the thread. No Python API allowed beyond this point. */
+    PyGILState_Release(gstate);
   };
 
   unsigned int reg_id = 0;
