@@ -29,13 +29,30 @@ def on_invocation_done(value, user_data):
 # create a switcher.
 sw = pyquid.Switcher('pyquid', debug=True)
 
-# creating a quiddity method-quid in order to illustrate invoke_async
+# creating a quiddity method-quid in order to illustrate method invocation
 methodquid = sw.create('methodquid')
+
+# some Quiddities has methods that can be invoked
+assert 'hello world and count is 0' == methodquid.invoke('hello', ['world'])
+
+# asynchronous invocation invoke_async
 my_user_data = ["my", "user", "data"]
 methodquid.invoke_async('hello', ['world'], on_invocation_done, my_user_data)
 
 # wait 200 milliseconds
 time.sleep(0.2)
+
+# check error
+try:
+    methodquid.invoke("nonexistent method")
+except RuntimeError:
+    pass
+
+try:
+    methodquid.invoke_async("nonexistent method", ['world'], on_invocation_done, my_user_data)
+except RuntimeError:
+    pass
+
 
 if success == True:
     exit(0)

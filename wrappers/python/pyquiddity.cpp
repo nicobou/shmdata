@@ -247,8 +247,11 @@ PyObject* pyQuiddity::invoke(pyQuiddityObject* self, PyObject* args, PyObject* k
     return nullptr;
   }
   BoolAny res = pyquid::ungiled(std::function([&]() {
-    return quid->meth<MPtr(&method::MBag::invoke_any)>(
-        quid->meth<MPtr(&method::MBag::get_id)>(method), tuple_args);
+    auto id = quid->meth<MPtr(&method::MBag::get_id)>(method);
+    if (Ids::kInvalid == id) {
+      return BoolAny(Any(), false, "Method id not found");
+    }
+    return quid->meth<MPtr(&method::MBag::invoke_any)>(id, tuple_args);
   }));
 
   if (!res) {
@@ -322,13 +325,18 @@ PyObject* pyQuiddity::invoke_async(pyQuiddityObject* self, PyObject* args, PyObj
     return nullptr;
   }
 
+  auto meth_id = quid->meth<MPtr(&method::MBag::get_id)>(method);
+  if (Ids::kInvalid == meth_id) {
+    PyErr_Format(PyExc_RuntimeError, "Method id not found");
+    return nullptr;
+  }
+
   Py_INCREF(cb);
   Py_INCREF(user_data);
-  self->async_invocations->emplace_back(std::async(
-      std::launch::async, [self, cb, user_data, meth = std::string(method), tuple_args]() {
+  self->async_invocations->emplace_back(
+      std::async(std::launch::async, [self, cb, user_data, meth_id, tuple_args]() {
         auto quid = self->quid.lock();
-        auto res = quid->meth<MPtr(&method::MBag::invoke_any)>(
-            quid->meth<MPtr(&method::MBag::get_id)>(meth), tuple_args);
+        auto res = quid->meth<MPtr(&method::MBag::invoke_any)>(meth_id, tuple_args);
 
         auto gstate = PyGILState_Ensure();
 
