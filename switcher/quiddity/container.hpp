@@ -165,7 +165,7 @@ class Container {
   // construct result to pass when element has not been found:
   template <typename ReturnType>
   ReturnType construct_error_return(qid_t id) const {
-    LOGGER_WARN(this->logger, "quiddity % not found", std::to_string(id));
+    LOGGER_WARN(this->logger, "quiddity {} not found", std::to_string(id));
     return ReturnType();
   }
 
