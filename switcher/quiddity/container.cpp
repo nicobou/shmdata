@@ -80,7 +80,10 @@ Qrox Container::quiet_create(const std::string& quiddity_kind,
   } else {
     nick = raw_nickname;
     for (const auto& it : quiddities_) {
-      if (nick == it.second->get_nickname()) return Qrox(false, "nickname unavailable");
+      if (nick == it.second->get_nickname()) {
+        ids_.release_last_allocated_id();
+        return Qrox(false, "nickname unavailable");
+      }
     }
   }
 
