@@ -233,9 +233,15 @@ PyObject* pySwitch::create(pySwitchObject* self, PyObject* args, PyObject* kwds)
   auto switcher = self->switcher;
 
   auto qrox = switcher->quids<MPtr(&quiddity::Container::quiet_create)>(kind, name, user_tree);
+
+  if (!qrox ) {
+    PyErr_Format(PyExc_RuntimeError, "Failed to create qrox: %s", qrox.msg().c_str());
+    return nullptr;
+  }
+
   auto quid = switcher->quids<MPtr(&quiddity::Container::get_quiddity)>(qrox.get_id());
 
-  if (!qrox || !quid) {
+  if (!quid) {
     PyErr_Format(PyExc_RuntimeError, "Failed to create quiddity %s", name.c_str());
     return nullptr;
   }
