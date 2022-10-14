@@ -189,7 +189,8 @@ PyObject* pySwitch::load_bundles(pySwitchObject* self, PyObject* args, PyObject*
   const char* config = PyUnicode_AsUTF8(res);
 
   // decrement refcount
-  for (auto& o : {obj, meth, res}) Py_XDECREF(o);
+  // allow Python GC to deallocate JSON only after load_bundle_from_config is done
+  On_scope_exit { for (auto& o : {obj, meth, res}) Py_XDECREF(o); };
 
   if (!self->switcher->load_bundle_from_config(config)) {
     Py_INCREF(Py_False);
