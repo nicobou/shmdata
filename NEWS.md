@@ -2,6 +2,13 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.3.72 (2022-10-17)
+---------------------------
+This is an official release in the 1.3 stable series.
+
+Improvements:
+* 🐛 replace types from check-latency test
+
 shmdata 1.3.70 (2022-09-22)
 ---------------------------
 This is an official release in the 1.3 stable series.
