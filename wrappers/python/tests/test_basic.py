@@ -33,7 +33,7 @@ class BasicTestCase(unittest.TestCase):
         sw = pyquid.Switcher('pyquid')
         # create a window
         try:
-            pyquid.Quiddity(switcher=sw, kind='glfwin', nickname='win1')
+            sw.create(kind='glfwin', nickname='win1')
         except RuntimeError as e:
             cls.logger.exception(e)
             sw.create(kind='dummysink', nickname='win1')

@@ -175,9 +175,9 @@ def main() -> None:
         win = sw.create('glfwin', 'win')
         win.set('decorated', True)
         if (args.shmpath):
-            win.invoke('connect', [args.shmpath])
+            FollowerClaw(win, "video").connect_raw(args.shmpath)
         else:
-            win.invoke('connect-quid', [cam.id(), 'video'])
+            win.try_connect(cam)
 
     # interactive mode
     shot.subscribe("last_image", print_image_name)

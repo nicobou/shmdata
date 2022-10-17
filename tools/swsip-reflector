@@ -1,0 +1,318 @@
+#!/usr/bin/env python3
+
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation; either version 2.1
+# of the License, or (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+
+import asyncio
+import os
+import logging
+import signal
+import pyquid
+import json
+from typing import Any, Dict, List, Optional, Tuple, Union
+# generate_service_id: to generate unique ID
+import uuid
+import re
+import argparse
+import time
+import threading
+
+DEFAULT_SIP_SERVER_HOSTNAME = 'localhost'
+DEFAULT_SIP_SERVER_PORT = '5060'
+DEFAULT_SIP_CLIENT_PORT = '5060'
+DEFAULT_SIP_CLIENT_USER = 'user'
+DEFAULT_SIP_CLIENT_PASSWORD = 'password'
+
+switcher_name = ''
+
+sw: Optional[pyquid.Switcher] = None
+sip_quid: Optional[pyquid.Quiddity] = None
+
+# SIP outbound call setup thread
+call_thread: Optional[threading.Thread] = None
+call_event: Optional[threading.Event] = None
+call_stop: Optional[bool] = False
+
+# Inbound calls state
+# key is caller URI (i.e. user@server), value is inbound call state (i.e. "disconnected", "disconnecting" "receiving")
+# Local state goes from no key, to receiving, to disconnecting , to disconnected
+inbound_call_state = dict()
+
+logging.basicConfig(format='%(asctime)s|%(filename)s|%(funcName)s|%(levelname)s|%(message)s', level=logging.INFO)
+
+# Switcher Callbacks
+# ==================
+
+# Subscriptions
+
+def on_quiddity_created(quid_id: int) -> None:
+    global call_event
+    """Switcher callback to notify clients of successful quiddity creation.
+
+    This is called by Switcher whenever a quiddity is created and emits
+    a `quiddity.created` event to all clients in the room.
+
+    Arguments:
+        quid_id {int} -- The identifier of the newly created `Quiddity`.
+    """
+
+    logging.info(f'on_quiddity_created called for quiddity id {quid_id}')
+    global sw, sip_quid
+
+    # Only attempt calling back when creating quiddities after sip
+    if quid_id > 1:
+        # Send call event to outbound call thread
+        call_event.set()
+
+def on_quiddity_deleted(quid_id: int) -> None:
+    """Switcher callback to notify clients of successful quiddity removal.
+
+    This is called by Switcher whenever a quiddity is removed and emits
+    a `quiddity.deleted` event to all clients in the room.
+
+    Arguments:
+        quid_id {int} -- The identifier of the removed `Quiddity`.
+    """
+    logging.info(f'on_quiddity_deleted called for quiddity id {quid_id}')
+
+def on_info_tree_grafted(tree_path: pyquid.InfoTree, quid_id: int) -> None:
+    global sip_quid, inbound_call_state
+    path = tree_path.get()
+    logging.info(f'on_info_tree_grafted called for path {path} on quiddity id {quid_id}')
+
+    # Only take action when receiving an InfoTree graft for SIP buddies    
+    if path.count('.buddies'):
+        buddy = sip_quid.get_info(path)
+
+        # Only take action when receiving an InfoTree graft for SIP buddies that have a name
+        try:
+            buddy_name = buddy['name']
+        except Exception:
+            return
+
+        new_inbound_call_state = buddy['recv_status']
+
+        # Verify if caller had an inbound call in progress with us
+        if buddy_name in inbound_call_state:
+            logging.info(f'on_info_tree_grafted for SIP buddy {buddy_name}, recv_status was: {inbound_call_state[buddy_name]}, recv_status is now: {new_inbound_call_state}')
+
+            # Verify if we had remote hangup. current inbound call status would be 'receiving' and change for 'disconnected'
+            if inbound_call_state[buddy_name] == 'receiving' and new_inbound_call_state == 'disconnected':
+                # Caller hanged-up, hang-up outbound call
+                logging.info(f'Inbound call is disconnecting, recv_status is now: disconnecting')
+                # store inbound call state locally
+                inbound_call_state[buddy_name] = 'disconnecting'
+                logging.info(f'Inbound call from {buddy_name} is disconnecting, status is now: {inbound_call_state[buddy_name]}')
+                return
+
+            # Verify if inbound call is done disconnecting, hang-up outbound call
+            if inbound_call_state[buddy_name] == 'disconnecting' and new_inbound_call_state == 'disconnected':
+                inbound_call_state[buddy_name] = 'disconnected'
+                logging.info(f'Hanging up outbound call to {buddy_name} ...')
+                sip_quid.invoke('hang-up', [buddy_name])
+                return
+
+            # Verify if inbound call is disconnected
+            if inbound_call_state[buddy_name] == 'disconnected' and new_inbound_call_state == 'disconnected':
+                logging.info(f'Deleting buddy {buddy_name} ...')
+                sip_quid.invoke('del_buddy', [buddy_name])
+                return
+
+def on_info_tree_pruned(tree_path: pyquid.InfoTree, quid_id: int) -> None:
+    global sw
+    path = tree_path.get()
+    logging.info(f'on_info_tree_pruned called for path {path} on quiddity id {quid_id}')
+
+def on_connection_spec_added(quid_id: int) -> None:
+    logging.info(f'on_connection_spec_added called for quiddity id {quid_id}')
+
+def on_connection_spec_removed(quid_id: int) -> None:
+    logging.info(f'on_connection_spec_removed called for quiddity id {quid_id}')
+
+def set_switcher_instance(instance: pyquid.Switcher) -> None:
+    global sw
+    sw = instance
+
+    # Switcher signals subscription
+    sw.subscribe("on-quiddity-created", on_quiddity_created)
+    sw.subscribe("on-quiddity-deleted", on_quiddity_deleted)
+
+# Reflector Callbacks
+# ==================
+
+def call_caller():
+    global call_event, call_stop, sip_quid, inbound_call_state
+
+    logging.info(f'Started call thread. Waiting for call event...')
+
+    while(True):
+        # Wait for call event
+        call_event.wait()
+
+        # Verify if we need to stop
+        if call_stop:
+            return
+
+        # Wait 1s for receiving call to start streaming to raw shmpath
+        time.sleep(1)
+
+        # Iterate on buddies
+        sip_buddies = sip_quid.get_info('buddies')
+        for buddy in sip_buddies:
+            buddy_name = buddy['name']
+            if buddy['send_status'] == 'calling':
+                # Hang-up any outbound call already in progress with caller
+                logging.info(f'receiving call when we are already in an outbound call with caller, hanging up outbound call with {buddy_name} ...')
+                sip_quid.invoke('hang-up', [buddy_name])
+            if buddy['recv_status'] == 'receiving':
+                # store inbound call state locally
+                inbound_call_state[buddy_name] = 'receiving'
+                logging.info(f'stored inbound call state locally for {buddy_name}, recv_status is now: {inbound_call_state[buddy_name]}')
+                # Iterate on shmdata writers
+                sip_writers = sip_quid.get_info('shmdata.writer')
+                for writer in sip_writers:
+                    # Attach all non-rtp sources back to caller
+                    if sip_writers[writer]['category'] != 'rtp' and sip_writers[writer]['uri'] == buddy_name:
+                        logging.info(f'attaching {writer} to {buddy_name}')
+                        sip_quid.invoke('attach_shmdata_to_contact', [writer, buddy_name, 'true'])
+
+                # Call the caller back
+                logging.info(f'calling back {buddy_name} ...')
+                sip_quid.invoke('send', [buddy_name])
+        
+        # Wait for next call
+        call_event.clear()
+
+# Reflector methods
+# ==================
+
+def register_sip_client(server, port, client_port, user, password):
+    logging.info(f'Registering SIP client to server {server}...')
+    global sw, sip_quid
+
+    # Setup sip quiddity config
+    sip_config = pyquid.InfoTree(json.dumps({
+    "port": f"{client_port}",
+    "user": f"{user}@{server}:{port}", "pass": f"{password}",
+    "stun": f"{server}", "turn": f"{server}", 
+    "turn_user": f"{user}", "turn_pass": f"{password}"
+    }))
+
+    # Register and allow calls from anyone
+    sip_quid = sw.create('sip', 'sip1', sip_config)
+    sip_quid.set('mode', 'everybody')
+
+    # Register to SIP quiddity signals
+    sip_quid.subscribe("on-tree-grafted", on_info_tree_grafted, sip_quid.id())
+    sip_quid.subscribe("on-tree-pruned", on_info_tree_pruned, sip_quid.id())
+    sip_quid.subscribe("on-connection-spec-added", on_connection_spec_added)
+    sip_quid.subscribe("on-connection-spec-removed", on_connection_spec_removed)
+
+def start_switcher(verbose):
+    global switcher_name, sw
+    switcher_name = f'reflector-{generate_service_id()}'
+    if sw is None:
+        set_switcher_instance(pyquid.Switcher(switcher_name, debug=verbose))
+    if sw is not None:
+        logging.info(f'Switcher pyquid instance started at {sw}.')
+    else:
+        logging.error(f'Failed to start Switcher pyquid instance at {sw}.')
+
+def generate_service_id():
+    # use only first part of uuid
+    agent_id = re.split('-', str(uuid.uuid4()))[0]
+    return agent_id
+
+def stop_service():
+    global sw, sip_quid, call_thread, call_event, call_stop
+    logging.info(f'Stopping service...')
+
+    logging.info(f'Hanging up all calls...')
+    sip_quid.invoke('hang_up_all')
+
+    logging.info(f'Stopping call thread...')
+    call_stop = True
+    call_event.set()
+    call_thread.join()
+
+    logging.info(f'Unregistering SIP...')
+    sip_quid.invoke("unregister")
+
+    logging.info(f'Service stopped.')
+
+def start_service(args) -> None:
+    global call_event, call_thread
+
+    # Starting Switcher
+    logging.info(f'Starting service...')
+    start_switcher(args.verbose)
+
+    # Registering SIP client
+    register_sip_client(args.server, 
+                        args.port, 
+                        args.client_port, 
+                        args.user, 
+                        args.password)
+
+    # Start thread waiting to call caller back
+    # Waits for call_event.set() event to setup outbound call
+    call_event = threading.Event()
+    call_thread = threading.Thread(target=call_caller)
+    call_thread.start()
+
+    logging.info(f'Service started.')
+
+    loop = asyncio.get_event_loop()
+    try:
+        loop.run_forever()
+    except KeyboardInterrupt:
+        logging.info(f'Received SIGINT. Exiting...')
+        stop_service()
+
+# Argparse methods
+# ==================
+
+def setup_arguments():
+    # create the top-level parser
+    parser = argparse.ArgumentParser(description='A Switcher SIP reflector service.',
+                                     epilog='Use "sip-reflector [command] --help" for more information about a command.')
+    parser.add_argument('-s', '--server', 
+                        default=DEFAULT_SIP_SERVER_HOSTNAME, 
+                        help=f'SIP server hostname (defaults to {DEFAULT_SIP_SERVER_HOSTNAME})')
+    parser.add_argument('-p', '--port', 
+                        default=DEFAULT_SIP_SERVER_PORT, 
+                        help=f'SIP server port (defaults to {DEFAULT_SIP_SERVER_PORT})')
+    parser.add_argument('-c', '--client_port', 
+                        default=DEFAULT_SIP_CLIENT_PORT, 
+                        help=f'SIP client port (defaults to {DEFAULT_SIP_CLIENT_PORT})')
+    parser.add_argument('-u', '--user', 
+                        default=DEFAULT_SIP_CLIENT_USER, 
+                        help=f'SIP client user (defaults to {DEFAULT_SIP_CLIENT_USER})')
+    parser.add_argument('-P', '--password', 
+                        default=DEFAULT_SIP_CLIENT_PASSWORD, 
+                        help=f'SIP client password (defaults to {DEFAULT_SIP_CLIENT_PASSWORD})')
+    parser.add_argument('-v', '--verbose', 
+                        action='store_true', 
+                        help='print verbose output')
+    subparsers = parser.add_subparsers(title='Available Commands:',
+                                       dest='subparser_name')
+    return parser
+
+def main():
+    parser = setup_arguments()
+    args = parser.parse_args()
+
+    if args.verbose:
+        logging.root.setLevel(logging.DEBUG)
+
+    start_service(args)
+
+if __name__ == '__main__':
+    main()

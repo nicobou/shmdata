@@ -26,6 +26,7 @@ if (WITH_PYTHON)
     pyinfotree.cpp
     pyquid.cpp
     pyquiddity.cpp
+    pyquiddities.cpp
     pysession.cpp
     pyswitch.cpp
     pylogger.cpp
@@ -56,21 +57,13 @@ if (WITH_PYTHON)
   install(FILES signals.py props.py bundles.py DESTINATION ${SWITCHER_LIBRARY}/pyquid)
 
   # ADD EXAMPLE TESTS
-  add_test(pyquid_basic ${CMAKE_CURRENT_SOURCE_DIR}/examples/01-basic.py)
-  add_test(pyquid_introspection ${CMAKE_CURRENT_SOURCE_DIR}/examples/02-introspection.py)
-  add_test(pyquid_infotree ${CMAKE_CURRENT_SOURCE_DIR}/examples/03-infotree.py)
-  add_test(pyquid_signal ${CMAKE_CURRENT_SOURCE_DIR}/examples/04-signal.py)
-  add_test(pyquid_save ${CMAKE_CURRENT_SOURCE_DIR}/examples/05-save.py)
-  add_test(pyquid_property_sub ${CMAKE_CURRENT_SOURCE_DIR}/examples/06-subscribe-to-property.py)
-  add_test(pyquid_invoke_async ${CMAKE_CURRENT_SOURCE_DIR}/examples/07-invoke-async.py)
-  add_test(pyquid_quid_infotree_stress ${CMAKE_CURRENT_SOURCE_DIR}/examples/08-quid-infotree-stress.py)
-  add_test(pyquid_uri_in_video_window ${CMAKE_CURRENT_SOURCE_DIR}/examples/09-uri-in-video-window.py)
-  add_test(pyquid_quid_conf_and_two_jack_servers ${CMAKE_CURRENT_SOURCE_DIR}/examples/10-quid-conf-and-two-jack-servers.py)
-  add_test(pyquid_switcher_signals ${CMAKE_CURRENT_SOURCE_DIR}/examples/11-switcher-signals.py)
-  add_test(pyquid_switcher_session ${CMAKE_CURRENT_SOURCE_DIR}/examples/12-switcher-session.py)
-  add_test(pyquid_shmdata_connection ${CMAKE_CURRENT_SOURCE_DIR}/examples/13-shmdata-connection.py)
-  add_test(pyquid_shmdata_dynamic_claws ${CMAKE_CURRENT_SOURCE_DIR}/examples/14-shmdata-dynamic-claws.py)
-  add_test(pyquid_user_tree_signal ${CMAKE_CURRENT_SOURCE_DIR}/examples/15-signal-user-tree.py)
+  file(GLOB EXAMPLE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/examples/*.py")
+  list(FILTER EXAMPLE_FILES EXCLUDE REGEX "16-register-sip")
+
+  foreach(EXAMPLE_FILE ${EXAMPLE_FILES})
+    get_filename_component(EXAMPLE_NAME ${EXAMPLE_FILE} NAME_WE)
+    add_test(pyquid_${EXAMPLE_NAME} ${EXAMPLE_FILE})
+  endforeach()
 
   # ADD UNIT TESTS
   add_test(NAME pyquid_unittest

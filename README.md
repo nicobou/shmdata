@@ -28,6 +28,7 @@ See instructions about the use of switcher:
 - [Shell scripting Switcher and scenic](doc/shell-scripting.md)
 - [Shell scripting a SIP call](doc/sip-call.md)
 - [Shell scripting OSC quiddities](doc/using-osc-quiddities.md)
+- [Using bundled tools](doc/tools.md)
 
 About building switcher:
 - [Switcher installation](doc/INSTALL.md)

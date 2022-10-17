@@ -80,7 +80,10 @@ Qrox Container::quiet_create(const std::string& quiddity_kind,
   } else {
     nick = raw_nickname;
     for (const auto& it : quiddities_) {
-      if (nick == it.second->get_nickname()) return Qrox(false, "nickname unavailable");
+      if (nick == it.second->get_nickname()) {
+        ids_.release_last_allocated_id();
+        return Qrox(false, "nickname unavailable");
+      }
     }
   }
 
@@ -164,6 +167,7 @@ InfoTree::ptr Container::get_quiddities_description() {
       const auto id = std::to_string(quid->get_id());
       subtree->graft(id + ".id", InfoTree::make(quid->get_id()));
       subtree->graft(id + ".kind", InfoTree::make(quid->get_kind()));
+      subtree->graft(id + ".nickname", InfoTree::make(quid->get_nickname()));
     }
   }
   return tree;
@@ -172,10 +176,7 @@ InfoTree::ptr Container::get_quiddities_description() {
 InfoTree::ptr Container::get_quiddity_description(qid_t id) {
   auto it = quiddities_.find(id);
   if (quiddities_.end() == it) return InfoTree::make();
-  auto tree = InfoTree::make();
-  tree->graft(".id", InfoTree::make(it->second->get_id()));
-  tree->graft(".kind", InfoTree::make(it->second->get_kind()));
-  return tree;
+  return it->second->get_description();
 }
 
 Quiddity::ptr Container::get_quiddity(qid_t id) {
@@ -240,4 +241,3 @@ Qrox Container::get_qrox(qid_t id) {
 
 }  // namespace quiddity
 }  // namespace switcher
-

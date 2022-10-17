@@ -38,109 +38,82 @@ PyObject* pyQuiddity::tp_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /
 }
 
 int pyQuiddity::Quiddity_init(pyQuiddityObject* self, PyObject* args, PyObject* kwds) {
-  PyObject* pyswitch = nullptr;
-  char* kind = nullptr;
-  char* nickname = nullptr;
-  PyObject* pyinfotree = nullptr;
+  PyObject* quid_capsule = nullptr;
 
-  static char* kwlist[] = {
-      (char*)"switcher", (char*)"kind", (char*)"nickname", (char*)"config", nullptr};
-  if (!PyArg_ParseTupleAndKeywords(
-          args, kwds, "Os|sO", kwlist, &pyswitch, &kind, &nickname, &pyinfotree))
-    return -1;
+  static char* kwlist[] = {(char*)"quid_c_ptr", nullptr};
 
-  // pointer to type object
-  PyObject* type = nullptr;
-
-  // pyswitch type check
-  type = reinterpret_cast<PyObject*>(&pySwitch::pyType);
-  if (pyswitch && !PyObject_IsInstance(pyswitch, type)) {
-    PyErr_SetString(PyExc_TypeError, "argument `switcher` is not an instance of pyquid.Switcher");
-    return -1;
-  }
-  // pyinfotree type check
-  type = reinterpret_cast<PyObject*>(&pyInfoTree::pyType);
-  if (pyinfotree && !PyObject_IsInstance(pyinfotree, type)) {
-    PyErr_SetString(PyExc_TypeError, "argument `config` is not an instance of pyquid.InfoTree");
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O", kwlist, &quid_capsule)) {
     return -1;
   }
 
-  // store reference to switcher object instance
-  self->switcher = pyswitch;
-
-  // cast switcher object pointer to C struct pointer
-  auto pyswitchobj = reinterpret_cast<pySwitch::pySwitchObject*>(pyswitch);
-
-  // get C++ switcher instance
-  auto switcher = pyswitchobj->switcher.get();
-
-  // create a quiddity without calling creation callbacks
-  auto qrox = switcher->quids<MPtr(&quiddity::Container::quiet_create)>(
-      kind,
-      nickname ? nickname : std::string(),
-      pyinfotree ? reinterpret_cast<pyInfoTree::pyInfoTreeObject*>(pyinfotree)->tree : nullptr);
-
-  // try to retrieve a pointer to quiddity
-  auto quid_ptr = switcher->quids<MPtr(&quiddity::Container::get_quiddity)>(qrox.get_id());
-
-  // check for pointer to quiddity
-  if (quid_ptr) {
-    self->quid = quid_ptr;
-  } else {
-    PyErr_Format(PyExc_RuntimeError, "%s", qrox.msg().c_str());
+  try {
+    Quiddity* raw_quid = static_cast<Quiddity*>(PyCapsule_GetPointer(quid_capsule, nullptr));
+    self->quid = raw_quid->get_weak_ptr_to_this();
+  } catch (const std::exception&) {
+    PyErr_Format(PyExc_RuntimeError, "Failed to init pyQuiddity object");
     return -1;
   }
 
-  // append quiddity into quiddities list
-  PyObject* obj = reinterpret_cast<PyObject*>(self);
-  PyList_Append(pyswitchobj->quiddities, obj);
-
-  // pointer to interpreted types
-  PyObject* cls = nullptr;
-
-  // get pointer to props descriptor
-  if (!(cls = InterpType("PropsDescriptor", "props.py"))) return -1;
-
-  // compute defaults for props descriptor initialization
-  PyObject* defaults = PyDict_New();
-  auto quid = self->quid.lock();
-  auto names = quid->prop<MPtr(&property::PBag::get_names)>();
-  for (auto& n : names) {
-    auto key = n.second.c_str();
-    PyObject* value =
-        pyInfoTree::any_to_pyobject(quid->prop<MPtr(&property::PBag::get_any)>(n.first));
-    PyDict_SetItemString(defaults, key, value);
-    Py_XDECREF(value);
-  }
   // initialize descriptor and set `props` attribute on type instance
-  self->props = PyObject_CallFunctionObjArgs(cls, self, defaults, nullptr);
-  // decrement refcount
-  for (auto& o : {cls, defaults}) Py_XDECREF(o);
+  self->props = get_property_descriptor(self);
 
-  // get pointer to signals descriptor
-  if (!(cls = InterpType("SignalsDescriptor", "signals.py"))) return -1;
-  // compute defaults for signals descriptor initialization
-  PyObject* registry_type = InterpType("SignalRegistry", "signals.py");
-  if (!registry_type) return -1;
-
-  PyObject* registry = PyObject_CallFunctionObjArgs(registry_type, nullptr);
-  defaults = Py_BuildValue("{s:O}", "quiddity_updated", registry);
   // initialize descriptor and set `signals` attribute on type instance
-  self->signals = PyObject_CallFunctionObjArgs(cls, defaults, nullptr);
-  // decrement refcounts
-  for (auto& o : {cls, defaults, registry_type}) Py_XDECREF(o);
+  self->signals = get_signal_descriptor(self);
 
   // signal registering and async invocations
   self->sig_reg = std::make_unique<sig_registering_t>();
   self->prop_reg = std::make_unique<prop_registering_t>();
   self->async_invocations = std::make_unique<std::list<std::future<void>>>();
-
   self->interpreter_state = PyThreadState_Get()->interp;
 
-  // notify quiddity created
-  switcher->quids<MPtr(&quiddity::Container::notify_quiddity_created)>(quid.get());
-
   return 0;
+}
+
+PyObject* pyQuiddity::get_property_descriptor(pyQuiddityObject* self) {
+  // get pointer to props descriptor
+  PyObject* descriptor_type = InterpType("PropsDescriptor", "props.py");
+  if (!descriptor_type) return nullptr;
+
+  // compute defaults for props descriptor initialization
+  PyObject* default_props = PyDict_New();
+
+  auto quid = self->quid.lock();
+  auto names = quid->prop<MPtr(&property::PBag::get_names)>();
+
+  for (auto& n : names) {
+    auto key = n.second.c_str();
+    PyObject* value = pyInfoTree::any_to_pyobject(quid->prop<MPtr(&property::PBag::get_any)>(n.first));
+    PyDict_SetItemString(default_props, key, value);
+    Py_XDECREF(value);
+  }
+
+  // initialize descriptor and set `props` attribute on type instance
+  auto props = PyObject_CallFunctionObjArgs(descriptor_type, self, default_props, nullptr);
+
+  // decrement refcount
+  for (auto& o : {descriptor_type, default_props}) Py_XDECREF(o);
+
+  return props;
+}
+
+PyObject* pyQuiddity::get_signal_descriptor(pyQuiddityObject* self) {
+  // compute defaults for signals descriptor initialization
+  PyObject* descriptor_type = InterpType("SignalRegistry", "signals.py");
+  if (!descriptor_type) return nullptr;
+
+  // compute defaults for signal descriptor initialization
+  PyObject* default_signals = PyDict_New();
+
+  PyObject* registry = PyObject_CallFunctionObjArgs(descriptor_type, nullptr);
+  default_signals = Py_BuildValue("{s:O}", "quiddity_updated", registry);
+
+  // initialize descriptor and set `signals` attribute on type instance
+  auto signals = PyObject_CallFunctionObjArgs(descriptor_type, default_signals, nullptr);
+
+  // decrement refcounts
+  for (auto& o : {default_signals, descriptor_type}) Py_XDECREF(o);
+
+  return signals;
 }
 
 PyDoc_STRVAR(pyquiddity_set_doc,
@@ -274,8 +247,11 @@ PyObject* pyQuiddity::invoke(pyQuiddityObject* self, PyObject* args, PyObject* k
     return nullptr;
   }
   BoolAny res = pyquid::ungiled(std::function([&]() {
-    return quid->meth<MPtr(&method::MBag::invoke_any)>(
-        quid->meth<MPtr(&method::MBag::get_id)>(method), tuple_args);
+    auto id = quid->meth<MPtr(&method::MBag::get_id)>(method);
+    if (Ids::kInvalid == id) {
+      return BoolAny(Any(), false, "Method id not found");
+    }
+    return quid->meth<MPtr(&method::MBag::invoke_any)>(id, tuple_args);
   }));
 
   if (!res) {
@@ -349,19 +325,21 @@ PyObject* pyQuiddity::invoke_async(pyQuiddityObject* self, PyObject* args, PyObj
     return nullptr;
   }
 
+  auto meth_id = quid->meth<MPtr(&method::MBag::get_id)>(method);
+  if (Ids::kInvalid == meth_id) {
+    PyErr_Format(PyExc_RuntimeError, "Method id not found");
+    return nullptr;
+  }
+
   Py_INCREF(cb);
   Py_INCREF(user_data);
-  self->async_invocations->emplace_back(std::async(
-      std::launch::async, [self, cb, user_data, meth = std::string(method), tuple_args]() {
+  self->async_invocations->emplace_back(
+      std::async(std::launch::async, [self, cb, user_data, meth_id, tuple_args]() {
         auto quid = self->quid.lock();
-        auto res = quid->meth<MPtr(&method::MBag::invoke_any)>(
-            quid->meth<MPtr(&method::MBag::get_id)>(meth), tuple_args);
-        bool has_gil = (1 == PyGILState_Check()) ? true : false;
-        PyThreadState* m_state = nullptr;
-        if (!has_gil) {
-          m_state = PyThreadState_New(self->interpreter_state);
-          PyEval_RestoreThread(m_state);
-        }
+        auto res = quid->meth<MPtr(&method::MBag::invoke_any)>(meth_id, tuple_args);
+
+        auto gstate = PyGILState_Ensure();
+
         PyObject* res_object = pyInfoTree::any_to_pyobject(res.any());
         PyObject* arglist;
         if (user_data)
@@ -378,11 +356,9 @@ PyObject* pyQuiddity::invoke_async(pyQuiddityObject* self, PyObject* args, PyObj
         Py_DECREF(res_object);
         Py_DECREF(arglist);
         Py_XDECREF(pyobjresult);
-        if (!has_gil) {
-          PyEval_SaveThread();
-          PyThreadState_Clear(m_state);
-          PyThreadState_Delete(m_state);
-        }
+        
+        /* Release the thread. No Python API allowed beyond this point. */
+        PyGILState_Release(gstate);
       }));
 
   // cleaning old invocations
@@ -562,12 +538,8 @@ bool pyQuiddity::subscribe_to_signal(pyQuiddityObject* self,
   if (0 == sig_id) return false;
   auto reg_id = quid->sig<MPtr(&signal::SBag::subscribe)>(
       sig_id, [cb, user_data, self](const InfoTree::ptr& tree) {
-        bool has_gil = (1 == PyGILState_Check()) ? true : false;
-        PyThreadState* m_state = nullptr;
-        if (!has_gil) {
-          m_state = PyThreadState_New(self->interpreter_state);
-          PyEval_RestoreThread(m_state);
-        }
+        auto gstate = PyGILState_Ensure();
+
         PyObject* arglist;
         auto tmp_tree = tree->get_copy();
         if (user_data)
@@ -581,11 +553,9 @@ bool pyQuiddity::subscribe_to_signal(pyQuiddityObject* self,
         if (pyerr != nullptr) PyErr_Print();
         Py_DECREF(arglist);
         Py_XDECREF(pyobjresult);
-        if (!has_gil) {
-          PyEval_SaveThread();
-          PyThreadState_Clear(m_state);
-          PyThreadState_Delete(m_state);
-        }
+
+        /* Release the thread. No Python API allowed beyond this point. */
+        PyGILState_Release(gstate);
       });
   if (0 == reg_id) return false;
   Py_INCREF(cb);
@@ -608,12 +578,8 @@ bool pyQuiddity::subscribe_to_property(pyQuiddityObject* self,
   if (0 == prop_id) return false;
   auto reg_id =
       quid->prop<MPtr(&property::PBag::subscribe)>(prop_id, [prop_id, cb, self, user_data, quid]() {
-        bool has_gil = (1 == PyGILState_Check()) ? true : false;
-        PyThreadState* m_state;
-        if (!has_gil) {
-          m_state = PyThreadState_New(self->interpreter_state);
-          PyEval_RestoreThread(m_state);
-        }
+        auto gstate = PyGILState_Ensure();
+
         PyObject* arglist;
         if (user_data)
           arglist = Py_BuildValue(
@@ -629,11 +595,9 @@ bool pyQuiddity::subscribe_to_property(pyQuiddityObject* self,
         if (pyerr != nullptr) PyErr_Print();
         Py_DECREF(arglist);
         Py_XDECREF(pyobjresult);
-        if (!has_gil) {
-          PyEval_SaveThread();
-          PyThreadState_Clear(m_state);
-          PyThreadState_Delete(m_state);
-        }
+
+        /* Release the thread. No Python API allowed beyond this point. */
+        PyGILState_Release(gstate);
       });
   if (0 == reg_id) return false;
   Py_INCREF(cb);
@@ -900,19 +864,8 @@ PyObject* pyQuiddity::get_signal_id(pyQuiddityObject* self, PyObject* args, PyOb
 }
 
 void pyQuiddity::Quiddity_dealloc(pyQuiddityObject* self) {
-  // cast switcher object instance to C struct
-  auto switcher = reinterpret_cast<pySwitch::pySwitchObject*>(self->switcher);
-  // remove quiddity from quiddities list
-  if (switcher->quiddities) {
-    PyObject* obj = reinterpret_cast<PyObject*>(self);
-    for (Py_ssize_t i = 0; i < PyList_Size(switcher->quiddities); i++) {
-      if (PyList_GetItem(switcher->quiddities, i) == obj) {
-        PyList_SetSlice(switcher->quiddities, i, i + 1, nullptr);
-        break;
-      }
-    }
-  }
   auto quid = self->quid.lock();
+
   if (quid) {
     // cleaning signal subscription
     for (const auto& it : self->sig_reg->callbacks) {
@@ -1043,22 +996,16 @@ PyObject* pyQuiddity::tp_repr(pyQuiddityObject* self) {
 }
 
 PyObject* pyQuiddity::tp_str(pyQuiddityObject* self) {
-  auto pyswitch = self->switcher;
-  if (!pyswitch) {
-    PyErr_SetString(PyExc_MemoryError, "parent Switcher has been deleted");
-    return nullptr;
-  }
-  // cast switcher object instance to c struct
-  auto switcher = reinterpret_cast<pySwitch::pySwitchObject*>(pyswitch)->switcher;
   // retrieve c++ quiddity instance
   auto quid = self->quid.lock();
   if (!quid) {
     PyErr_SetString(PyExc_MemoryError, "Quiddity or parent Switcher has been deleted");
     return nullptr;
   }
+
   // compute string
-  auto str = infotree::json::serialize(
-      switcher->quids<MPtr(&quiddity::Container::get_quiddity_description)>(quid->get_id()).get());
+  auto str = infotree::json::serialize(quid->get_description().get());
+
   // return unicode object from string
   return PyUnicode_FromString(str.c_str());
 }

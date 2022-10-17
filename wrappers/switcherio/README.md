@@ -49,12 +49,25 @@ Whenever your virtual environment is **active**, starting the **server** is as e
 
 ```bash
 python3 wrappers/switcherio/server.py
+python3 wrappers/switcherio/server.py --debug # will enable the debug logs
 ```
 
 Note that once done, we can **deactivate** the virtual environment by issuing the following function sourced by the environment:
 
 ```bash
 deactivate
+```
+
+# Debugging `switcherio`
+
+In order to debug the `switcher` instance from `switcherio`, you can use gdb:
+
+```bash
+gdb --args python3 wrappers/switcherio/server.py
+pdb -m python3 wrappers/switcherio/server.py
+
+# if you feel adventurous...
+gdb --args python3 -m pdb wrappers/switcherio/server.py
 ```
 
 # Testing `switcherio`
@@ -70,4 +83,3 @@ To run the full test suite, use:
 ```bash
 python3 -m unittest
 ```
-

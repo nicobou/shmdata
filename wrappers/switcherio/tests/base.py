@@ -48,7 +48,7 @@ class SocketIOTestCase(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # init switcher
-        cls.sw = pyquid.Switcher(cls.server_name, debug=False)
+        cls.sw = pyquid.Switcher(cls.server_name, debug=True)
         cls.version = cls.sw.version()
         # set switcher instance for the server
         server.set_switcher_instance(cls.sw)

@@ -2,6 +2,35 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 3.1.14 (2022-10-17)
+---------------------------
+This is an official release in the 3.1 stable series.
+
+Bug fixes:
+* 🐛 fix shmshot python error when display is requested
+* 🐛 fix Use-After-Free JSON corruption in pySwitch.load_bundles
+* 🐛 pyquid: fix invocation of a non existant method
+* Replace PyThreadState with PyGILState API in non-Python created callback threads
+* 🐛 fix nvenc test with the forcing of consistent I420 pixel format as default for videotestsrc
+
+New feature:
+* Add swsip-reflector service
+* ✨ add the session api
+* ♻️ add a descriptor for quiddities to pySwitch
+* ♻️ add the get_description method to Quiddity
+
+Improvements:
+* Release id when nickname unavailable in Container::quiet_create
+* Handle and display qrox error in pyquid.Switcher.create
+* 👷 remove WebRTC test from CI
+* :loud_sound: Fix a typo in container.hpp logger
+* 📝 improve swIO troubleshooting with pdb
+* 🔨 add a debug option on top of the swio cli
+* 🚚 import and use pyquid types
+* 🔊 add debug logs when swio is running
+* ♻️ make the pyQuiddity ctor wrapping a Quiddity pointer
+* 👷 update packaging script for packaging through Metalab MPAs
+
 switcher 3.1.12 (2022-09-19)
 ---------------------------
 This is an official release in the 3.1 stable series.

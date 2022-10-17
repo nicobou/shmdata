@@ -216,6 +216,14 @@ bool Quiddity::set_nickname(const std::string& nickname) {
 
 std::string Quiddity::get_nickname() const { return nickname_; }
 
+InfoTree::ptr Quiddity::get_description() {
+  auto tree = InfoTree::make();
+  tree->graft(".id", InfoTree::make(id_));
+  tree->graft(".kind", InfoTree::make(kind_));
+  tree->graft(".nickname", InfoTree::make(nickname_));
+  return tree;
+}
+
 InfoTree::ptr Quiddity::get_shm_information_template() {
   InfoTree::ptr tree = InfoTree::make();
   tree->graft(".caps", InfoTree::make());

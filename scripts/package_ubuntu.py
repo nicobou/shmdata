@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Ubuntu packaging script
+Ubuntu packaging script. This script does the following:
+1 - Clone Switcher in a new directory
+2 - Merge master branch into debian/master
+3 - Update debian/changelog with new package version
+4 - Commit changes in the debian/master branch
+5 - Ask the user if the updated debian/master branch needs to be pushed. 
+    If yes, the Switcher CI will build and publish the new package.
 
 Usage: ./package_ubuntu.py
 
-Arguments:
-  -p, --ppa[=PPA]   Allows for specifying the PPA to upload to. Defaults to ppa:sat-metalab/metalab
 """
 
 import atexit
@@ -19,14 +23,11 @@ import re
 
 from typing import List
 
-packaging_root_path = os.path.join(os.path.expanduser("~"), "src", "releases")
+libs_root_path = os.path.join(os.path.expanduser("~"), "src", "releases")
 version_file = "CMakeLists.txt"
 
 version_pattern = "set\({}_VERSION_(\S+)\s+(\d+)\)"
-git_path = "git@gitlab.com:sat-metalab"
-ppa_path = "ppa:sat-metalab/metalab"
-repo = "switcher"
-package_name = "switcher"
+git_path = "git@gitlab.com:sat-mtl/tools"
 remote_repo = "origin"
 bringup_branch = "master"
 debian_branch_prefix = "debian"
@@ -34,80 +35,12 @@ changelog_file = "changelog"
 success = True
 
 
-def dpkg_buildpackage() -> int:
-    """
-    Build Debian binary package locally with dpkg-buildpackage
-
-    :return: Return the exit code of the command
-    """
-    return subprocess.call("dpkg-buildpackage -us -uc", shell=True)
-
-
-def debuild() -> int:
-    """
-    Build the Debian source package
-
-    :return: Return the exit code of the command
-    """
-    return subprocess.call("debuild -S -sa", shell=True)
-
-
-def dput(ppa: str, repo: str, version: List[int]) -> int:
-    """
-    Upload the Debian source package to the PPA
-
-    :param ppa: PPA URL to upload to
-    :param repo: Repository name
-    :param version: Library version
-
-    :return: Return the exit code of the command
-    """
-    version_str = f"{version[0]}.{version[1]}.{version[2]}"
-    return subprocess.call(f"dput {ppa} {repo}_{version_str}-1_source.changes", shell=True)
-
-
-def gbp_pq(command: str) -> int:
-    """
-    Runs the given git-buildpackage patch queue command
-
-    :param command: Command to append to `gbp pq`
-
-    :return: Return the exit code of the command
-    """
-    return subprocess.call(f"gbp pq {command}", shell=True)
-
-
-def git_archive(repo: str, version: List[int]) -> int:
-    """
-    Create an archive of the current git branch.
-    This method uses tar instead of git archive, as the latter
-    does not include submodules. Obviously, git hidden directories
-    are omitted.
-
-    :param repo: Repository to archive
-    :param version: Library version
-
-    :return: Return the exit code of the command
-    """
-    version_str = f"{version[0]}.{version[1]}.{version[2]}"
-    os.chdir(packaging_root_path)
-    os.rename(os.path.join(packaging_root_path, package_name), os.path.join(packaging_root_path, f"{repo}-{version_str}"))
-    result = subprocess.call(f"tar cvzf {repo}_{version_str}.orig.tar.gz --exclude='.git' {repo}-{version_str}", shell=True)
-    os.rename(os.path.join(packaging_root_path, f"{repo}-{version_str}"), os.path.join(packaging_root_path, package_name))
-    os.chdir(os.path.join(packaging_root_path, package_name))
-    return result
-
-
 def git_clean() -> None:
     """
     Clean the git repository of all temporary and untracked files
     """
-    subprocess.call("git stash push --keep-index", shell=True)
     subprocess.call("git clean -d -X -f", shell=True)
     subprocess.call("git clean -d -f", shell=True)
-
-    # We also need to clean the submodules
-    subprocess.call("git submodule foreach --recursive git stash", shell=True)
 
 
 def git_push(remote_repo: str, remote_branch: str) -> int:
@@ -134,9 +67,7 @@ def git_checkout(branch_name: str, is_new: bool = False) -> int:
     if is_new:
         return subprocess.call(f"git checkout -b {branch_name}", shell=True)
     else:
-        if subprocess.call(f"git checkout {branch_name}", shell=True) != 0:
-            return 1
-        return subprocess.call("git submodule update --init --recursive", shell=True)
+        return subprocess.call(f"git checkout {branch_name}", shell=True)
 
 
 def git_commit(message: str) -> int:
@@ -168,7 +99,7 @@ def git_merge(branch_name: str, force: bool = False) -> int:
 def git_tag(tag_name: str) -> int:
     """
     Tag the current commit
-    
+
     :param tag_name: Tag name
 
     :return: Return the exit code of the command
@@ -181,12 +112,14 @@ def git_add(file_list: List[str]) -> None:
     Add the given files to be staged
 
     :param file_list: File list
+
+    :return: Return the exit code of the command
     """
     for file in file_list:
         subprocess.call(f"git add {file}", shell=True)
 
 
-def git_clone(repo_url: str, target: str) -> int:
+def git_clone(repo_url: str) -> int:
     """
     Clone the given repository
 
@@ -194,7 +127,7 @@ def git_clone(repo_url: str, target: str) -> int:
 
     :return: Return the exit code of the command
     """
-    return subprocess.call(f"git clone --recursive {repo_url} {target}", shell=True)
+    return subprocess.call(f"git clone {repo_url}", shell=True)
 
 
 def git_pull() -> int:
@@ -216,7 +149,8 @@ def get_git_config(property: str, default_value: str) -> str:
     :return: Return the exit code of the command
     """
     config_property = default_value
-    git_config_full = subprocess.check_output("git config --list", shell=True, encoding="utf-8").strip().split("\n")
+    git_config_full = subprocess.check_output(
+        "git config --list", shell=True, encoding="utf-8").strip().split("\n")
     for config in git_config_full:
         prop = config.split("=")
         if len(prop) < 2:
@@ -237,13 +171,7 @@ def date() -> str:
     return output.decode("utf-8")[0:-1]
 
 
-def update_changelog(package: str, version: List[int]) -> None:
-    """
-    Updates Debian changelog
-
-    :param package: Package name
-    :param version: Package version
-    """
+def update_changelog(lib: str, version: List[int]) -> None:
     print("Updating changelog")
     orig_file_path = "debian/changelog"
     new_file_path = "debian/changelog.new"
@@ -262,7 +190,7 @@ def update_changelog(package: str, version: List[int]) -> None:
     with open(new_file_path, "w") as new_file:
         with open(orig_file_path, "r") as old_file:
             current_date = date()
-            new_file.write(f"{package} ({version_str}-1) focal; urgency=low\n\n"
+            new_file.write(f"{lib} ({version_str}-1) focal; urgency=low\n\n"
                            f"  * New release for version {version_str}\n\n"
                            f" -- {author_name} <{author_email}>  {current_date}\n\n")
 
@@ -276,22 +204,14 @@ def update_changelog(package: str, version: List[int]) -> None:
 
 @atexit.register  # Only clean on exit if the release was successful.
 def cleanup_folder() -> None:
-    """
-    Callback to be executed when exiting the script
-    """
     global success
-    if os.path.exists(packaging_root_path) and success:
-        shutil.rmtree(packaging_root_path)
+    if os.path.exists(libs_root_path) and success:
+        shutil.rmtree(libs_root_path)
     success = False
 
 
-def parse_version_number(regex_pattern: str) -> List[int]:
-    """
-    Parses the version number
-
-    :param regex_pattern: Regex pattern used to extract the version
-    """
-    config_file = os.path.join(packaging_root_path, repo, version_file)
+def parse_version_number(lib: str, regex_pattern: str) -> List[int]:
+    config_file = os.path.join(libs_root_path, lib, version_file)
     version_number = [-1, -1, -1]
     with open(config_file) as file:
         major = minor = patch = -1
@@ -324,84 +244,52 @@ def parse_version_number(regex_pattern: str) -> List[int]:
 
 
 def printerr(err: str) -> None:
-    """
-    Utility tool to print errors to stderr
-
-    :param err: Error message to print
-    """
     sys.stderr.write(err + "\n")
     exit(2)
 
 
 def usage() -> None:
-    """
-    Print the help for the script
-    """
     print(__doc__)
 
 
 if __name__ == "__main__":
-    assert(sys.version_info[0] == 3 and sys.version_info[1] > 6), f"This script must be ran with at least Python 3.7, detected Python {sys.version_info[0]}.{sys.version_info[1]}"
-
-    # Get command line arguments
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "p:", ["ppa="])
-    except getopt.GetoptError as err:
-        print(err)
-        usage()
-        exit(2)
+    assert(sys.version_info[0] == 3 and sys.version_info[1] >
+           6), f"This script must be ran with at least Python 3.7, detected Python {sys.version_info[0]}.{sys.version_info[1]}"
 
     cleanup_folder()  # Always remove the folder when launching the script.
-    for option, arg in opts:
-        if option in ["-p", "--ppa"]:
-            ppa_path = arg
 
+    lib = "switcher"
     debian_master_branch = f"{debian_branch_prefix}/master"
 
-    os.mkdir(packaging_root_path)
-    os.chdir(packaging_root_path)
+    os.mkdir(libs_root_path)
+    os.chdir(libs_root_path)
 
-    assert git_clone(f"{git_path}/{repo}.git", package_name) == 0, f"Could not fetch codebase for library {repo} at {packaging_root_path}"
-    os.chdir(os.path.join(packaging_root_path, package_name))
+    assert git_clone(
+        f"{git_path}/{lib}.git") == 0, f"Could not fetch codebase for library {lib} at {libs_root_path}"
+    os.chdir(os.path.join(libs_root_path, lib))
 
     git_checkout(bringup_branch)
 
-    release_version = parse_version_number(version_pattern.format(repo.upper()))
-    git_archive(f"{package_name}", release_version)
+    release_version = parse_version_number(lib, version_pattern.format(lib.upper()))
 
     git_checkout(debian_master_branch)
 
     print(f"Merging the {bringup_branch} into {debian_master_branch}")
-    gbp_pq("import")
     git_checkout(debian_master_branch)
     git_merge(bringup_branch)
-    gbp_pq("rebase")
-    gbp_pq("export")
-    gbp_pq("drop")
     git_add(["debian/patches"])
     git_commit("Updated patches")
 
-    update_changelog(f"{package_name}", release_version)
-
-    print("Test building binary package locally.")
-    assert dpkg_buildpackage() == 0, f"Could not build binary package for {repo} locally"
-    git_clean()
-
-    assert debuild() == 0, f"Could not build source package for {repo}"
-
-    print("Uploading the source package to the PPA.")
-    do_push=input(f"Do you want to push {repo} to the PPA {ppa_path}? [y/N]")
-    if do_push == "y":
-        os.chdir(packaging_root_path)
-        assert dput(ppa_path, f"{package_name}", release_version) == 0, f"Could not upload package source for {repo}"
-        os.chdir(os.path.join(packaging_root_path, package_name))
+    update_changelog(f"lib{lib}", release_version)
 
     print("Committing the modifications to the source repository.")
-    do_commit=input(f"Do you want to push updates to {repo} on branch {debian_master_branch} to {remote_repo}? [y/N]")
+    do_commit = input(
+        f"Do you want to push updates to {lib} on branch {debian_master_branch} to {remote_repo}? [y/N]")
     if do_commit == "y":
-        git_commit(f"Updated package from upstream to version {release_version}")
+        git_commit(f"🔖 Updated package from upstream to version {release_version}")
         git_tag(f"debian/{release_version[0]}.{release_version[1]}.{release_version[2]}")
-        assert git_push(remote_repo, debian_master_branch) == 0, f"Failed to push branch {debian_master_branch} to {remote_repo}"
+        assert git_push(
+            remote_repo, debian_master_branch) == 0, f"Failed to push branch {debian_master_branch} to {remote_repo}"
 
     print("Cleaning up temporary files")
     success = True

@@ -34,7 +34,7 @@ Build -- Ubuntu 20.04:
   stage: build
   image: $CONTAINER_TAG_PREFIX-ubuntu2004
   script:
-    - cmake -B build20.04 -DENABLE_GPL="ON" -DCMAKE_BUILD_TYPE="Release"
+    - cmake -B build20.04 -DENABLE_GPL="ON" -DPLUGIN_WEBRTC=OFF -DCMAKE_BUILD_TYPE="Release"
     - make -sC build20.04 -j`nproc`
   except:
     - develop
@@ -85,7 +85,7 @@ Test -- Package Ubuntu 20.04:
   stage: test
   image: $CONTAINER_TAG_PREFIX-ubuntu2004
   script:
-    - cmake -B build20.04 -DENABLE_GPL=ON -DCMAKE_BUILD_TYPE="Release"
+    - cmake -B build20.04 -DENABLE_GPL=ON -DPLUGIN_WEBRTC=OFF -DCMAKE_BUILD_TYPE="Release"
     - apt-key del 7fa2af80 && apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub
     - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y xvfb
     - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make package_source_test -sC build20.04
@@ -100,7 +100,7 @@ Coverage -- Package:
     - apt-key del 7fa2af80 && apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub
     - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y lcov zip xvfb
     - rm -rf build && mkdir build && cd build
-    - cmake -DTEST_COVERAGE=ON -DENABLE_GPL=ON ..
+    - cmake -DTEST_COVERAGE=ON -DPLUGIN_WEBRTC=OFF -DENABLE_GPL=ON ..
     - make -j`nproc` && make install && ldconfig
     - pulseaudio --start
     - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make check_coverage
@@ -121,7 +121,7 @@ Debian -- Package Ubuntu 20.04:
   script:
     - DEBIAN_FRONTEND=noninteractive apt update -y
     - rm -rf build && mkdir build && cd build
-    - cmake -DENABLE_GPL=ON -DCMAKE_INSTALL_PREFIX=/usr ..
+    - cmake -DENABLE_GPL=ON -DPLUGIN_WEBRTC=OFF -DCMAKE_INSTALL_PREFIX=/usr ..
     - make -j`nproc` package
     - mv *.deb ../switcher_ubuntu20.04_latest_amd64.deb
   artifacts:

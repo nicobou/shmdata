@@ -29,6 +29,8 @@
 #include "./pybundle.hpp"
 #include "./pylogger.hpp"
 #include "./pysession.hpp"
+#include "./pyquiddities.hpp"
+
 #include "switcher/session/session.hpp"
 #include "switcher/switcher.hpp"
 
@@ -63,9 +65,72 @@ class pySwitch {
  private:
   static void Switcher_dealloc(pySwitchObject* self);
   static PyObject* Switcher_new(PyTypeObject* type, PyObject* args, PyObject* kwds);
+
+  /**
+   * @brief Main method that initializes the pySwitch object
+   * @param self The instanciated pySwitch object
+   * @param args The instance arguments when instanciated
+   * @param kwds The instance arguments when instanciated
+   * @details This method is wrapping a switcher instance
+   *          and provides all higher APIs for:
+   *            - quiddity creation, removal and query
+   *            - signal subscriptions and unsubscription
+   * @return 1 if the initialization failed, 0 if it succeed
+   */
   static int Switcher_init(pySwitchObject* self, PyObject* args, PyObject* kwds);
   static PyObject* name(pySwitchObject* self);
   static PyObject* version(pySwitchObject* self);
+
+  // descriptors init
+  /**
+   * @brief Get the logger descriptor of the pySwitch object
+   * @param self The pySwitch instance to initialize
+   * @return The descriptor object
+   */
+  static PyObject* get_logger_descriptor(pySwitchObject* self);
+
+  /**
+   * @brief Get the session registry of the pySwitch object
+   * @param self The pySwitch instance to initialize
+   * @details This descriptor is attached to the `session` attribute
+   *          of the pySwitch instance. So, using this descriptor is
+   *          pretty much like doing the following in Python:
+   *
+   *          ```py
+   *          class Session:
+   *            def __init__(self, instance):
+   *            self.instance = instance;
+   *
+   *          class Switcher:
+   *            def __init__(self):
+   *            self.session = Session(self);
+   *          ```
+   *
+   *          Anytime a Switcher instance is initialized,
+   *          another Session instance is also created.
+   *          For convenience, both instances might keep a reference
+   *          to each other.
+   *
+   * @return The descriptor object
+   */
+  static PyObject* get_session_descriptor(pySwitchObject* self);
+
+  /**
+   * @brief Get the bundles registry of the pySwitch object
+   * @param self The pySwitch instance to initialize
+   * @return The descriptor object
+   */
+  static PyObject* get_bundles_descriptor(pySwitchObject* self);
+
+  /**
+   * @brief Get the quiddities descriptor of the pySwitch object
+   * @param self The pySwitch instance to initialize
+   * @details This descriptor is an interface on top of the `get_quiddities`
+   *          method. It is wrapping all instanciated quiddities into
+   *          pyQuiddity objects.
+   * @return The descriptor object
+   */
+  static PyObject* get_quiddities_descriptor(pySwitchObject* self);
 
   // quiddity life
   static PyObject* create(pySwitchObject* self, PyObject* args, PyObject* kwds);

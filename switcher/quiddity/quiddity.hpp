@@ -105,6 +105,16 @@ class Quiddity : public SafeBoolIdiom {
   std::string get_nickname() const;
 
   /**
+   * Get a tree that is describing the quiddity.
+   * @details It generates a tree that contains:
+   *          - the id of the quiddity
+   *          - its kind
+   *          - its nickname
+   * @return an info tree
+   */
+  InfoTree::ptr get_description();
+
+  /**
    * Get a weak pointer to the current Quiddity, obtained from the Switcher instance.
    *
    * @return the weak pointer
