@@ -4,11 +4,11 @@
 * Francis Lecavalier
 * François Ubald Brien
 * Ludovic Schreiber
-* Aurélien Perronneau (OpSocket)
 * Valentin Laurent
+* Olivier Gauthier
+* Aurélien Perronneau (OpSocket)
 * Michał Seta
 * Hantz-Carly F. Vius
-* Olivier Gauthier
 * Alexandre Quessy
 * Sebastien Paquet
 * Mike Wozniewski
