@@ -11,3 +11,4 @@
 * Thomas Piquet
 * Olivier Gauthier
 * Marie-Eve Dumas
+* Aurélien Perronneau (OpSocket)
