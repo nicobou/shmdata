@@ -37,6 +37,7 @@ const std::string PortMidiSink::kConnectionSpec(R"(
       "can_do": ["audio/midi"]
     }
   ]
+}
 )");
 
 PortMidiSink::PortMidiSink(quiddity::Config&& conf)
