@@ -47,7 +47,7 @@ usage = sw2.create('systemusage')
 sw2.reset_state(False)
 
 # load the save file
-sw.session.read("test_state")
+sw.session.load("test_state")
 
 # check win and vid exist
 assert 0 != sw.get_quid_id('win')

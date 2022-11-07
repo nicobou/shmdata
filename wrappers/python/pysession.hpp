@@ -142,8 +142,19 @@ class pySession {
   static PyObject* remove(SessionObject* self, PyObject* args, PyObject* Py_UNUSED(kwargs));
 
   /**
-   * @brief Read the contents of a session file on disk, parse it
+   * @brief Load the contents of a session file on disk, parse it
    *        and set Switcher's state from it.
+   *
+   * @param self The instance of a `SessionObject` C-struct member of pySession
+   * @param args Positional arguments passed to the function
+   * @param kwargs Keyword arguments passed to the function
+   *
+   * @return A python boolean asserting how the load went
+   */
+  static PyObject* load(SessionObject* self, PyObject* args, PyObject* Py_UNUSED(kwargs));
+
+  /**
+   * @brief Read the contents of a session file on disk, and return content.
    *
    * @param self The instance of a `SessionObject` C-struct member of pySession
    * @param args Positional arguments passed to the function
@@ -152,6 +163,18 @@ class pySession {
    * @return A python boolean asserting how the read went
    */
   static PyObject* read(SessionObject* self, PyObject* args, PyObject* Py_UNUSED(kwargs));
+
+  /**
+   * @brief Write content to a session file on disk without affecting current 
+   * session state
+   *
+   * @param self The instance of a `SessionObject` C-struct member of pySession
+   * @param args Positional arguments passed to the function
+   * @param kwargs Keyword arguments passed to the function
+   *
+   * @return A python boolean asserting how the write went
+   */
+  static PyObject* write(SessionObject* self, PyObject* args, PyObject* Py_UNUSED(kwargs));
 };
 
 #endif

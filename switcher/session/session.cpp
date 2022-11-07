@@ -29,7 +29,9 @@ namespace fs = std::filesystem;
 
 namespace switcher::session {
 
-  Session::Session(Switcher* instance) : switcher_(instance) {
+  Session::Session(Switcher* instance)
+      : switcher_(instance),
+        logger_(spdlog::get("switcher")) {
     // retrieve current configuration tree
     auto config_tree = this->switcher_->conf<MPtr(&Configuration::get)>();
     // check for $XDG_STATE_HOME variable
@@ -86,12 +88,15 @@ namespace switcher::session {
     // remove filename from directory if it exists
     for (const auto& entry : this->list()) {
       auto fname = entry.path().filename();
-      if ((fname == filename || fname == filename + ".json")) return fs::remove(entry.path());
+      if ((fname == filename || fname == filename + ".json")) {
+        LOGGER_DEBUG(logger_, "removing session file {}", entry.path().string());
+        return fs::remove(entry.path());
+      }
     };
     return false;
   };
 
-  bool Session::read(const std::string& filename) {
+  bool Session::load(const std::string& filename) {
     // compute file path
     fs::path fpath = this->basedir_ / fs::path(filename).filename();
     if (fpath.extension() != ".json") fpath.replace_extension(fs::path(".json"));
@@ -100,7 +105,34 @@ namespace switcher::session {
     // read file content
     const std::string content = fileutils::get_content(fpath);
     // parse the session file content and set switcher state
+    LOGGER_DEBUG(logger_, "loading state from session file {}", fpath.string());
     return this->switcher_->load_state(infotree::json::deserialize(content).get());
+  };
+
+  const std::string Session::read(const std::string& filename) {
+    // compute file path
+    fs::path fpath = this->basedir_ / fs::path(filename).filename();
+    if (fpath.extension() != ".json") fpath.replace_extension(fs::path(".json"));
+    // check for path existence, return empty content for inexistant file
+    if (!fs::exists(fpath)) {
+      LOGGER_WARN(logger_, "session file {} was not found", fpath.string());
+      return std::string();
+    }
+    // read file content
+    LOGGER_DEBUG(logger_, "reading content from session file {}", fpath.string());
+    const std::string content = fileutils::get_content(fpath);
+    // return file content
+    return content;
+  };
+
+  bool Session::write(const std::string& content, const std::string& filename) {
+    // compute file path
+    fs::path fpath = this->basedir_ / fs::path(filename).filename();
+    if (fpath.extension() != ".json") fpath.replace_extension(fs::path(".json"));
+
+    // write file content
+    LOGGER_DEBUG(logger_, "writing content to session file {}", fpath.string());
+    return fileutils::save(content, fpath);
   };
 
 };  // namespace switcher::session

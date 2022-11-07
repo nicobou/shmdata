@@ -27,6 +27,7 @@
 
 #include "../configuration/configuration.hpp"
 #include "../infotree/information-tree.hpp"
+#include "../logger/logger.hpp"
 #include "../utils/any.hpp"
 #include "../utils/make-consultable.hpp"
 
@@ -112,13 +113,33 @@ namespace switcher {
     bool remove(const std::string& filename);
 
     /**
-     * @brief Read the contents of a session file on disk, parse it and set Switcher's state from it
+     * @brief Load a session file on disk, parse it and set Switcher's state from it
      *
-     * @param filename The name of the file to remove
+     * @param filename The name of the file to load
      *
-     * @return A boolean asserting how the read went
+     * @return A boolean asserting how the load went
      */
-    bool read(const std::string& filename);
+    bool load(const std::string& filename);
+
+   /**
+     * @brief Read the contents of a session file on disk, and return content
+     *
+     * @param filename The name of the file to read
+     *
+     * @return content of session file
+     */
+    const std::string read(const std::string& filename);
+
+   /**
+     * @brief Write content to a session file on disk without affecting current
+     * session state
+     *
+     * @param content content to write to session file
+     * @param filename The name of the file to write to
+     *
+     * @return A boolean asserting how the write went
+     */
+    bool write(const std::string& content, const std::string& filename);
 
    private:
     /**
@@ -135,6 +156,8 @@ namespace switcher {
      * @brief Pointer to a Switcher instance
      */
     Switcher* switcher_;
+
+    std::shared_ptr<spdlog::logger> logger_;
 
   };  // class Session
   }; // namesepace session

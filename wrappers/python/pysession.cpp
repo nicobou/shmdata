@@ -111,14 +111,45 @@ PyObject* pySession::remove(SessionObject* self, PyObject* args, PyObject* Py_UN
     Py_RETURN_FALSE;
 };
 
-PyObject* pySession::read(SessionObject* self, PyObject* args, PyObject* Py_UNUSED(kwargs)) {
+PyObject* pySession::load(SessionObject* self, PyObject* args, PyObject* Py_UNUSED(kwargs)) {
   const char* filename = nullptr;
   if (!PyArg_ParseTuple(args, "s", &filename)) return nullptr;
   // call C++ session method and return a python boolean
-  if(self->csession->read(filename))
+  if(self->csession->load(filename))
     Py_RETURN_TRUE;
-  else
+  else {
+    PyErr_SetString(PyExc_RuntimeError, "Switcher could not load session file");
     Py_RETURN_FALSE;
+  }
+};
+
+PyObject* pySession::read(SessionObject* self, PyObject* args, PyObject* Py_UNUSED(kwargs)) {
+  const char* filename = nullptr;
+  if (!PyArg_ParseTuple(args, "s", &filename)) return nullptr;
+
+  // call C++ session read method and return a python string
+  auto session_content = self->csession->read(filename);
+
+  if (session_content.empty()) {
+    PyErr_SetString(PyExc_RuntimeError, "Switcher could not read session file");
+    return nullptr;
+  } else {
+    return PyUnicode_FromString(session_content.c_str());
+  }
+};
+
+PyObject* pySession::write(SessionObject* self, PyObject* args, PyObject* Py_UNUSED(kwargs)) {
+  const char* session_content = nullptr;
+  const char* filename = nullptr;
+  if (!PyArg_ParseTuple(args, "ss", &session_content, &filename)) return nullptr;
+
+  // call C++ session write method and return a python boolean
+  if(self->csession->write(session_content, filename))
+    Py_RETURN_TRUE;
+  else {
+    PyErr_SetString(PyExc_RuntimeError, "Switcher could not write session file");
+    Py_RETURN_FALSE;
+  }
 };
 
 PyMethodDef pySession::methods[] = {
@@ -139,16 +170,36 @@ PyMethodDef pySession::methods[] = {
      METH_NOARGS,
      PyDoc_STR("List the existing session files in the session directory.\n\n"
                "Returns: A list of existing session files.\n")},
-    {"read",
-     (PyCFunction)pySession::read,
+    {"load",
+     (PyCFunction)pySession::load,
      METH_VARARGS,
-     PyDoc_STR("Read the contents of a session file on disk, parse it "
+     PyDoc_STR("Load a session file on disk, parse it "
                "and set Switcher's state from it.\n\n"
                "Arguments:\n"
                "----------\n"
                "filename: str\n"
+               "\tThe name of the session file to load\n\n"
+               "Returns: A boolean asserting how the load went.\n")},
+    {"read",
+     (PyCFunction)pySession::read,
+     METH_VARARGS,
+     PyDoc_STR("Read the contents of a session file on disk, and return content\n\n"
+               "Arguments:\n"
+               "----------\n"
+               "filename: str\n"
                "\tThe name of the session file to read\n\n"
-               "Returns: A boolean asserting how the read went.\n")},
+               "Returns: content of session file.\n")},
+    {"write",
+     (PyCFunction)pySession::write,
+     METH_VARARGS,
+     PyDoc_STR("Write content to a session file on disk without affecting current session state\n\n"
+               "Arguments:\n"
+               "----------\n"
+               "content: str\n"
+               "\tContent to write to session file\n\n"
+               "filename: str\n"
+               "\tThe name of the session file to write to\n\n"
+               "Returns: A boolean asserting how the write went.\n")},
     {"remove",
      (PyCFunction)pySession::remove,
      METH_VARARGS,

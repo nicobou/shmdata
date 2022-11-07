@@ -1,5 +1,14 @@
 This file lists changes to apply when migrating from a switcher version to a new one.
 
+From switcher version 3.1.14 to version 3.2.0
+--------------------------------------------
+
+The `pyquid.Session` API have changed slightly. 
+
+  - Existing read method have been renamed load. New load method loads a session file in Switcher state just like read used to do.
+  - Read method now is now returning session file content instead of loading its state.
+  - New write method allows to write a session file content to disk without loading its state.
+
 From switcher version 3.1.12 to version 3.2.0
 --------------------------------------------
 

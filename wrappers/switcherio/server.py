@@ -1090,9 +1090,29 @@ def remove_session(sid: str, session_name: str):
         return str(e), False
 
 
+@sio.on('session.load')
+def load_session(sid: str, session_name: str):
+    """Load a session.
+
+    Decorators:
+        sio.on
+
+    Arguments:
+        sid {str} -- The session identifier assigned to the client
+        session_name {str} -- The name of the session
+
+    Returns:
+        tuple -- The error and response for this event
+    """
+    try:
+        return None, sw.session.load(session_name)
+    except Exception as e:
+        sio.logger.exception(e)
+        return str(e), False
+
 @sio.on('session.read')
 def read_session(sid: str, session_name: str):
-    """Read the file of a session.
+    """Read the content of a session.
 
     Decorators:
         sio.on
@@ -1110,6 +1130,26 @@ def read_session(sid: str, session_name: str):
         sio.logger.exception(e)
         return str(e), False
 
+@sio.on('session.write')
+def write_session(sid: str, session_content:str, session_name: str):
+    """Write content to a session file.
+
+    Decorators:
+        sio.on
+
+    Arguments:
+        sid {str} -- The session identifier assigned to the client
+        session_content {str} -- Content to write to session file
+        session_name {str} -- The name of the session
+
+    Returns:
+        tuple -- The error and response for this event
+    """
+    try:
+        return None, sw.session.write(session_content, session_name)
+    except Exception as e:
+        sio.logger.exception(e)
+        return str(e), False
 
 if __name__ == '__main__':
     parser = ArgumentParser(
