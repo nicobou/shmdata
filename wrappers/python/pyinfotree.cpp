@@ -102,7 +102,7 @@ PyObject* pyInfoTree::empty(pyInfoTreeObject* self, PyObject* args, PyObject* kw
 PyDoc_STRVAR(pyinfotree_prune_doc,
              "Remove the subtree.\n"
              "Arguments: (path)\n"
-             "Returns: None\n");
+             "Returns: True if branch has been pruned\n");
 
 PyObject* pyInfoTree::prune(pyInfoTreeObject* self, PyObject* args, PyObject* kwds) {
   const char* path = nullptr;
@@ -112,7 +112,7 @@ PyObject* pyInfoTree::prune(pyInfoTreeObject* self, PyObject* args, PyObject* kw
     return nullptr;
   }
   auto res = self->tree->prune(path);
-  if (res->empty()) {
+  if (!res) {
     Py_INCREF(Py_False);
     return Py_False;
   }

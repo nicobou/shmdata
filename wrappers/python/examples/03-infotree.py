@@ -70,8 +70,9 @@ utree_cpy = utree.copy()
 assert utree.json() == utree_cpy.json()
 
 # and remove some part
-utree_cpy.prune('my.string')
+assert utree_cpy.prune('my.string')
 assert utree.json() != utree_cpy.json()
+assert not utree_cpy.prune('not.existing.branch')
 
 # we can create our own info tree
 from_default = pyquid.InfoTree()
