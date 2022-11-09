@@ -61,11 +61,9 @@ int pyInfoTree::InfoTree_init(pyInfoTreeObject* self, PyObject* args, PyObject* 
   // init from json string
   if (PyUnicode_Check(initial)) {
     // init infotree from json string
-    self->keepAlive = infotree::json::deserialize(initial ? PyUnicode_AsUTF8(initial) : "{}");
+    self->keepAlive = infotree::json::deserialize(initial ? PyUnicode_AsUTF8(initial) : "{}", true);
     self->tree = self->keepAlive.get();
-    // decrement refcounts
     // handle possible parsing error
-    for (auto& o : {obj, method, res}) Py_XDECREF(o);
     if (self->keepAlive->branch_has_data(".parsing_error")) {
       PyErr_Format(PyExc_RuntimeError,
                    "parsing error: %s",
