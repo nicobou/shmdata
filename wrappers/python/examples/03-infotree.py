@@ -85,3 +85,12 @@ assert 1.0 == from_json.get('one')
 # and finally, you can graft a tree into a tree
 utree.graft('other tree', from_json)
 assert utree.json('other tree') == from_json.json()
+
+# ensure parsing errors are handled
+error_raised = False
+try:
+    pyquid.InfoTree('{ "missing quote : 1.0 }')
+except RuntimeError as e:
+    print('The error raised is: ', e)
+    error_raised = True
+assert error_raised

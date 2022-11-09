@@ -42,11 +42,10 @@ int pyInfoTree::InfoTree_init(pyInfoTreeObject* self, PyObject* args, PyObject* 
     return 0;
   }
 
-  // function call objects
-  PyObject *obj = PyImport_ImportModule("json"), *method = nullptr, *res = nullptr;
-
   // init from dict
   if (PyDict_Check(initial)) {
+    // function call objects
+    PyObject *obj = PyImport_ImportModule("json"), *method = nullptr, *res = nullptr;
     // call options
     method = PyUnicode_FromString("dumps");
     // call function
@@ -61,15 +60,18 @@ int pyInfoTree::InfoTree_init(pyInfoTreeObject* self, PyObject* args, PyObject* 
 
   // init from json string
   if (PyUnicode_Check(initial)) {
-    // call options
-    method = PyUnicode_FromString("loads");
-    // call function
-    res = PyObject_CallMethodObjArgs(obj, method, initial, NULL);
     // init infotree from json string
     self->keepAlive = infotree::json::deserialize(initial ? PyUnicode_AsUTF8(initial) : "{}");
     self->tree = self->keepAlive.get();
     // decrement refcounts
+    // handle possible parsing error
     for (auto& o : {obj, method, res}) Py_XDECREF(o);
+    if (self->keepAlive->branch_has_data(".parsing_error")) {
+      PyErr_Format(PyExc_RuntimeError,
+                   "parsing error: %s",
+                   self->tree->branch_get_value(".parsing_error").copy_as<std::string>().c_str());
+      return -1;
+    }
     return 0;
   };
 
@@ -77,9 +79,6 @@ int pyInfoTree::InfoTree_init(pyInfoTreeObject* self, PyObject* args, PyObject* 
   PyErr_SetString(PyExc_TypeError,
                   "function takes either a dictionary or a json string as its first optional "
                   "argument `initial`.");
-
-  // decrement refcount
-  Py_XDECREF(obj);
   return -1;
 }
 
