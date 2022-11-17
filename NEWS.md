@@ -2,6 +2,25 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 3.2.0 (2022-11-17)
+---------------------------
+This is an official release in the 3.2 stable series.
+
+Bug fixes:
+* fix segfault in pyquid.InfoTree.prune
+* fix swio session load, read, write
+* fix RTMP claw
+* fix parsing error with portmidi claw
+
+New features:
+* enable switcherio for Ubuntu 22.04
+
+Improvements:
+* add bus_info suffix to v4l2 card name
+* activate the parsing error option for InfoTree in pyquid
+* improve infotree logging of parsing eerrors
+
+
 switcher 3.1.14 (2022-10-17)
 ---------------------------
 This is an official release in the 3.1 stable series.

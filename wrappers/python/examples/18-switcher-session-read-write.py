@@ -13,29 +13,37 @@
 import time
 from pyquid import Switcher, Quiddity
 
+test_session_content = """
+{
+    "quiddities" : {
+      "test" : "OSCsink"
+    },
+    "nicknames" : {
+      "test" : "test"
+    },
+    "properties" : {
+      "test" : {
+        "started" : false,
+        "port" : 1056,
+        "host" : "localhost",
+        "autostart" : false
+      }
+    }
+  }
+"""
+
 # create a switcher.
 sw = Switcher('pyquid', debug=True)
 
-vid1 = sw.create('videotestsrc', 'vid1')
-assert(sw.quiddities[0].get_kind() == 'videotestsrc')
-vid2 = sw.create('videotestsrc', 'vid2')
-assert(sw.quiddities[1].nickname() == 'vid2')
-sip1 = sw.create('sip', 'sip1')
+assert sw.session.write(test_session_content, 'test_session')
 
-assert len(sw.quiddities) == 3
+assert test_session_content == sw.session.read('test_session')
 
-for quid in sw.quiddities:
-    assert isinstance(quid, Quiddity) is True
-
-sw.remove(sip1.id())
-assert len(sw.quiddities) == 2
-
-sw.session.save_as('test_session')
-
-sw.reset_state()
-assert len(sw.quiddities) == 0
-
-sw.session.load('test_session')
+assert sw.session.load('test_session')
 time.sleep(1)
-assert len(sw.list_ids()) == 2
-assert len(sw.quiddities) == 2
+assert len(sw.quiddities) == 1
+
+assert sw.session.remove('test_session')
+
+
+

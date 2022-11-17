@@ -685,7 +685,20 @@ bool V4L2Src::inspect_file_device(const std::string& file_path) {
     return false;
   }
   description.file_device_ = file_path;
+
+  // add bus_info suffix to card name to allow identical v4l2 devices to co-exist
+  // i.e "Game Capture HD60 S+: Game Capt (usb-0000:0a:00.3-1)"
+  // i.e "Game Capture HD60 S+: Game Capt (usb-0000:0a:00.3-2)" 
+  // https://www.kernel.org/doc/html/v4.10/media/uapi/v4l/vidioc-querycap.html?highlight=v4l2_capability#c.v4l2_capability
+  // > Since multiple TV cards of the same brand may be installed which are 
+  // > supported by the same driver, this name should be combined with the 
+  // > character device file name (e. g. /dev/video2) or the bus_info string 
+  // > to avoid ambiguities.
   description.card_ = (char*)vcap.card;
+  description.card_.append(" (");
+  description.card_.append((char*)vcap.bus_info);
+  description.card_.append(")");
+
   description.bus_info_ = (char*)vcap.bus_info;
   description.device_id_ = description.bus_info_;
   description.driver_ = (char*)vcap.driver;

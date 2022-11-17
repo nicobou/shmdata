@@ -674,6 +674,7 @@ PyObject* pySwitch::read_extra_config(pySwitchObject* self, PyObject* args, PyOb
   auto extra_config = self->switcher->conf<MPtr(&Configuration::get_extra_config)>(name);
 
   if (!extra_config.c_str()) {
+    PyErr_SetString(PyExc_RuntimeError, "Switcher could not load extra configuration file");
     return nullptr;
   } else {
     return PyUnicode_FromString(extra_config.c_str());

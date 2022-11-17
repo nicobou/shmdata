@@ -44,6 +44,7 @@ const std::string RTMP::kConnectionSpec(R"(
       "description": "Audio stream",
       "can_do": ["audio/x-raw"]
     }
+  ]
 }
 )");
 

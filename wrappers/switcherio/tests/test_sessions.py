@@ -57,14 +57,14 @@ class SessionTestCase(SocketIOTestCase):
         self.assertTrue(os.path.exists(res))
         return res
 
-    def test_read_and_remove_a_session(self):
+    def test_load_and_remove_a_session(self):
         self.create_quiddity(videotest_quid)
         self.check_quiddities(1)
         self.save_session(self.session_name)
         err, res = self.sio.call('session.reset')
         self.assertIsNone(err)
         self.check_quiddities(0)
-        err, res = self.sio.call('session.read', data=self.session_name)
+        err, res = self.sio.call('session.load', data=self.session_name)
         self.assertIsNone(err)
         self.check_quiddities(1, videotest_quid['nickname'])
         err, res = self.sio.call('session.list')
