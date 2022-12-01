@@ -64,7 +64,7 @@ See [here](AUTHORS.md).
 
 Sponsors
 --------
-Switcher was created at the Society for Arts and Technology (SAT) to give to artists a powerful tool for telepresence in contexts of live arts and new media installations. Scenic/Switcher is the streaming engine used in the [Scènes ouvertes](http://sat.qc.ca/en/scenes-ouvertes) project: a network of more than 20 venues collaborating through artistic telepresence installations in Quebec.
+Switcher was created at the Society for Arts and Technology (SAT) to give to artists a powerful tool for telepresence in contexts of live arts and new media installations. Scenic/Switcher is the streaming engine used in the [Scènes ouvertes](http://sat.qc.ca/en/scenic-telepresence) project: a network of more than 20 venues collaborating through artistic telepresence installations in Quebec.
 
-This project is made possible thanks to the Society for Arts and Technologies. [SAT](http://www.sat.qc.ca/) and to the Ministère de l'Économie, de la Science et de l'Innovation du Québec (MESI).
+This project is made possible thanks to the Society for Arts and Technologies. [SAT](http://www.sat.qc.ca/) and to the Ministère de l'Économie, de l'Innovation et de l'Énergie du Québec (MÉIÉ).
 
