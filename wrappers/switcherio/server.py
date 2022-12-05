@@ -818,7 +818,7 @@ def graft_quiddity_user_tree(sid: str, quid_id: int, path: str, value: str) -> T
 
 
 @sio.on('user_tree.prune')
-def prune_quiddity_user_tree(sid: str, quid_id: int, path: str) -> Tuple[Optional[str], Optional[str]]:
+def prune_quiddity_user_tree(sid: str, quid_id: int, path: str) -> Tuple[Optional[str], Optional[bool]]:
     """Prune the user tree of a quiddity.
 
    Decorators:
@@ -833,10 +833,9 @@ def prune_quiddity_user_tree(sid: str, quid_id: int, path: str) -> Tuple[Optiona
         tuple -- The error and response for this event
     """
     try:
-        sw.get_quid(quid_id).get_user_tree().prune(path)
+        result = sw.get_quid(quid_id).get_user_tree().prune(path)
         sw.get_quid(quid_id).notify_user_tree_pruned(path)
-        user_tree = sw.get_quid(quid_id).get_user_tree()
-        return None, json.loads(str(user_tree))
+        return None, result
     except Exception as e:
         sio.logger.exception(e)
         return str(e), None

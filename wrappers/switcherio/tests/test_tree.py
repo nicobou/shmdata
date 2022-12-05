@@ -122,12 +122,15 @@ class UserTreeTestCase(TreeTestCase):
     def test_user_tree_pruned(self):
         self.sio.call('user_tree.graft', data=(self.videotest_id, 'testData', False))
         err, res = self.sio.call('user_tree.prune', data=(self.videotest_id, 'testData'))
+        self.assertEqual(res, True)
         time.sleep(1)
         event, pruned_data = self.rcvd_data.pop()
         self.assertEqual(event, 'user_tree.pruned')
         id, path = pruned_data
         self.assertEqual(id, self.videotest_id)
         self.assertEqual(path, 'testData')
+        err, res = self.sio.call('user_tree.prune', data=(self.videotest_id, 'testData'))
+        self.assertEqual(res, False)
 
 
 class ConnectionSpecsTestCase(TreeTestCase):
