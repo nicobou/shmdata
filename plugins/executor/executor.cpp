@@ -40,7 +40,25 @@ const std::string Executor::kConnectionSpec(R"(
   [
     {
       "label": "custom",
-      "description": "Stream to connect to the exceutor",
+      "description": "Stream to connect to the excecutor",
+      "can_do": ["all"]
+    },
+    {
+      "label": "audio",
+      "description": "Audio stream",
+      "can_do": ["audio/x-raw"]
+    },
+    {
+      "label": "video",
+      "description": "Video stream",
+      "can_do": ["video/x-raw"]
+    }
+  ],
+"writer":
+  [
+    {
+      "label": "custom",
+      "description": "Stream to connect from the excecutor",
       "can_do": ["all"]
     },
     {
