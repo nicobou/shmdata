@@ -15,8 +15,8 @@ from pyquid import Switcher, Quiddity, InfoTree
 import time
 
 
-# create a switcher.
-sw = Switcher('pyquid', debug=True)
+# create a switcher, name is mandatory
+sw = Switcher(name='pyquid', debug=True)
 
 # the switcher instance has a name
 assert 'pyquid' == sw.name()

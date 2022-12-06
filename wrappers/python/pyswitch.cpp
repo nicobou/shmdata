@@ -54,18 +54,19 @@ PyObject* InterpType(const char* type_name, const char* module_name) {
   return res;
 }
 
-PyObject* pySwitch::Switcher_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /*kwds*/) {
+PyObject* pySwitch::Switcher_new(PyTypeObject* type, PyObject* args, PyObject* kwds) {
+  PyObject* name = nullptr;
+  PyObject* configFile = nullptr;
+  int debug = 0;
+
+  static char* kwlist[] = {(char*)"name", (char*)"config", (char*)"debug", nullptr};
+  if (!PyArg_ParseTupleAndKeywords(args, kwds, "O|Op", kwlist, &name, &configFile, &debug))
+    return nullptr;
+
   pySwitchObject* self;
 
   self = (pySwitchObject*)type->tp_alloc(type, 0);
-  if (self != nullptr) {
-    self->name = PyUnicode_FromString("default");
 
-    if (self->name == nullptr) {
-      Py_XDECREF(self);
-      return nullptr;
-    }
-  }
   return (PyObject*)self;
 }
 
