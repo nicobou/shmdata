@@ -97,11 +97,6 @@ bool PortMidiSink::start() {
     LOGGER_ERROR(this->logger, res.msg());
     return false;
   }
-
-  int stat = 165;
-  int data1 = 1;
-  int data2 = 67;
-  push_midi_message(device_, (unsigned char)stat, (unsigned char)data1, (unsigned char)data2);
   started_ = true;
 
   return true;
