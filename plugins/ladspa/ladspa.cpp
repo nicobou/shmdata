@@ -87,7 +87,7 @@ LADSPA::LADSPA(quiddity::Config&& conf)
       [this](const quiddity::property::IndexOrName& val) {
         plugins_.select(val);
 
-        LOGGER_DEBUG(this->logger, "ladspa plugin selected: {}", plugins_.get_current());
+        sw_debug("ladspa plugin selected: {}", plugins_.get_current());
         // We don't want to reset the properties if they were loaded from a save file
         if (reset_saved_properties_)
           saved_properties_.clear();
@@ -121,10 +121,8 @@ LADSPA::PluginList LADSPA::get_ladspa_plugins() {
     if (stringutils::starts_with(plugin, "ladspa")) {
       auto value = gst::utils::get_gst_element_capability(plugin, "channels", GST_PAD_SINK);
       if (value && 1 != g_value_get_int(value)) {
-        LOGGER_WARN(
-            this->logger,
-            "ladspa plugin {} not supported because it requires more than one input channel",
-            plugins.first.at(index));
+        sw_warning("ladspa plugin {} not supported because it requires more than one input channel",
+                   plugins.first.at(index));
       } else {
         plugins_list.first.push_back(plugins.first.at(index));
         plugins_list.second.push_back(plugin);
@@ -147,7 +145,7 @@ void LADSPA::mirror_gst_properties() {
   // We arbitrarily take the first element as reference
   auto first_element = ladspa_elements_.front();
   if (!first_element) {
-    LOGGER_WARN(this->logger, "Cannot find a valid ladspa element to mirror properties");
+    sw_warning("Cannot find a valid ladspa element to mirror properties");
     return;
   }
   std::string first_element_name = gst_element_get_name(first_element);
@@ -187,11 +185,10 @@ bool LADSPA::create_gst_pipeline() {
 
   if (target_channels > 1) {
     if (channels_number_ != target_channels) {
-      LOGGER_WARN(this->logger,
-                  "LADSPA element {} only accepts {} channels, we cannot fit {} channels in it.",
-                  plugins_.get_attached(),
-                  std::to_string(target_channels),
-                  std::to_string(channels_number_));
+      sw_warning("LADSPA element {} only accepts {} channels, we cannot fit {} channels in it.",
+                 plugins_.get_attached(),
+                 std::to_string(target_channels),
+                 std::to_string(channels_number_));
       return false;
     }
     description += " ! " + plugins_.get_attached() + " name=ladspa ";
@@ -228,10 +225,9 @@ bool LADSPA::create_gst_pipeline() {
   };
 
   if (error) {
-    LOGGER_WARN(this->logger,
-                "Could not create ladspa plugin {}: {}",
-                plugins_.get_attached(),
-                std::string(error->message));
+    sw_warning("Could not create ladspa plugin {}: {}",
+               plugins_.get_attached(),
+               std::string(error->message));
     g_error_free(error);
     return false;
   }
@@ -365,14 +361,14 @@ void LADSPA::create_and_play_gst_pipeline() {
         };
         GstStructure* s = gst_caps_get_structure(caps, 0);
         if (nullptr == s) {
-          LOGGER_WARN(this->logger, "cannot get structure from caps (ladspa)");
+          sw_warning("cannot get structure from caps (ladspa)");
           return;
         }
 
         gint channels_number = 0;
 
         if (!gst_structure_get_int(s, "channels", &channels_number)) {
-          LOGGER_WARN(this->logger, "cannot get channels number from shmdata description (ladspa)");
+          sw_warning("cannot get channels number from shmdata description (ladspa)");
           return;
         }
 

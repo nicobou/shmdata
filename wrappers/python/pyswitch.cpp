@@ -110,8 +110,8 @@ int pySwitch::Switcher_init(pySwitchObject* self, PyObject* args, PyObject* kwds
 }
 
 PyObject* pySwitch::get_logger_descriptor(pySwitchObject* self) {
-  return PyObject_CallFunctionObjArgs(reinterpret_cast<PyObject*>(&pyLogger::pyType),
-                                      nullptr);
+  return PyObject_CallFunctionObjArgs(
+      reinterpret_cast<PyObject*>(&pyLogger::pyType), reinterpret_cast<PyObject*>(self), nullptr);
 }
 
 PyObject* pySwitch::get_session_descriptor(pySwitchObject* self) {
@@ -159,7 +159,7 @@ PyDoc_STRVAR(pyswitch_name_doc,
              "Get the name provided to the switcher instance at creation.");
 
 PyObject* pySwitch::name(pySwitchObject* self) {
-  return PyUnicode_FromString(self->switcher->name.c_str());
+  return PyUnicode_FromString(self->switcher->name_.c_str());
 }
 
 PyDoc_STRVAR(pyswitch_version_doc,
@@ -674,11 +674,11 @@ PyObject* pySwitch::read_extra_config(pySwitchObject* self, PyObject* args, PyOb
 
   auto extra_config = self->switcher->conf<MPtr(&Configuration::get_extra_config)>(name);
 
-  if (!extra_config.c_str()) {
-    PyErr_SetString(PyExc_RuntimeError, "Switcher could not load extra configuration file");
+  if (!extra_config) {
+    PyErr_SetString(PyExc_RuntimeError, extra_config.msg().c_str());
     return nullptr;
   } else {
-    return PyUnicode_FromString(extra_config.c_str());
+    return PyUnicode_FromString(extra_config.msg().c_str());
   }
 }
 

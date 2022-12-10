@@ -31,11 +31,9 @@ PyObject* BundleManager::tp_new(PyTypeObject* type, PyObject* args, PyObject* kw
 
 int BundleManager::tp_init(BundleManagerObject* self, PyObject* args, PyObject* kwds) {
   PyObject* pyswitch = nullptr;
-  if (!PyArg_ParseTuple(args, "O", &pyswitch)) return -1;
-
-  self->pyswitch = pyswitch;
   self->registry = PyList_New(0);
-
+  if (!PyArg_ParseTuple(args, "O", &pyswitch)) return -1;
+  self->pyswitch = pyswitch;
   return 0;
 }
 

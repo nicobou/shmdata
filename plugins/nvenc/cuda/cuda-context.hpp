@@ -27,7 +27,6 @@
 #include <utility>
 #include <vector>
 
-#include "switcher/logger/logger.hpp"
 #include "switcher/utils/safe-bool-idiom.hpp"
 
 namespace switcher {
@@ -39,7 +38,6 @@ class CudaContext : public SafeBoolIdiom {
   friend NVencES;
 
  public:
-  std::shared_ptr<spdlog::logger> logger;
   CudaContext(uint32_t device_id = 0);
   CudaContext() = delete;
   ~CudaContext();
@@ -49,6 +47,12 @@ class CudaContext : public SafeBoolIdiom {
   CudaContext& operator=(CudaContext&&) = delete;
 
   static std::vector<std::pair<int, std::string>> get_devices();
+  /**
+   * @brief provide a textual description of NVENC support for each GPU
+   *
+   * return the formated description, mostly useful for logging
+   **/
+  static std::string get_support_description();
 
  private:
   CUdevice cuda_dev_{-1};

@@ -23,20 +23,18 @@
 namespace switcher {
 namespace quiddities {
 
-std::shared_ptr<spdlog::logger> JackServer::logger = spdlog::get("switcher");
-
-JackServer::JackServer(const std::string& name, const std::string& config_driver, bool realtime)
-    : server_(jackctl_server_create(nullptr, nullptr)),
+JackServer::JackServer(const std::string& name,
+                       const std::string& config_driver,
+                       bool realtime,
+                       logger::Logger* logger)
+    : logger_(logger),
+      server_(jackctl_server_create(nullptr, nullptr)),
       config_(InfoTree::make()),
       default_driver_(config_driver.empty() ? kDefaultDriver : config_driver) {
   {
-    // routing jack log into switcher log:
-    jack_set_info_function(JackServer::jack_info);
-    jack_set_error_function(JackServer::jack_error);
-
     // parameter introspection
     if (!server_) {
-      LOGGER_ERROR(this->logger, "jack-server initialization failed");
+      logger_->sw_error("jack-server initialization failed");
       return;
     }
     InfoTree::ptr params = InfoTree::make();
@@ -50,14 +48,14 @@ JackServer::JackServer(const std::string& name, const std::string& config_driver
     }
     params->branch_set_value(".name.value", name);
     params->branch_set_value(".realtime.value", realtime);
-    LOGGER_DEBUG(
-        this->logger, "jack-server-quid: initial configuration {}", params->serialize_json("."));
+    logger_->sw_debug("jack-server-quid: initial configuration {}", params->serialize_json("."));
     // adding to the config
     config_->graft(".params", params);
   }
 
   // Drivers list
-  // current_driver will be set either to default or (if not available) to the first one in the list
+  // current_driver will be set either to default or (if not available) to the first one in the
+  // list
   std::string current_driver;
   {
     auto it = jackctl_server_get_drivers_list(server_);
@@ -75,14 +73,14 @@ JackServer::JackServer(const std::string& name, const std::string& config_driver
       it = jack_slist_next(it);
     }
     if (drivers_.empty()) {
-      LOGGER_WARN(this->logger, "BUG: no driver available for jack server");
+      logger_->sw_warning("BUG: no driver available for jack server");
       return;
     }
     config_->graft(".driver.name", InfoTree::make(current_driver));
   }
 
   // current driver params
-  LOGGER_DEBUG(this->logger, "jack server: {} is set as default driver", current_driver);
+  logger_->sw_debug("jack server: {} is set as default driver", current_driver);
   update_driver(current_driver);
 }
 
@@ -167,9 +165,8 @@ void JackServer::write_parameter_to_tree(const InfoTree::ptr& tree,
       tree->vgraft(key + ".type", "bool");
       break;
     default:
-      LOGGER_WARN(this->logger,
-                  "BUG: no type for parameter {} in jack server",
-                  std::string(jackctl_parameter_get_name(param)));
+      logger_->sw_warning("BUG: no type for parameter {} in jack server",
+                          std::string(jackctl_parameter_get_name(param)));
       break;
   }
 
@@ -196,18 +193,18 @@ void JackServer::write_parameter_to_tree(const InfoTree::ptr& tree,
 }
 
 bool JackServer::start() {
-  LOGGER_DEBUG(this->logger, "jack-server starting: apply config");
+  logger_->sw_debug("jack-server starting: apply config");
   if (!apply_config()) {
-    LOGGER_WARN(this->logger, "jackserver: failed to apply configuration before starting");
+    logger_->sw_warning("jackserver: failed to apply configuration before starting");
     return false;
   }
-  LOGGER_DEBUG(this->logger, "jack-server starting: open server");
+  logger_->sw_debug("jack-server starting: open server");
   if (!jackctl_server_open(server_, current_driver_)) {
-    LOGGER_WARN(this->logger, "jackserver: failed to open server before starting");
+    logger_->sw_warning("jackserver: failed to open server before starting");
     return false;
   }
 
-  LOGGER_DEBUG(this->logger, "jack-server starting: start !");
+  logger_->sw_debug("jack-server starting: start !");
   return jackctl_server_start(server_);
 }
 
@@ -223,9 +220,8 @@ bool JackServer::apply_config() {
       // (using parameter name as ID because the jackctl_parameter_get_id returns an empty char)
       auto param = static_cast<jackctl_parameter_t*>(it->data);
       if (!apply_param(std::string(".params.") + jackctl_parameter_get_name(param), param)) {
-        LOGGER_WARN(this->logger,
-                    "jack server: failed to apply parameter {}",
-                    jackctl_parameter_get_name(param));
+        logger_->sw_warning("jack server: failed to apply parameter {}",
+                            jackctl_parameter_get_name(param));
       }
       it = jack_slist_next(it);
     }
@@ -257,11 +253,11 @@ bool JackServer::apply_param(const std::string& key, jackctl_parameter_t* param)
       }
     }
     // enum value not found
-    LOGGER_WARN(this->logger,
-                "jack server configuration: failed to apply enum value {} (key: {}, id: {})",
-                label,
-                key,
-                id);
+    logger_->sw_warning(
+        "jack server configuration: failed to apply enum value {} (key: {}, id: {})",
+        label,
+        key,
+        id);
     return false;
   }
 
@@ -279,9 +275,8 @@ bool JackServer::apply_param(const std::string& key, jackctl_parameter_t* param)
     case JackParamString:
       strval = config_->branch_get_value(key + ".value").as<std::string>();
       if (strval.empty()) {
-        LOGGER_DEBUG(this->logger,
-                     "jack server: empty string value not applied for {}",
-                     std::string(jackctl_parameter_get_name(param)));
+        logger_->sw_debug("jack server: empty string value not applied for {}",
+                          std::string(jackctl_parameter_get_name(param)));
         return true;
       }
       strncpy(val.str, strval.c_str(), JACK_PARAM_STRING_MAX);
@@ -290,9 +285,8 @@ bool JackServer::apply_param(const std::string& key, jackctl_parameter_t* param)
       val.b = config_->branch_get_value(key + ".value");
       break;
     default:
-      LOGGER_WARN(this->logger,
-                  "BUG: no type for parameter {} in jack server",
-                  std::string(jackctl_parameter_get_name(param)));
+      logger_->sw_warning("BUG: no type for parameter {} in jack server",
+                          std::string(jackctl_parameter_get_name(param)));
       break;
   }
   jackctl_parameter_set_value(param, &val);
@@ -300,14 +294,6 @@ bool JackServer::apply_param(const std::string& key, jackctl_parameter_t* param)
 }
 
 unsigned int JackServer::get_driver_index() const { return current_driver_index_; }
-
-void JackServer::jack_info(const char* msg) {
-  LOGGER_DEBUG(logger, "jackd info: {}", std::string(msg));
-}
-
-void JackServer::jack_error(const char* msg) {
-  LOGGER_ERROR(logger, "jackd info: {}", std::string(msg));
-}
 
 }  // namespace quiddities
 }  // namespace switcher

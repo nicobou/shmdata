@@ -44,12 +44,12 @@ CrashTest::CrashTest(quiddity::Config&& conf)
           "Crash Switcher",
           "This property crashes Switcher when set true (SEGFAULT)",
           crash_)) {
-  LOGGER_DEBUG(this->logger, "CrashTest::CrashTest created.");
+  sw_debug("CrashTest::CrashTest created.");
 }
 
 void CrashTest::crash() {
   // Access null pointer to generate a segfault
-  LOGGER_DEBUG(this->logger, "CrashTest::crashSwitcher method called.");
+  sw_debug("CrashTest::crashSwitcher method called.");
   int* p = nullptr;
   *p = 1;
 }

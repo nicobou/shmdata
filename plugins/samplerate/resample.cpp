@@ -121,13 +121,13 @@ bool Resample::connect(const std::string& path) {
           resampler_data_->data_in = in_converted_.data();
           resampler_data_->data_out = resampled_.data();
         } else {
-          LOGGER_WARN(this->logger, "BUG in resample shmr data handler");
+          sw_warning("BUG in resample shmr data handler");
           return;
         }
         // do resampling
-        auto error = src_process(resampler_config_, resampler_data_.get());
-        if (error) {
-          LOGGER_ERROR(this->logger, "resample error: {}", std::string(src_strerror(error)));
+        auto err = src_process(resampler_config_, resampler_data_.get());
+        if (err) {
+          sw_error("resample error: {}", std::string(src_strerror(err)));
           return;
         }
         // write to shmdata
@@ -140,17 +140,15 @@ bool Resample::connect(const std::string& path) {
 
         incaps_ = std::make_unique<shmdata::caps::AudioCaps>(str_caps);
         if (!(*incaps_)) {
-          LOGGER_WARN(
-              this->logger, "resample does not understand shmdata caps: %", incaps_->error_msg());
+          sw_warning("resample does not understand shmdata caps: %", incaps_->error_msg());
           return;
         }
 
         int error;
         resampler_config_ = src_new(algo_.get_attached(), incaps_->channels(), &error);
         if (nullptr == resampler_config_) {
-          LOGGER_WARN(this->logger,
-                      "resample quiddity could not intialize the resample: %",
-                      std::string(src_strerror(error)));
+          sw_warning("resample quiddity could not intialize the resample: %",
+                     std::string(src_strerror(error)));
         };
         resampler_data_ = std::make_unique<SRC_DATA>();
         resampler_data_->end_of_input = 0;

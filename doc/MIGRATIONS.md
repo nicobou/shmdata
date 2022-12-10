@@ -48,7 +48,7 @@ error("error while setting up interprocess communication. Error: %", strerror(er
 ```
 Is now refactored as:
 ```
-LOGGER_ERROR(this->logger,
+LOGGER_ERROR(logger_,
              "error while setting up interprocess communication. Error: {}",
              strerror(errno));
 ```

@@ -23,6 +23,7 @@
 #include <samplerate.h>
 
 #include "./audio-ring-buffer.hpp"
+#include "switcher/logger/logger.hpp"
 
 namespace switcher {
 namespace utils {
@@ -44,8 +45,7 @@ class AudioResampler {
    * \param logger              Logger where to write logs.
    * \param number_of_channels  Number of channels of audio buffers.
    **/
-  explicit AudioResampler(std::shared_ptr<spdlog::logger> logger,
-                          unsigned int number_of_channels = 1);
+  explicit AudioResampler(logger::Logger* logger, unsigned int number_of_channels = 1);
   /**
    * Resample a new audio buffer.
    * \param original_size Number of samples, for a single channel, of the buffer to resample.
@@ -105,7 +105,7 @@ class AudioResampler {
     resampler_data_->data_in = in_converted_.data();
     resampler_data_->data_out = resampled_.data();
   }
-  std::shared_ptr<spdlog::logger> logger_;      //!< Logger where to write logs.
+  const logger::Logger* logger_;                //!< Logger where to write logs.
   unsigned int number_of_channels_;             //!< Number of channels of the audio stream.
   SRC_STATE* resampler_config_{nullptr};        //!< Configuration for libsamplerate.
   std::unique_ptr<SRC_DATA> resampler_data_{};  //!< Data to provide to libsamplerate.

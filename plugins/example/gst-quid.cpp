@@ -30,13 +30,13 @@ SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstQuid,
 
 GstQuid::GstQuid(quiddity::Config&& conf)
     : Quiddity(std::forward<quiddity::Config>(conf)), quiddity::Startable(this) {
-  LOGGER_DEBUG(this->logger, "GstQuid::GstQuid");
+  sw_debug("GstQuid::GstQuid");
 }
 
 bool GstQuid::remake_elements() {
-  LOGGER_DEBUG(this->logger, "GstQuid::remake_elements");
+  sw_debug("GstQuid::remake_elements");
   if (!(gst::UGstElem::renew(src_) && gst::UGstElem::renew(sink_))) {
-    LOGGER_ERROR(this->logger, "GstQuid::remake_elements: Could not renew GStreamer elements");
+    sw_error("GstQuid::remake_elements: Could not renew GStreamer elements");
     return false;
   }
 
@@ -45,42 +45,42 @@ bool GstQuid::remake_elements() {
 
 bool GstQuid::stop() {
   if (!pipeline_) {
-    LOGGER_DEBUG(this->logger, "GstQuid::stop_pipeline: Pipeline not initialized. Nothing to do.");
+    sw_debug("GstQuid::stop_pipeline: Pipeline not initialized. Nothing to do.");
     return true;
   }
 
   pipeline_->play(false);
-  LOGGER_DEBUG(this->logger, "GstQuid::stop_pipeline: Pipeline stopped.");
+  sw_debug("GstQuid::stop_pipeline: Pipeline stopped.");
 
   return true;
 }
 
 bool GstQuid::start() {
   if (pipeline_) {
-    LOGGER_DEBUG(this->logger, "GstQuid::create_pipeline: Pipeline already created. Stopping");
+    sw_debug("GstQuid::create_pipeline: Pipeline already created. Stopping");
     pipeline_->play(false);
   }
 
   pipeline_ = std::make_unique<gst::Pipeliner>(nullptr, nullptr);
   if (!remake_elements()) {
-    LOGGER_ERROR(this->logger, "GstQuid::create_pipeline: Could not remake GStreamer elements");
+    sw_error("GstQuid::create_pipeline: Could not remake GStreamer elements");
     return false;
   }
 
-  LOGGER_DEBUG(this->logger, "GstQuid::create_pipeline: Pipeline elements made");
+  sw_debug("GstQuid::create_pipeline: Pipeline elements made");
 
   gst_bin_add_many(GST_BIN(pipeline_->get_pipeline()), src_.get_raw(), sink_.get_raw(), nullptr);
 
   gst_element_link(src_.get_raw(), sink_.get_raw());
 
   if (!static_cast<bool>(pipeline_.get())) {
-    LOGGER_ERROR(this->logger, "GstQuid::create_pipeline: Pipeline not found");
+    sw_error("GstQuid::create_pipeline: Pipeline not found");
     return false;
   }
 
   pipeline_->play(true);
 
-  LOGGER_DEBUG(this->logger, "GstQuid::create_pipeline: Pipeline started");
+  sw_debug("GstQuid::create_pipeline: Pipeline started");
   return true;
 }
 

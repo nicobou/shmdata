@@ -64,7 +64,7 @@ bool OscToShmdata::start() {
   shm_ = std::make_unique<shmdata::Writer>(
       this, claw_.get_shmpath_from_writer_label("osc"), 1, "application/x-libloserialized-osc");
   if (!shm_.get()) {
-    LOGGER_WARN(this->logger, "OscToShmdata failed to start");
+    sw_warning("OscToShmdata failed to start");
     shm_.reset(nullptr);
     return false;
   }

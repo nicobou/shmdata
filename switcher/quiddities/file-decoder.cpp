@@ -115,7 +115,7 @@ FileDecoder::FileDecoder(quiddity::Config&& conf)
 bool FileDecoder::load_file(const std::string& path) {
   {
     if (!std::filesystem::exists(std::filesystem::path(path))) {
-      LOGGER_WARN(this->logger, "file {} could not be loaded (does not exist)", path);
+      sw_warning("file {} could not be loaded (does not exist)", path);
       return false;
     }
   }
@@ -158,7 +158,7 @@ bool FileDecoder::load_file(const std::string& path) {
             0,
             GST_TIME_AS_MSECONDS(duration));
       } else
-        LOGGER_WARN(this->logger, "issue querying file duration {}", path);
+        sw_warning("issue querying file duration {}", path);
     }
     return GST_BUS_PASS;
   });
@@ -174,11 +174,9 @@ bool FileDecoder::load_file(const std::string& path) {
       [this](GstElement* el, const std::string& media_type, const std::string& media_label) {
         configure_shmdatasink(el, media_type, media_label);
       },
+      [this]() { sw_warning("discarding uncomplete custom frame due to a network loss"); },
       [this]() {
-        LOGGER_WARN(this->logger, "discarding uncomplete custom frame due to a network loss");
-      },
-      [this]() {
-        LOGGER_DEBUG(this->logger, "file-src: finished loading media from file");
+        sw_debug("file-src: finished loading media from file");
         std::unique_lock<std::mutex> lock(media_loaded_mutex_);
         media_loaded_ = true;
         media_loaded_cond_.notify_one();
@@ -187,12 +185,12 @@ bool FileDecoder::load_file(const std::string& path) {
   if (!decodebin_->invoke_with_return<gboolean>([this](GstElement* el) {
         return gst_bin_add(GST_BIN(gst_pipeline_->get_pipeline()), el);
       })) {
-    LOGGER_WARN(this->logger, "decodebin cannot be added to pipeline");
+    sw_warning("decodebin cannot be added to pipeline");
   }
 
   if (!decodebin_->invoke_with_return<bool>(
           [&](GstElement* el) { return gst_element_link(filesrc_, el) ? true : false; })) {
-    LOGGER_WARN(this->logger, "file-decoder: cannot link filesrc with decodebin");
+    sw_warning("file-decoder: cannot link filesrc with decodebin");
   }
 
   {
@@ -201,7 +199,7 @@ bool FileDecoder::load_file(const std::string& path) {
     gst::utils::wait_state_changed(gst_pipeline_->get_pipeline());
     if (!media_loaded_cond_.wait_for(
             lock, std::chrono::milliseconds(2000), [this] { return media_loaded_; })) {
-      LOGGER_WARN(this->logger, "file-src: media loading timed out");
+      sw_warning("file-src: media loading timed out");
     }
   }
   if (play_) gst_pipeline_->play(true);

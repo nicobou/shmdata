@@ -63,8 +63,9 @@ SIPPlugin::SIPPlugin(quiddity::Config&& conf)
             if (sip_port_ == val && -1 != transport_id_) return true;
             if (val > 65535) return false;
             if (transport_id_ != -1) {
-              LOGGER_DEBUG(this->logger, "SIP port changed for {}, closing existing SIP transport port {}", 
-                std::to_string(val), std::to_string(sip_port_));
+              sw_debug("SIP port changed for {}, closing existing SIP transport port {}",
+                       std::to_string(val),
+                       std::to_string(sip_port_));
               pjsua_transport_close(transport_id_, PJ_FALSE);
             }
             sip_port_ = val;
@@ -83,8 +84,7 @@ SIPPlugin::SIPPlugin(quiddity::Config&& conf)
             if (val.empty()) return false;
             if ("default" == requested_val) val = default_dns_address_;
             if (!netutils::is_valid_IP(val)) {
-              LOGGER_WARN(this->logger,
-                          "not a valid IP address, expected x.y.z.a with x, y, z, a in [0:255].");
+              sw_warning("not a valid IP address, expected x.y.z.a with x, y, z, a in [0:255].");
               return false;
             }
 
@@ -94,9 +94,8 @@ SIPPlugin::SIPPlugin(quiddity::Config&& conf)
             if (!pjsip_->invoke<bool>(
                     [&](PJSIP* ctx) { return ctx->create_resolver(dns_address_); })) {
               dns_address_ = old_dns_address;
-              LOGGER_WARN(this->logger,
-                          "could not set the DNS address (PJSIP), setting the old one {}.",
-                          dns_address_);
+              sw_warning("could not set the DNS address (PJSIP), setting the old one {}.",
+                         dns_address_);
               pjsip_->invoke<bool>([&](PJSIP* ctx) { return ctx->create_resolver(dns_address_); });
               return false;
             }
@@ -118,7 +117,7 @@ SIPPlugin::SIPPlugin(quiddity::Config&& conf)
           "Decompress received streams",
           decompress_streams_)) {
   if (1 == sip_plugin_used_.fetch_or(1)) {
-    LOGGER_WARN(this->logger, "an other sip quiddity is instancied, cannot init");
+    sw_warning("an other sip quiddity is instancied, cannot init");
     is_valid_ = false;
     return;
   }
@@ -205,7 +204,7 @@ void SIPPlugin::apply_log_level_configuration() {
     int log_level = config<MPtr(&InfoTree::branch_get_value)>("log_level").copy_as<int>();
     if (log_level > -1) {
         log_level_ = log_level;
-        LOGGER_DEBUG(this->logger, "sip has set log level from configuration");
+        sw_debug("sip has set log level from configuration");
     }
   }
 
@@ -213,39 +212,38 @@ void SIPPlugin::apply_log_level_configuration() {
     int console_log_level = config<MPtr(&InfoTree::branch_get_value)>("console_log_level").copy_as<int>();
     if (console_log_level > -1) {
         console_log_level_ = console_log_level;
-        LOGGER_DEBUG(this->logger, "sip has set console log level from configuration");
+        sw_debug("sip has set console log level from configuration");
     }
   }
 
   if (config<MPtr(&InfoTree::branch_has_data)>("log_filename")) {
     auto log_filename = config<MPtr(&InfoTree::branch_get_value)>("log_filename");
     log_filename_.assign(log_filename.copy_as<std::string>());
-    LOGGER_DEBUG(this->logger, "sip has set log filename from configuration");
+    sw_debug("sip has set log filename from configuration");
   }
 }
 
 void SIPPlugin::apply_port_configuration() {
   // trying to set port if configuration found
   if (config<MPtr(&InfoTree::branch_has_data)>("port")) {
-    LOGGER_DEBUG(this->logger, "SIP is trying to set port from configuration");
+    sw_debug("SIP is trying to set port from configuration");
     auto port = config<MPtr(&InfoTree::branch_get_value)>("port");
     auto port_str = port.copy_as<std::string>();
     unsigned int val;
     if (!isdigit(port_str[0])) {
-      LOGGER_WARN(this->logger,
-                  "requested local SIP port in config is not a string containing digits: {}",
-                  port_str);
+      sw_warning("requested local SIP port in config is not a string containing digits: {}",
+                 port_str);
       return;
     }
     val = atoi(port_str.c_str());
     if (sip_port_ == val) return;
     if (val > 65535) {
-      LOGGER_WARN(this->logger, "requested local SIP port is higher than 65535: {}", port_str);
+      sw_warning("requested local SIP port is higher than 65535: {}", port_str);
       return;
     }
     sip_port_ = val;
 
-    LOGGER_DEBUG(this->logger, "sip has set port from configuration");
+    sw_debug("sip has set port from configuration");
   }
 }
 
@@ -256,23 +254,23 @@ void SIPPlugin::apply_configuration() {
   std::string turn_user = config<MPtr(&InfoTree::branch_get_value)>("turn_user");
   std::string turn_pass = config<MPtr(&InfoTree::branch_get_value)>("turn_pass");
   if (!stun.empty()) {
-    LOGGER_DEBUG(this->logger, "SIP is trying to set STUN/TURN from configuration");
+    sw_debug("SIP is trying to set STUN/TURN from configuration");
     if (stun_turn_.get()->set_stun_turn(stun, turn, turn_user, turn_pass)) {
-      LOGGER_DEBUG(this->logger, "sip has set STUN/TURN from configuration");
+      sw_debug("sip has set STUN/TURN from configuration");
     } else {
-      LOGGER_WARN(this->logger, "sip failed setting STUN/TURN from configuration");
+      sw_warning("sip failed setting STUN/TURN from configuration");
     }
   }
   // trying to register if a user is given
   std::string user = config<MPtr(&InfoTree::branch_get_value)>("user");
   if (!user.empty()) {
-    LOGGER_DEBUG(this->logger, "SIP is trying to register from configuration");
+    sw_debug("SIP is trying to register from configuration");
     std::string pass = config<MPtr(&InfoTree::branch_get_value)>("pass");
     pjsip_->run([&]() { sip_presence_->register_account(user, pass); });
     if (sip_presence_->registered_) {
-      LOGGER_DEBUG(this->logger, "sip registered using configuration file");
+      sw_debug("sip registered using configuration file");
     } else {
-      LOGGER_WARN(this->logger, "sip failed registration from configuration");
+      sw_warning("sip failed registration from configuration");
     }
   }
 }
@@ -290,7 +288,7 @@ bool SIPPlugin::start_sip_transport() {
   // in pjsip-apps/src/pjsua/pjsua_app.c
 
   if (netutils::is_used(sip_port_)) {
-    LOGGER_WARN(this->logger, "SIP port is not available ({})", std::to_string(sip_port_));
+    sw_warning("SIP port is not available ({})", std::to_string(sip_port_));
     return false;
   }
   pjsua_transport_config cfg;
@@ -298,11 +296,11 @@ bool SIPPlugin::start_sip_transport() {
   cfg.port = sip_port_;
   pj_status_t status = pjsua_transport_create(PJSIP_TRANSPORT_UDP, &cfg, &transport_id_);
   if (status != PJ_SUCCESS) {
-    LOGGER_WARN(this->logger, "Error creating transport");
+    sw_warning("Error creating transport");
     transport_id_ = -1;
     return false;
   }
-  LOGGER_DEBUG(this->logger, "Successfully started SIP transport on port {}", std::to_string(cfg.port));
+  sw_debug("Successfully started SIP transport on port {}", std::to_string(cfg.port));
   return true;
 }
 
@@ -333,8 +331,7 @@ void SIPPlugin::create_quiddity_stream(const std::string& peer_uri,
   }
   auto qrox = qcontainer_->create("extshmsrc", quid_nickname, nullptr);
   if (!qrox) {
-    LOGGER_WARN(this->logger,
-                "Failed to create external shmdata quiddity for pjsip incoming stream.");
+    sw_warning("Failed to create external shmdata quiddity for pjsip incoming stream.");
     return;
   }
   if (!nickname.empty()) {

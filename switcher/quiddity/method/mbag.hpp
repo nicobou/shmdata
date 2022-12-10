@@ -46,10 +46,10 @@ using on_method_disabled_cb_t = std::function<void(const std::string& name)>;
 class MBag {
   friend class Bundle;  // replacing some methods like replace and delete
  public:
-  std::shared_ptr<spdlog::logger> logger;
   MBag() = delete;
   // ctor will own tree and write into .method.
-  MBag(InfoTree::ptr tree,
+  MBag(logger::Logger* logger,
+       InfoTree::ptr tree,
        on_tree_grafted_cb_t on_tree_grafted_cb,
        on_tree_pruned_cb_t on_tree_pruned_cb,
        on_method_created_cb_t on_method_created,
@@ -106,7 +106,7 @@ class MBag {
   meth_id_t make_method(const std::string& strid, InfoTree::ptr tree, M&& meth) {
     auto valid = validate_method_documentation<M>(tree.get());
     if (!valid) {
-      LOGGER_ERROR(this->logger, "method {} could not be installed: {}", strid, valid.msg());
+      logger_->sw_error("method {} could not be installed: {}", strid, valid.msg());
       return 0;
     }
     meths_.emplace(std::make_pair(++counter_, std::make_unique<Method<M>>(std::forward<M>(meth))));
@@ -138,6 +138,7 @@ class MBag {
   }
 
  private:
+  const logger::Logger* logger_;
   meth_id_t counter_{0};
   std::map<meth_id_t, std::unique_ptr<MethodBase>> meths_{};
   std::map<std::string, meth_id_t> ids_{};

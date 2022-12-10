@@ -66,7 +66,7 @@ class Bundle;
 /**
  * The Quiddity class.
  */
-class Quiddity : public SafeBoolIdiom {
+class Quiddity : public SafeBoolIdiom, public logger::Logger {
   friend class bundle::Bundle;  // access to props_ in order to forward properties
   friend class Startable;
   friend class claw::Claw;
@@ -83,7 +83,6 @@ class Quiddity : public SafeBoolIdiom {
   friend struct shmdata::Stat;
 
  public:
-  std::shared_ptr<spdlog::logger> logger;
   using ptr = std::shared_ptr<Quiddity>;
   explicit Quiddity(quiddity::Config&&, claw::Config conf = claw::Config());
   Quiddity() = delete;

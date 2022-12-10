@@ -26,7 +26,6 @@
 #include <shmdata/reader.hpp>
 #include <string>
 
-#include "../logger/logger.hpp"
 #include "../utils/periodic-task.hpp"
 #include "./stat.hpp"
 #include "./switcher-logger.hpp"
@@ -36,7 +35,6 @@ namespace shmdata {
 
 class Follower {
  public:
-  std::shared_ptr<spdlog::logger> logger;
   enum class Direction { writer, reader };
   Follower(quiddity::Quiddity* quid,
            const std::string& path,

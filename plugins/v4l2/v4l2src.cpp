@@ -98,7 +98,7 @@ V4L2Src::V4L2Src(quiddity::Config&& conf)
   update_capture_device();
 
   if (capture_devices_.empty()) {
-    LOGGER_ERROR(this->logger, "no video4linux device detected.");
+    sw_error("no video4linux device detected.");
     is_valid_ = false;
     return;
   }
@@ -151,7 +151,7 @@ std::string V4L2Src::fetch_current_framerate() {
   CaptureDescription& description = capture_devices_[devices_enum_.get_current_index()];
   int fd = open(description.absolute_path_.c_str(), O_RDONLY);
   if (fd < 0) {
-    LOGGER_ERROR(this->logger, "could not open device {}", description.absolute_path_);
+    sw_error("could not open device {}", description.absolute_path_);
     return "";
   }
 
@@ -163,8 +163,7 @@ std::string V4L2Src::fetch_current_framerate() {
 
   if (-1 == ioctl(fd, VIDIOC_G_PARM, &src_parm)) {
     int err = errno;
-    LOGGER_ERROR(
-        this->logger, "could not get video parameters. Error: {}", std::string(strerror(err)));
+    sw_error("could not get video parameters. Error: {}", std::string(strerror(err)));
     return "";
   }
 
@@ -173,7 +172,7 @@ std::string V4L2Src::fetch_current_framerate() {
          << (static_cast<float>(src_parm.parm.capture.timeperframe.denominator) /
              static_cast<float>(src_parm.parm.capture.timeperframe.numerator));
   std::string fps = stream.str();
-  LOGGER_INFO(this->logger, "detected framerate: {}", fps);
+  sw_info("detected framerate: {}", fps);
 
   return fps;
 }
@@ -182,7 +181,7 @@ std::string V4L2Src::fetch_current_resolution() {
   CaptureDescription& description = capture_devices_[devices_enum_.get_current_index()];
   int fd = open(description.absolute_path_.c_str(), O_RDONLY);
   if (fd < 0) {
-    LOGGER_ERROR(this->logger, "could not open device {}", description.absolute_path_);
+    sw_error("could not open device {}", description.absolute_path_);
     return "";
   }
 
@@ -191,9 +190,7 @@ std::string V4L2Src::fetch_current_resolution() {
   struct v4l2_capability vcap;
   if (-1 == ioctl(fd, VIDIOC_QUERYCAP, &vcap)) {
     int err = errno;
-    LOGGER_ERROR(this->logger,
-                 "could not get video capture device id. Error: {}",
-                 std::string(strerror(err)));
+    sw_error("could not get video capture device id. Error: {}", std::string(strerror(err)));
     return "";
   }
 
@@ -211,7 +208,7 @@ std::string V4L2Src::fetch_current_resolution() {
 
   if (-1 == ioctl(fd, VIDIOC_G_FMT, &src_fmt)) {
     int err = errno;
-    LOGGER_ERROR(this->logger, "could not get video format. Error: {}", std::string(strerror(err)));
+    sw_error("could not get video format. Error: {}", std::string(strerror(err)));
     return "";
   }
 
@@ -219,7 +216,7 @@ std::string V4L2Src::fetch_current_resolution() {
   stream << src_fmt.fmt.pix.width << "x" << src_fmt.fmt.pix.height;
   std::string res = stream.str();
 
-  LOGGER_INFO(this->logger, "detected resolution: {}", res);
+  sw_info("detected resolution: {}", res);
   return res;
 }
 
@@ -227,7 +224,7 @@ bool V4L2Src::fetch_available_resolutions() {
   CaptureDescription& description = capture_devices_[devices_enum_.get_current_index()];
   int fd = open(description.absolute_path_.c_str(), O_RDONLY);
   if (fd < 0) {
-    LOGGER_ERROR(this->logger, "could not open device {}", description.absolute_path_);
+    sw_error("could not open device {}", description.absolute_path_);
     return false;
   }
 
@@ -281,7 +278,7 @@ bool V4L2Src::fetch_available_frame_intervals() {
   CaptureDescription& description = capture_devices_[devices_enum_.get_current_index()];
   int fd = open(description.absolute_path_.c_str(), O_RDONLY);
   if (fd < 0) {
-    LOGGER_ERROR(this->logger, "could not open device {}", description.absolute_path_);
+    sw_error("could not open device {}", description.absolute_path_);
     return false;
   }
 
@@ -381,7 +378,7 @@ void V4L2Src::update_pixel_format() {
       [this](const quiddity::property::IndexOrName& val) {
         pixel_format_enum_.select(val);
         set_shm_suffix();
-        LOGGER_DEBUG(this->logger, "pix selected");
+        sw_debug("pix selected");
         fetch_available_resolutions();
         update_device_resolution();
         return true;
@@ -486,9 +483,8 @@ void V4L2Src::update_device_resolution() {
 
   std::string current_res = fetch_current_resolution();
   if (!current_res.empty()) {
-    LOGGER_INFO(this->logger,
-                "Automatically setting resolution for video input {}",
-                capture_devices_[devices_enum_.get_current_index()].file_device_);
+    sw_info("Automatically setting resolution for video input {}",
+            capture_devices_[devices_enum_.get_current_index()].file_device_);
     pmanage<MPtr(&property::PBag::set<quiddity::property::IndexOrName>)>(resolutions_id_,
                                                                          current_res);
   } else {
@@ -570,9 +566,8 @@ void V4L2Src::update_device_framerate() {
 
   std::string current_framerate = fetch_current_framerate();
   if (!current_framerate.empty()) {
-    LOGGER_INFO(this->logger,
-                "Automatically setting framerate for video input {}",
-                capture_devices_[devices_enum_.get_current_index()].file_device_);
+    sw_info("Automatically setting framerate for video input {}",
+            capture_devices_[devices_enum_.get_current_index()].file_device_);
     if (framerates_enum_id_ > 0) {
       pmanage<MPtr(&property::PBag::set<quiddity::property::IndexOrName>)>(framerates_enum_id_,
                                                                            current_framerate);
@@ -612,7 +607,7 @@ void V4L2Src::update_tv_standard() {
 
 bool V4L2Src::remake_elements() {
   if (capture_devices_.empty()) {
-    LOGGER_ERROR(this->logger, "no capture device available for starting capture");
+    sw_error("no capture device available for starting capture");
     return false;
   }
   if (!gst::UGstElem::renew(v4l2src_, {"device", "norm", "io-mode"}) ||
@@ -620,7 +615,7 @@ bool V4L2Src::remake_elements() {
       !gst::UGstElem::renew(deinterlace_, {"mode", "method"}) ||
       !gst::UGstElem::renew(videorate_) || !gst::UGstElem::renew(capsfilter_, {"caps"}) ||
       !gst::UGstElem::renew(shmsink_, {"socket-path", "extra-caps-properties"})) {
-    LOGGER_ERROR(this->logger, "could not renew elements for video capture");
+    sw_error("could not renew elements for video capture");
     return false;
   }
   return true;
@@ -640,7 +635,7 @@ void V4L2Src::set_device_id(const std::string& file_path, const std::string& id)
   int fd = open(file_path.c_str(), O_RDONLY);
   if (fd < 0) {
     int err = errno;
-    LOGGER_ERROR(this->logger, "could not set device id. Error: {}", std::string(strerror(err)));
+    sw_error("could not set device id. Error: {}", std::string(strerror(err)));
     return;
   }
   On_scope_exit { close(fd); };
@@ -648,8 +643,7 @@ void V4L2Src::set_device_id(const std::string& file_path, const std::string& id)
   struct v4l2_capability vcap;
   if (-1 == ioctl(fd, VIDIOC_QUERYCAP, &vcap)) {
     int err = errno;
-    LOGGER_ERROR(
-        this->logger, "could not get device capabilities. Error: {}", std::string(strerror(err)));
+    sw_error("could not get device capabilities. Error: {}", std::string(strerror(err)));
     return;
   }
   const auto bus_info = std::string((char*)vcap.bus_info);
@@ -658,10 +652,8 @@ void V4L2Src::set_device_id(const std::string& file_path, const std::string& id)
         return bus_info == desc.bus_info_;
       });
   if (capture_devices_.end() == it) {
-    LOGGER_ERROR(
-        this->logger,
-        "could not set device id. % seems to be a video device, but is not listed internally",
-        file_path);
+    sw_error("could not set device id. % seems to be a video device, but is not listed internally",
+             file_path);
     return;
   }
   it->device_id_ = id;
@@ -670,7 +662,7 @@ void V4L2Src::set_device_id(const std::string& file_path, const std::string& id)
 bool V4L2Src::inspect_file_device(const std::string& file_path) {
   int fd = open(file_path.c_str(), O_RDONLY);
   if (fd < 0) {
-    LOGGER_ERROR(this->logger, "could not open device {}", file_path);
+    sw_error("could not open device {}", file_path);
     return false;
   }
   On_scope_exit { close(fd); };
@@ -680,8 +672,7 @@ bool V4L2Src::inspect_file_device(const std::string& file_path) {
   struct v4l2_capability vcap;
   if (-1 == ioctl(fd, VIDIOC_QUERYCAP, &vcap)) {
     int err = errno;
-    LOGGER_ERROR(
-        this->logger, "could not get device capabilities. Error: {}", std::string(strerror(err)));
+    sw_error("could not get device capabilities. Error: {}", std::string(strerror(err)));
     return false;
   }
   description.file_device_ = file_path;
@@ -721,15 +712,14 @@ bool V4L2Src::inspect_file_device(const std::string& file_path) {
         description.pixel_formats_.push_back(
             std::make_tuple(fmt.pixelformat, tmp, reinterpret_cast<const char*>(fmt.description)));
       } else {
-        LOGGER_WARN(
-            this->logger, "pixel format {} not supported", pixel_format_to_string(fmt.pixelformat));
+        sw_warning("pixel format {} not supported", pixel_format_to_string(fmt.pixelformat));
       }
     }
     fmt.index++;
   }
 
   if (default_pixel_format == 0) {
-    LOGGER_ERROR(this->logger, "no default pixel format found for {}", file_path);
+    sw_error("no default pixel format found for {}", file_path);
     return false;
   }
 
@@ -787,7 +777,7 @@ std::vector<std::string> V4L2Src::get_file_names_with_prefix(const std::string& 
 bool V4L2Src::check_folder_for_v4l2_devices() {
   auto files = get_file_names_with_prefix("/dev/", "video");
   if (files.empty()) {
-    LOGGER_WARN(this->logger, "no v4l2 device found");
+    sw_warning("no v4l2 device found");
     return false;
   }
   for (auto& it : files) inspect_file_device("/dev/" + it);
@@ -883,7 +873,7 @@ bool V4L2Src::stop() {
 
 bool V4L2Src::configure_capture() {
   if (capture_devices_.empty()) {
-    LOGGER_ERROR(this->logger, "no device available for capture");
+    sw_error("no device available for capture");
     return false;
   }
   g_object_set(
@@ -929,7 +919,7 @@ bool V4L2Src::configure_capture() {
     caps = caps + ", framerate=(fraction)" + std::to_string(custom_framerate_.numerator()) + "/" +
            std::to_string(custom_framerate_.denominator());
   }
-  LOGGER_DEBUG(this->logger, "caps for v4l2src: {}", caps);
+  sw_debug("caps for v4l2src: {}", caps);
   GstCaps* usercaps = gst_caps_from_string(caps.c_str());
   g_object_set(G_OBJECT(capsfilter_.get_raw()), "caps", usercaps, nullptr);
   gst_caps_unref(usercaps);
@@ -1104,7 +1094,7 @@ GstStructure* V4L2Src::gst_v4l2_object_v4l2fourcc_to_structure(guint32 fourcc) {
 }
 
 void V4L2Src::on_gst_error(GstObject*, GError* err) {
-  LOGGER_ERROR(this->logger, "v4l2 camera error: {}", std::string(err->message));
+  sw_error("v4l2 camera error: {}", std::string(err->message));
   self_destruct();
 }
 
@@ -1120,7 +1110,7 @@ InfoTree::ptr V4L2Src::on_saving() {
 
 void V4L2Src::on_loading(InfoTree::ptr&& tree) {
   if (!tree || tree->empty()) {
-    LOGGER_WARN(this->logger, "loading deprecated v4l2src device save: devices may swap");
+    sw_warning("loading deprecated v4l2src device save: devices may swap");
     return;
   }
   std::string device_id = tree->branch_read_data<std::string>(".device_id");
@@ -1133,7 +1123,7 @@ void V4L2Src::on_loading(InfoTree::ptr&& tree) {
           return capt.bus_info_ == bus_id;
         });
     if (capture_devices_.end() == it)
-      LOGGER_WARN(this->logger, "device not found at port {}", bus_id);
+      sw_warning("device not found at port {}", bus_id);
     else
       pmanage<MPtr(&property::PBag::set<quiddity::property::IndexOrName>)>(
           devices_id_, quiddity::property::IndexOrName(it - capture_devices_.begin()));
@@ -1143,7 +1133,7 @@ void V4L2Src::on_loading(InfoTree::ptr&& tree) {
           return capt.device_id_ == device_id;
         });
     if (capture_devices_.end() == it)
-      LOGGER_WARN(this->logger, "device {} not found", device_id);
+      sw_warning("device {} not found", device_id);
     else
       pmanage<MPtr(&property::PBag::set<quiddity::property::IndexOrName>)>(
           devices_id_, quiddity::property::IndexOrName(it - capture_devices_.begin()));

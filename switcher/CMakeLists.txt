@@ -5,6 +5,7 @@ if(CAN_CAST_FUNCTION_TYPE)
 endif()
 
 add_library(${SWITCHER_LIBRARY} SHARED
+  configuration/configurable.cpp
   configuration/configuration.cpp
   gst/audio-codec.cpp
   gst/decodebin-to-shmdata.cpp
@@ -27,6 +28,8 @@ add_library(${SWITCHER_LIBRARY} SHARED
   infotree/key-val-serializer.cpp
   infotree/json-serializer.cpp
   infotree/information-tree.cpp
+  logger/log.cpp
+  logger/logger.cpp
   quiddities/audio-test-source.cpp
   quiddities/dummy-sink.cpp
   quiddities/empty-quiddity.cpp

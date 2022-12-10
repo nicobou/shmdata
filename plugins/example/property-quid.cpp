@@ -256,19 +256,17 @@ PropertyQuid::PropertyQuid(quiddity::Config&& conf)
                                                         10,
                                                         10)  // max num/denom
       ) {
-  LOGGER_DEBUG(this->logger,
-               "int_id_ is {}, unsigned_int_id_ is {}",
-               std::to_string(pmanage<MPtr(&property::PBag::get<int>)>(int_id_)),
-               std::to_string(pmanage<MPtr(&property::PBag::get<unsigned int>)>(unsigned_int_id_)));
+  sw_debug("int_id_ is {}, unsigned_int_id_ is {}",
+           std::to_string(pmanage<MPtr(&property::PBag::get<int>)>(int_id_)),
+           std::to_string(pmanage<MPtr(&property::PBag::get<unsigned int>)>(unsigned_int_id_)));
 
   pmanage<MPtr(&property::PBag::set<MyTuple>)>(
       tuple_id_, std::make_tuple<long long, float, std::string>(2, 2.2, "a22"));
 
-  LOGGER_DEBUG(this->logger,
-               "tuple_ is {} {} {}",
-               std::to_string(std::get<0>(tuple_)) /*2*/,
-               std::to_string(std::get<1>(tuple_)) /* 2.2 */,
-               std::get<2>(tuple_) /* a22*/);
+  sw_debug("tuple_ is {} {} {}",
+           std::to_string(std::get<0>(tuple_)) /*2*/,
+           std::to_string(std::get<1>(tuple_)) /* 2.2 */,
+           std::get<2>(tuple_) /* a22*/);
 
   // creating some custom infos
   InfoTree::ptr tree = InfoTree::make();
@@ -278,7 +276,7 @@ PropertyQuid::PropertyQuid(quiddity::Config&& conf)
   tree->graft(".child1.child2.bla2", InfoTree::make("hub"));
   // attaching it to the quiddity (at the root)
   graft_tree(".custom.information.", tree);
-  LOGGER_DEBUG(this->logger, "hello from plugin");
+  sw_debug("hello from plugin");
 }
 
 }  // namespace quiddities

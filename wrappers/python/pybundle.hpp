@@ -22,7 +22,6 @@
 #define __SWITCHER_PYBUNDLE_H__
 
 #include <Python.h>
-#include <spdlog/spdlog.h>
 
 class BundleManager {
  public:

@@ -22,13 +22,14 @@
 #define __SWITCHER_PYLOGGER_H__
 
 #include <Python.h>
-#include <spdlog/spdlog.h>
 
 #include <memory>
 
+#include "switcher/logger/logger.hpp"
+
 class pyLogger {
  public:
-  using pyLoggerObject = struct { PyObject_HEAD std::shared_ptr<spdlog::logger> logger; };
+  using pyLoggerObject = struct { PyObject_HEAD switcher::logger::Logger* logger; };
   static PyMethodDef methods[];
   static PyTypeObject pyType;
 

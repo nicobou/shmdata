@@ -39,7 +39,7 @@
 namespace switcher {
 namespace quiddity {
 
-quiddity::Factory::Factory() : logger(spdlog::get("switcher")) {
+quiddity::Factory::Factory(logger::Logger* logger) : logger_(logger) {
   abstract_factory_.register_kind<quiddities::AudioTestSource>(
       DocumentationRegistry::get()->get_type_from_kind("AudioTestSource"));
   abstract_factory_.register_kind<quiddities::DummySink>(
@@ -87,7 +87,7 @@ bool quiddity::Factory::scan_dir(const std::string& directory_path) {
     char* absolute_path = g_file_get_path(descend);  // g_file_get_relative_path (dir, descend);
     // trying to load the module
     if (g_str_has_suffix(absolute_path, ".so") || g_str_has_suffix(absolute_path, ".dylib")) {
-      LOGGER_DEBUG(this->logger, "loading module {}", absolute_path);
+      logger_->sw_debug("loading module {}", absolute_path);
       load_plugin(absolute_path);
     }
     g_free(absolute_path);
@@ -96,8 +96,8 @@ bool quiddity::Factory::scan_dir(const std::string& directory_path) {
   }
   error = nullptr;
   res = g_file_enumerator_close(enumerator, nullptr, &error);
-  if (res != TRUE) LOGGER_DEBUG(this->logger, "scanning dir: file enumerator not properly closed");
-  if (error != nullptr) LOGGER_DEBUG(this->logger, "scanning dir: error not nullptr");
+  if (res != TRUE) logger_->sw_debug("scanning dir: file enumerator not properly closed");
+  if (error != nullptr) logger_->sw_debug("scanning dir: error not nullptr");
   g_object_unref(dir);
 
   plugin_dirs_.emplace_back(directory_path);
@@ -136,13 +136,13 @@ bool quiddity::Factory::exists(const std::string& kind) const {
 bool quiddity::Factory::load_plugin(const std::string& filename) {
   auto plugin = std::make_unique<PluginLoader>(filename);
   if (!*plugin.get()) {
-    LOGGER_WARN(this->logger, plugin->msg());
+    logger_->sw_warning(plugin->msg());
     return false;
   }
   std::string kind = plugin->get_kind();
   // ignore already loaded plugin
   if (plugins_.end() != plugins_.find(kind)) {
-    LOGGER_DEBUG(this->logger, "ignoring already loaded plugin ({} from file {})", kind, filename);
+    logger_->sw_debug("ignoring already loaded plugin ({} from file {})", kind, filename);
     return false;
   }
 

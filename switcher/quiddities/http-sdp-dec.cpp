@@ -81,8 +81,8 @@ HTTPSDPDec::HTTPSDPDec(quiddity::Config&& conf)
 }
 
 void HTTPSDPDec::init_httpsdpdec() {
-  if (!gst::UGstElem::renew(souphttpsrc_)) LOGGER_WARN(this->logger, "error renewing souphttpsrc_");
-  if (!gst::UGstElem::renew(sdpdemux_)) LOGGER_WARN(this->logger, "error renewing sdpdemux_");
+  if (!gst::UGstElem::renew(souphttpsrc_)) sw_warning("error renewing souphttpsrc_");
+  if (!gst::UGstElem::renew(sdpdemux_)) sw_warning("error renewing sdpdemux_");
   g_signal_connect(GST_BIN(sdpdemux_.get_raw()),
                    "element-added",
                    (GCallback)HTTPSDPDec::on_new_element_in_sdpdemux,
@@ -143,14 +143,14 @@ void HTTPSDPDec::httpsdpdec_pad_added_cb(GstElement* /*object */, GstPad* pad, g
         context->configure_shmdatasink(el, media_type, media_label);
       },
       [context]() {
-        LOGGER_WARN(context->logger, "discarding uncomplete custom frame due to a network loss");
+        context->sw_warning("discarding uncomplete custom frame due to a network loss");
       },
       nullptr,
       context->decompress_streams_);
   if (!decodebin->invoke_with_return<gboolean>([context](GstElement* el) {
         return gst_bin_add(GST_BIN(context->gst_pipeline_->get_pipeline()), el);
       })) {
-    LOGGER_WARN(context->logger, "decodebin cannot be added to pipeline");
+    context->sw_warning("decodebin cannot be added to pipeline");
   }
   GstPad* sinkpad = decodebin->invoke_with_return<GstPad*>(
       [](GstElement* el) { return gst_element_get_static_pad(el, "sink"); });
@@ -185,7 +185,7 @@ void HTTPSDPDec::uri_to_shmdata() {
   init_httpsdpdec();
   g_object_set_data(
       G_OBJECT(sdpdemux_.get_raw()), "on-error-gsource", (gpointer)on_error_.back().get());
-  LOGGER_DEBUG(this->logger, "httpsdpdec: to_shmdata set uri {}", uri_);
+  sw_debug("httpsdpdec: to_shmdata set uri {}", uri_);
   if (!is_dataurisrc_)  // for souphttpsrc
     g_object_set(G_OBJECT(souphttpsrc_.get_raw()), "location", uri_.c_str(), nullptr);
   else  // for dataurisrc

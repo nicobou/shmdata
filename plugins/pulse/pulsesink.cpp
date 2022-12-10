@@ -68,7 +68,7 @@ PulseSink::PulseSink(quiddity::Config&& conf)
                                            nullptr);
   devices_cond_.wait_for(lock, 1s);
   if (!connected_to_pulse_) {
-    LOGGER_INFO(this->logger, "Not connected to pulse, cannot initialize.");
+    sw_info("Not connected to pulse, cannot initialize.");
     is_valid_ = false;
     return;
   }
@@ -101,15 +101,14 @@ gboolean PulseSink::async_get_pulse_devices(void* user_data) {
   context->pa_mainloop_api_ = pa_glib_mainloop_get_api(context->pa_glib_mainloop_);
   context->pa_context_ = pa_context_new(context->pa_mainloop_api_, nullptr);
   if (nullptr == context->pa_context_) {
-    LOGGER_DEBUG(context->logger, "PulseSink:: pa_context_new() failed.");
+    context->sw_debug("PulseSink:: pa_context_new() failed.");
     return FALSE;
   }
   pa_context_set_state_callback(context->pa_context_, pa_context_state_callback, context);
   if (pa_context_connect(context->pa_context_, context->server_, (pa_context_flags_t)0, nullptr) <
       0) {
-    LOGGER_DEBUG(context->logger,
-                 "pa_context_connect() failed: {}",
-                 std::string(pa_strerror(pa_context_errno(context->pa_context_))));
+    context->sw_debug("pa_context_connect() failed: {}",
+                      std::string(pa_strerror(pa_context_errno(context->pa_context_))));
     return FALSE;
   }
   context->connected_to_pulse_ = true;
@@ -154,9 +153,8 @@ void PulseSink::pa_context_state_callback(pa_context* pulse_context, void* user_
     case PA_CONTEXT_FAILED:
       break;
     default:
-      LOGGER_DEBUG(context->logger,
-                   "PulseSink Context error: {}",
-                   std::string(pa_strerror(pa_context_errno(pulse_context))));
+      context->sw_debug("PulseSink Context error: {}",
+                        std::string(pa_strerror(pa_context_errno(pulse_context))));
   }
 }
 
@@ -166,9 +164,8 @@ void PulseSink::get_sink_info_callback(pa_context* pulse_context,
                                        void* user_data) {
   PulseSink* context = static_cast<PulseSink*>(user_data);
   if (is_last < 0) {
-    LOGGER_DEBUG(context->logger,
-                 "Failed to get sink information: {}",
-                 std::string(pa_strerror(pa_context_errno(pulse_context))));
+    context->sw_debug("Failed to get sink information: {}",
+                      std::string(pa_strerror(pa_context_errno(pulse_context))));
     return;
   }
   if (is_last) {
@@ -321,10 +318,9 @@ void PulseSink::on_shmreader_data(void* raw_data, size_t data_size) {
       static_cast<std::size_t>(drift_observer_.set_current_time_info(pa_ts_, duration));
   --debug_buffer_usage_;
   if (0 == debug_buffer_usage_) {
-    LOGGER_DEBUG(logger,
-                 "buffer load is {}, ratio is {}",
-                 std::to_string(ring_buffers_[0].get_usage()),
-                 std::to_string(drift_observer_.get_ratio()));
+    sw_debug("buffer load is {}, ratio is {}",
+             std::to_string(ring_buffers_[0].get_usage()),
+             std::to_string(drift_observer_.get_ratio()));
     debug_buffer_usage_ = 1000;
   }
   // Smoothly reduce latency if the ring buffer contain more than 10ms of audio
@@ -342,16 +338,15 @@ void PulseSink::on_shmreader_data(void* raw_data, size_t data_size) {
     });
 
     if (emplaced != new_size)
-      LOGGER_WARN(logger, "overflow of {} samples", std::to_string(new_size - emplaced));
+      sw_warning("overflow of {} samples", std::to_string(new_size - emplaced));
   }
 }
 
 void PulseSink::on_shmreader_connected(const std::string& shmdata_caps) {
   shmf_caps_ = shmdata::caps::AudioCaps(shmdata_caps);
-  LOGGER_INFO(
-      this->logger, "Pulsesink connected to a shmdata with following caps: {}", shmdata_caps);
+  sw_info("Pulsesink connected to a shmdata with following caps: {}", shmdata_caps);
   if (!shmf_caps_) {
-    LOGGER_WARN(this->logger, "Pulsesink unsupported caps: {}", shmdata_caps);
+    sw_warning("Pulsesink unsupported caps: {}", shmdata_caps);
     return;
   }
 
@@ -359,8 +354,7 @@ void PulseSink::on_shmreader_connected(const std::string& shmdata_caps) {
   std::vector<utils::AudioRingBuffer<float>> tmp(shmf_caps_.channels());
   std::swap(ring_buffers_, tmp);
   // restarting resampler
-  audio_resampler_ =
-      std::make_unique<utils::AudioResampler<float>>(this->logger, shmf_caps_.channels());
+  audio_resampler_ = std::make_unique<utils::AudioResampler<float>>(this, shmf_caps_.channels());
   // creating the pulseaudio stream
   gst::utils::g_idle_add_full_with_context(
       mainloop_->get_main_context(), G_PRIORITY_DEFAULT_IDLE, async_create_stream, this, nullptr);
@@ -376,10 +370,10 @@ gboolean PulseSink::async_create_stream(void* user_data) {
   PulseSink* context = static_cast<PulseSink*>(user_data);
   auto channels = context->shmf_caps_.channels();
   if (channels > 32) {  // 32 is the maximum number of channels with pulseaudio
-    LOGGER_ERROR(context->logger,
-                 "Cannot create pulseaudio streams with more than 32 channels (audio shmdata has "
-                 "{} channels)",
-                 context->shmf_caps_.channels());
+    context->sw_error(
+        "Cannot create pulseaudio streams with more than 32 channels (audio shmdata has "
+        "{} channels)",
+        context->shmf_caps_.channels());
     return FALSE;
   }
 
@@ -400,13 +394,13 @@ gboolean PulseSink::async_create_stream(void* user_data) {
   context->pa_stream_ =
       pa_stream_new(context->pa_context_, context->get_nickname().c_str(), &ss, nullptr);
   if (context->pa_stream_ == nullptr) {
-    LOGGER_ERROR(context->logger, "Pulseaudio streams failed to create");
+    context->sw_error("Pulseaudio streams failed to create");
     return FALSE;
   }
 
   if (pa_stream_connect_playback(context->pa_stream_, nullptr, &attr, flags, nullptr, nullptr) !=
       0) {
-    LOGGER_ERROR(context->logger, "Pulseaudio failed to connect playback");
+    context->sw_error("Pulseaudio failed to connect playback");
     return FALSE;
   }
   pa_stream_set_write_callback(context->pa_stream_, stream_write_cb, context);
@@ -431,7 +425,7 @@ void PulseSink::stream_write_cb(pa_stream* p, size_t nbytes, void* user_data) {
     void* data;
 
     if ((nbytes = pa_stream_writable_size(p)) == (size_t)-1) {
-      LOGGER_ERROR(context->logger, "Pulseaudio stream not writable");
+      context->sw_error("Pulseaudio stream not writable");
     }
 
     if (nbytes <= 0) break;
@@ -442,13 +436,13 @@ void PulseSink::stream_write_cb(pa_stream* p, size_t nbytes, void* user_data) {
     if (context->ring_buffers_.empty() ||
         (context->shmf_caps_.channels() > 0 && context->ring_buffers_[0].get_usage() < nframes)) {
       write_zero = true;
-      LOGGER_INFO(context->logger,
-                  "pulsesink: ring buffer empty or not enough sample available for playback. "
-                  "Writing zeros.");
+      context->sw_info(
+          "pulsesink: ring buffer empty or not enough sample available for playback. "
+          "Writing zeros.");
     }
 
     if (pa_stream_begin_write(p, &data, &nbytes) != 0) {
-      LOGGER_ERROR(context->logger, "Pulseaudio failed to begin write");
+      context->sw_error("Pulseaudio failed to begin write");
     }
     for (unsigned int i = 0; i < context->shmf_caps_.channels(); ++i) {
       if (!write_zero) {
@@ -461,7 +455,7 @@ void PulseSink::stream_write_cb(pa_stream* p, size_t nbytes, void* user_data) {
     }
 
     if (pa_stream_write(p, data, nbytes, nullptr, 0, PA_SEEK_RELATIVE) != 0) {
-      LOGGER_ERROR(context->logger, "Pulseaudio failed write into the stream");
+      context->sw_error("Pulseaudio failed write into the stream");
     }
   }
 }

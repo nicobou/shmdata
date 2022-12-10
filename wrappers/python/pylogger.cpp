@@ -1,4 +1,27 @@
+/*
+ * This file is part of libswitcher.
+ *
+ * libswitcher is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General
+ * Public License along with this library; if not, write to the
+ * Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+ * Boston, MA 02111-1307, USA.
+ *
+ */
+
 #include "./pylogger.hpp"
+
+#include "pyswitch.hpp"
+#include "switcher/switcher.hpp"
 
 PyObject* pyLogger::tp_new(PyTypeObject* type, PyObject* args, PyObject* kwds) {
   pyLoggerObject* self;
@@ -7,55 +30,54 @@ PyObject* pyLogger::tp_new(PyTypeObject* type, PyObject* args, PyObject* kwds) {
 }
 
 int pyLogger::tp_init(pyLoggerObject* self, PyObject* args, PyObject* kwds) {
-  self->logger = spdlog::get("switcher");
+  PyObject* pyswitch = nullptr;
+  if (!PyArg_ParseTuple(args, "O", &pyswitch)) return -1;
+  self->logger = reinterpret_cast<pySwitch::pySwitchObject*>(pyswitch)->switcher.get();
+  if (!self->logger) return -1;
   return 0;
 }
 
-void pyLogger::tp_dealloc(pyLoggerObject* self) {
-  std::shared_ptr<spdlog::logger> empty;
-  self->logger.swap(empty);
-  Py_TYPE(self)->tp_free((PyObject*)self);
-}
+void pyLogger::tp_dealloc(pyLoggerObject* self) { Py_TYPE(self)->tp_free((PyObject*)self); }
 
 PyObject* pyLogger::trace(pyLoggerObject* self, PyObject* args, PyObject* kwds) {
   const char* msg = nullptr;
   if (!PyArg_ParseTuple(args, "s", &msg)) Py_RETURN_FALSE;
-  self->logger->trace(msg);
+  self->logger->sw_trace(msg);
   Py_RETURN_TRUE;
 }
 
 PyObject* pyLogger::debug(pyLoggerObject* self, PyObject* args, PyObject* kwds) {
   const char* msg = nullptr;
   if (!PyArg_ParseTuple(args, "s", &msg)) Py_RETURN_FALSE;
-  self->logger->debug(msg);
+  self->logger->sw_debug(msg);
   Py_RETURN_TRUE;
 }
 
 PyObject* pyLogger::info(pyLoggerObject* self, PyObject* args, PyObject* kwds) {
   const char* msg = nullptr;
   if (!PyArg_ParseTuple(args, "s", &msg)) Py_RETURN_FALSE;
-  self->logger->info(msg);
+  self->logger->sw_info(msg);
   Py_RETURN_TRUE;
 }
 
 PyObject* pyLogger::warn(pyLoggerObject* self, PyObject* args, PyObject* kwds) {
   const char* msg = nullptr;
   if (!PyArg_ParseTuple(args, "s", &msg)) Py_RETURN_FALSE;
-  self->logger->warn(msg);
+  self->logger->sw_warning(msg);
   Py_RETURN_TRUE;
 }
 
 PyObject* pyLogger::error(pyLoggerObject* self, PyObject* args, PyObject* kwds) {
   const char* msg = nullptr;
   if (!PyArg_ParseTuple(args, "s", &msg)) Py_RETURN_FALSE;
-  self->logger->error(msg);
+  self->logger->sw_error(msg);
   Py_RETURN_TRUE;
 }
 
 PyObject* pyLogger::critical(pyLoggerObject* self, PyObject* args, PyObject* kwds) {
   const char* msg = nullptr;
   if (!PyArg_ParseTuple(args, "s", &msg)) Py_RETURN_FALSE;
-  self->logger->critical(msg);
+  self->logger->sw_critical(msg);
   Py_RETURN_TRUE;
 }
 

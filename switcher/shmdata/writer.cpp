@@ -30,7 +30,7 @@ Writer::Writer(quiddity::Quiddity* quid,
     : quid_(quid),
       shmpath_(path),
       data_type_(data_descr),
-      shmlog_(),
+      shmlog_(quid),
       shm_(shmpath_, memsize, data_type_, &shmlog_),
       task_(shm_ ? std::make_unique<PeriodicTask<>>([this]() { this->update_quid_stats(); },
                                                     Stat::kDefaultUpdateInterval)

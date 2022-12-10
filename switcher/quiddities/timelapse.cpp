@@ -57,10 +57,7 @@ Timelapse::Timelapse(quiddity::Config&& conf)
             if (!img_dir_.empty() && img_dir_.back() != '/') img_dir_ += '/';
             auto file_prepared = fileutils::prepare_writable_dir(val);
             if (!file_prepared.first) {
-              LOGGER_WARN(this->logger,
-                          "error preparing {} directory for writing: {}",
-                          val,
-                          file_prepared.second);
+              sw_warning("error preparing {} directory for writing: {}", val, file_prepared.second);
               return false;
             }
             updated_config_.store(true);

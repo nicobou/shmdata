@@ -19,7 +19,6 @@
 
 #include "./configuration.hpp"
 
-#include <spdlog/sinks/rotating_file_sink.h>
 #include <unistd.h>
 
 #include <fstream>
@@ -34,46 +33,38 @@ namespace fu = fileutils;
 
 const int Configuration::kMaxConfigurationFileSize = 100000000;  // 100MB
 
-Configuration::Configuration(bool debug, void_func_t _post_load, void_func_t _post_file_sink)
-    : debug_(debug),
-      post_load_(_post_load),
-      post_file_sink_(_post_file_sink),
-      logger_(spdlog::get("switcher")) {
+  Configuration::Configuration(std::function<void()> on_reloaded) : on_reloaded_(on_reloaded){
   // intialize default config tree from the `global configuration file`
-  const fs::path config_file_path = this->get_default_global_path();
+  const fs::path config_file_path = get_default_global_path();
 
   // init configuration from file
-  if (!this->from_file(config_file_path)) {
+  if (!from_file(config_file_path)) {
     // set a default config if anything went wrong
     configuration_ = InfoTree::make();
-    set_defaults();
   }
+  set_defaults();
 }
 
-bool Configuration::from_file(const std::string& file_path) {
+BoolLog Configuration::from_file(const std::string& file_path) {
   // check for file existance on disk
   if (!fs::is_regular_file(file_path)) {
-    LOGGER_DEBUG(logger_, "file {} does not exist", file_path);
-    return false;
+    return BoolLog(false, "file " + file_path + " does not exist");
   }
   // opening file
   std::ifstream file_stream(file_path);
   if (!file_stream) {
-    LOGGER_DEBUG(logger_, "cannot open {} for loading configuration", file_path);
-    return false;
+    return BoolLog(false, "cannot open " + file_path + " for loading configuration");
   }
   // get file content into a string
   std::string config;
   file_stream.seekg(0, std::ios::end);
   auto size = file_stream.tellg();
   if (0 == size) {
-    LOGGER_WARN(logger_, "file {} is empty", file_path);
-    return false;
+    return BoolLog(false, "file " + file_path + " is empty");
   }
   if (size > kMaxConfigurationFileSize) {
-    LOGGER_WARN(
-        logger_, "file {} is too large, max is {:d} bytes", file_path, kMaxConfigurationFileSize);
-    return false;
+    return BoolLog(false, "file " + file_path + " is too large, max is "
+		   + std::to_string(kMaxConfigurationFileSize)+ " bytes");
   }
   config.reserve(size);
   file_stream.seekg(0, std::ios::beg);
@@ -81,81 +72,39 @@ bool Configuration::from_file(const std::string& file_path) {
   // building the tree
   auto tree = infotree::json::deserialize(config);
   if (!tree) {
-    LOGGER_WARN(logger_, "configuration tree cannot be constructed from {}", file_path);
-    return false;
+    return BoolLog(false, "configuration tree cannot be constructed from " + file_path);
   }
 
   file_stream.close();
 
   // writing new configuration
-  configuration_ = tree;
+  configuration_ = InfoTree::merge(configuration_.get(), tree.get());
 
   set_defaults();
-  return true;
+  if (on_reloaded_) on_reloaded_();
+  return BoolLog(true);
 }
 
 bool Configuration::from_tree(const InfoTree* tree) {
-  configuration_ = InfoTree::copy(tree);
+  configuration_ = InfoTree::merge(configuration_.get(), tree);
   set_defaults();
+  if (on_reloaded_) on_reloaded_();
   return true;
 }
 
 void Configuration::set_defaults() {
-  // check for default `logs` settings
-  std::string filepath = this->get_value(".logs.filepath");
-  if (filepath.empty()) {
-    filepath = std::string(this->get_default_log_path());
-    // configure log file path
-    this->set_value(".logs.filepath", filepath);
-  }
-
-  size_t max_files = this->get_value(".logs.max_files");
-  if (!max_files) {
-    max_files = 3;
-    this->set_value(".logs.max_files", max_files);
-  }
-
-  size_t max_size = this->get_value(".logs.max_size");
-  if (!max_size) {
-    max_size = 1048576 * 100;  // 100MB
-    this->set_value(".logs.max_size", max_size);
-  } else {
-    max_size = 1048576 * max_size;
-    this->set_value(".logs.max_size", max_size);
-  }
-
-  // append file sink into logger `sinks` vector
-  auto file_sink =
-      std::make_shared<spdlog::sinks::rotating_file_sink_mt>(filepath, max_size, max_files);
-  logger_->sinks().push_back(file_sink);
-
-  // set logger pattern
-  post_file_sink_();
-
-  // check log level
-  const std::string level_name = this->get_value(".logs.log_level");
-  auto level = spdlog::level::from_str(level_name);
-  logger_->set_level(level);
-
-  // debug takes priority over configured log level
-  if (debug_ && level > spdlog::level::debug) {
-    this->set_value(".logs.log_level", "debug");
-    logger_->set_level(spdlog::level::debug);
-  }
 
   // check for default `shm` settings
-  std::string shmdir = this->get_value(".shm.directory");
+  const std::string shmdir = get_value(".shm.directory");
   if (shmdir.empty()) {
     auto* xdg_runtime_dir_env = std::getenv("XDG_RUNTIME_DIR");
     const fs::path shmdir_path =
         fs::path(xdg_runtime_dir_env ? std::string(xdg_runtime_dir_env) : std::string("/tmp"));
-    this->set_value(".shm.directory", shmdir_path.c_str());
+    set_value(".shm.directory", shmdir_path.c_str());
   }
 
-  std::string shmprefix = this->get_value(".shm.prefix");
-  if (shmprefix.empty()) this->set_value(".shm.prefix", "switcher_");
-
-  post_load_();
+  const std::string shmprefix = get_value(".shm.prefix");
+  if (shmprefix.empty()) set_value(".shm.prefix", "switcher_");
 }
 
 const InfoTree::ptr Configuration::get() { return configuration_; }
@@ -170,17 +119,6 @@ fs::path Configuration::get_default_global_path() {
     return (!env_xch.empty() ? fs::path(env_xch) : default_xch) / "switcher" / "global.json";
   } else {
     return "/etc/switcher/global.json";
-  }
-}
-
-fs::path Configuration::get_default_log_path() {
-  if (getgid()) {
-    const auto xsh_env = std::getenv("XDG_STATE_HOME");
-    const auto xsh_default_path = fs::path(std::getenv("HOME")) / ".local" / "state";
-    const auto xsh_dir = fs::path(xsh_env ? std::string(xsh_env) : std::string(xsh_default_path));
-    return xsh_dir / "switcher" / "logs" / "switcher.log";
-  } else {  // running as root, use default log file path
-    return "/var/log/switcher/switcher.log";
   }
 }
 
@@ -203,17 +141,13 @@ std::vector<fs::path> Configuration::list_extra_configs() {
   return extra_configs;
 };
 
-std::string Configuration::get_extra_config(const std::string& name) {
+BoolLog Configuration::get_extra_config(const std::string& name) {
   // iterate over the vector of extra configurations
-  for (const auto& path : this->list_extra_configs()) {
+  for (const auto& path : list_extra_configs()) {
     // compare name with configured extra configuration filename
-    if (name == path.filename())
-      // read and return content
-      return fu::get_content(path.c_str());
+    if (name == path.filename()) return BoolLog(true, fu::get_content(path.c_str()));
   }
-  LOGGER_WARN(logger_, "extra configuration {} was not found", name);
-  // extra configuration identified by `name` was not found
-  return std::string();
+  return BoolLog(false, "extra configuration " + name + " was not found");
 }
 
 Any Configuration::get_value(const std::string& branch_path) const {

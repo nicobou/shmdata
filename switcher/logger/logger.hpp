@@ -17,64 +17,74 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_LOGGER_H__
-#define __SWITCHER_LOGGER_H__
-
-/**
- * @brief Generic `SPDLOG` macros
- */
-
-#ifndef SPDLOG_ACTIVE_LEVEL
-#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_DEBUG
-#else
-#if SPDLOG_ACTIVE_LEVEL >= SPDLOG_LEVEL_DEBUG
-#undef SPDLOG_ACTIVE_LEVEL
-#define SPDLOG_ACTIVE_LEVEL SPDLOG_LEVEL_DEBUG
-#endif
-#endif
+#ifndef __SWITCHER_SWITCHER_LOGGER_LOGGABLE_H__
+#define __SWITCHER_SWITCHER_LOGGER_LOGGABLE_H__
 
 #include <spdlog/spdlog.h>
 
-#if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_TRACE
-#define LOGGER_TRACE(logger, ...) SPDLOG_LOGGER_TRACE(logger, __VA_ARGS__)
-#else
-#define LOGGER_TRACE(logger, ...) (void)0
-#endif
+#include <string>
 
-#if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_DEBUG
-#define LOGGER_DEBUG(logger, ...) SPDLOG_LOGGER_DEBUG(logger, __VA_ARGS__)
-#else
-#define LOGGER_DEBUG(logger, ...) (void)0
-#endif
+#include "switcher/configuration/configuration.hpp"
+#include "switcher/logger/log.hpp"
 
-#if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_INFO
-#define LOGGER_INFO(logger, ...) SPDLOG_LOGGER_INFO(logger, __VA_ARGS__)
-#else
-#define LOGGER_INFO(logger, ...) (void)0
-#endif
+namespace switcher {
+namespace logger {
 
-#if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_WARN
-#define LOGGER_WARN(logger, ...) SPDLOG_LOGGER_WARN(logger, __VA_ARGS__)
-#else
-#define LOGGER_WARN(logger, ...) (void)0
-#endif
+/**
+ * A wrapper class to be inherited by other classes (like Switcher and Quiddity)
+ * in order to enable logging methods.
+ *
+ * The logging methods are employing the {fmt} library https://fmt.dev/latest/index.html
+ **/
+class Logger {
+ public:
+  Logger() = delete;
+  Logger(const std::string& switcher_name, switcher::Configuration* conf, bool debug);
+  Logger(const Logger& obj);
 
-#if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_ERROR
-#define LOGGER_ERROR(logger, ...) SPDLOG_LOGGER_ERROR(logger, __VA_ARGS__)
-#else
-#define LOGGER_ERROR(logger, ...) (void)0
-#endif
+  template <typename FormatString, typename... Args>
+  void sw_trace(const FormatString& fmt, Args&&... args) const {
+    logger_->trace(std::forward<const FormatString&>(fmt), std::forward<Args>(args)...);
+  }
 
-#if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_CRITICAL
-#define LOGGER_CRITICAL(logger, ...) SPDLOG_LOGGER_CRITICAL(logger, __VA_ARGS__)
-#else
-#define LOGGER_CRITICAL(logger, ...) (void)0
-#endif
+  template <typename FormatString, typename... Args>
+  void sw_info(const FormatString& fmt, Args&&... args) const {
+    logger_->info(std::forward<const FormatString&>(fmt), std::forward<Args>(args)...);
+  }
 
-#if SPDLOG_ACTIVE_LEVEL <= SPDLOG_LEVEL_OFF
-#define LOGGER_OFF(logger, ...) SPDLOG_LOGGER_OFF(logger, __VA_ARGS__)
-#else
-#define LOGGER_OFF(logger, ...) (void)0
-#endif
+  template <typename FormatString, typename... Args>
+  void sw_debug(const FormatString& fmt, Args&&... args) const {
+    logger_->debug(std::forward<const FormatString&>(fmt), std::forward<Args>(args)...);
+  }
+
+  template <typename FormatString, typename... Args>
+  void sw_warning(const FormatString& fmt, Args&&... args) const {
+    logger_->warn(std::forward<const FormatString&>(fmt), std::forward<Args>(args)...);
+  }
+
+  template <typename FormatString, typename... Args>
+  void sw_error(const FormatString& fmt, Args&&... args) const {
+    logger_->error(std::forward<const FormatString&>(fmt), std::forward<Args>(args)...);
+  }
+
+  template <typename FormatString, typename... Args>
+  void sw_critical(const FormatString& fmt, Args&&... args) const {
+    logger_->critical(std::forward<const FormatString&>(fmt), std::forward<Args>(args)...);
+  }
+
+ private:
+  /**
+   * @brief The log life and configuration manager
+   **/
+  std::unique_ptr<Log> log_{};
+
+  /**
+   * @brief A shared pointer to a registered logger
+   */
+  mutable std::shared_ptr<spdlog::logger> logger_;
+};
+
+}  // namespace logger
+}  // namespace switcher
 
 #endif

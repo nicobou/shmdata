@@ -93,11 +93,11 @@ ShmdataToOsc::~ShmdataToOsc() { stop(); }
 
 bool ShmdataToOsc::start() {
   if (address_) {
-    LOGGER_WARN(this->logger, "OSCsink already started");
+    sw_warning("OSCsink already started");
     return true;
   }
   if (host_.empty()) {
-    LOGGER_ERROR(this->logger, "host must not be empty");
+    sw_error("host must not be empty");
     return false;
   }
 
@@ -107,7 +107,7 @@ bool ShmdataToOsc::start() {
   }
 
   if (!address_) {
-    LOGGER_ERROR(this->logger, "could not start OSCsink");
+    sw_error("could not start OSCsink");
     return false;
   }
 

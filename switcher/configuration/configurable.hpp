@@ -17,31 +17,34 @@
  * Boston, MA 02111-1307, USA.
  */
 
-#ifndef __SWITCHER_SHMDATA_SWITCHER_LOGGER_H__
-#define __SWITCHER_SHMDATA_SWITCHER_LOGGER_H__
+#ifndef __SWITCHER_SWITCHER_CONFIGURATION_CONFIGURABLE_H__
+#define __SWITCHER_SWITCHER_CONFIGURATION_CONFIGURABLE_H__
 
-#include <shmdata/abstract-logger.hpp>
-
-#include "switcher/logger/logger.hpp"
+#include "./configuration.hpp"
 
 namespace switcher {
-namespace shmdata {
+namespace configuration {
 
-class SwitcherLogger : public ::shmdata::AbstractLogger {
+/**
+ * A wrapper class to be inherited by other classes (like Switcher and Quiddity)
+ * in order to get a switcher::Configuration available.
+ **/
+class Configurable {
  public:
-  SwitcherLogger(logger::Logger* logger) : logger_(logger) {}
-  SwitcherLogger() = delete;
+  Configurable() = delete;
+  /**
+   * Construct a Configurable
+   *
+   * \param on_reloaded A function to be called when a new configuration
+   *        has been loaded (not called during construction)
+   **/
+  Configurable(std::function<void()> on_reloaded);
 
- private:
-  const logger::Logger* logger_;
-  void on_error(std::string&& str) final { logger_->sw_error(str); }
-  void on_critical(std::string&& str) final { logger_->sw_critical(str); }
-  void on_warning(std::string&& str) final { logger_->sw_warning(str); }
-  void on_message(std::string&& str) final { logger_->sw_trace(str); }
-  void on_info(std::string&& str) final { logger_->sw_info(str); }
-  void on_debug(std::string&& str) final { logger_->sw_debug(str); }
+ protected:
+  Configuration conf_;
 };
 
-}  // namespace shmdata
+}  // namespace configuration
 }  // namespace switcher
+
 #endif

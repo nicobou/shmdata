@@ -22,12 +22,11 @@
 
 #include <filesystem>
 #include <list>
-#include <string>
 #include <memory>
+#include <string>
 
 #include "../configuration/configuration.hpp"
 #include "../infotree/information-tree.hpp"
-#include "../logger/logger.hpp"
 #include "../utils/any.hpp"
 #include "../utils/make-consultable.hpp"
 
@@ -156,8 +155,6 @@ namespace switcher {
      * @brief Pointer to a Switcher instance
      */
     Switcher* switcher_;
-
-    std::shared_ptr<spdlog::logger> logger_;
 
   };  // class Session
   }; // namesepace session

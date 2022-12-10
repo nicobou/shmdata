@@ -28,7 +28,7 @@ namespace quiddity {
 Container::ptr Container::make_container(Switcher* switcher, Factory* factory) {
   Container::ptr container(new Container(switcher, factory));
   container->me_ = container;
-  container->logger = spdlog::get("switcher");
+  container->logger_ = switcher;
   return container;
 }
 
@@ -182,7 +182,7 @@ InfoTree::ptr Container::get_quiddity_description(qid_t id) {
 Quiddity::ptr Container::get_quiddity(qid_t id) {
   auto it = quiddities_.find(id);
   if (quiddities_.end() == it) {
-    LOGGER_DEBUG(this->logger, "quiddity {} not found, cannot provide ptr", std::to_string(id));
+    logger_->sw_debug("quiddity {} not found, cannot provide ptr", std::to_string(id));
     Quiddity::ptr empty_quiddity_ptr;
     return empty_quiddity_ptr;
   }

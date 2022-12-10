@@ -20,21 +20,17 @@
 #include <cmath>
 #include <typeinfo>
 
-#include "../logger/logger.hpp"
-
 namespace switcher {
 namespace utils {
 
 template <typename SampleT>
-AudioResampler<SampleT>::AudioResampler(std::shared_ptr<spdlog::logger> logger,
-                                        unsigned int number_of_channels)
+AudioResampler<SampleT>::AudioResampler(logger::Logger* logger, unsigned int number_of_channels)
     : logger_(logger),
       number_of_channels_(number_of_channels),
       resampler_config_(src_new(SRC_SINC_FASTEST, number_of_channels_, &error_)) {
   if (nullptr == resampler_config_) {
-    LOGGER_WARN(logger_,
-                "resample quiddity could not intialize the resample: %",
-                std::string(src_strerror(error_)));
+    logger_->sw_warning("resample quiddity could not intialize the resample: %",
+                        std::string(src_strerror(error_)));
     return;
   };
   resampler_data_ = std::make_unique<SRC_DATA>();
@@ -55,9 +51,9 @@ void AudioResampler<SampleT>::do_resample(std::size_t original_size,
   // configure resampler memory
   set_resampler_data(const_cast<SampleT*>(samplebuf), original_size);
   // do resampling
-  auto error = src_process(resampler_config_, resampler_data_.get());
-  if (error) {
-    LOGGER_ERROR(logger_, "resample error: {}", std::string(src_strerror(error)));
+  auto err = src_process(resampler_config_, resampler_data_.get());
+  if (err) {
+    logger_->sw_error("resample error: {}", std::string(src_strerror(err)));
     return;
   }
 }

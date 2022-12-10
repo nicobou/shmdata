@@ -88,13 +88,13 @@ void PortMidiSink::on_shmreader_data(void* data, size_t /*size */) {
 
 bool PortMidiSink::start() {
   if (started_) {
-    LOGGER_WARN(this->logger, "midisink already started");
+    sw_warning("midisink already started");
     return true;
   }
 
   BoolLog res = open_output_device(device_);
   if (!res.operator bool()) {
-    LOGGER_ERROR(this->logger, res.msg());
+    sw_error(res.msg());
     return false;
   }
   started_ = true;

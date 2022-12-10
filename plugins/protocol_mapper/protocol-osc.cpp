@@ -23,7 +23,8 @@
 namespace switcher {
 namespace quiddities {
 
-ProtocolOsc::ProtocolOsc(Quiddity* quid, const InfoTree* tree) : ProtocolReader(quid, tree) {
+ProtocolOsc::ProtocolOsc(Quiddity* quid, const InfoTree* tree)
+    : ProtocolReader(quid, tree), logger_(quid) {
   auto url = tree->branch_read_data<std::string>("url");
 
   url_id_ = quid->pmanage<MPtr(&property::PBag::make_string)>(
@@ -61,8 +62,7 @@ bool ProtocolOsc::make_properties(Quiddity* quid, const InfoTree* tree) {
         it,
         [this, quidptr = quid, it, type, path, value, continuous](bool val) {
           if (url_.empty()) {
-            LOGGER_WARN(quidptr->logger,
-                        "No remote url set, cannot send OSC messages (protocol-mapper)");
+            quidptr->sw_warning("No remote url set, cannot send OSC messages (protocol-mapper)");
             return false;
           }
 
@@ -77,14 +77,13 @@ bool ProtocolOsc::make_properties(Quiddity* quid, const InfoTree* tree) {
                   ProtocolReader::Command(
                       [this, type, path, value, quidptr]() {
                         if (send_osc_code(type, path, value) == -1)
-                          LOGGER_ERROR(quidptr->logger,
-                                       "Failed to send OSC message, probably wrong type or value");
+                          quidptr->sw_error(
+                              "Failed to send OSC message, probably wrong type or value");
                       },
                       continuous)));
             } else {
               if (send_osc_code(type, path, value) == -1)
-                LOGGER_ERROR(quidptr->logger,
-                             "Failed to send OSC message, probably wrong type or value");
+                quidptr->sw_error("Failed to send OSC message, probably wrong type or value");
             }
           } else {
             if (continuous_) {
@@ -125,8 +124,7 @@ int ProtocolOsc::send_osc_code(const std::string& type, const std::string& path,
       lo_message_free(msg);
     }
   } else {
-    auto logger = spdlog::get("switcher");
-    LOGGER_ERROR(logger, "Ignoring unknown OSC message type {} (protocol-mapper osc)", type);
+    logger_->sw_error("Ignoring unknown OSC message type {} (protocol-mapper osc)", type);
   }
 
   return status;

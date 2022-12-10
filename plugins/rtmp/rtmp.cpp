@@ -95,9 +95,7 @@ bool RTMP::create_gst_pipeline() {
   GError* gerror = nullptr;
   auto bin = gst_parse_bin_from_description(description.c_str(), FALSE, &gerror);
   if (gerror != nullptr) {
-    LOGGER_ERROR(this->logger,
-                 "Error while creating Gst pipeline for RTMP: {}",
-                 std::string(gerror->message));
+    sw_error("Error while creating Gst pipeline for RTMP: {}", std::string(gerror->message));
     g_error_free(gerror);
     return false;
   }
@@ -120,23 +118,23 @@ bool RTMP::create_gst_pipeline() {
 
 bool RTMP::start() {
   if (this->is_started()) {
-    LOGGER_ERROR(this->logger, "RTMP is already started.");
+    sw_error("RTMP is already started.");
     return false;
   }
   if (video_shmpath_.empty()) {
-    LOGGER_ERROR(this->logger, "RTMP requires a video shmdata connection.");
+    sw_error("RTMP requires a video shmdata connection.");
     return false;
   }
   if (audio_shmpath_.empty()) {
-    LOGGER_ERROR(this->logger, "RTMP requires an audio shmdata connection.");
+    sw_error("RTMP requires an audio shmdata connection.");
     return false;
   }
   if (stream_app_url_.empty()) {
-    LOGGER_ERROR(this->logger, "stream_app_url must not be empty");
+    sw_error("stream_app_url must not be empty");
     return false;
   }
   if (stream_key_.empty()) {
-    LOGGER_ERROR(this->logger, "stream_key must not be empty");
+    sw_error("stream_key must not be empty");
     return false;
   }
 
@@ -187,9 +185,7 @@ bool RTMP::on_shmdata_connect(const std::string& shmpath, claw::sfid_t sfid) {
                                                           shmdata::Follower::Direction::reader,
                                                           true);
   } else {
-    LOGGER_WARN(
-        this->logger,
-        "RTMP is only compatible with shmdatas containing H264-encoded video or raw audio.");
+    sw_warning("RTMP is only compatible with shmdatas containing H264-encoded video or raw audio.");
     return false;
   }
 

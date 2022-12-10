@@ -39,6 +39,7 @@ class ProtocolOsc : public ProtocolReader {
     lo_address address{nullptr};
   };
 
+  const logger::Logger* logger_;
   std::string url_{};
   std::unique_ptr<OscAddress> osc_address_;
   property::prop_id_t url_id_{0};
