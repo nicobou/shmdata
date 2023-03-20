@@ -12,10 +12,10 @@ sleep 3
 switcher-ctrl --list-kinds
 switcher-ctrl --list-quiddities
 switcher-ctrl --kinds-doc
-switcher-ctrl --kind-doc dummy
+switcher-ctrl --kind-doc property-quid
 
 # add a quiddity named foo 
-switcher-ctrl --create-quiddity dummy foo
+switcher-ctrl --create-quiddity property-quid foo
 
 # set get the foo property
 switcher-ctrl --set-prop foo int 3
@@ -40,7 +40,7 @@ switcher-ctrl --prune-user-data foo .to_remove
 switcher-ctrl --print-user-data foo
 
 # add a quiddity named bar
-switcher-ctrl --create-quiddity methodquid bar
+switcher-ctrl --create-quiddity method-quid bar
 switcher-ctrl --invoke-method bar hello "Ringo Star"
 
 # save/remove foo/load

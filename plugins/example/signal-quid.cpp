@@ -23,8 +23,8 @@
 namespace switcher {
 namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(SignalQuid,
-                                     "signal",
-                                     "Signal Quiddity",
+                                     "signal-quid",
+                                     "Example Quiddity with signals",
                                      "Dummy quiddity for testing of signals",
                                      "LGPL",
                                      "Jérémie Soria");

@@ -20,14 +20,14 @@ vid1 = sw.create('videotestsrc', 'vid1')
 assert(sw.quiddities[0].get_kind() == 'videotestsrc')
 vid2 = sw.create('videotestsrc', 'vid2')
 assert(sw.quiddities[1].nickname() == 'vid2')
-sip1 = sw.create('sip', 'sip1')
+empty_quid = sw.create('empty-quid', 'empty')
 
 assert len(sw.quiddities) == 3
 
 for quid in sw.quiddities:
     assert isinstance(quid, Quiddity) is True
 
-sw.remove(sip1.id())
+sw.remove(empty_quid.id())
 assert len(sw.quiddities) == 2
 
 sw.session.save_as('test_session')

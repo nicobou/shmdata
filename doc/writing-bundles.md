@@ -3,9 +3,9 @@ Writing custom quiddity bundles
 
 Bundles offer a great way to save and reuse quiddity settings.
 
-To create a custom bundle, simply add an object identified by a custom type as a key to the [Switcher configuration file](configuration.md) within the `bundles` object. The type of the custom bundle will then be used by [Switcher](https://gitlab.com/sat-mtl/tools/switcher) upon instantiation of a bundle quiddity.
+To create a custom bundle, simply add an object identified by a custom type as a key to the [Switcher configuration file](configuration.md) within the `bundles` object. The type of the custom bundle will then be used by [Switcher](https://gitlab.com/nicobou/switcher) upon instantiation of a bundle quiddity.
 
-Each specification of a custom bundle has mandatory configuration keys which are `pipeline` to combine quiddities and `doc` to describe the bundle and define its behavior in [Switcher](https://gitlab.com/sat-mtl/tools/switcher).
+Each specification of a custom bundle has mandatory configuration keys which are `pipeline` to combine quiddities and `doc` to describe the bundle and define its behavior in [Switcher](https://gitlab.com/nicobou/switcher).
 
 The [dummy-switcher.json](dummy-switcher.json) provides some bundle specification examples.
 
@@ -27,7 +27,7 @@ A standard bundle specification might looks like this:
 }
 ```
 
-A custom type (e.g. `DummyVideo`) is required for [Switcher](https://gitlab.com/sat-mtl/tools/switcher) to create a `Quiddity Bundle`.  
+A custom type (e.g. `DummyVideo`) is required for [Switcher](https://gitlab.com/nicobou/switcher) to create a `Quiddity Bundle`.  
 
 Instances of this bundle will be created using this type (ex. `switcher-ctrl -C DummyVideo dummy`). No whitespaces or underscores allowed.
 
@@ -48,7 +48,7 @@ The `pipeline` field is the heart of the bundle. This is where the combination o
 
 To add a quiddity, simply add its `type` (i.e. `audiotestsrc`) followed by the mandatory `name` property.
 
-> Note that the `name` property is used by [Switcher](https://gitlab.com/sat-mtl/tools/switcher) to name a quiddity instance. This is used, among other things, to manage [shmdata](https://gitlab.com/sat-mtl/tools/shmdata) socket file names under the `/tmp` directory.
+> Note that the `name` property is used by [Switcher](https://gitlab.com/nicobou/switcher) to name a quiddity instance. This is used, among other things, to manage [shmdata](https://gitlab.com/nicobou/shmdata) socket file names under the `/tmp` directory.
 
 According to the existing properties for a type of quiddity, any of these can be specified using a `property=value` convention and separated by a space. Refer to the infotree of a specific quiddity to get a detailed list of its properties.
 
@@ -135,7 +135,7 @@ In this pipeline:
 "pipeline" : "executor name=Exec <no_prop <shmr command_line=somecommand _autostart=false periodic=false"
 ```
 
-* The `executor` quiddity will read shmdata, and is the entry point for [shmdata](https://gitlab.com/sat-mtl/tools/shmdata) in the pipeline.
+* The `executor` quiddity will read shmdata, and is the entry point for [shmdata](https://gitlab.com/nicobou/shmdata) in the pipeline.
 * All properties of `executor` are excluded, except for `autostart`. However, `periodic` will still be set to `false` and `command_line` will be set to `somecommand` before being excluded.
 
 </details>
@@ -172,7 +172,7 @@ In the above pipeline:
 
 ### `Group` property
 
-The `group` property can be added to any quiddity. It is optional; its purpose is to override the `parent` value of each of the quiddity's properties with its value. The value of `group` is arbitrary. The effects are similar to the `<top_level`: it affects the way [Scenic](https://gitlab.com/sat-mtl/telepresence/scenic) displays properties, but it is not of much use in [Switcher](https://gitlab.com/sat-mtl/tools/switcher).
+The `group` property can be added to any quiddity. It is optional; its purpose is to override the `parent` value of each of the quiddity's properties with its value. The value of `group` is arbitrary. The effects are similar to the `<top_level`: it affects the way [Scenic](https://gitlab.com/sat-mtl/telepresence/scenic) displays properties, but it is not of much use in [Switcher](https://gitlab.com/nicobou/switcher).
 
 ### Escaping
 
@@ -197,7 +197,7 @@ For more information, see the [Executor](../plugins/executor/README.md) quiddity
 
 ## 🏷 Documentation field
 
-The `doc` field helps to describe the bundle and define its behavior in [Switcher](https://gitlab.com/sat-mtl/tools/switcher).
+The `doc` field helps to describe the bundle and define its behavior in [Switcher](https://gitlab.com/nicobou/switcher).
 
 Both `long_name` and `description` field values are arbitrary.
 
@@ -225,12 +225,12 @@ It is recommended to try and use one of the categories above, but its value can 
 
 ### Tags
 
-Tags define the bundle's roles and how it will behave in [Switcher](https://gitlab.com/sat-mtl/tools/switcher). One or more of the following tags may be specified:
+Tags define the bundle's roles and how it will behave in [Switcher](https://gitlab.com/nicobou/switcher). One or more of the following tags may be specified:
 
 * `reader`: Bundle will act as a destination (it reads shmdata)
 * `writer`: Bundle will act as a source (it writes shmdata)
 
-Additional tags exist, that are specific to a certain kind of usage, either in [Switcher](https://gitlab.com/sat-mtl/tools/switcher) or in [Scenic](https://gitlab.com/sat-mtl/tools/scenic/scenic):
+Additional tags exist, that are specific to a certain kind of usage, either in [Switcher](https://gitlab.com/nicobou/switcher) or in [Scenic](https://gitlab.com/sat-mtl/tools/scenic/scenic):
 
 * `occasional-writer`: Bundle will occasionally write shmdata
 * `device`: Bundle is attached to a device (ex: a MIDI keyboard)

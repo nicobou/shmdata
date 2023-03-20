@@ -1,7 +1,7 @@
 Websockets
 ======
 
-The `SwitcherIO` package essentially act as a bidirectionnal bridge between [Switcher](https://gitlab.com/sat-mtl/tools/switcher) and the front-end, and makes use of [PyQuid](../../doc/python-scripting.md).
+The `SwitcherIO` package essentially act as a bidirectionnal bridge between [Switcher](https://gitlab.com/nicobou/switcher) and the front-end, and makes use of [PyQuid](../../doc/python-scripting.md).
 
 In fact, the goal is to roughly have a 1:1 equivalency between a Websocket route and a [PyQuid](../../doc/python-scripting.md) call.
 

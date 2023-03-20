@@ -3,10 +3,10 @@
 set(PLUGIN_NAME "plugin-rtmp")
 set(PLUGIN_DESCRIPTION "RTMP Plugin")
 
-option(PLUGIN_RTMP "${PLUGIN_DESCRIPTION}" TRUE)
+option(PLUGIN_RTMP "${PLUGIN_DESCRIPTION}" ${ENABLED})
 add_feature_info("${PLUGIN_NAME}" PLUGIN_RTMP "${PLUGIN_DESCRIPTION}")
 
-#if (PLUGIN_RTMP)
+if (PLUGIN_RTMP)
 
     add_library(rtmp SHARED
         rtmp.cpp
@@ -23,4 +23,4 @@ add_feature_info("${PLUGIN_NAME}" PLUGIN_RTMP "${PLUGIN_DESCRIPTION}")
 
     install(TARGETS rtmp LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins)
 
-#endif ()
+endif ()

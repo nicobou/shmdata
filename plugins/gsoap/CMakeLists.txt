@@ -86,6 +86,19 @@ if (PLUGIN_GSOAP)
 
     # INSTALL
 
-    install(TARGETS soapserver LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins)
+    install(TARGETS soapserver
+      LIBRARY
+      COMPONENT lib 
+      DESTINATION ${SWITCHER_LIBRARY}/plugins)
+
+    install(TARGETS soapserver
+      LIBRARY
+      COMPONENT dev
+      DESTINATION ${SWITCHER_LIBRARY}/plugins)
+
+    install(TARGETS soapserver
+      LIBRARY
+      COMPONENT dbg
+      DESTINATION ${SWITCHER_LIBRARY}/plugins)
 
 endif ()

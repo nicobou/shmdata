@@ -30,7 +30,7 @@ def on_invocation_done(value, user_data):
 sw = pyquid.Switcher('pyquid', debug=True)
 
 # creating a quiddity method-quid in order to illustrate method invocation
-methodquid = sw.create('methodquid')
+methodquid = sw.create('method-quid')
 
 # some Quiddities has methods that can be invoked
 assert 'hello world and count is 0' == methodquid.invoke('hello', ['world'])

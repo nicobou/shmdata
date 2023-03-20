@@ -99,10 +99,6 @@ set(HEADER_DIR_INCLUDES
   utils
   )
 
-set(HEADER_INCLUDES
-  switcher.hpp
-  )
-
 if (OSX)
     target_link_libraries(${SWITCHER_LIBRARY} PRIVATE resolv)
 endif()
@@ -122,24 +118,48 @@ target_include_directories(${SWITCHER_LIBRARY}
 
 # Pkg-config
 if (UNIX)
-    include(FindPkgConfig QUIET)
-    if (PKG_CONFIG_FOUND)
-        configure_file("switcher.pc.in" "switcher-${SWITCHER_API_VERSION}.pc" @ONLY)
-        install(FILES "${CMAKE_CURRENT_BINARY_DIR}/switcher-${SWITCHER_API_VERSION}.pc"
-            DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig")
-    endif ()
+  include(FindPkgConfig QUIET)
+  if (PKG_CONFIG_FOUND)
+    configure_file("switcher.pc.in" "switcher-${SWITCHER_API_VERSION}.pc" @ONLY)
+    # Install Pkg-config file for the 'lib' package
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/switcher-${SWITCHER_API_VERSION}.pc"
+      COMPONENT lib
+      DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig")
+    # Install Pkg-config file for the 'dev' package
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/switcher-${SWITCHER_API_VERSION}.pc"
+      COMPONENT dev
+      DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig")
+    # Install Pkg-config file for the 'dbg' package
+    install(FILES "${CMAKE_CURRENT_BINARY_DIR}/switcher-${SWITCHER_API_VERSION}.pc"
+      COMPONENT dbg
+      DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig")
+  endif ()
 endif ()
 
 install(TARGETS ${SWITCHER_LIBRARY}
     LIBRARY DESTINATION lib
-    COMPONENT libraries)
+    COMPONENT lib)
 
-install(DIRECTORY ${HEADER_DIR_INCLUDES}
+install(TARGETS ${SWITCHER_LIBRARY}
+    LIBRARY DESTINATION lib
+    COMPONENT dev)
+
+install(TARGETS ${SWITCHER_LIBRARY}
+    LIBRARY DESTINATION lib
+    COMPONENT dbg)
+
+install(DIRECTORY .
     DESTINATION include/switcher-${SWITCHER_API_VERSION}/switcher
-    COMPONENT headers
+    COMPONENT dev
+    FILES_MATCHING # install only matched files
+    PATTERN "*.hpp" # select header files
     )
 
-install(FILES ${HEADER_INCLUDES}
+  install(DIRECTORY .
     DESTINATION include/switcher-${SWITCHER_API_VERSION}/switcher
-    COMPONENT headers
+    COMPONENT dbg
+    FILES_MATCHING # install only matched files
+    PATTERN "*.hpp" # select header files
     )
+
+  

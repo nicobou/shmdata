@@ -1,6 +1,6 @@
 # CMake Config
-cmake_minimum_required(VERSION 3.5.1)
-project(switcher)
+cmake_minimum_required(VERSION 3.16)
+project(Switcher)
 #
 # CONFIGURATION
 #
@@ -17,8 +17,8 @@ set(SHMDATA_REQUIRED_VERSION 1.3)
 
 # Package (pkg-config) Information
 set(PACKAGE_NAME switcher)
-set(PACKAGE_DESCRIPTION "Switcher for audio, video, data and network streams")
-set(PACKAGE_URL "https://gitlab.com/sat-mtl/tools/switcher")
+set(PACKAGE_DESCRIPTION "Switcher for Shmdata management and fun.")
+set(PACKAGE_URL "https://gitlab.com/nicobou/switcher")
 set(PACKAGE_VERSION ${SWITCHER_VERSION_STRING})
 
 # Compilation
@@ -32,7 +32,7 @@ endif()
 
 # CPack - General
 set(CPACK_PACKAGE_NAME ${PACKAGE_NAME})
-set(CPACK_PACKAGE_VENDOR "Metalab - Société des arts technologiques")
+set(CPACK_PACKAGE_VENDOR "Nicolas Bouillot")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "${PACKAGE_DESCRIPTION}")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
@@ -42,37 +42,38 @@ set(CPACK_PACKAGE_VERSION_MINOR "${SWITCHER_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${SWITCHER_VERSION_PATCH}")
 set(CPACK_GENERATOR DEB)
 set(CPACK_SOURCE_GENERATOR TGZ)
-set(CPACK_COMPONENTS_ALL applications libraries headers)
+set(CPACK_COMPONENTS_ALL lib dev dbg)
 
 # CPack - Debian Package
+set(CPACK_DEB_COMPONENT_INSTALL ON)
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 set(CPACK_DEBIAN_PACKAGE_NAME "${CPACK_PACKAGE_NAME}")
 set(CPACK_DEBIAN_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION}")
-set(CPACK_DEBIAN_PROJECT_HOMEPAGE "https://gitlab.com/sat-mtl/tools/switcher/")
+set(CPACK_DEBIAN_PROJECT_HOMEPAGE "https://gitlab.com/nicobou/switcher")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
-set(CPACK_DEBIAN_PACKAGE_MAINTAINER "${CPACK_PACKAGE_VENDOR} <nbouillot@sat.qc.ca>")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "${CPACK_PACKAGE_VENDOR} <nbou7110t@gmail.com>")
 set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Switcher is an integration environment, able to interoperate with other software and protocols. Switcher provides low latency streaming of multichannel audio, video and data through IP networks. Switcher provides managing of several instances of services (called Quiddities). A Quiddity can be created and removed dynamically and can be controlled through property get/set as well as method invocations and information tree monitoring. Switcher provides introspection mechanisms to help write higher level software written in python3 or C++. Switcher can save and load the state of quiddities.
 ")
 set(CPACK_DEBIAN_PACKAGE_SECTION "utils")
 set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libshmdata (>= 1.3)")
 set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
 install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/README.md ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.md
+  COMPONENT lib
   DESTINATION share/doc/${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}/)
 
-# CPack - Applications
-set(CPACK_COMPONENT_APPLICATIONS_DISPLAY_NAME "Switcher & Switcher Control Application")
-set(CPACK_COMPONENT_APPLICATIONS_DESCRIPTION "Application to control switcher remotely")
-set(CPACK_COMPONENT_APPLICATIONS_DEPENDS libraries)
+# CPack - Switcher and its libraries
+set(CPACK_COMPONENT_LIB_DISPLAY_NAME "Switcher")
+set(CPACK_COMPONENT_LIB_DESCRIPTION "Switcher with tools, python and libraries")
 
-# CPack - Libraries
-set(CPACK_COMPONENT_LIBRARIES_DISPLAY_NAME "Libraries")
-set(CPACK_COMPONENT_LIBRARIES_DESCRIPTION "Shared libraries used to build programs with Switcher")
+# CPack - Development
+set(CPACK_COMPONENT_DEV_DISPLAY_NAME "Switcher development files")
+set(CPACK_COMPONENT_DEV_DESCRIPTION "Switcher with includes, pkg-config and libraries")
+set(CPACK_DEBIAN_DEV_PACKAGE_REPLACES lib)
 
-# CPack - Includes
-set(CPACK_COMPONENT_HEADERS_DISPLAY_NAME "C++ Headers")
-set(CPACK_COMPONENT_HEADERS_DESCRIPTION "C/C++ header files for use with Switcher")
-set(CPACK_COMPONENT_HEADERS_DEPENDS libraries)
+# CPack - Debug
+set(CPACK_COMPONENT_DBG_DISPLAY_NAME "Switcher development files with debug symbols")
+set(CPACK_COMPONENT_DBG_DESCRIPTION "Switcher with includes, pkg-config and libraries with debug symbols")
+set(CPACK_DEBIAN_DBG_PACKAGE_REPLACES lib dev)
 
 # CPack - Source
 set(CPACK_SOURCE_IGNORE_FILES "/\.hooks/;${CMAKE_SOURCE_DIR}/build;${CMAKE_SOURCE_DIR}/html/;${CMAKE_SOURCE_DIR}/scripts/;.git/;${CPACK_SOURCE_IGNORE_FILES}")
@@ -212,6 +213,14 @@ if (DOXYGEN_FOUND)
     add_custom_target(doc
         COMMAND ${DOXYGEN_EXECUTABLE} ${doxyfile}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+   install(DIRECTORY ${CMAKE_SOURCE_DIR}/doc/doxygen/html/
+        DESTINATION  share/doc/${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}/html/
+        COMPONENT dev
+        )
+   install(DIRECTORY ${CMAKE_SOURCE_DIR}/doc/doxygen/html/
+        DESTINATION  share/doc/${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}/html/
+        COMPONENT dbg
+        )
 endif ()
 
 # Uninstall

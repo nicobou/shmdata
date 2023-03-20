@@ -100,10 +100,15 @@ if (PLUGIN_GLFW)
     add_executable(check_glfw_video check_glfw_video.cpp)
     add_dependencies(check_glfw_video glfw)
     add_test(check_glfw_video check_glfw_video)
+    add_test(NAME check_swcam_display COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/check_swcam_display.sh)
 
     # INSTALL
 
     install(TARGETS glfwvideo LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins)
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/plugins/glfw/fonts DESTINATION ${DATADIR})
+    install(TARGETS swcam-display DESTINATION bin
+      PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+      GROUP_EXECUTE GROUP_READ
+      WORLD_EXECUTE WORLD_READ)
 
 endif ()

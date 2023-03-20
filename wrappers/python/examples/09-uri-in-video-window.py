@@ -54,19 +54,19 @@ uri = sw.create('urisrc', 'uri')
 assert uri.subscribe("on-connection-spec-added", on_con_spec_added, uri)
 assert uri.subscribe("on-connection-spec-removed", on_con_spec_removed, uri)
 
-assert uri.set('uri', 'https://gitlab.com/sat-mtl/tools/switcher/raw/master/tests/oie.mp3')
+assert uri.set('uri', 'https://gitlab.com/nicobou/switcher/raw/master/tests/oie.mp3')
 time.sleep(2)
 
 assert uri.set(
-    'uri', 'https://gitlab.com/sat-mtl/tools/switcher/raw/master/doc/logo/png/Switcher-color-horizontal-white-text.png')
+    'uri', 'https://gitlab.com/nicobou/switcher/raw/master/doc/logo/png/Switcher-color-horizontal-white-text.png')
 time.sleep(2)
 
 assert uri.set('uri', 'https://download.blender.org/peach/bigbuckbunny_movies/BigBuckBunny_640x360.m4v')
 time.sleep(2)
 
 assert uri.set(
-    'uri', 'https://gitlab.com/sat-mtl/tools/switcher/raw/master/doc/logo/png/Switcher-color-horizontal-white-text.png')
+    'uri', 'https://gitlab.com/nicobou/switcher/raw/master/doc/logo/png/Switcher-color-horizontal-white-text.png')
 time.sleep(2)
 
-assert uri.set('uri', 'https://gitlab.com/sat-mtl/tools/switcher/raw/master/doc/mapper_prop_osc.png')
+assert uri.set('uri', 'https://gitlab.com/nicobou/switcher/raw/master/doc/mapper_prop_osc.png')
 time.sleep(2)

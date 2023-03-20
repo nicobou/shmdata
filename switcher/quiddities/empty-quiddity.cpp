@@ -22,7 +22,7 @@
 namespace switcher {
 namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(EmptyQuiddity,
-                                     "emptyquid",
+                                     "empty-quid",
                                      "Empty Quiddity",
                                      "Quiddity for user data saving",
                                      "LGPL",

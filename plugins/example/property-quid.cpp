@@ -22,8 +22,8 @@
 namespace switcher {
 namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(PropertyQuid,
-                                     "dummy",
-                                     "Dummy Plugin",
+                                     "property-quid",
+                                     "Example Quiddity with many property types",
                                      "Dummy plugin for testing/example purpose",
                                      "LGPL",
                                      "Nicolas Bouillot");

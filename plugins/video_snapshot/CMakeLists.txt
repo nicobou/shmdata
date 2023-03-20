@@ -19,9 +19,14 @@ if (PLUGIN_VIDEO_SNAPSHOT)
 
     add_executable(check_video_snapshot check_video_snapshot.cpp)
     add_test(check_video_snapshot check_video_snapshot)
+    add_test(NAME check_shmshot COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/check_shmshot.sh)
 
     # INSTALL
 
     install(TARGETS video_snapshot LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins)
+    install(TARGETS shmshot DESTINATION bin
+      PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+      GROUP_EXECUTE GROUP_READ
+      WORLD_EXECUTE WORLD_READ)
 
 endif ()

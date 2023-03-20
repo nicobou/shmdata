@@ -22,7 +22,7 @@ videotest_quid = {
 }
 
 signal_quid = {
-    "kind": "signal",
+    "kind": "signal-quid",
     "nickname": "signal"
 }
 

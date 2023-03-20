@@ -27,7 +27,7 @@ version_file = "CMakeLists.txt"
 
 version_pattern = "set\({}_VERSION_(\S+)\s+(\d+)\)"
 shmdata_require_pattern = "set\(SHMDATA_REQUIRED_VERSION (\d+\.\d+)\)"
-git_path = "git@gitlab.com:sat-mtl/tools"
+git_path = "git@gitlab.com:nicobou"
 remote_repo = "origin"
 bringup_branch = "master"
 working_branch = "develop"
@@ -208,9 +208,14 @@ def get_git_config(property: str, default_value: str) -> str:
 
 def update_changelog(lib: str, version: List[int]) -> None:
     print("Generating release notes")
+    # NEWS.md contain the full history of releases
     orig_file_name = "NEWS.md"
     new_file_name = "NEWS.md.new"
     authors_file_name = "AUTHORS.md"
+    # LAST_RELEASE.md contains only the last release details
+    # It is used to describe release with gitlab's release system
+    orig_release_file_name = "LAST_RELEASE.md"
+    new_release_file_name = "LAST_RELEASE.md.new"
 
     git_checkout(working_branch)
     latest_tag = subprocess.check_output(
@@ -219,31 +224,40 @@ def update_changelog(lib: str, version: List[int]) -> None:
         f"git log -1 --format=%ai {latest_tag}", shell=True, encoding="utf-8")
     commits = re.split(
         r"[a-z0-9]{40} ",
-        subprocess.check_output(f"git log --pretty=oneline --first-parent --since=\"{tag_date}\" | tr -d '\n'", shell=True, encoding="utf-8").strip()
+        subprocess.check_output(
+            f"git log --pretty=oneline --since=\"{tag_date}\" | tr -d '\n'", shell=True, encoding="utf-8").strip()
     )
     commits = commits[1:-1]
+
+    # interactive write of the "last release" file
+    with open(new_release_file_name, "w") as new_file:
+        new_file.write(
+            f"{lib} {version[0]}.{version[1]}.{version[2]} ({datetime.date.today()})\n---------------------------\n\n")
+        for commit in commits:
+            new_file.write(f"* {commit}\n")
+        new_file.write("\n")
+    subprocess.call([get_git_config("core.editor", "vim"), new_release_file_name])
+    os.rename(new_release_file_name, orig_release_file_name)
+
+    # copy content of "last release" file into the changelog file
     with open(new_file_name, "w") as new_file:
         with open(orig_file_name, "r") as old_file:
             for i, line in enumerate(old_file.readlines()):
                 if i != 3:
                     new_file.write(line)
                     continue
-                new_file.write(f"\n{lib} {version[0]}.{version[1]}.{version[2]} ({datetime.date.today()})\n---------------------------\n"
-                               f"This is an official release in the {version[0]}.{version[1]} stable series.\n\n")
-                for commit in commits:
-                    new_file.write(f"* {commit}\n")
-
-                new_file.write("\n")
-    subprocess.call([get_git_config("core.editor", "vim"), new_file_name])
+                with open(orig_release_file_name, 'r') as release_file:
+                    new_file.write("\n")
+                    new_file.write(release_file.read())
     os.rename(new_file_name, orig_file_name)
     subprocess.call(os.path.join(sys.path[0], "make_authors_from_git.sh"), shell=True)
-    git_add([orig_file_name])
+    git_add([orig_file_name, orig_release_file_name])
     if subprocess.call(os.path.join(sys.path[0], "make_authors_from_git.sh"), shell=True) == 0:
         git_add([authors_file_name])
     git_commit(f"📝 Updated changelog for version {version[0]}.{version[1]}.{version[2]}.")
 
 
-@atexit.register  # Only clean on exit if the release was successful.
+@ atexit.register  # Only clean on exit if the release was successful.
 def cleanup_folder() -> None:
     global success
     if os.path.exists(libs_root_path) and success:
@@ -261,7 +275,8 @@ def usage() -> None:
 
 
 if __name__ == "__main__":
-    assert(sys.version_info[0] == 3 and sys.version_info[1] > 6), f"This script must be ran with at least Python 3.7, detected Python {sys.version_info[0]}.{sys.version_info[1]}"
+    assert(sys.version_info[0] == 3 and sys.version_info[1] >
+           6), f"This script must be ran with at least Python 3.7, detected Python {sys.version_info[0]}.{sys.version_info[1]}"
 
     release_version = []
     version_increase = VersionIncrease.NONE
@@ -336,7 +351,8 @@ if __name__ == "__main__":
     print("All unit tests passed successfully, now creating new branches for release.")
 
     quidfile = "../doc/quiddity_types.txt"
-    subprocess.call(os.path.join(sys.path[0], f"echo \`\`\` > {quidfile} && switcher -K >> {quidfile} && echo \`\`\` >> {quidfile}"), shell=True)
+    subprocess.call(os.path.join(
+        sys.path[0], f"echo \`\`\` > {quidfile} && switcher -K >> {quidfile} && echo \`\`\` >> {quidfile}"), shell=True)
 
     update_changelog(lib, release_version)
     new_branch = f"{release_branch}/version-{release_version[0]}.{release_version[1]}.{release_version[2]}"
@@ -344,7 +360,8 @@ if __name__ == "__main__":
     git_checkout(new_branch, True)
     commit_version_number(lib, release_version, version_pattern.format(lib.upper()))
     assert git_checkout(bringup_branch) == 0, f"Could not checkout branch {bringup_branch}"
-    assert git_merge(new_branch, True) == 0, f"Merge from branch {new_branch} into {bringup_branch} did not work."
+    assert git_merge(
+        new_branch, True) == 0, f"Merge from branch {new_branch} into {bringup_branch} did not work."
     git_tag(f"{release_version[0]}.{release_version[1]}.{release_version[2]}")
     # If it's a bugfix release, we keep an odd number for develop and even for master.
     assert git_checkout(working_branch) == 0, f"Could not checkout branch {working_branch}"
@@ -356,10 +373,13 @@ if __name__ == "__main__":
     git_tag(f"{release_version[0]}.{release_version[1]}.{release_version[2]}")
 
     print("Pushing all branches and tags to remote.")
-    do_push=input(f"Do you want to push {bringup_branch} and {working_branch} branches to {remote_repo}? [y/N]")
+    do_push = input(
+        f"Do you want to push {bringup_branch} and {working_branch} branches to {remote_repo}? [y/N]")
     if do_push == "y":
-        assert git_push(remote_repo, bringup_branch) == 0, f"Failed to push branch {bringup_branch} into {remote_repo}/{bringup_branch}"
-        assert git_push(remote_repo, working_branch) == 0, "Failed to push branch {working_branch} into {remote_repo}/{working_branch}"
+        assert git_push(
+            remote_repo, bringup_branch) == 0, f"Failed to push branch {bringup_branch} into {remote_repo}/{bringup_branch}"
+        assert git_push(
+            remote_repo, working_branch) == 0, "Failed to push branch {working_branch} into {remote_repo}/{working_branch}"
 
     print("Cleaning up temporary files")
     success = True

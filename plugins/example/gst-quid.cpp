@@ -22,8 +22,8 @@
 namespace switcher {
 namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(GstQuid,
-                                     "gst",
-                                     "Gst Quid",
+                                     "gst-quid",
+                                     "Example quiddity with GStreamer pipeline",
                                      "Plugin implementing a simple Gst pipeline",
                                      "LGPL",
                                      "Hantz-Carly F. Vius");

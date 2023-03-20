@@ -33,10 +33,10 @@ int main() {
     Switcher::ptr manager = Switcher::make_switcher("test_manager");
 
 
-    assert(quiddity::test::full(manager, "dummy"));
+    assert(quiddity::test::full(manager, "property-quid"));
 
     // creating a "myplugin" quiddity
-    auto qrox = manager->quids<MPtr(&quiddity::Container::create)>("dummy", "test", nullptr);
+    auto qrox = manager->quids<MPtr(&quiddity::Container::create)>("property-quid", "test", nullptr);
     auto pquid = qrox.get();
     assert(pquid);
 

@@ -117,7 +117,10 @@ class Log : public SafeBoolIdiom {
    */
   static fs::path get_default_log_path();
 
-
+  /**
+   * Maximum number of files for the rotating log.
+   */
+  static const size_t cMaxFiles = 100;
 };
 }  // namespace logger
 }  // namespace switcher

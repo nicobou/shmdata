@@ -87,7 +87,7 @@ if (PLUGIN_EXAMPLE)
 
     # INSTALL
 
-    install(TARGETS
+    set(EXAMPLE_QUIDS
       custom_save
       gst_quid
       meth_quid
@@ -96,7 +96,24 @@ if (PLUGIN_EXAMPLE)
       shmdata_dynamic_writer
       shmdata_quid
       signal_quid
+      )    
+
+    install(TARGETS
+      ${EXAMPLE_QUIDS}
       LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins
+      COMPONENT lib
+      )
+
+    install(TARGETS
+      ${EXAMPLE_QUIDS}
+      LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins
+      COMPONENT dev
+      )
+
+    install(TARGETS
+      ${EXAMPLE_QUIDS}
+      LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins
+      COMPONENT dbg
       )
 
 endif ()

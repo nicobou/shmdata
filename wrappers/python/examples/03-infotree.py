@@ -25,7 +25,7 @@ import json
 # first create a quiddity and get a reference to its internal user data tree. Note this
 # user data tree is available for each kind of quiddity.
 sw = pyquid.Switcher('infotree', debug=True)
-emptyquid = sw.create('emptyquid')
+emptyquid = sw.create('empty-quid')
 utree = emptyquid.get_user_tree()
 assert utree.empty()
 

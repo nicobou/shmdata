@@ -8,6 +8,6 @@ Name: @PACKAGE_NAME@
 Description: @PACKAGE_DESCRIPTION@
 URL: @PACKAGE_URL@
 Version: @PACKAGE_VERSION@
-Requires.private: gstreamer-1.0 >= 1.0, json-glib-1.0, glib-2.0, spdlog, shmdata-@SHMDATA_REQUIRED_VERSION@
-Libs: -L${libdir} -lswitcher-@SWITCHER_API_VERSION@
+Requires.private: gstreamer-1.0 >= 1.0, json-glib-1.0, glib-2.0, samplerate, spdlog, shmdata-@SHMDATA_REQUIRED_VERSION@
+Libs: -L${libdir} -lsamplerate -lswitcher-@SWITCHER_API_VERSION@
 Cflags: -std=c++@CMAKE_CXX_STANDARD@ -I${includedir}/switcher-@SWITCHER_API_VERSION@

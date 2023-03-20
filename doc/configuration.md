@@ -4,16 +4,16 @@ Configuration
 
 Switcher has the ability to load a configuration from a file in [JSON](https://www.json.org/json-en.html) format. 
 
-Following the [XDG Base Directory Specification](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html), a global configuration file  `global.json` for all instances of [Switcher](https://gitlab.com/sat-mtl/tools/switcher) might be placed under the `$HOME/.config/switcher` directory.
+Following the [XDG Base Directory Specification](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html), a global configuration file  `global.json` for all instances of [Switcher](https://gitlab.com/nicobou/switcher) might be placed under the `$HOME/.config/switcher` directory.
 
-Configuration keys permit to change the default behavior of [Switcher](https://gitlab.com/sat-mtl/tools/switcher) built-in `Quiddities` and define [Custom Bundles](writing-bundles.md).
+Configuration keys permit to change the default behavior of [Switcher](https://gitlab.com/nicobou/switcher) built-in `Quiddities` and define [Custom Bundles](writing-bundles.md).
 
 At runtime, the custom configuration is passed to their respective quiddities upon instantiation.
 
 > Note that this is *not* a way to set defaults for the *properties* of each quiddity, but rather for specific *keys* used by each quiddities in their own way.
 > At the moment, only [Custom Bundles](writing-bundles.md), `jackserver`, `jacksink`, `jacksrc`, `glfwin` and `pjsip` have predefined configuration *keys*.
 
-A sample configuration [dummy-switcher.json](doc/dummy-switcher.json) exists to demonstrate all the possible *keys* used by [Switcher](https://gitlab.com/sat-mtl/tools/switcher) quiddities, as well as some bundle examples.
+A sample configuration [dummy-switcher.json](doc/dummy-switcher.json) exists to demonstrate all the possible *keys* used by [Switcher](https://gitlab.com/nicobou/switcher) quiddities, as well as some bundle examples.
 
 ---
 
@@ -53,7 +53,7 @@ Specifies the filepath to where logs should be written, by default this points t
 The following format is used to write logs to this filepath: `DATE|INSTANCE_NAME|PID|THREAD_ID|LOG_LEVEL: MESSAGE|SOURCE_BASENAME:SOURCE_LINE_NUMBER`
 
 > Note that if [$XDG_STATE_HOME](https://specifications.freedesktop.org/basedir-spec/basedir-spec-latest.html) environment variable is not defined, the `logs.filepath` falls back to `~/.local/state/switcher/logs/switcher.log`
-> In case [Switcher](https://gitlab.com/sat-mtl/tools/switcher) is running as `root`, the `logs.filepath` falls back to `/var/log/switcher/switcher.log`
+> In case [Switcher](https://gitlab.com/nicobou/switcher) is running as `root`, the `logs.filepath` falls back to `/var/log/switcher/switcher.log`
 
   </details>
   <details>
@@ -82,7 +82,7 @@ Specifies the log level to use.
 This can be any of: `trace`, `debug`, `info`, `warn`, `err`, `critical`, `off`.
 
 > Note that if an unrecognized *log level* is used, logging will be disabled as if it was `off`.
-> Also the `debug` option of [Switcher](https://gitlab.com/sat-mtl/tools/switcher) takes priority over this setting and would enforce a `debug` log level (except if the log level is lower than `debug` such as `trace`).
+> Also the `debug` option of [Switcher](https://gitlab.com/nicobou/switcher) takes priority over this setting and would enforce a `debug` log level (except if the log level is lower than `debug` such as `trace`).
 
   </details>
 </details>

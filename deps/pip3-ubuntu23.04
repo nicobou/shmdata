@@ -1,0 +1,2 @@
+-r ../plugins/webrtc/requirements.txt
+-r ../wrappers/switcherio/requirements.txt

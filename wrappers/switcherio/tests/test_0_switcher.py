@@ -44,7 +44,7 @@ class SwitcherTestCase(SocketIOTestCase):
         bundles = '''{
             "bundle": {
                 "testBundle": {
-                    "pipeline": "dummy name=Test",
+                    "pipeline": "property-quid name=Test",
                     "doc": {
                         "long_name": "Test",
                         "category": "test",
@@ -65,7 +65,7 @@ class SwitcherTestCase(SocketIOTestCase):
         bundles = {
             "bundle": {
                 "testBundle": {
-                    "pipeline": "dummy name=Test",
+                    "pipeline": "property-quid name=Test",
                     "doc": {
                         "long_name": "Test",
                         "category": "test",

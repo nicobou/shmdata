@@ -38,7 +38,7 @@ class QuiddityTestCase(SocketIOTestCase):
 
     # test quiddity data
     test_quid = {
-        "kind": "dummy",
+        "kind": "property-quid",
         "nickname": "test_name",
         "properties": {},
         "user_data": {"testData": True}
@@ -84,7 +84,7 @@ class QuiddityTestCase(SocketIOTestCase):
         self.assertEqual(res, "video1")
 
     def test_06_quiddity_connect(self):
-        err, res = self.sio.call('quiddity.create', data=('glfwin', 'win'))
+        err, res = self.sio.call('quiddity.create', data=('dummysink', 'win'))
         time.sleep(1)
         self.assertIsNone(err)
         self.assertIsInstance(res, dict)
@@ -97,7 +97,7 @@ class QuiddityTestCase(SocketIOTestCase):
         self.assertTrue(res)
 
     def test_07_method_invokation(self):
-        err, res = self.sio.call('quiddity.create', data=('methodquid', 'mquid'))
+        err, res = self.sio.call('quiddity.create', data=('method-quid', 'mquid'))
         time.sleep(1)
         self.assertIsNone(err)
         self.assertIsInstance(res, dict)

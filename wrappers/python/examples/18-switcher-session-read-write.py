@@ -16,17 +16,16 @@ from pyquid import Switcher, Quiddity
 test_session_content = """
 {
     "quiddities" : {
-      "test" : "OSCsink"
+      "test" : "property-quid"
     },
     "nicknames" : {
       "test" : "test"
     },
     "properties" : {
       "test" : {
-        "started" : false,
-        "port" : 1056,
-        "host" : "localhost",
-        "autostart" : false
+        "bool_" : false,
+        "int_" : 1056,
+        "string_" : "localhost"
       }
     }
   }
@@ -44,6 +43,3 @@ time.sleep(1)
 assert len(sw.quiddities) == 1
 
 assert sw.session.remove('test_session')
-
-
-

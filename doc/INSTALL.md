@@ -1,7 +1,7 @@
 INSTALL   
 =======
 
-> **Note**: Ensure **[Shmdata](https://gitlab.com/sat-mtl/tools/shmdata)** is already installed before proceeding.
+> **Note**: Ensure **[Shmdata](https://gitlab.com/nicobou/shmdata)** is already installed before proceeding.
 
 ## Install package
 
@@ -26,7 +26,7 @@ Build and install **switcher** from the command line:
 ```bash
 # clone repository
 sudo apt install git
-git clone https://gitlab.com/sat-mtl/tools/switcher.git
+git clone https://gitlab.com/nicobou/switcher.git
 
 cd switcher
 
@@ -53,14 +53,14 @@ make -sC build -j`nproc`
 sudo make install -sC build && sudo ldconfig
 ```
 
-## Quick build and installation (Ubuntu 20.04)
+## Quick build and installation (Ubuntu 22.04)
 
 Build and install **switcher** from the command line:
 
 ```bash
 # clone repository
 sudo apt install git
-git clone https://gitlab.com/sat-mtl/tools/switcher.git
+git clone https://gitlab.com/nicobou/switcher.git
 
 cd switcher
 
@@ -68,13 +68,10 @@ cd switcher
 # git checkout 2.1.38
 
 # install dependencies
-sudo apt install $(cat ./deps/apt-{build,runtime}-ubuntu-20.04)
+sudo apt install $(cat ./deps/apt-{build,runtime}-ubuntu-22.04)
 
 # nvidia dependencies: uncomment next line to build video encoding with the nvidia graphics card
-# sudo apt install $(cat ./deps/apt-{build,runtime}-nvidia-deps-ubuntu-20.04)
-
-# python dependencies
-pip3 install -r ./deps/pip3-ubuntu20.04
+# sudo apt install $(cat ./deps/apt-{build,runtime}-nvidia-deps-ubuntu-22.04)
 
 # update or initialize git submodules recursively
 git submodule update --init --recursive

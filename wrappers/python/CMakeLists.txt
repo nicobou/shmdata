@@ -50,11 +50,25 @@ if (WITH_PYTHON)
   # COMPUTE INSTALL PATH FOR PYQUID
   execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sysconfig; print(sysconfig.get_config_var('DESTSHARED'))" OUTPUT_VARIABLE DESTSHARED OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-  # INSTALL
-  install(TARGETS pyquid LIBRARY DESTINATION ${DESTSHARED})
+  # Install library
+  install(TARGETS pyquid LIBRARY DESTINATION ${DESTSHARED} COMPONENT lib)
+  # Install library for the 'dev' cmake component
+  install(TARGETS pyquid LIBRARY DESTINATION ${DESTSHARED} COMPONENT dev)
+  # Install library for the 'dev' cmake component
+  install(TARGETS pyquid LIBRARY DESTINATION ${DESTSHARED} COMPONENT dbg)
 
-  # python scripts
-  install(FILES signals.py props.py bundles.py DESTINATION ${SWITCHER_LIBRARY}/pyquid)
+  # install python files
+  install(FILES signals.py props.py bundles.py
+    DESTINATION ${SWITCHER_LIBRARY}/pyquid
+    COMPONENT lib)
+  # install python files  for the 'dev' cmake component
+  install(FILES signals.py props.py bundles.py
+    DESTINATION ${SWITCHER_LIBRARY}/pyquid
+    COMPONENT dev)
+  # install python files  for the 'dev' cmake component
+  install(FILES signals.py props.py bundles.py
+    DESTINATION ${SWITCHER_LIBRARY}/pyquid
+    COMPONENT dbg)
 
   # ADD EXAMPLE TESTS
   file(GLOB EXAMPLE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/examples/*.py")
@@ -65,8 +79,4 @@ if (WITH_PYTHON)
     add_test(pyquid_${EXAMPLE_NAME} ${EXAMPLE_FILE})
   endforeach()
 
-  # ADD UNIT TESTS
-  add_test(NAME pyquid_unittest
-           COMMAND ${PYTHON_EXECUTABLE} -m unittest
-           WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 endif ()

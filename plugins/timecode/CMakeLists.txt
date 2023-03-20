@@ -1,12 +1,5 @@
 # PLUGIN
 
-pkg_check_modules(JACK REQUIRED jack)
-pkg_check_modules(LTC REQUIRED ltc)
-
-if(JACK_FOUND AND LTC_FOUND)
-    set(ENABLED TRUE)
-endif()
-
 
 set(PLUGIN_NAME "plugin-timecode")
 set(PLUGIN_DESCRIPTION "Timecode handler for synchronization on audio stream")
@@ -15,6 +8,9 @@ option(PLUGIN_TIMECODE "${PLUGIN_DESCRIPTION}" ${ENABLED})
 add_feature_info("${PLUGIN_NAME}" PLUGIN_TIMECODE "${PLUGIN_DESCRIPTION}")
 
 if (PLUGIN_TIMECODE)
+
+    pkg_check_modules(JACK REQUIRED jack)
+    pkg_check_modules(LTC REQUIRED ltc)
 
     add_compile_options(${JACK_CFLAGS} ${LTC_CFLAGS})
 

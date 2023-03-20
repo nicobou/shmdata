@@ -65,9 +65,15 @@ if (PLUGIN_JACK)
 
     add_executable(check_jack check_jack.cpp)
     add_test(check_jack check_jack)
+    add_test(check_quid-conf-and-two-jack-servers check-quid-conf-and-two-jack-servers.py)
+    add_test(NAME check_shmdata2jack COMMAND bash ${CMAKE_CURRENT_SOURCE_DIR}/check_shmdata2jack.sh)
 
     # INSTALL
 
     install(TARGETS switchershmtojack switcherjacktoshm switcherjackserver LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins)
+    install(TARGETS shmdata2jack DESTINATION bin
+      PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+      GROUP_EXECUTE GROUP_READ
+      WORLD_EXECUTE WORLD_READ)
 
 endif ()

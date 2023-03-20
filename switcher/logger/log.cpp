@@ -68,6 +68,9 @@ std::string Log::make_uuid() const {
       if (!max_files) {
 	max_files = 3;
       }
+      if (max_files > cMaxFiles) {
+        max_files = cMaxFiles;
+      }
       conf->set_value(".logs.max_files", max_files);
     
       size_t max_size = conf->get_value(".logs.max_size");
