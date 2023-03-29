@@ -1,9 +1,7 @@
 Shmdata, a library to share any flows of data frames between processes 
 ======================================================================
 
-[![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0) [![pipeline status](https://gitlab.com/sat-mtl/tools/shmdata/badges/develop/pipeline.svg)](https://gitlab.com/sat-mtl/tools/shmdata/commits/develop) [![coverage report](https://gitlab.com/sat-mtl/tools/shmdata/badges/develop/coverage.svg)](https://gitlab.com/sat-mtl/tools/shmdata/commits/develop)
-
-For a more complete documentation, go visit the [official website](https://sat-metalab.gitlab.io/shmdata).
+[![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0) [![pipeline status](https://gitlab.com/nicobou/shmdata/badges/develop/pipeline.svg)](https://gitlab.com/nicobou/shmdata/commits/develop) [![coverage report](https://gitlab.com/nicobou/shmdata/badges/develop/coverage.svg)](https://gitlab.com/nicobou/shmdata/commits/develop)
 
 ## Table of Contents
 
@@ -14,7 +12,7 @@ A library to share streams of framed data between processes via shared memory. I
 
 The communication paradigm is 1 to many, i.e., one writer is making available data frames to several followers. Followers and writers can hot connect & disconnect. Shmdata transmission supports buffer resizing. Each shmdata has a type specified with a string description, itself published by the shmdata writer at each reconnection. The type is specified as a user-defined string. Although left to the user, we encourage type specification to follow GStreamer 1.0 caps specification format, for instance "audio/x-raw,format=S16LE,channels=2,layout=interleaved". 
 
-Note the existence of [NDI2shmdata](https://gitlab.com/sat-mtl/tools/ndi2shmdata) that converts shmdata to [NewTek's NDI](http://ndi.newtek.com), and _vice versa_.
+Note the existence of [NDI2shmdata](https://gitlab.com/nicobou/ndi2shmdata) that converts shmdata to [NewTek's NDI](http://ndi.newtek.com), and _vice versa_.
 
 ## Technical consideration
 
@@ -27,21 +25,7 @@ Shmdata is intended to be used as an extension to applications in order to enabl
 
 ### Installation
 
-On ubuntu 20.04 (amd64), shmdata can be installed as follows:
-```
-sudo apt install -y coreutils wget && \
-wget -qO - https://sat-mtl.gitlab.io/distribution/mpa-focal-amd64-nvidia/sat-metalab-mpa-keyring.gpg \
-    | gpg --dearmor \
-    | sudo dd of=/usr/share/keyrings/sat-metalab-mpa-keyring.gpg && \
-echo 'deb [ arch=amd64, signed-by=/usr/share/keyrings/sat-metalab-mpa-keyring.gpg ] https://sat-mtl.gitlab.io/distribution/mpa-focal-amd64-nvidia/debs/ sat-metalab main' \
-    | sudo tee /etc/apt/sources.list.d/sat-metalab-mpa.list && \
-echo 'deb [ arch=amd64, signed-by=/usr/share/keyrings/sat-metalab-mpa-keyring.gpg ] https://sat-mtl.gitlab.io/distribution/mpa-datasets/debs/ sat-metalab main' \
-    | sudo tee /etc/apt/sources.list.d/sat-metalab-mpa-datasets.list && \
-sudo apt-get update
-sudo apt install libshmdata
-```
-
-Otherwise, you can [install shmdata from sources](doc/install-from-sources.md)
+You can [install shmdata from sources](doc/install-from-sources.md)
 
 ### First shmdata transmission
 
@@ -115,13 +99,13 @@ To contribute to shmdata, see the [contribution guide](CONTRIBUTING.md)
 
 ## Sponsors
 
-This project is made possible thanks to the Society for Arts and Technology. [SAT](http://www.sat.qc.ca/) and to the Ministère de l'Économie et de l'Innovation du Québec (MEI).
+This project is made possible thanks to the Society for Arts and Technology, [SAT](http://www.sat.qc.ca/) and to the Ministère de l'Économie et de l'Innovation du Québec ([MEI](https://www.economie.gouv.qc.ca/)).
 
 
 ## About us
 
-Shmdata is maintained by the [Metalab](https://sat.qc.ca/fr/recherche/metalab), the Society for Arts and Technology [SAT] research laboratory. Our mission is to provide artists and creators with a powerful ecosystem of immersion and telepresence software for live arts and new media installations. 
+Shmdata is maintained by [Nicolas Bouillot](https://nicolasbouillot.net), it was previously maintained by the Metalab, the Society for Arts and Technology [SAT] research laboratory.
 
-Shmdata is also used in the [Scènes ouvertes](http://sat.qc.ca/en/scenes-ouvertes) project: a network of more than 20 venues from all across the province of Quebec collaborating through artistic telepresence installations . 
+Shmdata is also used in the [Scenic telepresence system](https://sat.qc.ca/en/scenic-telepresence) that enable a network of more than 20 venues from all across the province of Quebec collaborating through artistic telepresence installations . 
 
 See a list of shmdata authors [here](AUTHORS.md).

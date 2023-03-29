@@ -33,7 +33,7 @@ if (WITH_PYTHON)
         PRIVATE ${PYTHON_LIBRARIES}
     )
 
-    execute_process ( COMMAND ${PYTHON_EXECUTABLE} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())" OUTPUT_VARIABLE PYTHON_DIST_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
+    execute_process ( COMMAND ${PYTHON_EXECUTABLE} -c "import sysconfig; print(sysconfig.get_config_var('DESTSHARED'))" OUTPUT_VARIABLE PYTHON_DIST_PACKAGES OUTPUT_STRIP_TRAILING_WHITESPACE)
 
     # Install
 

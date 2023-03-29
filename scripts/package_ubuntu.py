@@ -27,7 +27,7 @@ libs_root_path = os.path.join(os.path.expanduser("~"), "src", "releases")
 version_file = "CMakeLists.txt"
 
 version_pattern = "set\({}_VERSION_(\S+)\s+(\d+)\)"
-git_path = "git@gitlab.com:sat-mtl/tools"
+git_path = "git@gitlab.com:nicobou"
 remote_repo = "origin"
 bringup_branch = "master"
 debian_branch_prefix = "debian"
