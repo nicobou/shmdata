@@ -79,10 +79,10 @@ int main()
         nullptr,
         &logger);
 
-    auto i = 1;
+    auto i = 10;
     while (0 != i--) {
       assert(w.copy_to_shm(&i, sizeof(i)));
-      std::this_thread::sleep_for(std::chrono::milliseconds(500));
+      std::this_thread::sleep_for(std::chrono::milliseconds(50));
     }
     assert(success);
 
