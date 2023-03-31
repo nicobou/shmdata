@@ -17,7 +17,13 @@ if (WITH_SDFLOW)
     install(TARGETS sdflow
         RUNTIME
         DESTINATION bin
-        COMPONENT applications
+        COMPONENT lib
+        )
+
+    install(TARGETS sdflow
+        RUNTIME
+        DESTINATION bin
+        COMPONENT dev
         )
 
 endif ()
@@ -37,7 +43,7 @@ if (WITH_SDCRASH)
     install(TARGETS sdcrash
         RUNTIME
         DESTINATION bin
-        COMPONENT applications
+        COMPONENT dev
         )
 
 endif ()

@@ -43,16 +43,29 @@ if (UNIX)
     include(FindPkgConfig QUIET)
     if (PKG_CONFIG_FOUND)
         configure_file("shmdata.pc.in" "shmdata-${SHMDATA_API_VERSION}.pc" @ONLY)
+        # Install Pkg-config file for the 'dev' package
         install(FILES "${CMAKE_CURRENT_BINARY_DIR}/shmdata-${SHMDATA_API_VERSION}.pc"
-            DESTINATION lib/pkgconfig)
+          COMPONENT dev
+          DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig")
+        # Install Pkg-config file for the 'lib' package
+        install(FILES "${CMAKE_CURRENT_BINARY_DIR}/shmdata-${SHMDATA_API_VERSION}.pc"
+          COMPONENT lib
+          DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig")
     endif ()
 endif ()
 
 install(TARGETS ${SHMDATA_LIBRARY}
     LIBRARY DESTINATION lib
-    COMPONENT libraries)
+    COMPONENT lib)
 
-install(FILES ${HEADER_INCLUDES}
+install(TARGETS ${SHMDATA_LIBRARY}
+    LIBRARY DESTINATION lib
+    COMPONENT lib)
+  
+install(DIRECTORY ${HEADER_DIR_INCLUDES}
     DESTINATION include/shmdata-${SHMDATA_API_VERSION}/shmdata
-    COMPONENT headers
+    COMPONENT dev
+    FILES_MATCHING # install only matched files
+    PATTERN "*.hpp"
+    PATTERN "*.h" 
     )

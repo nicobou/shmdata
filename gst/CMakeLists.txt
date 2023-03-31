@@ -1,7 +1,7 @@
 include(CheckCXXCompilerFlag)
 # PLUGIN
 
-pkg_check_modules(GST REQUIRED gstreamer-1.0 gstreamer-base-1.0 gstreamer-controller-1.0)
+pkg_check_modules(GST gstreamer-1.0 gstreamer-base-1.0 gstreamer-controller-1.0)
 
 option(WITH_GST "GST Shmdata" ${GST_FOUND})
 add_feature_info("gst" WITH_GST "GST Shmdata")
@@ -9,7 +9,8 @@ add_feature_info("gst" WITH_GST "GST Shmdata")
 if (WITH_GST)
 
     pkg_check_modules(GST REQUIRED gstreamer-1.0 gstreamer-base-1.0 gstreamer-controller-1.0)
-
+    pkg_get_variable(GST_PLUGINS_DIR gstreamer-1.0 pluginsdir)
+    
     add_compile_options(${GST_CFLAGS})
     check_cxx_compiler_flag(-Wno-error=cast-function-type CAN_CAST_FUNCTION_TYPE)
     if(CAN_CAST_FUNCTION_TYPE)
@@ -54,6 +55,12 @@ if (WITH_GST)
 
     # INSTALL
 
-    install(TARGETS gstshmdata LIBRARY DESTINATION lib/gstreamer-1.0)
+    install(TARGETS gstshmdata
+      LIBRARY DESTINATION ${GST_PLUGINS_DIR}
+      COMPONENT lib)
+
+        install(TARGETS gstshmdata
+      LIBRARY DESTINATION ${GST_PLUGINS_DIR}
+      COMPONENT dev)
 
 endif ()
