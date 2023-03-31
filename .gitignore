@@ -1,9 +1,11 @@
 *.log
 *.swp
-doxyfile
-.idea/workspace.xml
-build/
-html/
-cmake-build-*/
-.vscode/
 .DS_Store
+.idea/workspace.xml
+.vscode/
+build/
+cmake-build-*/
+doxyfile
+html/
+wrappers/python/__pycache__/
+xml/

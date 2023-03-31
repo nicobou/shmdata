@@ -2,6 +2,7 @@ prefix=@CMAKE_INSTALL_PREFIX@
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include
+static_lib_path=${prefix}/lib/libshmdata-@SHMDATA_API_VERSION@_static.a
 
 Name: @PACKAGE_NAME@
 Description: @PACKAGE_DESCRIPTION@

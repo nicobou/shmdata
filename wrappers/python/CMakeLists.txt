@@ -37,7 +37,13 @@ if (WITH_PYTHON)
 
     # Install
 
-    install(TARGETS pyshmdata LIBRARY DESTINATION ${PYTHON_DIST_PACKAGES})
+    install(TARGETS pyshmdata
+      LIBRARY DESTINATION ${PYTHON_DIST_PACKAGES}
+      COMPONENT lib)
+
+    install(TARGETS pyshmdata
+      LIBRARY DESTINATION ${PYTHON_DIST_PACKAGES}
+      COMPONENT dev)
 
     # Test
     add_test(pyshmdata_basic python3 ${CMAKE_CURRENT_SOURCE_DIR}/example.py)
