@@ -25,6 +25,13 @@ Shmdata is intended to be used as an extension to applications in order to enabl
 
 ### Ubuntu installation
 
+Debian packages can be downloaded from [here](https://gitlab.com/nicobou/shmdata/-/releases). Once downloaded, it can be installed from the Ubuntu package manager, or with the following command:
+
+```
+sudo dpkg -i <path to the package file>
+```
+
+Note two packages are provided: `lib` version is for production use, and `dev` for developpement.
 
 ### Installation from source
 
