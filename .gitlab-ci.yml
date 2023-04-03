@@ -122,6 +122,6 @@ Gitlab release:
         --description NEWS.md \
         $(\
           for i in $(ls release-files/ubuntu-22.04/); do \
-            echo --assets-link  "{\"name\":\"${i}\",\"url\":\"${PACKAGE_REGISTRY_URL}/${CI_COMMIT_TAG}//ubuntu-22.04/${i}\",\"link_type\":\"Ubuntu22.04\"}" ;\
+            echo --assets-link  "{\"name\":\"${i}\",\"url\":\"${PACKAGE_REGISTRY_URL}/${CI_COMMIT_TAG}/ubuntu-22.04/${i}\",\"link_type\":\"Ubuntu22.04\"}" ;\
           done \
          )
