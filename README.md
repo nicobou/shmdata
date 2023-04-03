@@ -23,7 +23,10 @@ Shmdata is intended to be used as an extension to applications in order to enabl
 
 ## Getting started
 
-### Installation
+### Ubuntu installation
+
+
+### Installation from source
 
 You can [install shmdata from sources](doc/install-from-sources.md)
 

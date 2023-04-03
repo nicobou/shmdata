@@ -13,6 +13,24 @@ stages:
 #
 # Test
 #
+Test Ubuntu 23.04:
+  stage: test
+  image: ubuntu:23.04
+  script:
+    - DEBIAN_FRONTEND=noninteractive apt update -y
+    - DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends cmake build-essential git libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-base python3-dev
+    - rm -rf build && mkdir build && cd build
+    - cmake ..
+    - make -j${nproc}
+    - make test
+  except:
+    - cmake_debs
+    - develop
+    - master
+
+#
+# Test
+#
 Test Ubuntu 22.04:
   stage: test
   image: ubuntu:22.04
