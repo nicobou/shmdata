@@ -1,7 +1,3 @@
-link_libraries(
-    ${SHMDATA_LIBRARY}
-)
-
 # SDFlow
 
 option(WITH_SDFLOW "SDFlow Command Line" ON)
@@ -12,6 +8,8 @@ if (WITH_SDFLOW)
         sdflow.cpp
         )
 
+    target_link_libraries(sdflow PUBLIC ${SHMDATA_LIBRARY})
+      
     # INSTALL
 
     install(TARGETS sdflow
@@ -37,6 +35,8 @@ if (WITH_SDCRASH)
     add_executable(sdcrash
         sdcrash.cpp
         )
+
+    target_link_libraries(sdcrash PUBLIC ${SHMDATA_LIBRARY})
 
     # INSTALL
 
