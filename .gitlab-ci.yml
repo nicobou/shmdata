@@ -89,13 +89,13 @@ Debian Package Ubuntu 22.04:
     - make install
     - make package
     - |
-      for i in shmdata-dev*.deb; do cp $i ../release-files/ubuntu22.04_$i
+      for i in shmdata-dev*.deb; do cp $i ../release-files/ubuntu22.04_$i; done
     - popd
     - rm -rf build && mkdir build && cd build
     - cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release ..
     - make package
     - |
-      for i in shmdata-lib*.deb; do cp $i ../release-files/ubuntu22.04_$i
+      for i in shmdata-lib*.deb; do cp $i ../release-files/ubuntu22.04_$i; done
   artifacts:
     paths:
     - release-files/
