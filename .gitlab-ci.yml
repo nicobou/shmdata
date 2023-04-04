@@ -81,19 +81,21 @@ Debian Package Ubuntu 22.04:
     - DEBIAN_FRONTEND=noninteractive apt update -y
     - DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends file
     - DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends doxygen cmake build-essential git libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev gstreamer1.0-plugins-base python3-dev
-    - mkdir -p release-files/ubuntu-22.04
+    - mkdir -p release-files/
     - pushd .
     - rm -rf build && mkdir build && cd build
     - cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Debug ..
     - make doc
     - make install
     - make package
-    - cp shmdata-dev*.deb ../release-files/ubuntu-22.04/
+    - |
+      for i in shmdata-dev*.deb; do cp $i ../release-files/ubuntu22.04_$i
     - popd
     - rm -rf build && mkdir build && cd build
     - cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release ..
     - make package
-    - cp shmdata-lib*.deb ../release-files/ubuntu-22.04/
+    - |
+      for i in shmdata-lib*.deb; do cp $i ../release-files/ubuntu22.04_$i
   artifacts:
     paths:
     - release-files/
@@ -108,7 +110,7 @@ Gitlab release upload:
     - if: $CI_COMMIT_TAG
   script:
     - |
-      for i in $(ls release-files/ubuntu-22.04); do curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file release-files/ubuntu-22.04/${i} "${PACKAGE_REGISTRY_URL}/${CI_COMMIT_TAG}/ubuntu-22.04/${i}"; done
+      for i in $(ls release-files/); do curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file release-files/${i} "${PACKAGE_REGISTRY_URL}/${CI_COMMIT_TAG}/${i}"; done
 
 
 Gitlab release:
@@ -121,7 +123,7 @@ Gitlab release:
       release-cli create --name "Release $CI_COMMIT_TAG" --tag-name $CI_COMMIT_TAG \
         --description NEWS.md \
         $(\
-          for i in $(ls release-files/ubuntu-22.04/); do \
-            echo --assets-link  "{\"name\":\"${i}\",\"url\":\"${PACKAGE_REGISTRY_URL}/${CI_COMMIT_TAG}/ubuntu-22.04/${i}\",\"link_type\":\"Ubuntu22.04\"}" ;\
+          for i in $(ls release-files/); do \
+            echo --assets-link  "{\"name\":\"${i}\",\"url\":\"${PACKAGE_REGISTRY_URL}/${CI_COMMIT_TAG}/${i}\",\"link_type\":\"package\"}" ;\
           done \
          )
