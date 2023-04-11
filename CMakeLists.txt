@@ -10,7 +10,7 @@ project(shmdata)
 set(SHMDATA_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(SHMDATA_VERSION_MAJOR 1)
 set(SHMDATA_VERSION_MINOR 3)
-set(SHMDATA_VERSION_PATCH 72)
+set(SHMDATA_VERSION_PATCH 74)
 set(SHMDATA_VERSION_STRING ${SHMDATA_VERSION_MAJOR}.${SHMDATA_VERSION_MINOR}.${SHMDATA_VERSION_PATCH})
 set(SHMDATA_API_VERSION ${SHMDATA_VERSION_MAJOR}.${SHMDATA_VERSION_MINOR})
 set(SHMDATA_LIBRARY shmdata-${SHMDATA_API_VERSION})
@@ -18,7 +18,7 @@ set(SHMDATA_LIBRARY shmdata-${SHMDATA_API_VERSION})
 # Package (pkg-config) Information
 set(PACKAGE_NAME shmdata)
 set(PACKAGE_DESCRIPTION "Shares data flows between applications")
-set(PACKAGE_URL "https://github.com/sat-mtl/tools/shmdata")
+set(PACKAGE_URL "https://github.com/nicobou/shmdata")
 set(PACKAGE_VERSION ${SHMDATA_VERSION_STRING})
 
 # Compilation
@@ -56,7 +56,7 @@ endif()  # TEST_COVERAGE
 
 # CPack - General
 set(CPACK_PACKAGE_NAME ${PACKAGE_NAME})
-set(CPACK_PACKAGE_VENDOR "Metalab - Société des arts technologiques")
+set(CPACK_PACKAGE_VENDOR "Nicolas Bouillot")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY ${PACKAGE_DESCRIPTION})
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
 set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/README.md")
@@ -66,36 +66,36 @@ set(CPACK_PACKAGE_VERSION_MINOR "${SHMDATA_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${SHMDATA_VERSION_PATCH}")
 set(CPACK_GENERATOR DEB)
 set(CPACK_SOURCE_GENERATOR TGZ)
-set(CPACK_COMPONENTS_ALL applications libraries headers)
+set(CPACK_COMPONENTS_ALL lib dev)
 
 # CPack - Debian Package
+set(CPACK_DEB_COMPONENT_INSTALL ON)
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
-set(CPACK_DEBIAN_PACKAGE_NAME "lib${CPACK_PACKAGE_NAME}")
+set(CPACK_DEBIAN_PACKAGE_NAME "${CPACK_PACKAGE_NAME}")
 set(CPACK_DEBIAN_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION}")
-set(CPACK_DEBIAN_PROJECT_HOMEPAGE "https://gitlab.com/sat-mtl/tools/shmdata/")
+set(CPACK_DEBIAN_PROJECT_HOMEPAGE "https://gitlab.com/nicobou/shmdata/")
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
-set(CPACK_DEBIAN_PACKAGE_MAINTAINER "${CPACK_PACKAGE_VENDOR} <nbouillot@sat.qc.ca>")
+set(CPACK_DEBIAN_PACKAGE_MAINTAINER "${CPACK_PACKAGE_VENDOR} <nbou7110t@gmail.com>")
 set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "Library to share streams of framed data between processes via shared memory. shmdata is server less: it requires applications to link data streams using socket path (e.g. \"/tmp/my_shmdata_stream\"). Shmdata is very fast and allows processes to access data streams without the need of extra copy. The communication paradigm is 1 to many, i.e., one writer is making available data frames to several followers. Followers and writers can hot connect & disconnect.")
 set(CPACK_DEBIAN_PACKAGE_SECTION "libs")
 set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
 set(CPACK_DEBIAN_PACKAGE_DEPENDS "")
 set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
-install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/README.md ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.md
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/README.md ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.md ${CMAKE_CURRENT_SOURCE_DIR}/NEWS.md
+  COMPONENT lib
+  DESTINATION share/doc/${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}/)
+install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/README.md ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.md ${CMAKE_CURRENT_SOURCE_DIR}/NEWS.md
+  COMPONENT dev
   DESTINATION share/doc/${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}/)
 
-# CPack - Applications
-set(CPACK_COMPONENT_APPLICATIONS_DISPLAY_NAME "SDFlow & SDCrash Applications")
-set(CPACK_COMPONENT_APPLICATIONS_DESCRIPTION "Application to control test & debug shmdata")
-set(CPACK_COMPONENT_APPLICATIONS_DEPENDS libraries)
-
 # CPack - Libraries
-set(CPACK_COMPONENT_LIBRARIES_DISPLAY_NAME "Libraries")
-set(CPACK_COMPONENT_LIBRARIES_DESCRIPTION "Shared libraries used to build programs with shmdata")
+set(CPACK_COMPONENT_LIB_DISPLAY_NAME "Shmdata libraries")
+set(CPACK_COMPONENT_LIB_DESCRIPTION "Shared libraries, monitoring tool (sdflow) and GStreamer elements")
 
 # CPack - Includes
-set(CPACK_COMPONENT_HEADERS_DISPLAY_NAME "C++ Headers")
-set(CPACK_COMPONENT_HEADERS_DESCRIPTION "C/C++ header files for use with shmdata")
-set(CPACK_COMPONENT_HEADERS_DEPENDS libraries)
+set(CPACK_COMPONENT_DEV_DISPLAY_NAME "Shmdata development files and documentation")
+set(CPACK_COMPONENT_DEV_DESCRIPTION "C++ Headers, utils and libraries with debug symbols")
+set(CPACK_DEBIAN_DEV_PACKAGE_REPLACES lib) # <- because debug symbols are added
 
 # CPack - Source
 set(CPACK_SOURCE_IGNORE_FILES "/\.hooks/;/build/;/html/;${CPACK_SOURCE_IGNORE_FILES}")
@@ -166,6 +166,11 @@ find_package(Doxygen)
 if (DOXYGEN_FOUND)
     configure_file("doxyfile.in" "${CMAKE_SOURCE_DIR}/doxyfile")
     add_custom_target(doc COMMAND ${DOXYGEN_EXECUTABLE} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+    install(DIRECTORY ${CMAKE_SOURCE_DIR}/html/
+        DESTINATION  share/doc/${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}/html/
+        COMPONENT dev
+        )
+
 endif ()
 
 # Uninstall

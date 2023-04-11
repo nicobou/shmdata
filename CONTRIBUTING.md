@@ -2,7 +2,7 @@
 
 Welcome! We'd love for you to contribute to Shmdata's code.
 
-Shmdata is currently being maintained by a small team of developers working for the [Société des arts technologiques [SAT]](https://sat.qc.ca/), a non-profit art centre based in Montréal, Canada for which this software was originally developed. This core team adds features and bug fixes according to the SAT's interests and needs; however, community contributions on this project are more than welcome! There are many ways to contribute, including submitting bug reports, improving documentation, adding unit tests, adding support for a new language, submitting feature requests, reviewing new submissions, or contributing code that can be incorporated into the project.
+Shmdata is currently being maintained by [Nicolas Bouillot](https://nicolasbouillot.net/), an independant open source developper based in Montréal, Canada. Community contributions on this project are welcome! There are many ways to contribute, including submitting bug reports, improving documentation, adding unit tests, adding support for a new language, submitting feature requests, reviewing new submissions, or contributing code that can be incorporated into the project.
 
 This document describes this project's development process. Please do your best to follow these guidelines, as doing so will ensure a better contributing experience for you, and for other contributors and maintainers of this project.
 
@@ -13,11 +13,11 @@ By participating in this project, you agree to abide by the Shmdata [Code of Con
 ## Important Resources
 
 * [Shmdata README](README.md)
-* [Issue tracker](https://gitlab.com/sat-mtl/tools/shmdata/-/issues)
+* [Issue tracker](https://gitlab.com/nicobou/tools/shmdata/-/issues)
 
 ## Questions
 
-The preferred way of asking question to us is through sending an email at metalab-dev@sat.qc.ca. We'll get back to you as soon as possible!
+The preferred way of asking question to us is through sending an email at nbou7110t@gmail.com. We'll get back to you as soon as possible!
 
 ## Feature Requests
 
@@ -32,11 +32,11 @@ Please create a new Gitlab issue, using the "rfc" description template, for a ma
 
 ## Reporting Bugs
 
-**If you find a security vulnerability, do NOT open an issue. Email metalab-dev@sat.qc.ca instead.**
+**If you find a security vulnerability, do NOT open an issue. Email nbou7110t@gmail.com instead.**
 
-Before you submit your issue, please [search the issue tracker](https://gitlab.com/sat-mtl/tools/shmdata/-/issues) - maybe your question or issue has already been identified or addressed.
+Before you submit your issue, please [search the issue tracker](https://gitlab.com/nicobou/shmdata/-/issues) - maybe your question or issue has already been identified or addressed.
 
-If you find a bug in the source code, you can help us by [submitting an issue to the GitLab issue tracker](https://gitlab.com/sat-mtl/tools/shmdata/-/issues). In the issue, the bug must be described using the "bug_report" description template. Then, you can submit a Merge Request with a fix adding "close #10" in the merge request description (10 being here the example bug number, it must be replaced with the actual bug_report number). 
+If you find a bug in the source code, you can help us by [submitting an issue to the GitLab issue tracker](https://gitlab.com/nicobou/shmdata/-/issues). In the issue, the bug must be described using the "bug_report" description template. Then, you can submit a Merge Request with a fix adding "close #10" in the merge request description (10 being here the example bug number, it must be replaced with the actual bug_report number). 
 
 Please include as much information as possible in your issue: branch name and version, OS version, expected and observed behaviour, system information, log files, etc. Most importantly, provide a step-by-step procedure on how to reproduce your bug.
 
@@ -71,7 +71,7 @@ For large fixes, please build and test the documentation before submitting the M
 
 ### Finding an Issue
 
-The list of outstanding feature requests and bugs can be found on the [GitLab issue tracker](https://gitlab.com/sat-mtl/tools/shmdata/-/issues). Pick an unassigned issue that you think you can accomplish and add a comment that you are attempting to do it.
+The list of outstanding feature requests and bugs can be found on the [GitLab issue tracker](https://gitlab.com/nicobou/shmdata/-/issues). Pick an unassigned issue that you think you can accomplish and add a comment that you are attempting to do it.
 
 ### Development Process
 
@@ -98,7 +98,7 @@ In the event that a severe bug is detected on **master**, a special *hotfix bran
 
 ### CI pipeline
 
-This repository includes a CI pipeline, used to validate that incoming commits do not break the build, and that all unit tests still pass. It will be run automatically when a new commit is pushed to the repository. If the pipeline fails, it is your responsibility to checkout the [CI Jobs page](https://gitlab.com/sat-mtl/tools/shmdata/-/jobs) and figure out how to fix it. A Merge Requests that breaks the pipeline will not be merged by the core developers.
+This repository includes a CI pipeline, used to validate that incoming commits do not break the build, and that all unit tests still pass. It will be run automatically when a new commit is pushed to the repository. If the pipeline fails, it is your responsibility to checkout the [CI Jobs page](https://gitlab.com/nicobou/shmdata/-/jobs) and figure out how to fix it. A Merge Requests that breaks the pipeline will not be merged by the core developers.
 
 ## Merge Request Process
 

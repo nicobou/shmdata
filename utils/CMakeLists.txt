@@ -1,7 +1,3 @@
-link_libraries(
-    ${SHMDATA_LIBRARY}
-)
-
 # SDFlow
 
 option(WITH_SDFLOW "SDFlow Command Line" ON)
@@ -12,12 +8,20 @@ if (WITH_SDFLOW)
         sdflow.cpp
         )
 
+    target_link_libraries(sdflow PUBLIC ${SHMDATA_LIBRARY})
+      
     # INSTALL
 
     install(TARGETS sdflow
         RUNTIME
         DESTINATION bin
-        COMPONENT applications
+        COMPONENT lib
+        )
+
+    install(TARGETS sdflow
+        RUNTIME
+        DESTINATION bin
+        COMPONENT dev
         )
 
 endif ()
@@ -32,12 +36,14 @@ if (WITH_SDCRASH)
         sdcrash.cpp
         )
 
+    target_link_libraries(sdcrash PUBLIC ${SHMDATA_LIBRARY})
+
     # INSTALL
 
     install(TARGETS sdcrash
         RUNTIME
         DESTINATION bin
-        COMPONENT applications
+        COMPONENT dev
         )
 
 endif ()
