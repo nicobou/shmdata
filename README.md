@@ -23,7 +23,19 @@ Shmdata is intended to be used as an extension to applications in order to enabl
 
 ## Getting started
 
-### Installation
+### Ubuntu installation
+
+Note two packages are provided: `lib` version is for standard use, and `dev` for developpement. The `dev` package replace the `lib` package, but add extra information like the debug symbols, the documentation and extra tools related to Shmdata development.   
+
+Debian packages can be downloaded from [here](https://gitlab.com/nicobou/shmdata/-/releases). Once downloaded, it can be installed from the Ubuntu package manager, or with the following command:
+
+```
+sudo dpkg -i <path to the package file>
+```
+
+If dpkg complains about dependencies errors, then you can run `sudo apt install -f` and then run `sudo dpkg -i <path to the package file>` again.
+
+### Installation from source
 
 You can [install shmdata from sources](doc/install-from-sources.md)
 
@@ -91,7 +103,13 @@ gcc -o check-c-wrapper $(pkg-config --cflags shmdata-1.3) ./check-c-wrapper.cpp 
 # C++ code
 g++ -o check-writer-follower $(pkg-config --cflags shmdata-1.3) ./check-writer-follower.cpp $(pkg-config --libs shmdata-1.3)
 ```
- 
+
+# Use of Shmdata static library
+
+Shmdata adds the pkg-config variable `static_lib_path` that provides the path to the Shmdata static library. It can be used as follows, here runing from the `tests` directory of the Shmdata sources. 
+```
+g++ -o check-shm-resize $(pkg-config --cflags shmdata-1.3) check-shm-resize.cpp $(pkg-config --variable=static_lib_path shmdata-1.3)
+```
 
 ## Contribution
 

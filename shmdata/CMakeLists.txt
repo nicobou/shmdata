@@ -1,19 +1,24 @@
+set(SHMDATA_LIBRARY_FILES
+  cfollower.cpp
+  clogger.cpp
+  cwriter.cpp
+  file-monitor.cpp
+  follower.cpp
+  reader.cpp
+  sysv-sem.cpp
+  sysv-shm.cpp
+  type.cpp
+  unix-socket.cpp
+  unix-socket-client.cpp
+  unix-socket-protocol.cpp
+  unix-socket-server.cpp
+  writer.cpp
+)
+
 add_library(${SHMDATA_LIBRARY} SHARED
-    cfollower.cpp
-    clogger.cpp
-    cwriter.cpp
-    file-monitor.cpp
-    follower.cpp
-    reader.cpp
-    sysv-sem.cpp
-    sysv-shm.cpp
-    type.cpp
-    unix-socket.cpp
-    unix-socket-client.cpp
-    unix-socket-protocol.cpp
-    unix-socket-server.cpp
-    writer.cpp
-    )
+    ${SHMDATA_LIBRARY_FILES})
+add_library(${SHMDATA_LIBRARY}_static STATIC
+    ${SHMDATA_LIBRARY_FILES})
 
 set(HEADER_INCLUDES
     abstract-logger.hpp
@@ -43,16 +48,37 @@ if (UNIX)
     include(FindPkgConfig QUIET)
     if (PKG_CONFIG_FOUND)
         configure_file("shmdata.pc.in" "shmdata-${SHMDATA_API_VERSION}.pc" @ONLY)
+        # Install Pkg-config file for the 'dev' package
         install(FILES "${CMAKE_CURRENT_BINARY_DIR}/shmdata-${SHMDATA_API_VERSION}.pc"
-            DESTINATION lib/pkgconfig)
+          COMPONENT dev
+          DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig")
+        # Install Pkg-config file for the 'lib' package
+        install(FILES "${CMAKE_CURRENT_BINARY_DIR}/shmdata-${SHMDATA_API_VERSION}.pc"
+          COMPONENT lib
+          DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig")
     endif ()
 endif ()
 
+# install shared library
 install(TARGETS ${SHMDATA_LIBRARY}
     LIBRARY DESTINATION lib
-    COMPONENT libraries)
+    COMPONENT lib)
 
+install(TARGETS ${SHMDATA_LIBRARY}
+    LIBRARY DESTINATION lib
+    COMPONENT dev)
+
+# install static library
+install(TARGETS ${SHMDATA_LIBRARY}_static
+    ARCHIVE DESTINATION lib
+    COMPONENT lib)
+
+install(TARGETS ${SHMDATA_LIBRARY}_static
+    ARCHIVE DESTINATION lib
+    COMPONENT dev)
+
+# install headers
 install(FILES ${HEADER_INCLUDES}
     DESTINATION include/shmdata-${SHMDATA_API_VERSION}/shmdata
-    COMPONENT headers
+    COMPONENT dev
     )
