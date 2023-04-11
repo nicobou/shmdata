@@ -1,7 +1,8 @@
-shmdata 1.3.72 (2022-10-17)
+shmdata 1.3.74 (2023-04-11)
 ---------------------------
-This is an official release in the 1.3 stable series.
 
-Improvements:
-* 🐛 replace types from check-latency test
+* Update debian packaging with cmake, make it build in gitlab CI and publish with gitlab release
+* Fix check-unix-perms on slow gitlab-ci
+* Update maintenance information
+* Adds indication to add local to the path if built from source
 
