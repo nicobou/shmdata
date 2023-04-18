@@ -23,9 +23,9 @@
 
 namespace switcher {
 namespace quiddities {
-NVencES::NVencES(uint32_t device_id) : logger(spdlog::get("switcher")), cu_ctx_(device_id) {
+NVencES::NVencES(logger::Logger* logger, uint32_t device_id) : logger_(logger), cu_ctx_(device_id) {
   On_scope_exit {
-    if (!safe_bool_idiom()) LOGGER_WARN(this->logger, "NV encoder session initialization failed");
+    if (!safe_bool_idiom()) logger_->sw_warning("NV encoder session initialization failed");
   };
   if (!cu_ctx_) return;
   memset(&params_, 0, sizeof(params_));
@@ -45,7 +45,7 @@ NVencES::NVencES(uint32_t device_id) : logger(spdlog::get("switcher")), cu_ctx_(
 NVencES::~NVencES() {
   buffers_.reset();
   if (safe_bool_idiom() && !(NV_ENC_SUCCESS == NVencAPI::api.nvEncDestroyEncoder(encoder_)))
-    LOGGER_WARN(this->logger, "BUG! (destroying NV encoder session)");
+    logger_->sw_warning("BUG! (destroying NV encoder session)");
 }
 
 NVencES::named_guid_t NVencES::get_supported_codecs() {
@@ -53,7 +53,7 @@ NVencES::named_guid_t NVencES::get_supported_codecs() {
   // supported codecs
   if (NV_ENC_SUCCESS !=
       NVencAPI::api.nvEncGetEncodeGUIDs(encoder_, codecs_guids_, kArraySize, &codecs_num_)) {
-    LOGGER_WARN(this->logger, "issue with nvEncGetEncodeGUIDs");
+    logger_->sw_warning("issue with nvEncGetEncodeGUIDs");
     return res;
   }
   for (uint32_t i = 0; i < codecs_num_; ++i) {
@@ -73,7 +73,7 @@ NVencES::named_guid_t NVencES::get_presets(GUID encodeGUID) {
   if (NV_ENC_SUCCESS !=
       NVencAPI::api.nvEncGetEncodePresetGUIDs(
           encoder_, preset_GUID_, presets_guids_, kArraySize, &presets_num_)) {
-    LOGGER_WARN(this->logger, "issue with nvEncGetEncodePresetGUIDs");
+    logger_->sw_warning("issue with nvEncGetEncodePresetGUIDs");
     return res;
   }
   for (uint32_t i = 0; i < presets_num_; ++i) {
@@ -100,7 +100,7 @@ NVencES::named_guid_t NVencES::get_presets(GUID encodeGUID) {
     } else if (is_same(presets_guids_[i], NV_ENC_PRESET_LOSSLESS_HP_GUID)) {
       res.push_back(std::make_pair(std::string("Lossless HP"), NV_ENC_PRESET_LOSSLESS_HP_GUID));
     } else
-      LOGGER_DEBUG(this->logger, "unknown preset GUID from nvenc");
+      logger_->sw_debug("unknown preset GUID from nvenc");
   }
   return res;
 }
@@ -134,7 +134,7 @@ NVencES::named_guid_t NVencES::get_profiles(GUID encodeGUID) {
     } else if (is_same(profiles_guids_[i], NV_ENC_HEVC_PROFILE_MAIN_GUID)) {
       res.push_back(std::make_pair(std::string("Main (HEVC)"), NV_ENC_HEVC_PROFILE_MAIN_GUID));
     } else
-      LOGGER_DEBUG(this->logger, "unknown profile GUID from nvenc");
+      logger_->sw_debug("unknown profile GUID from nvenc");
   }
   return res;
 }
@@ -149,7 +149,7 @@ std::vector<std::pair<std::string, NV_ENC_BUFFER_FORMAT>> NVencES::get_input_for
   for (uint32_t i = 0; i < input_formats_num_; ++i) {
     switch (buf_formats_[i]) {
       case NV_ENC_BUFFER_FORMAT_UNDEFINED:
-        LOGGER_WARN(this->logger, "nvEncGetInputFormats gives NV_ENC_BUFFER_FORMAT_UNDEFINED (?)");
+        logger_->sw_warning("nvEncGetInputFormats gives NV_ENC_BUFFER_FORMAT_UNDEFINED (?)");
         break;
       case NV_ENC_BUFFER_FORMAT_NV12:
         res.push_back(std::make_pair(std::string("NV12"), NV_ENC_BUFFER_FORMAT_NV12));
@@ -170,7 +170,7 @@ std::vector<std::pair<std::string, NV_ENC_BUFFER_FORMAT>> NVencES::get_input_for
         res.push_back(std::make_pair(std::string("AYUV"), NV_ENC_BUFFER_FORMAT_AYUV));
         break;
       default:
-        LOGGER_DEBUG(this->logger, "unknown input format from nvenc");
+        logger_->sw_debug("unknown input format from nvenc");
     }
   }
   return res;
@@ -219,7 +219,7 @@ bool NVencES::initialize_encoder(GUID encodeGuid,
   if (NV_ENC_SUCCESS !=
       NVencAPI::api.nvEncGetEncodePresetConfig(
           encoder_, encode_GUID_, preset_GUID_, &preset_config_)) {
-    LOGGER_WARN(this->logger, "nvenc cannot get encode preset config");
+    logger_->sw_warning("nvenc cannot get encode preset config");
   } else {
     preset_config_.presetCfg.version = NV_ENC_CONFIG_VER;
     preset_config_.presetCfg.profileGUID = profileGuid;
@@ -241,7 +241,7 @@ bool NVencES::initialize_encoder(GUID encodeGuid,
         preset_config_.presetCfg.encodeCodecConfig.hevcConfig.chromaFormatIDC = 1;
       preset_config_.presetCfg.encodeCodecConfig.hevcConfig.repeatSPSPPS = 1;
     } else {
-      LOGGER_WARN(this->logger, "Unknown codec for hardware encoding.");
+      logger_->sw_warning("Unknown codec for hardware encoding.");
       return false;
     }
 
@@ -250,7 +250,7 @@ bool NVencES::initialize_encoder(GUID encodeGuid,
 
   NVENCSTATUS status = NVencAPI::api.nvEncInitializeEncoder(encoder_, &init_params_);
   if (NV_ENC_SUCCESS != status) {
-    LOGGER_WARN(this->logger, "encode session initialization failed");
+    logger_->sw_warning("encode session initialization failed");
     return false;
   }
   buffers_ = std::make_unique<NVencBuffers>(encoder_, width, height, format);

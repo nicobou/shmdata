@@ -22,6 +22,7 @@
 #include "./pyfclaw.hpp"
 #include "./pyinfotree.hpp"
 #include "./pyquiddity.hpp"
+#include "./pyquiddities.hpp"
 #include "./pysession.hpp"
 #include "./pyswitch.hpp"
 #include "./pywclaw.hpp"
@@ -31,17 +32,25 @@ PyMODINIT_FUNC PyInit_pyquid(void) {
 
   if (PyType_Ready(&pySwitch::pyType) < 0) return nullptr;
   if (PyType_Ready(&pyQuiddity::pyType) < 0) return nullptr;
+  if (PyType_Ready(&pyQuiddities::pyType) < 0) return nullptr;
   if (PyType_Ready(&pyInfoTree::pyType) < 0) return nullptr;
+  if (PyType_Ready(&BundleManager::pyType) < 0) return nullptr;
   if (PyType_Ready(&pySession::pyType) < 0) return nullptr;
+  if (PyType_Ready(&pyLogger::pyType) < 0) return nullptr;
   if (PyType_Ready(&pyWriterClaw::pyType) < 0) return nullptr;
   if (PyType_Ready(&pyFollowerClaw::pyType) < 0) return nullptr;
 
   m = PyModule_Create(&pyquid_quidmodule);
   if (m == nullptr) return nullptr;
 
+  PyObject* BundleType = InterpType("Bundle", "bundles.py");
+  Py_INCREF(BundleType);
+  PyModule_AddObject(m, "Bundle", BundleType);
   Py_INCREF(&pySwitch::pyType);
   PyModule_AddObject(m, "Switcher", reinterpret_cast<PyObject*>(&pySwitch::pyType));
   Py_INCREF(&pyQuiddity::pyType);
+  PyModule_AddObject(m, "Quiddities", reinterpret_cast<PyObject*>(&pyQuiddities::pyType));
+  Py_INCREF(&pyQuiddities::pyType);
   PyModule_AddObject(m, "Quiddity", reinterpret_cast<PyObject*>(&pyQuiddity::pyType));
   Py_INCREF(&pyInfoTree::pyType);
   PyModule_AddObject(m, "InfoTree", reinterpret_cast<PyObject*>(&pyInfoTree::pyType));

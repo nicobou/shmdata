@@ -36,8 +36,8 @@ namespace quiddity {
 class Factory {
   friend class Container;
  public:
-  std::shared_ptr<spdlog::logger> logger;
-  Factory();
+  Factory(logger::Logger* logger);
+  Factory() = delete;
   std::vector<std::string> get_plugin_dirs() const;
   std::string get_default_plugin_dir() const;
   std::vector<std::string> get_kinds() const;
@@ -49,6 +49,7 @@ class Factory {
                                          void (*custom_destroy)(Quiddity*));
 
  private:
+  const logger::Logger* logger_;
   // create is private because it must be called from quiddity container only
   std::shared_ptr<Quiddity> create(const std::string& kind, quiddity::Config&& config);
   bool load_plugin(const std::string& filename);

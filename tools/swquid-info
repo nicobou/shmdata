@@ -20,9 +20,9 @@ from typing import Any
 
 def make_parser() -> argparse.ArgumentParser:
     argp = argparse.ArgumentParser(
-        description="""Get information about available quiddities: properties, methods, signals and description.
-The result is json formatted, except for list-all (-a) and short-list (-l) options that provide only a list. 
-      
+        description="""Get information about available quiddities: properties, methods, signals, claw, infotree and description.
+The result is json formatted, except for list-all (-a) and short-list (-l) options that provide only a list.
+
 Note the "short-line" option (-l) is only valid when combined with one of p, m or s options.
 
 Examples:
@@ -39,6 +39,9 @@ swquid-info -p videotestsrc.width
 Display description of the "width" property of a videotestsrc quiddity:
 swquid-info -p videotestsrc.width.description
 
+Display Shmdata writer information from the quiddity infotree after setting resolution and started properties:
+swquid-info -b resolution 3 -b started true -i videotestsrc.shmdata.writer
+
 Arguments:
 =========
 """, formatter_class=argparse.RawTextHelpFormatter)
@@ -52,8 +55,12 @@ Arguments:
                       help="list kind signals after initialization", action="store_true")
     argp.add_argument("-w", "--claws",
                       help="list information about shmdata possible connection", action="store_true")
+    argp.add_argument("-i", "--infotree",
+                      help="print the quiddity infotree, optionally with a branch path", action="store_true")
     argp.add_argument("-l", "--short-list", help="print only the list of properties, methods or signals.",
                       action="store_true")
+    argp.add_argument("-b", "--set-before",
+                      help="set a property before the request (-b prop value)", type=str, nargs='+', action='append')
     argp.add_argument("-k", "--kind-doc", help="print kind documentation", action="store_true")
     argp.add_argument("-d", "--debug", help="print debug log", action="store_true")
     argp.add_argument("-v", "--version", help="print switcher version", action="store_true")
@@ -92,6 +99,17 @@ def main() -> None:
         print('quiddity kind "' + user_request[0] + '" could not be inspected', file=sys.stderr)
         exit(0)
 
+    # set "before properties
+    if args.set_before is not None:
+        for pair in args.set_before:
+            if len(pair) != 2:
+                print('wrong number of argument for -b (--set-before) option', file=sys.stderr)
+                exit(0)
+            if not quid.set(pair[0], pair[1]):
+                print('could not apply value -b (--set-before) option', file=sys.stderr)
+                exit(0)
+
+    # print short list
     if (args.short_list and (args.properties or args.methods or args.signals)):
         res = []
         tree = InfoTree(quid.get_info_tree_as_json())
@@ -106,6 +124,16 @@ def main() -> None:
                 res.append(tree.get('.signal.' + it + '.id'))
         for it in res:
             print(it)
+        return
+
+    # print tree
+    if (args.infotree):
+        branch = '.'
+        if len(user_request) == 2:
+            branch = user_request[1]
+        doc = InfoTree(quid.get_info_tree_as_json(branch))
+        parsed = json.loads(doc.json())
+        print(json.dumps(parsed, indent=4, sort_keys=False))
         return
 
     # generate json

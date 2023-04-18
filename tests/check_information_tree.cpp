@@ -90,6 +90,11 @@ int main() {
     assert(child1->is_leaf());
     assert(child2->is_leaf());
   }
+  {  // prune a wrong path
+    InfoTree::ptr tree = InfoTree::make();
+    InfoTree::ptr child1 = tree->prune("child1");
+    assert(!child1);
+  }
   {  // absolute prune
     InfoTree::ptr tree = InfoTree::make();
     tree->graft("child1.child2", InfoTree::make());

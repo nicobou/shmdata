@@ -35,7 +35,8 @@ JackServerQuid::JackServerQuid(quiddity::Config&& conf)
                    config<MPtr(&InfoTree::branch_get_value)>("driver"),
                    config<MPtr(&InfoTree::branch_get_value)>("realtime").is_null()
                        ? false
-                       : config<MPtr(&InfoTree::branch_get_value)>("realtime").as<bool>()),
+                       : config<MPtr(&InfoTree::branch_get_value)>("realtime").as<bool>(),
+                   this),
       config_(jack_server_.get_config()),
       driver_config_id_(pmanage<MPtr(&property::PBag::make_group)>(
           "driver_config",
@@ -204,8 +205,7 @@ property::prop_id_t JackServerQuid::make_param(const std::string& config_path,
         config_->branch_get_value(config_path + ".long description").as<std::string>(),
         config_->branch_get_value(config_path + ".value").as<char>());
   }
-  LOGGER_WARN(
-      this->logger, "jackserver: unknown type ({}) for Jack parameter named {}", type, config_path);
+  sw_warning("jackserver: unknown type ({}) for Jack parameter named {}", type, config_path);
   return 0;
 }
 

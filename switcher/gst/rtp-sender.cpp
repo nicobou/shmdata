@@ -79,8 +79,13 @@ void RTPSender::on_caps(GstElement* typefind,
   std::string rtp_id;
   // link the payloader with the rtpbin
   {
+#ifdef HAS_GST_ELEMENT_GET_REQUEST_PAD
     context->rtp_sink_pad_ =
         gst_element_get_request_pad(context->session_->rtpsession_, "send_rtp_sink_%u");
+#else
+    context->rtp_sink_pad_ =
+        gst_element_request_pad_simple(context->session_->rtpsession_, "send_rtp_sink_%u");
+#endif
     On_scope_exit { gst_object_unref(context->rtp_sink_pad_); };
     GstPad* srcpad = gst_element_get_static_pad(context->rtp_payloader_, "src");
     On_scope_exit { gst_object_unref(srcpad); };

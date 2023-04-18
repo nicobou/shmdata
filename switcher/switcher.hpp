@@ -20,16 +20,13 @@
 #ifndef __SWITCHER_SWITCHER_H__
 #define __SWITCHER_SWITCHER_H__
 
-#include <spdlog/sinks/stdout_color_sinks.h>
-#include <uuid/uuid.h>
-
 #include <cstdlib>
 #include <filesystem>
 #include <regex>
 #include <string>
 #include <vector>
 
-#include "configuration/configuration.hpp"
+#include "configuration/configurable.hpp"
 #include "gst/initialized.hpp"
 #include "infotree/information-tree.hpp"
 #include "logger/logger.hpp"
@@ -54,36 +51,24 @@ class Session;
 
 using namespace session;
 
-class Switcher : public gst::Initialized {
+class Switcher : public gst::Initialized,
+                 public configuration::Configurable,
+                 public logger::Logger {
   friend class quiddity::bundle::Bundle;  // access to qcontainer_ and qfactory_
  public:
-  /**
-   * @brief Universally unique identifier
-   * @details A universally unique identifier is a 128-bit label used for information in computer
-   * systems.
-   */
-  const std::string uuid;
-
   /**
    * @brief The name of the Switcher instance
    * @details A name is given in constructor parameters when `making` a Switcher instance
    */
-  const std::string name;
+  const std::string name_;
 
-  /**
-   * @brief A shared pointer to a registered logger
-   * @details When `making` the Switcher instance, a logger is initialized and outputs only to the
-   * console until the instance is configured. Once the instance can check for `logs` settings, the
-   * logger will also outputs to a log file on the system.
-   */
-  std::shared_ptr<spdlog::logger> logger;
-
+ public:
   /**
    * @brief The session of the Swicher instance
    * @details Every Switcher instance has its own session to manage session files to keep a
    *          history of the current state of a Switcher instance.
    */
-  std::shared_ptr<Session> session;
+  std::shared_ptr<Session> session_;
 
   /**
    * @brief Shared pointer type
@@ -123,25 +108,10 @@ class Switcher : public gst::Initialized {
   // Bundles
   bool load_bundle_from_config(const std::string& bundle_description);
 
+  bool register_bundle(InfoTree::ptr bundle_tree);
+  bool unregister_bundle(InfoTree::ptr bundle_tree);
+
  private:
-  /**
-   * @brief Generate a universally unique identifier (uuid)
-   * @return A string that contains the generated uuid
-   */
-  std::string make_uuid();
-
-  /**
-   * @brief Initialize the logger and/or add sinks to it
-   * @details When `making` a Switcher instance, this initializes the logger
-   *          and adds a `console sink` to it. If it already is initialized,
-   *          it only push a new `console sink` to the `sinks` vector of
-   *          the logger instance.
-   *
-   * @param debug A boolean that indicates if a `debug` log level should be enforced
-   * @return A shared pointer to the logger
-   */
-  std::shared_ptr<spdlog::logger> make_logger(bool debug = false);
-
   /**
    * @brief Deletes the default constructor
    */
@@ -169,7 +139,6 @@ class Switcher : public gst::Initialized {
 
   quiddity::Factory qfactory_;
   quiddity::Container::ptr qcontainer_;
-  Configuration conf_;
   std::vector<quiddity::qid_t> quiddities_at_reset_{};
   std::weak_ptr<Switcher> me_{};
   int control_port_{0};

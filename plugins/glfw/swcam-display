@@ -39,7 +39,7 @@ def main() -> None:
     try:
         cam = sw.create('v4l2src', 'cam')
     except RuntimeError:
-        print('Sorry, no device found')
+        print('Sorry, no device found or v4l2src quiddity not installed')
         return
     if (args.list_camera):
         devices = InfoTree(cam.get_info_tree_as_json('.property.device.values'))
@@ -51,7 +51,11 @@ def main() -> None:
             print('cannot set device ' + args.capture_device)
             exit(1)
     cam.set('started', True)
-    win = sw.create('glfwin', 'win')
+    try:
+        win = sw.create('glfwin', 'win')
+    except RuntimeError:
+        print('glfwin quiddity not found')
+        return
     win.invoke('connect-quid', [cam.id(), 'video'])
 
     while(True):

@@ -49,21 +49,18 @@ Bundle::Bundle(quiddity::Config&& conf)
     manager_->qfactory_.scan_dir(it);
   }
 
-  manager_->conf<MPtr(&Configuration::set)>(
-      qcontainer_->get_switcher()->conf<MPtr(&Configuration::get)>());
+  manager_->conf<MPtr(&Configuration::from_tree)>(
+      qcontainer_->get_switcher()->conf<MPtr(&Configuration::get)>().get());
 
   if (!config<MPtr(&InfoTree::branch_has_data)>("pipeline")) {
-    LOGGER_WARN(this->logger, "bundle description is missing the pipeline description");
+    sw_warning("bundle description is missing the pipeline description");
     is_valid_ = false;
     return;
   }
   pipeline_ = config<MPtr(&InfoTree::branch_get_value)>("pipeline").copy_as<std::string>();
   auto spec = bundle::DescriptionParser(pipeline_, std::vector<std::string>());
   if (!spec) {
-    LOGGER_WARN(this->logger,
-                "{} : error parsing the pipeline ({})",
-                get_nickname(),
-                spec.get_parsing_error());
+    sw_warning("{} : error parsing the pipeline ({})", get_nickname(), spec.get_parsing_error());
     is_valid_ = false;
     return;
   }
@@ -145,24 +142,20 @@ bool Bundle::make_quiddities(const std::vector<bundle::quiddity_spec_t>& quids) 
   for (auto& quid : quids) {
     auto res = manager_->qcontainer_->create(quid.kind, quid.name, nullptr);
     if (!res) {
-      LOGGER_WARN(
-          this->logger, "internal manager failed to instantiate a quiddity of kind {}", quid.kind);
+      sw_warning("internal manager failed to instantiate a quiddity of kind {}", quid.kind);
       return false;
     }
     std::string name = res.msg();
 
     for (auto& param : quid.params) {
       if (param.first == "started") {
-        LOGGER_WARN(this->logger, "ignoring started property when building bundle");
+        sw_warning("ignoring started property when building bundle");
         continue;
       }
       if (!param.second.empty() &&
           !res.get()->prop<MPtr(&property::PBag::set_str_str)>(param.first, param.second)) {
-        LOGGER_WARN(this->logger,
-                    "fail to set property {} to {} for quiddity {}",
-                    param.first,
-                    param.second,
-                    name);
+        sw_warning(
+            "fail to set property {} to {} for quiddity {}", param.first, param.second, name);
         return false;
       }
     }  // quiddity is created
@@ -218,11 +211,9 @@ bool Bundle::make_quiddities(const std::vector<bundle::quiddity_spec_t>& quids) 
 
     quiddity_removal_cb_ids_.push_back(
         manager_->qcontainer_->register_removal_cb([this](quiddity::qid_t id) {
-          LOGGER_DEBUG(
-              this->logger,
-              "The bundle {} was destroyed because one of its quiddities ({}) was destroyed",
-              nickname_,
-              manager_->qcontainer_->get_nickname(id));
+          sw_debug("The bundle {} was destroyed because one of its quiddities ({}) was destroyed",
+                   nickname_,
+                   manager_->qcontainer_->get_nickname(id));
           // We only self destruct it once so we unregister all the removal callbacks.
           manager_->qcontainer_->reset_create_remove_cb();
           self_destruct();
@@ -251,17 +242,17 @@ void Bundle::on_tree_grafted(const std::string& key, void* user_data) {
           // connection to dedicated sfid
           auto sfid = quid->claw<MPtr(&quiddity::claw::Claw::get_sfids)>();
           if (sfid.empty()) {
-            LOGGER_WARN(quid->logger,
-                        "BUG in bundle, no follower available when connecting from quiddity {}",
-                        quid->get_nickname());
+            quid->sw_warning(
+                "BUG in bundle, no follower available when connecting from quiddity {}",
+                quid->get_nickname());
             continue;
           }
           if (!quid->claw<MPtr(&quiddity::claw::Claw::sfid_can_do_shmtype)>(sfid[0], caps)) {
-            LOGGER_WARN(context->self_->logger,
-                        "ERROR: bundle specification error: {} cannot connect with {} (caps is {})",
-                        context->quid_spec_.name,
-                        it,
-                        caps);
+            context->self_->sw_warning(
+                "ERROR: bundle specification error: {} cannot connect with {} (caps is {})",
+                context->quid_spec_.name,
+                it,
+                caps);
             continue;
           }
 
@@ -359,11 +350,11 @@ void Bundle::on_tree_pruned(const std::string& key, void* user_data) {
       if (!context->self_->pmanage<MPtr(&property::PBag::remove)>(
               context->self_->pmanage<MPtr(&property::PBag::get_id)>(context->quid_name_ + "/" +
                                                                      prop_name))) {
-        LOGGER_WARN(context->self_->logger,
-                    "BUG removing property ({}) deleted from a quiddity ({}) in a bundle ({})",
-                    prop_name,
-                    context->quid_name_,
-                    context->self_->get_nickname());
+        context->self_->sw_warning(
+            "BUG removing property ({}) deleted from a quiddity ({}) in a bundle ({})",
+            prop_name,
+            context->quid_name_,
+            context->self_->get_nickname());
       }
     }
     static std::regex prop_rename("\\.?property\\.");
@@ -406,9 +397,9 @@ void Bundle::on_tree_pruned(const std::string& key, void* user_data) {
         // is missing
         const auto sfids = quid->claw<MPtr(&quiddity::claw::Claw::get_sfids)>();
         if (sfids.empty()) {
-          LOGGER_WARN(quid->logger,
-                      "BUG in bundle, no follower available when disconnecting from quiddity {}",
-                      quid->get_nickname());
+          quid->sw_warning(
+              "BUG in bundle, no follower available when disconnecting from quiddity {}",
+              quid->get_nickname());
         }
         quid->claw<MPtr(&quiddity::claw::Claw::disconnect)>(sfids[0]);
       }
@@ -427,7 +418,7 @@ bool Bundle::start() {
   for (auto& it : start_quids_) {
     if (!manager_->qcontainer_->get_quiddity(manager_->qcontainer_->get_id(it))
              ->prop<MPtr(&property::PBag::set_str_str)>("started", "true")) {
-      LOGGER_WARN(this->logger, "fail to set start {}", it);
+      sw_warning("fail to set start {}", it);
       return false;
     }
   }
@@ -438,7 +429,7 @@ bool Bundle::stop() {
   for (auto& it : start_quids_) {
     if (!manager_->qcontainer_->get_quiddity(manager_->qcontainer_->get_id(it))
              ->prop<MPtr(&property::PBag::set_str_str)>("started", "false")) {
-      LOGGER_WARN(this->logger, "fail to set start {}", it);
+      sw_warning("fail to set start {}", it);
       return false;
     }
   }

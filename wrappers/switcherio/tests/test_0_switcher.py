@@ -1,6 +1,16 @@
+#!/usr/bin/env python3
+
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU Lesser General Public License
+# as published by the Free Software Foundation; either version 2.1
+# of the License, or (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+
 from .base import SocketIOTestCase
-import json
-import pyquid
 import time
 
 
@@ -9,20 +19,11 @@ class SwitcherTestCase(SocketIOTestCase):
 
     Available tests:
       - switcher.bundles
-      - switcher.kinds.
+      - switcher.kinds
       - switcher.name
       - switcher.quiddities
       - switcher.version
     """
-
-    server_name = 'SocketIOServerTest'
-    websocket_url = "ws://localhost:8000?version=Test"
-
-    # no event callbacks registered for this test case yet
-    events = []
-    # data sent by the server will be eventually available
-    # as soon as the signal callback gets triggered
-    rcvd_data = None
 
     def test_0_switcher_name(self):
         err, res = self.sio.call('switcher.name')
@@ -38,12 +39,12 @@ class SwitcherTestCase(SocketIOTestCase):
         self.assertIsInstance(res, str)
         self.assertEqual(res, self.version)
 
-    def test_2_switcher_bundles(self):
+    def test_21_switcher_str_bundles(self):
         # describe a `bundle` configuration key for switcher
-        bundles = json.dumps({
+        bundles = '''{
             "bundle": {
                 "testBundle": {
-                    "pipeline": "dummy name=Test",
+                    "pipeline": "property-quid name=Test",
                     "doc": {
                         "long_name": "Test",
                         "category": "test",
@@ -52,7 +53,28 @@ class SwitcherTestCase(SocketIOTestCase):
                     }
                 }
             }
-        })
+        }'''
+        # send the description to switcher
+        err, res = self.sio.call('switcher.bundles', data=bundles)
+        time.sleep(1)
+        self.assertIsNone(err)
+        self.assertTrue(res)
+
+    def test_22_switcher_dict_bundles(self):
+        # describe a `bundle` configuration key for switcher
+        bundles = {
+            "bundle": {
+                "testBundle": {
+                    "pipeline": "property-quid name=Test",
+                    "doc": {
+                        "long_name": "Test",
+                        "category": "test",
+                        "tags": "writer",
+                        "description": "Test"
+                    }
+                }
+            }
+        }
         # send the description to switcher
         err, res = self.sio.call('switcher.bundles', data=bundles)
         time.sleep(1)
@@ -75,5 +97,10 @@ class SwitcherTestCase(SocketIOTestCase):
         err, res = self.sio.call('switcher.quiddities')
         time.sleep(1)
         self.assertIsNone(err)
-        self.assertIsInstance(res, dict)
-        self.assertEqual(res, {'quiddities': []})
+        self.assertIsInstance(res, list)
+
+    def test_5_switcher_logging(self):
+        err, res = self.sio.call("switcher.log", data=("debug", "Some important debugging text"))
+        time.sleep(1)
+        self.assertIsNone(err)
+        self.assertTrue(res)

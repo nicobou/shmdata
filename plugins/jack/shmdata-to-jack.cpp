@@ -18,7 +18,7 @@
  */
 
 #include "./shmdata-to-jack.hpp"
-#include "./audio-resampler.hpp"
+
 #include "switcher/gst/utils.hpp"
 #include "switcher/quiddity/container.hpp"
 #include "switcher/quiddity/property/gprop-to-prop.hpp"
@@ -186,6 +186,7 @@ int ShmdataToJack::jack_process(jack_nframes_t nframes, void* arg) {
       if (context->ring_buffers_.empty() ||
           (num_channels > 0 && context->ring_buffers_[0].get_usage() < nframes)) {
         write_zero = true;
+        context->sw_info("ring buffer empty");
       }
       for (unsigned int i = 0; i < context->output_ports_.size(); ++i) {
         jack_sample_t* buf = static_cast<jack_sample_t*>(
@@ -204,8 +205,7 @@ int ShmdataToJack::jack_process(jack_nframes_t nframes, void* arg) {
 
 void ShmdataToJack::on_xrun(uint num_of_missed_samples) {
   if (!is_constructed_) return;
-  LOGGER_INFO(
-      this->logger, "jack xrun (delay of {} samples)", std::to_string(num_of_missed_samples));
+  sw_info("jack xrun (delay of {} samples)", std::to_string(num_of_missed_samples));
   jack_nframes_t jack_buffer_size = jack_client_->get_buffer_size();
   for (auto& it : ring_buffers_) {
     // this is safe since on_xrun is called right before jack_process,
@@ -232,7 +232,7 @@ void ShmdataToJack::on_handoff_cb(GstElement* /*object*/,
   // getting buffer infomation:
   GstMapInfo map;
   if (!gst_buffer_map(buf, &map, GST_MAP_READ)) {
-    LOGGER_WARN(context->logger, "gst_buffer_map failed: canceling audio buffer access");
+    context->sw_warning("gst_buffer_map failed: canceling audio buffer access");
     return;
   }
   On_scope_exit { gst_buffer_unmap(buf, &map); };
@@ -245,21 +245,27 @@ void ShmdataToJack::on_handoff_cb(GstElement* /*object*/,
       context->drift_observer_.set_current_time_info(current_time, duration));
   --context->debug_buffer_usage_;
   if (0 == context->debug_buffer_usage_) {
-    LOGGER_DEBUG(context->logger,
-                 "buffer load is {}, ratio is {}",
-                 std::to_string(context->ring_buffers_[0].get_usage()),
-                 std::to_string(context->drift_observer_.get_ratio()));
+    context->sw_debug("buffer load is {}, ratio is {}",
+                      std::to_string(context->ring_buffers_[0].get_usage()),
+                      std::to_string(context->drift_observer_.get_ratio()));
     context->debug_buffer_usage_ = 1000;
   }
+  // Smoothly reduce latency if the ring buffer contain more than 10ms of audio
+  if (context->ring_buffers_[0].get_usage() > context->jack_client_->get_sample_rate() * 0.01) {
+    new_size *= 0.9999;
+  }
+
   jack_sample_t* tmp_buf = (jack_sample_t*)map.data;
+  context->audio_resampler_->do_resample(duration, new_size, tmp_buf);
   for (int i = 0; i < channels; ++i) {
-    AudioResampler<jack_sample_t> resample(duration, new_size, tmp_buf, i, channels);
-    auto emplaced = context->ring_buffers_[i].put_samples(new_size, [&resample]() {
-      // return resample.zero_pole_get_next_sample();
-      return resample.linear_get_next_sample();
+    std::size_t cur_pos = 0;
+    auto emplaced = context->ring_buffers_[i].put_samples(new_size, [&]() {
+      auto pos = cur_pos;
+      ++cur_pos;
+      return context->audio_resampler_->get_sample(pos, i);
     });
     if (emplaced != new_size)
-      LOGGER_WARN(context->logger, "overflow of {} samples", std::to_string(new_size - emplaced));
+      context->sw_warning("overflow of {} samples", std::to_string(new_size - emplaced));
   }
 }
 
@@ -276,8 +282,7 @@ bool ShmdataToJack::make_elements() {
                           " fakesink silent=true signal-handoffs=true sync=false");
   GstElement* jacksink = gst_parse_bin_from_description(description.c_str(), TRUE, &error);
   if (error != nullptr) {
-    LOGGER_WARN(
-        this->logger, "error making gst elements in jacksink: {}", std::string(error->message));
+    sw_warning("error making gst elements in jacksink: {}", std::string(error->message));
     g_error_free(error);
     return false;
   }
@@ -294,7 +299,7 @@ bool ShmdataToJack::make_elements() {
 
 bool ShmdataToJack::start() {
   if (shmpath_.empty()) {
-    LOGGER_WARN(this->logger, "cannot start, no shmdata to connect with");
+    sw_warning("cannot start, no shmdata to connect with");
     return false;
   }
 
@@ -311,13 +316,12 @@ bool ShmdataToJack::start() {
         if (!is_constructed_) return;
         auto thread = std::thread([this]() {
           if (!qcontainer_->remove(get_id()))
-            LOGGER_WARN(
-                this->logger, "% did not self destruct after jack shutdown", get_nickname());
+            sw_warning("% did not self destruct after jack shutdown", get_nickname());
         });
         thread.detach();
       });
   if (!*jack_client_.get()) {
-    LOGGER_ERROR(this->logger, "JackClient cannot be instantiated (is jack server running?)");
+    sw_error("JackClient cannot be instantiated (is jack server running?)");
     is_valid_ = false;
     return false;
   }
@@ -398,7 +402,7 @@ bool ShmdataToJack::on_shmdata_disconnect() {
 
 bool ShmdataToJack::on_shmdata_connect(const std::string& shmpath) {
   if (shmpath.empty()) {
-    LOGGER_ERROR(this->logger, "shmpath must not be empty");
+    sw_error("shmpath must not be empty");
     return false;
   }
   if (!shmpath_.empty()) {
@@ -419,8 +423,10 @@ void ShmdataToJack::on_channel_update(unsigned int channels) {
     for (unsigned int i = 0; i < channels; ++i) output_ports_.emplace_back(*jack_client_, i);
     update_ports_to_connect();
     // replacing ring buffers
-    std::vector<AudioRingBuffer<jack_sample_t>> tmp(channels);
+    std::vector<utils::AudioRingBuffer<jack_sample_t>> tmp(channels);
     std::swap(ring_buffers_, tmp);
+    // restarting resampler
+    audio_resampler_ = std::make_unique<utils::AudioResampler<jack_sample_t>>(this, channels);
   }  // unlocking output_ports_
 }
 
@@ -442,17 +448,15 @@ void ShmdataToJack::connect_ports() {
   {
     std::lock_guard<std::mutex> lock(output_ports_mutex_);
     if (ports_to_connect_.size() != output_ports_.size()) {
-      LOGGER_WARN(this->logger,
-                  "Port number mismatch in shmdata to jack autoconnect, should not happen.");
+      sw_warning("Port number mismatch in shmdata to jack autoconnect, should not happen.");
       return;
     }
 
     for (unsigned int i = 0; i < (connect_only_first_ ? 1 : output_ports_.size()); ++i) {
       unsigned int dest_port_index = connect_all_to_first_ ? 0 : i;
-      LOGGER_DEBUG(this->logger,
-                   "Connecting {} to {}",
-                   std::string(client_name_ + ":" + output_ports_[i].get_name()),
-                   ports_to_connect_[dest_port_index]);
+      sw_debug("Connecting {} to {}",
+               std::string(client_name_ + ":" + output_ports_[i].get_name()),
+               ports_to_connect_[dest_port_index]);
       jack_connect(jack_client_->get_raw(),
                    std::string(client_name_ + ":" + output_ports_[i].get_name()).c_str(),
                    ports_to_connect_[dest_port_index].c_str());

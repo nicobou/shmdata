@@ -38,7 +38,7 @@ def on_user_tree_pruned(data, user_data):
 sw = pyquid.Switcher("userTreeSignal", debug=True)
 
 # create a quiddity
-dum = sw.create("dummy", "dum")
+dum = sw.create("empty-quid", "dum")
 
 my_user_data = dum
 my_user_data2 = str('swquid-info is my friend')

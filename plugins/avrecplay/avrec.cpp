@@ -70,7 +70,7 @@ AVRecorder::AVRecorder(quiddity::Config&& conf)
     if (nullptr != mux_factories) gst_plugin_feature_list_free(mux_factories);
   };
   if (!mux_factories || g_list_length(mux_factories) == 0) {
-    LOGGER_WARN(this->logger, "ERROR: Could not find any gstreamer muxer (avrec)");
+    sw_warning("ERROR: Could not find any gstreamer muxer (avrec)");
     is_valid_ = false;
     return;
   }
@@ -86,15 +86,14 @@ AVRecorder::AVRecorder(quiddity::Config&& conf)
       "recpath",
       [this](const std::string& val) {
         if (val.empty()) {
-          LOGGER_WARN(this->logger, "Empty folder provided for shmdata recorder.");
+          sw_warning("Empty folder provided for shmdata recorder.");
           return false;
         }
 
         struct stat st;
         if (stat(val.c_str(), &st) != 0 || !S_ISDIR(st.st_mode)) {
           if (-1 == mkdir(val.c_str(), S_IRWXU | S_IRUSR | S_IWUSR)) {
-            LOGGER_WARN(this->logger,
-                        "The specified folder does not exist and could not be created (avrec).");
+            sw_warning("The specified folder does not exist and could not be created (avrec).");
             return false;
           }
         }
@@ -192,7 +191,7 @@ bool AVRecorder::start() {
   };
 
   if (error) {
-    LOGGER_WARN(this->logger, "Could not create shmdata recorder: {}", std::string(error->message));
+    sw_warning("Could not create shmdata recorder: {}", std::string(error->message));
     g_error_free(error);
     return false;
   }

@@ -26,34 +26,39 @@ using namespace switcher;
 namespace fs = std::filesystem;
 
 int main() {
-  // get default configuration file path
-  auto global_path = Configuration::get_default_global_path();
+  // 1. check config when making the switcher
+  Switcher::ptr mgr = Switcher::make_switcher("test-config", true);
 
-  // backup the file if any, and replace it with "./check_configuration.json"
-  auto global_path_backup = global_path;
-  global_path_backup += ".to_restore";
-  bool do_restore_initial_config_file = false;
-  if (fs::exists(global_path)) {
-    fs::copy_file(global_path, global_path_backup);
-    do_restore_initial_config_file = true;
-    fs::remove(global_path);
-  }
-  fs::create_directories(global_path.parent_path());
-  fs::copy_file("./check_configuration.json", global_path);
+  // check a configuration has been applied
+  assert(mgr->conf<MPtr(&Configuration::get_value)>(".logs.filepath").not_null());
+  assert(mgr->conf<MPtr(&Configuration::get_value)>(".logs.log_level").not_null());
+  assert(mgr->conf<MPtr(&Configuration::get_value)>(".shm.prefix").not_null());
 
-  // making the switcher
-  Switcher::ptr mgr = Switcher::make_switcher("configuration", true);
+  // 2. load a configuration from a given file. This one contains definition for some bundles
+  assert(mgr->conf<MPtr(&Configuration::from_file)>("./check_configuration.json"));
 
-  // check the configuration has been applied
+  // check mandatory values in the configuration are available
+  assert(mgr->conf<MPtr(&Configuration::get_value)>(".logs.filepath").not_null());
+  assert(mgr->conf<MPtr(&Configuration::get_value)>(".logs.log_level").not_null());
+  assert(mgr->conf<MPtr(&Configuration::get_value)>(".shm.prefix").not_null());
+
+  // check the bundles from this configuration are available
   assert(mgr->conf<MPtr(&Configuration::list_extra_configs)>().size() == 2);
   assert(quiddity::test::create(mgr, "source-bundle"));
 
-  // cleanup and restore previous config file if any
-  fs::remove(global_path);
-  if (do_restore_initial_config_file) {
-    fs::copy_file(global_path_backup, global_path);
-    fs::remove(global_path_backup);
-  }
+  // 3. load a configuration from an InfoTree
+  const auto config_tree = mgr->conf<MPtr(&Configuration::get)>();
+  // reapply the same configuration
+  assert(mgr->conf<MPtr(&Configuration::from_tree)>(config_tree.get()));
+
+  // check a configuration has been applied
+  assert(mgr->conf<MPtr(&Configuration::get_value)>(".logs.filepath").not_null());
+  assert(mgr->conf<MPtr(&Configuration::get_value)>(".logs.log_level").not_null());
+  assert(mgr->conf<MPtr(&Configuration::get_value)>(".shm.prefix").not_null());
+
+  // check bundles has been reloaded from the config_tree
+  assert(mgr->conf<MPtr(&Configuration::list_extra_configs)>().size() == 2);
+  assert(quiddity::test::create(mgr, "source-bundle"));
 
   return 0;
 }

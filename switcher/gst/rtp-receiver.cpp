@@ -44,7 +44,7 @@ RTPReceiver::RTPReceiver(RTPSession* session,
               g_object_set(G_OBJECT(el), "socket-path", path.c_str(), nullptr);
             }
           },
-          []() {  // FIXME warning("discarding uncomplete custom frame due to a network loss");
+          []() {  // FIXME sw_warning("discarding uncomplete custom frame due to a network loss");
           },
           nullptr,
           decompress_) {
@@ -81,8 +81,13 @@ void RTPReceiver::on_caps(GstElement* /*typefind*/,
   context->shmsrc_caps_ = gst_caps_copy(caps);
   // link the payloader with the rtpbin
   {
+#ifdef HAS_GST_ELEMENT_GET_REQUEST_PAD
     context->rtp_sink_pad_ =
         gst_element_get_request_pad(context->session_->rtpsession_, "recv_rtp_sink_%u");
+#else
+    context->rtp_sink_pad_ =
+        gst_element_request_pad_simple(context->session_->rtpsession_, "recv_rtp_sink_%u");
+#endif
     On_scope_exit { gst_object_unref(context->rtp_sink_pad_); };
     GstPad* srcpad = gst_element_get_static_pad(context->typefind_, "src");
     On_scope_exit { gst_object_unref(srcpad); };

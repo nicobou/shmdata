@@ -1,6 +1,146 @@
-sNEWS
+NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
+
+switcher 3.2.2 (2023-04-18)
+---------------------------
+
+New features:
+* Deb package in gitlab ci with plugins
+
+Bug fixes:
+* Pyquid: fix segfault when Switcher is created without a name
+* Fix the prune API in swIO and add tests on top of this API
+* Quick fix the issues with executor specs
+
+Improvement:
+* Fix/log must not be singleton
+* Stop sending poly aftertouch on midi sinc start
+* Fix links in readme
+
+switcher 3.2.0 (2022-11-17)
+---------------------------
+This is an official release in the 3.2 stable series.
+
+Bug fixes:
+* fix segfault in pyquid.InfoTree.prune
+* fix swio session load, read, write
+* fix RTMP claw
+* fix parsing error with portmidi claw
+
+New features:
+* enable switcherio for Ubuntu 22.04
+
+Improvements:
+* add bus_info suffix to v4l2 card name
+* activate the parsing error option for InfoTree in pyquid
+* improve infotree logging of parsing eerrors
+
+
+switcher 3.1.14 (2022-10-17)
+---------------------------
+This is an official release in the 3.1 stable series.
+
+Bug fixes:
+* 🐛 fix shmshot python error when display is requested
+* 🐛 fix Use-After-Free JSON corruption in pySwitch.load_bundles
+* 🐛 pyquid: fix invocation of a non existant method
+* Replace PyThreadState with PyGILState API in non-Python created callback threads
+* 🐛 fix nvenc test with the forcing of consistent I420 pixel format as default for videotestsrc
+
+New feature:
+* Add swsip-reflector service
+* ✨ add the session api
+* ♻️ add a descriptor for quiddities to pySwitch
+* ♻️ add the get_description method to Quiddity
+
+Improvements:
+* Release id when nickname unavailable in Container::quiet_create
+* Handle and display qrox error in pyquid.Switcher.create
+* 👷 remove WebRTC test from CI
+* :loud_sound: Fix a typo in container.hpp logger
+* 📝 improve swIO troubleshooting with pdb
+* 🔨 add a debug option on top of the swio cli
+* 🚚 import and use pyquid types
+* 🔊 add debug logs when swio is running
+* ♻️ make the pyQuiddity ctor wrapping a Quiddity pointer
+* 👷 update packaging script for packaging through Metalab MPAs
+
+switcher 3.1.12 (2022-09-19)
+---------------------------
+This is an official release in the 3.1 stable series.
+
+New features:
+* ✨ add apt depedency file for nvidia on Ubuntu 22.04
+* ✨ add connection spec callbacks in swIO
+
+Improvements:
+* 📝 update URLs for Scenic repositories
+* 📝 update with new gitlab URL for Switcher
+* 🍱 name for Vanshita Verma in the authors script
+
+switcher 3.1.10 (2022-09-06)
+---------------------------
+This is an official release in the 3.1 stable series.
+
+Bug fixes:
+* 👷 be more lenient with shmdata delay test for CI performances
+* 🐛 fix pyquid session segfault
+* fix gst_element_get_request_pad not available after gstreamer version 1.20
+* 🐛 fix claw description for dynamic shmdata writer filled with label instead of description
+* 🐛 fix default configuration is lost when configuration is loaded from a file
+* 👷 disable WEBRTC plugin and SWITCHERIO build and test for Ubuntu 22.04
+
+New Features:
+* ⬆️  port to Ubuntu 22.04
+* ✨ add a query argument on top of the user_tree and info_tree APIs in swIO
+* ✨ add a disconnect api for the quiddity
+
+Improvements:
+* add build Docker image for dependencies in Ubuntu 22.04, and build debian package for ubuntu 22.04
+* 🔧 add a cmake option for Switcher IO, and remove forced installation of SwitcherIO python dependencies during cmake configuration
+* remove deprecated and useless PyEval_InitThreads
+* removed asyncio.get_event_loop in webrtc python tests
+* add gstreamer1.0-nice inubuntu 22.04  dependency
+* fix deprecation warning with asyncio
+* 👷 add 22.04 into CI
+* ✅ check_configuration ensures shm.prefix and log configuration are not lost after configuration reload
+* shmshot: do not quit in callback
+
+Documentation:
+* 🚸 add an example that registers to sip
+* 📝 add doc for build and install for Ubuntu 22.04
+* updated runtime deps for ubuntu 22.04
+
+switcher 3.1.8 (2022-07-26)
+---------------------------
+This is an official release in the 3.1 stable series.
+
+Bug fixes:
+* ✅ fix make package_source_test for pyquid not loading module when not installed
+* ✏️fix typo for shmdata path description
+* 🐛 fix audio ring buffer no updating available size when dest is nullptr
+* 🚑️fix missing include in audio-ring-buffer
+
+New features:
+* ✨ add print infotgree in swquidinfo
+* ✨ add read_sample to the audio ring buffer class
+* ✨ add set-before option in swquid-infop
+
+Documentation:
+* 📝 add doxygen doc for AudioRingBuffer, AudioResample, DriftObserver, PulseSink and ShmdataToJack
+* 📝 doxygen for selection (type of Quiddity property)
+* 📝 add doc for AudioCaps
+
+Improvements:
+* ⚡️moved audio ring buffer, drif observer and resampler from jack plugin to utils. Use libsamplerate instead of custom resampling
+* ⚡️pulsesink uses shmdata, pulse low level API and Switcher classes for audio drift correction
+* ⚡️code simplification of async tasks in threaded wrapper
+* ✨ SwitcherIO: API improvements
+* ✨ improve quiddity creation from swio
+* 📝 update doxygen file
+* 📦 update nvidia keys
+
 
 switcher 3.1.6 (2022-06-15)
 ---------------------------

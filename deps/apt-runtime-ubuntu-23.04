@@ -1,0 +1,15 @@
+gsoap
+gstreamer1.0-plugins-base
+gstreamer1.0-plugins-good
+gstreamer1.0-plugins-ugly
+libcgsi-gsoap1
+libjson-glib-1.0-0
+libpython3.11
+libsamplerate0
+libspdlog1.10
+python3
+python3-aiohttp
+python3-requests
+python3-socketio
+python3-websocket
+uuid

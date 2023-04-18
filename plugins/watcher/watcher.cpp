@@ -60,7 +60,7 @@ bool Watcher::start() {
   stop();
   // Arguments validation
   if (directory_.empty()) {
-    LOGGER_ERROR(this->logger, "Directory path must not be empty");
+    sw_error("Directory path must not be empty");
     return false;
   }
 
@@ -70,17 +70,17 @@ bool Watcher::start() {
     return false;
   }
   if (status == DirectoryStatus::IS_FILE) {
-    LOGGER_ERROR(this->logger, "{} is a file, not a directory.", directory_);
+    sw_error("{} is a file, not a directory.", directory_);
     return false;
   }
   if (status == DirectoryStatus::ABSENT) {
     if (!create_dir_) {
-      LOGGER_ERROR(this->logger, "Directory {} does not exist.", directory_);
+      sw_error("Directory {} does not exist.", directory_);
       return false;
     }
     std::error_code ec;
     if (!fs::create_directories(directory_, ec)) {
-      LOGGER_ERROR(this->logger, "Directory could not be created. Error: {}", ec.message());
+      sw_error("Directory could not be created. Error: {}", ec.message());
       return false;
     }
     fs::permissions(directory_, fs::perms::all, fs::perm_options::replace);
@@ -148,7 +148,7 @@ Watcher::DirectoryStatus Watcher::dir_exists(const std::string path) const {
       return DirectoryStatus::PRESENT;
     }
   } catch (const fs::filesystem_error& e) {
-    LOGGER_ERROR(this->logger, "Error while checking for directory. Error: {}", e.what());
+    sw_error("Error while checking for directory. Error: {}", e.what());
     return DirectoryStatus::ERROR;
   }
   return DirectoryStatus::IS_FILE;

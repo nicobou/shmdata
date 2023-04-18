@@ -48,8 +48,9 @@ class pyQuiddity {
   };
   using pyQuiddityObject = struct {
     PyObject_HEAD std::weak_ptr<Quiddity> quid{};
-    std::weak_ptr<Switcher> switcher{};
-    PyObject* quiddities{nullptr};
+    PyObject* switcher{nullptr};
+    PyObject* props{nullptr};
+    PyObject* signals{nullptr};
     InfoTree::ptr connnection_spec_keep_alive_{};
     std::unique_ptr<sig_registering_t> sig_reg{};
     std::unique_ptr<prop_registering_t> prop_reg{};
@@ -63,10 +64,23 @@ class pyQuiddity {
 
   static PyTypeObject pyType;
   static PyMethodDef pyQuiddity_methods[];
+  static PyGetSetDef tp_getset[];
 
  private:
   // Boilerplate
-  static PyObject* Quiddity_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /*kwds*/);
+  static PyObject* tp_new(PyTypeObject* type, PyObject* /*args*/, PyObject* /*kwds*/);
+
+  /**
+   * @brief Main method that initializes the pyQuiddity object
+   * @param self The instanciated pyQuiddity object
+   * @param args The instance arguments when instanciated
+   * @param kwds The instance arguments when instanciated
+   * @details This method is **encapsulating a created quiddity** and
+   *          can't be used without a reference on an existing quiddity.
+   *          In order to create new quiddities from the pyquid API,
+   *          we recommand to use the `pyswitch.create(*args)` method.
+   * @return 1 if the initialization failed, 0 if it succeed
+   */
   static int Quiddity_init(pyQuiddityObject* self, PyObject* /*args*/, PyObject* /*kwds*/);
   static void Quiddity_dealloc(pyQuiddityObject* self);
   static PyObject* tp_repr(pyQuiddityObject* self);
@@ -75,6 +89,40 @@ class pyQuiddity {
   static PyObject* get(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* invoke(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* invoke_async(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
+
+  static PyObject* notify_update(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
+
+  /**
+   * @brief Get the properties registry of the pyQuiddity object
+   * @details The properties registry is a pythonic interface to
+   *          the `properties` entry in the quiddity's InfoTree.
+   *          It instanciates a descriptor and a registry from
+   *          the `props.py` file and it is initialized under
+   *          the `props` attribute of pyQuiddity objects.
+   *
+   *          So, it allows you to discover properties like this:
+   *          ```py
+   *          vid = sw.create('videotestsrc', 'ex')
+   *          print(vid.props)
+   *          assert vid.props['started'] == False
+   *          vid.props['started'] = True
+   *          ```
+   *
+   *          See https://docs.python.org/3/howto/descriptor.html
+   *          for implementation details.
+   *
+   * @param self The pyQuiddity instance to initialize
+   * @return The descriptor object
+   */
+  static PyObject* get_property_descriptor(pyQuiddityObject* self);
+
+  /**
+   * @brief Get the signals registry of the pyQuiddity object
+   * @param self The pyQuiddity instance to initialize
+   * @return The descriptor object
+   */
+  static PyObject* get_signal_descriptor(pyQuiddityObject* self);
+
   // access to user tree
   static PyObject* get_user_tree(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* notify_user_data_grafted(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
@@ -82,7 +130,7 @@ class pyQuiddity {
   // access to quiddity InfoTree
   static PyObject* get_info(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* get_info_tree_as_json(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
-  // name, kind, nickname and id
+  // kind, nickname and id
   static PyObject* get_kind(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* set_nickname(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* nickname(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
@@ -108,4 +156,5 @@ class pyQuiddity {
   static PyObject* get_writer_claws(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
   static PyObject* get_follower_claws(pyQuiddityObject* self, PyObject* args, PyObject* kwds);
 };
+
 #endif

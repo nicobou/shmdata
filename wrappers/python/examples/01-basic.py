@@ -15,17 +15,19 @@ from pyquid import Switcher, Quiddity, InfoTree
 import time
 
 
-# create a switcher.
-sw = Switcher('pyquid', debug=True)
+# create a switcher, name is mandatory
+sw = Switcher(name='pyquid', debug=True)
+
 # the switcher instance has a name
 assert 'pyquid' == sw.name()
+
 # it has a version
 assert '' != sw.version()
 
 # with switcher, you can create different kinds of named Quiddities.
 # In this case, glfwin is a quiddity kind that manage video window
 try:
-    win = Quiddity(switcher=sw, kind='glfwin', nickname='win')
+    win = sw.create(kind='glfwin', nickname='win')
 except RuntimeError:
     # The following replace the glfwin quiddity by a dummy quiddity if glfwin is not available
     # note here the quiddity is constructed from the switcher create method. This is equivalent
@@ -33,7 +35,7 @@ except RuntimeError:
     win = sw.create(kind='dummysink', nickname='win')
 
 # creating a video source that will eventually be connected to the video window
-vid = Quiddity(sw, 'videotestsrc', 'vid')
+vid = sw.create('videotestsrc', 'vid')
 
 # Quiddities have nicknames & kinds
 assert None != vid.nickname()

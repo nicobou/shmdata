@@ -22,43 +22,54 @@
 
 #include <memory>
 #include <mutex>
-#include "./audio-ring-buffer.hpp"
-#include "./drift-observer.hpp"
+
 #include "./jack-client.hpp"
 #include "switcher/gst/pipeliner.hpp"
 #include "switcher/shmdata/gst-tree-updater.hpp"
+#include "switcher/utils/audio-resampler.hpp"
+#include "switcher/utils/audio-ring-buffer.hpp"
+#include "switcher/utils/drift-observer.hpp"
 
 namespace switcher {
 namespace quiddities {
 using namespace quiddity;
+
+/**
+ * ShmdataToJack quiddity. It reads an audio Shmdata, and play it through Jack.
+ **/
 class ShmdataToJack : public Quiddity {
  public:
+  /**
+   * Construct a ShmdataToJack object.
+   */
   ShmdataToJack(quiddity::Config&&);
   ~ShmdataToJack() = default;
-  ShmdataToJack(const ShmdataToJack&) = delete;
-  ShmdataToJack& operator=(const ShmdataToJack&) = delete;
 
  private:
-  static const std::string kConnectionSpec;  //!< Shmdata specifications
-  unsigned int kMaxNumberOfChannels{128};
+  static const std::string kConnectionSpec;  //!< Shmdata specifications.
+  unsigned int kMaxNumberOfChannels{128};    //!< Max number of channels handled
   bool is_constructed_{false};
 
   // internal use:
   std::string shmpath_{};
-  GstElement* shmdatasrc_{nullptr};
-  GstElement* audiobin_{nullptr};
+  GstElement* shmdatasrc_{nullptr};  //!< Shmdatasrc GStreamer element to configure.
+  GstElement* audiobin_{
+      nullptr};  //!< GStreamer bin for reading and converting samples from the Shmdata.
   gulong handoff_handler_{0};
   unsigned short channels_{0};
-  unsigned int debug_buffer_usage_{1000};
+  unsigned int debug_buffer_usage_{
+      1000};  //!< Output log message about buffer usage each debug_buffer_usage_ buffers
   std::mutex output_ports_mutex_{};
   std::mutex ports_to_connect_mutex_{};
-  std::vector<AudioRingBuffer<jack_sample_t>> ring_buffers_{};  // one per channel
+  std::vector<utils::AudioRingBuffer<jack_sample_t>>
+      ring_buffers_{};  //!< Ring buffer for audio drift correction. There is one ring buffer per
+                        //!< channel.
+  utils::DriftObserver<jack_nframes_t>
+      drift_observer_{};  //!< Track jack timing in order to correct audio drift.
+  std::unique_ptr<utils::AudioResampler<jack_sample_t>>
+      audio_resampler_{};  //!< Resample for audio drift correction.
 
-  // jack sample is the time unit, assuming gst pipeline has the same sample
-  // rate:
-  DriftObserver<jack_nframes_t> drift_observer_{};
-
-  // properties
+  // Quiddity properties
   std::string client_name_{};
   std::string server_name_{};
   property::prop_id_t client_name_id_{0};
@@ -78,11 +89,10 @@ class ShmdataToJack : public Quiddity {
   bool do_rate_conversion_{true};
   property::prop_id_t do_rate_conversion_id_;
 
-  // gst pipeline:
-  std::unique_ptr<gst::Pipeliner> gst_pipeline_;
+  std::unique_ptr<gst::Pipeliner> gst_pipeline_;  //!< gst pipeline:
 
-  // shmsubscriber (publishing to the information-tree):
-  std::unique_ptr<shmdata::GstTreeUpdater> shm_sub_{nullptr};
+  std::unique_ptr<shmdata::GstTreeUpdater> shm_sub_{
+      nullptr};  //!< shmsubscriber (publishing to the information-tree)
 
   // jack client
   std::vector<std::string> ports_to_connect_{};

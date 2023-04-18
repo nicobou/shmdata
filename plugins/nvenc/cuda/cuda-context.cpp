@@ -24,10 +24,7 @@
 namespace switcher {
 namespace quiddities {
 
-CudaContext::CudaContext(uint32_t device_id) : logger(spdlog::get("switcher")){
-  On_scope_exit {
-    if (!safe_bool_idiom()) LOGGER_WARN(this->logger, "cuda context creation failed");
-  };
+CudaContext::CudaContext(uint32_t device_id) {
   if (!CuRes(cuInit(0))) return;
   int dev_count = 0;
   if (!CuRes(cuDeviceGetCount(&dev_count))) return;
@@ -44,8 +41,9 @@ CudaContext::CudaContext(uint32_t device_id) : logger(spdlog::get("switcher")){
 }
 
 CudaContext::~CudaContext() {
-  if (safe_bool_idiom() && !CuRes(cuCtxDestroy(cuda_ctx_)))
-    LOGGER_WARN(this->logger, "BUG! (destroying cuda context)");
+  if (safe_bool_idiom()) {
+    CuRes(cuCtxDestroy(cuda_ctx_));
+  }
 }
 
 std::vector<std::pair<int, std::string>> CudaContext::get_devices() {
@@ -60,12 +58,26 @@ std::vector<std::pair<int, std::string>> CudaContext::get_devices() {
     if (CuRes(cuDeviceGet(&cdev, i)) && CuRes(cuDeviceGetName(name, sizeof(name), cdev)) &&
         CuRes(cuDeviceComputeCapability(&maj, &min, cdev))) {
       if (((maj << 4) + min) >= 0x30) res.push_back(std::make_pair(i, std::string(name)));
-      // LOGGER_DEBUG(this->logger, "GPU #% supports NVENC: % (%) (Compute SM %.%)",
-      //       std::to_string(i),
-      //       std::string((((maj << 4) + min) >= 0x30) ? "yes" : "no"),
-      //       name,
-      //       std::to_string(maj),
-      //       std::to_string(min));
+    }
+  }
+  return res;
+}
+
+std::string CudaContext::get_support_description() {
+  std::string res;
+  if (!CuRes(cuInit(0))) return "fail to init cuda: NVENC decoding is not possible";
+  int dev_count = 0;
+  if (!CuRes(cuDeviceGetCount(&dev_count)))
+    return "no cuda device found: NVENC decoding is not possible";
+  char name[256];
+  int min = 0, maj = 0;
+  CUdevice cdev = 0;
+  for (int i = 0; i < dev_count; ++i) {
+    if (CuRes(cuDeviceGet(&cdev, i)) && CuRes(cuDeviceGetName(name, sizeof(name), cdev)) &&
+        CuRes(cuDeviceComputeCapability(&maj, &min, cdev))) {
+      res += "GPU #" + std::to_string(i) +
+             " supports NVENC: " + std::string((((maj << 4) + min) >= 0x30) ? "yes" : "no") + " (" +
+             name + ") (Compute SM " + std::to_string(maj) + "." + std::to_string(min) + ")\n";
     }
   }
   return res;

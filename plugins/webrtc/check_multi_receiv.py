@@ -116,7 +116,8 @@ def launch_server():
         disable_ssl: bool = False
         health: str = '/health'
 
-    loop = asyncio.get_event_loop()
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     server = WebRTCSimpleServer(loop, Options())
     while True:
         server.run()

@@ -66,7 +66,7 @@ class Bundle;
 /**
  * The Quiddity class.
  */
-class Quiddity : public SafeBoolIdiom {
+class Quiddity : public SafeBoolIdiom, public logger::Logger {
   friend class bundle::Bundle;  // access to props_ in order to forward properties
   friend class Startable;
   friend class claw::Claw;
@@ -83,7 +83,6 @@ class Quiddity : public SafeBoolIdiom {
   friend struct shmdata::Stat;
 
  public:
-  std::shared_ptr<spdlog::logger> logger;
   using ptr = std::shared_ptr<Quiddity>;
   explicit Quiddity(quiddity::Config&&, claw::Config conf = claw::Config());
   Quiddity() = delete;
@@ -103,6 +102,16 @@ class Quiddity : public SafeBoolIdiom {
   std::string get_kind() const;
   bool set_nickname(const std::string& nickname);
   std::string get_nickname() const;
+
+  /**
+   * Get a tree that is describing the quiddity.
+   * @details It generates a tree that contains:
+   *          - the id of the quiddity
+   *          - its kind
+   *          - its nickname
+   * @return an info tree
+   */
+  InfoTree::ptr get_description();
 
   /**
    * Get a weak pointer to the current Quiddity, obtained from the Switcher instance.

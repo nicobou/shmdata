@@ -77,10 +77,7 @@ VideoSnapshot::VideoSnapshot(quiddity::Config&& conf)
             if (!img_dir_.empty() && img_dir_.back() != '/') img_dir_ += '/';
             auto file_prepared = fileutils::prepare_writable_dir(val);
             if (!file_prepared.first) {
-              LOGGER_WARN(this->logger,
-                          "error preparing {} directory for writing: {}",
-                          val,
-                          file_prepared.second);
+              sw_warning("error preparing {} directory for writing: {}", val, file_prepared.second);
               return false;
             }
             return true;
@@ -159,7 +156,7 @@ void VideoSnapshot::make_gst_pipeline(const std::string& shmpath) {
   GError* err = nullptr;
   GstElement* bin = gst_parse_bin_from_description(description.c_str(), TRUE, &err);
   if (err != nullptr) {
-    LOGGER_ERROR(this->logger, std::string(err->message));
+    sw_error(std::string(err->message));
     g_error_free(err);
     return;
   }
@@ -178,7 +175,7 @@ void VideoSnapshot::on_new_file(const std::string& filename) {
       last_image_ = filename;
     }
     pmanage<MPtr(&property::PBag::notify)>(last_image_id_);
-    LOGGER_INFO(this->logger, "image {} written", filename);
+    sw_info("image {} written", filename);
 }
 
 bool VideoSnapshot::on_shmdata_disconnect() {

@@ -83,7 +83,7 @@ PulseSrc::PulseSrc(quiddity::Config&& conf)
   // waiting for devices to be updated
   devices_cond_.wait_for(lock, 1s);
   if (!connected_to_pulse_) {
-    LOGGER_INFO(this->logger, "Not connected to pulse, cannot initialize.");
+    sw_info("Not connected to pulse, cannot initialize.");
     is_valid_ = false;
     return;
   }
@@ -99,15 +99,14 @@ gboolean PulseSrc::async_get_pulse_devices(void* user_data) {
   context->pa_mainloop_api_ = pa_glib_mainloop_get_api(context->pa_glib_mainloop_);
   context->pa_context_ = pa_context_new(context->pa_mainloop_api_, nullptr);
   if (nullptr == context->pa_context_) {
-    LOGGER_DEBUG(context->logger, "PulseSrc:: pa_context_new() failed.");
+    context->sw_debug("PulseSrc:: pa_context_new() failed.");
     return FALSE;
   }
   pa_context_set_state_callback(context->pa_context_, pa_context_state_callback, context);
   if (pa_context_connect(context->pa_context_, context->server_, (pa_context_flags_t)0, nullptr) <
       0) {
-    LOGGER_DEBUG(context->logger,
-                 "pa_context_connect() failed: {}",
-                 std::string(pa_strerror(pa_context_errno(context->pa_context_))));
+    context->sw_debug("pa_context_connect() failed: {}",
+                      std::string(pa_strerror(pa_context_errno(context->pa_context_))));
     return FALSE;
   }
   context->connected_to_pulse_ = true;
@@ -170,15 +169,14 @@ void PulseSrc::pa_context_state_callback(pa_context* pulse_context, void* user_d
           nullptr));  // void *userdata);
       break;
     case PA_CONTEXT_TERMINATED: {
-      LOGGER_DEBUG(context->logger, "PulseSrc: PA_CONTEXT_TERMINATED");
+      context->sw_debug("PulseSrc: PA_CONTEXT_TERMINATED");
     } break;
     case PA_CONTEXT_FAILED:
-      LOGGER_DEBUG(context->logger, "PA_CONTEXT_FAILED");
+      context->sw_debug("PA_CONTEXT_FAILED");
       break;
     default:
-      LOGGER_DEBUG(context->logger,
-                   "PulseSrc Context error: {}",
-                   std::string(pa_strerror(pa_context_errno(pulse_context))));
+      context->sw_debug("PulseSrc Context error: {}",
+                        std::string(pa_strerror(pa_context_errno(pulse_context))));
   }
 }
 
@@ -188,9 +186,8 @@ void PulseSrc::get_source_info_callback(pa_context* pulse_context,
                                         void* user_data) {
   PulseSrc* context = static_cast<PulseSrc*>(user_data);
   if (is_last < 0) {
-    LOGGER_DEBUG(context->logger,
-                 "Failed to get source information: {}",
-                 std::string(pa_strerror(pa_context_errno(pulse_context))));
+    context->sw_debug("Failed to get source information: {}",
+                      std::string(pa_strerror(pa_context_errno(pulse_context))));
     return;
   }
   if (is_last) {
@@ -367,8 +364,7 @@ InfoTree::ptr PulseSrc::on_saving() {
 
 void PulseSrc::on_loading(InfoTree::ptr&& tree) {
   if (!tree || tree->empty()) {
-    LOGGER_WARN(this->logger,
-                "loading deprecated pulsesrc device save: devices may swap when reloading");
+    sw_warning("loading deprecated pulsesrc device save: devices may swap when reloading");
     return;
   }
 
@@ -382,10 +378,10 @@ void PulseSrc::on_loading(InfoTree::ptr&& tree) {
           return capt.bus_path_ == bus_path;
         });
     if (capture_devices_.end() == it) {
-      LOGGER_WARN(this->logger, "pulsesrc device not found at this port {}", bus_path);
-      LOGGER_INFO(this->logger,
-                  "Audio capture device not found on its saved port when loading saved scenario, "
-                  "defaulting to first available device");
+      sw_warning("pulsesrc device not found at this port {}", bus_path);
+      sw_info(
+          "Audio capture device not found on its saved port when loading saved scenario, "
+          "defaulting to first available device");
     } else {
       pmanage<MPtr(&property::PBag::set<quiddity::property::IndexOrName>)>(
           devices_id_, quiddity::property::IndexOrName(it - capture_devices_.begin()));
@@ -395,10 +391,10 @@ void PulseSrc::on_loading(InfoTree::ptr&& tree) {
                            capture_devices_.end(),
                            [&](const DeviceDescription& capt) { return capt.name_ == device_id; });
     if (capture_devices_.end() == it) {
-      LOGGER_WARN(this->logger, "pulsesrc device not found ({})", device_id);
-      LOGGER_INFO(this->logger,
-                  "Saved audio capture not found when loading saved scenario, defaulting to first "
-                  "available device");
+      sw_warning("pulsesrc device not found ({})", device_id);
+      sw_info(
+          "Saved audio capture not found when loading saved scenario, defaulting to first "
+          "available device");
     } else {
       pmanage<MPtr(&property::PBag::set<quiddity::property::IndexOrName>)>(
           devices_id_, quiddity::property::IndexOrName(it - capture_devices_.begin()));

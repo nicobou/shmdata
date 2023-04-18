@@ -29,23 +29,23 @@ namespace fs = std::filesystem;
 
 namespace switcher::session {
 
-  Session::Session(Switcher* instance) : switcher_(instance) {
-    // retrieve current configuration tree
-    auto config_tree = this->switcher_->conf<MPtr(&Configuration::get)>();
-    // check for $XDG_STATE_HOME variable
-    const auto env_xsh = std::getenv("XDG_STATE_HOME");
-    // or use recommended fallback as a default
-    const fs::path xsh =
-        env_xsh ? fs::path(env_xsh) : fs::path(std::getenv("HOME")) / ".local" / "state";
-    // set session basedir member to default value
-    this->basedir_ = xsh / "switcher" / "sessions";
-    // set custom path from configuration
-    std::string custom_path = config_tree->branch_get_value("session.path");
-    if (!custom_path.empty()) this->basedir_ = fs::path(custom_path);
-    // create directories as needed
-    if (!fs::is_directory(this->basedir_)) fs::create_directories(this->basedir_);
-  };
-  
+Session::Session(Switcher* instance) : switcher_(instance) {
+  // retrieve current configuration tree
+  auto config_tree = this->switcher_->conf<MPtr(&Configuration::get)>();
+  // check for $XDG_STATE_HOME variable
+  const auto env_xsh = std::getenv("XDG_STATE_HOME");
+  // or use recommended fallback as a default
+  const fs::path xsh =
+      env_xsh ? fs::path(env_xsh) : fs::path(std::getenv("HOME")) / ".local" / "state";
+  // set session basedir member to default value
+  this->basedir_ = xsh / "switcher" / "sessions";
+  // set custom path from configuration
+  std::string custom_path = config_tree->branch_get_value("session.path");
+  if (!custom_path.empty()) this->basedir_ = fs::path(custom_path);
+  // create directories as needed
+  if (!fs::is_directory(this->basedir_)) fs::create_directories(this->basedir_);
+};
+
   std::string Session::save_as(const std::string& filename) {
     // retrieve switcher current state
     auto state = this->switcher_->get_state();
@@ -86,12 +86,15 @@ namespace switcher::session {
     // remove filename from directory if it exists
     for (const auto& entry : this->list()) {
       auto fname = entry.path().filename();
-      if ((fname == filename || fname == filename + ".json")) return fs::remove(entry.path());
+      if ((fname == filename || fname == filename + ".json")) {
+        switcher_->sw_debug("removing session file {}", entry.path().string());
+        return fs::remove(entry.path());
+      }
     };
     return false;
   };
 
-  bool Session::read(const std::string& filename) {
+  bool Session::load(const std::string& filename) {
     // compute file path
     fs::path fpath = this->basedir_ / fs::path(filename).filename();
     if (fpath.extension() != ".json") fpath.replace_extension(fs::path(".json"));
@@ -100,7 +103,34 @@ namespace switcher::session {
     // read file content
     const std::string content = fileutils::get_content(fpath);
     // parse the session file content and set switcher state
+    switcher_->sw_debug("loading state from session file {}", fpath.string());
     return this->switcher_->load_state(infotree::json::deserialize(content).get());
+  };
+
+  const std::string Session::read(const std::string& filename) {
+    // compute file path
+    fs::path fpath = this->basedir_ / fs::path(filename).filename();
+    if (fpath.extension() != ".json") fpath.replace_extension(fs::path(".json"));
+    // check for path existence, return empty content for inexistant file
+    if (!fs::exists(fpath)) {
+      switcher_->sw_warning("session file {} was not found", fpath.string());
+      return std::string();
+    }
+    // read file content
+    switcher_->sw_debug("reading content from session file {}", fpath.string());
+    const std::string content = fileutils::get_content(fpath);
+    // return file content
+    return content;
+  };
+
+  bool Session::write(const std::string& content, const std::string& filename) {
+    // compute file path
+    fs::path fpath = this->basedir_ / fs::path(filename).filename();
+    if (fpath.extension() != ".json") fpath.replace_extension(fs::path(".json"));
+
+    // write file content
+    switcher_->sw_debug("writing content to session file {}", fpath.string());
+    return fileutils::save(content, fpath);
   };
 
 };  // namespace switcher::session

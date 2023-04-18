@@ -23,8 +23,8 @@
 namespace switcher {
 namespace quiddities {
 SWITCHER_MAKE_QUIDDITY_DOCUMENTATION(MethodQuid,
-                                     "methodquid",
-                                     "Example Method Plugin",
+                                     "method-quid",
+                                     "Example Quiddity with methods",
                                      "Dummy plugin for testing/example purpose",
                                      "LGPL",
                                      "Nicolas Bouillot");
@@ -88,13 +88,13 @@ MethodQuid::MethodQuid(quiddity::Config&& conf)
                   }
               )"),
           [&](int i, float f, const std::string& str, bool b) {
-            LOGGER_DEBUG(this->logger, "int {:d}", i);
-            LOGGER_DEBUG(this->logger, "float {:f}", f);
-            LOGGER_DEBUG(this->logger, "string {}", str);
-            LOGGER_DEBUG(this->logger, "bool {}", b);
+            sw_debug("int {:d}", i);
+            sw_debug("float {:f}", f);
+            sw_debug("string {}", str);
+            sw_debug("bool {}", b);
             return 1 == i && 3.14f == f && std::string("is, but not ") == str && b == false;
           })) {
-  LOGGER_DEBUG(this->logger, "hello_id_ {}", std::to_string(hello_id_));
+  sw_debug("hello_id_ {}", std::to_string(hello_id_));
 }
 
 }  // namespace quiddities

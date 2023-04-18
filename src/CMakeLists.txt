@@ -21,7 +21,19 @@ if (WITH_SWITCHER)
     install(TARGETS switcher
         RUNTIME
         DESTINATION bin
-        COMPONENT applications
+        COMPONENT lib
+        )
+
+    install(TARGETS switcher
+        RUNTIME
+        DESTINATION bin
+        COMPONENT dev
+        )
+
+    install(TARGETS switcher
+        RUNTIME
+        DESTINATION bin
+        COMPONENT dbg
         )
 
     # TEST
@@ -63,7 +75,19 @@ if (WITH_SWITCHER_CTRL)
     install(TARGETS switcher-ctrl
         RUNTIME
         DESTINATION bin
-        COMPONENT applications
+        COMPONENT lib
+        )
+
+    install(TARGETS switcher-ctrl
+        RUNTIME
+        DESTINATION bin
+        COMPONENT dev
+        )
+
+    install(TARGETS switcher-ctrl
+        RUNTIME
+        DESTINATION bin
+        COMPONENT dbg
         )
 
     # TEST

@@ -29,14 +29,14 @@
 #include "./nvenc-api.hpp"
 #include "./nvenc-buffers.hpp"
 #include "cuda/cuda-context.hpp"
+#include "switcher/logger/logger.hpp"
 #include "switcher/utils/safe-bool-idiom.hpp"
 
 namespace switcher {
 namespace quiddities {
 class NVencES : public SafeBoolIdiom {
  public:
-  std::shared_ptr<spdlog::logger> logger;
-  NVencES(uint32_t device_id = 0);
+  NVencES(logger::Logger* logger, uint32_t device_id = 0);
   NVencES() = delete;
   ~NVencES();
   NVencES(const NVencES&) = delete;
@@ -67,6 +67,7 @@ class NVencES : public SafeBoolIdiom {
   bool process_encoded_frame(std::function<void(void*, uint32_t)> fun);
 
  private:
+  const logger::Logger* logger_;
   NV_ENC_PRESET_CONFIG preset_config_;
   NV_ENC_OPEN_ENCODE_SESSION_EX_PARAMS params_;
   NV_ENC_CAPS_PARAM caps_params_{NV_ENC_CAPS_PARAM_VER, NV_ENC_CAPS_WIDTH_MAX, {}};

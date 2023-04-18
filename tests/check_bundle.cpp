@@ -58,10 +58,10 @@ void notify_success() {
 int main() {
   {
     // making the switcher
-    Switcher::ptr manager = Switcher::make_switcher("bundle");
+    Switcher::ptr manager = Switcher::make_switcher("bundle", true);
 
     // loading configuration with bundle
-    assert(manager->conf<MPtr(&Configuration::from_file)>("./check_bundle.config"));
+    assert(manager->conf<MPtr(&Configuration::from_file)>("./check_bundle.config")); 
 
     // creating and removing some complex bundles
     auto bundles = {"source-bundle", "sink-bundle", "filter-bundle", "whitespaces-bundle"};

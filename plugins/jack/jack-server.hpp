@@ -41,8 +41,10 @@ namespace quiddities {
 
 class JackServer : public SafeBoolIdiom {
  public:
-  static std::shared_ptr<spdlog::logger> logger;
-  explicit JackServer(const std::string& name, const std::string& driver, bool real_time);
+  explicit JackServer(const std::string& name,
+                      const std::string& driver,
+                      bool real_time,
+                      logger::Logger* logger);
   JackServer() = delete;
   ~JackServer();
 
@@ -62,6 +64,7 @@ class JackServer : public SafeBoolIdiom {
   bool stop();
 
  private:
+  const logger::Logger* logger_;
   const std::string kDefaultDriver{"alsa"};
   jackctl_server_t* server_;
   InfoTree::ptr config_;
@@ -71,8 +74,6 @@ class JackServer : public SafeBoolIdiom {
   std::vector<std::string> slave_drivers_{};
   std::string default_driver_;
 
-  static void jack_info(const char* msg);
-  static void jack_error(const char* msg);
   jackctl_driver_t* get_driver(const std::string& driver_name);
   void write_parameter_to_tree(const InfoTree::ptr& tree,
                                const std::string& key,

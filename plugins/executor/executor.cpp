@@ -40,7 +40,25 @@ const std::string Executor::kConnectionSpec(R"(
   [
     {
       "label": "custom",
-      "description": "Stream to connect to the exceutor",
+      "description": "Stream to connect to the excecutor",
+      "can_do": ["all"]
+    },
+    {
+      "label": "audio",
+      "description": "Audio stream",
+      "can_do": ["audio/x-raw"]
+    },
+    {
+      "label": "video",
+      "description": "Video stream",
+      "can_do": ["video/x-raw"]
+    }
+  ],
+"writer":
+  [
+    {
+      "label": "custom",
+      "description": "Stream to connect from the excecutor",
       "can_do": ["all"]
     },
     {
@@ -143,11 +161,11 @@ Executor::~Executor() {
 
 bool Executor::start() {
   if (child_pid_ != 0) {
-    LOGGER_ERROR(this->logger, "executor already started");
+    sw_error("executor already started");
     return false;
   }
   if (command_line_.empty()) {
-    LOGGER_ERROR(this->logger, "command_line must not be empty");
+    sw_error("command_line must not be empty");
     return false;
   }
 
@@ -168,16 +186,14 @@ bool Executor::start() {
   wordexp_t words;
   int status1 = wordexp(args.c_str(), &words, 0);
   if (status1 != 0) {
-    LOGGER_ERROR(this->logger, "error while parsing command line. Error: {}", strerror(status1));
+    sw_error("error while parsing command line. Error: {}", strerror(status1));
     wordfree(&words);
     return false;
   }
 
   // Pipes creation and setup
   if (pipe(cout_pipe_) || pipe(cerr_pipe_)) {
-    LOGGER_ERROR(this->logger,
-                 "error while setting up interprocess communication. Error: {}",
-                 strerror(errno));
+    sw_error("error while setting up interprocess communication. Error: {}", strerror(errno));
   }
   posix_spawn_file_actions_init(&act_);
   posix_spawn_file_actions_addclose(&act_, cout_pipe_[0]);
@@ -191,7 +207,7 @@ bool Executor::start() {
   user_stopped_ = false;
   int status2 = posix_spawnp(&child_pid_, program.c_str(), &act_, &attr_, words.we_wordv, environ);
   if (status2 != 0) {
-    LOGGER_ERROR(this->logger, "process could not be executed. Error: {}", strerror(status2));
+    sw_error("process could not be executed. Error: {}", strerror(status2));
     wordfree(&words);
     return false;
   }
@@ -347,7 +363,7 @@ bool Executor::graft_output(const std::string& type, const std::string& escaped_
   }
 
   if (has_changed) {
-    LOGGER_INFO(this->logger, "Grafting {} in {}", escaped_value, type);
+    sw_info("Grafting {} in {}", escaped_value, type);
     graft_tree(path, InfoTree::make(escaped_value));
   }
 
@@ -364,7 +380,7 @@ void Executor::clean_up_child_process() {
   posix_spawn_file_actions_destroy(&act_);
 
   if (is_updated) {
-    LOGGER_INFO(this->logger, "'{}' output has been updated.", command_line_);
+    sw_info("'{}' output has been updated.", command_line_);
   }
 }
 }  // namespace quiddities

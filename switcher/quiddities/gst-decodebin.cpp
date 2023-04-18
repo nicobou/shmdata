@@ -107,11 +107,11 @@ void GstDecodebin::configure_shmdatasink(GstElement* element,
 
 bool GstDecodebin::on_shmdata_connect(const std::string& shmpath) {
   if (shmpath.empty()) {
-    LOGGER_ERROR(this->logger, "shmpath must not be empty");
+    sw_error("shmpath must not be empty");
     return false;
   }
   if (shmpath == shmpath_decoded_) {
-    LOGGER_ERROR(this->logger, "decoder cannot connect to itself");
+    sw_error("decoder cannot connect to itself");
     return false;
   }
   shmpath_to_decode_ = shmpath;
@@ -128,10 +128,10 @@ bool GstDecodebin::on_shmdata_connect(const std::string& shmpath) {
       [this](const std::string& caps) {
         if (!cur_caps_.empty() && cur_caps_ != caps) {
           cur_caps_ = caps;
-          LOGGER_DEBUG(this->logger,
-                       "decoder restarting shmdata connection "
-                       "because of updated caps ({})",
-                       cur_caps_);
+          sw_debug(
+              "decoder restarting shmdata connection "
+              "because of updated caps ({})",
+              cur_caps_);
           async_this_.run_async([this]() { on_shmdata_connect(shmpath_to_decode_); });
 
           return;
@@ -167,9 +167,7 @@ bool GstDecodebin::create_pipeline() {
       [this](GstElement* el, const std::string& media_type, const std::string& media_label) {
         configure_shmdatasink(el, media_type, media_label);
       },
-      [this]() {
-        LOGGER_WARN(this->logger, "discarding uncomplete custom frame due to a network loss");
-      },
+      [this]() { sw_warning("discarding uncomplete custom frame due to a network loss"); },
       nullptr,
       true /*decompress*/);
 

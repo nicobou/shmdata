@@ -1,8 +1,6 @@
 # PLUGIN
 
-pkg_check_modules(LIBSAMPLERATE samplerate)
-
-set(PLUGIN_NAME "resample")
+set(PLUGIN_NAME "plugin-resample")
 set(PLUGIN_DESCRIPTION "Libsamplerate")
 
 cmake_dependent_option(PLUGIN_RESAMPLE "${PLUGIN_DESCRIPTION}" ${LIBSAMPLERATE_FOUND}

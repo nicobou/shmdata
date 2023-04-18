@@ -203,15 +203,9 @@ class ThreadedWrapper {
     std::vector<std::function<void()>> tasks_to_do{};
     {
       std::unique_lock<std::mutex> lock_sync(async_mtx_);
-      auto num_tasks = async_tasks_.size();
-      if (0 != num_tasks) {
-        tasks_to_do.resize(num_tasks);
-        std::move(async_tasks_.begin(), async_tasks_.end(), tasks_to_do.begin());
-        async_tasks_.clear();
-      }
+      std::swap(tasks_to_do, async_tasks_);
     }
     for (auto& it : tasks_to_do) it();
-    tasks_to_do.clear();
   }
 };
 

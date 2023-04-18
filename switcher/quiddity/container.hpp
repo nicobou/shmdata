@@ -42,12 +42,8 @@ class Bundle;
 
 class Container {
   friend class Bundle;
- public:
-  /**
-   * @brief A shared pointer to a registered logger
-   */
-  std::shared_ptr<spdlog::logger> logger;
 
+ public:
   /**
    * @brief Shared pointer type
    */
@@ -165,10 +161,11 @@ class Container {
   // construct result to pass when element has not been found:
   template <typename ReturnType>
   ReturnType construct_error_return(qid_t id) const {
-    LOGGER_WARN(this->logger, "quiddity % not found", std::to_string(id));
+    logger_->sw_warning("quiddity {} not found", std::to_string(id));
     return ReturnType();
   }
 
+  const logger::Logger* logger_;
   quiddity::Factory* factory_;
   std::map<unsigned int, void_func_t> on_created_cbs_{};
   std::map<unsigned int, void_func_t> on_removed_cbs_{};

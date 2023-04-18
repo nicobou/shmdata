@@ -91,9 +91,10 @@ Arguments:
 
 def on_image_exit(value, shot):
     global second_shot
+    global do_exit
     if (second_shot):
         print(value + " saved")
-        quit(0)
+        do_exit = True
     else:
         second_shot = True
         shot.set('shot', True)
@@ -107,6 +108,8 @@ def main() -> None:
     global shot
     global args
     global orig_settings
+    global do_exit
+    do_exit = False
     args = parse_args()
 
     # create a switcher and a videosnapshot quiddity:
@@ -161,8 +164,9 @@ def main() -> None:
         shot.subscribe("last_image", on_image_exit, shot)
         shot.set('shot', True)
         # wait for on_image_exit to quit
-        while True:
-            time.sleep(1)
+        while not do_exit:
+            time.sleep(0.03)
+        exit(0)
 
     # interactive mode video preview (capture from stdin)
     orig_settings = termios.tcgetattr(sys.stdin)
@@ -171,9 +175,9 @@ def main() -> None:
         win = sw.create('glfwin', 'win')
         win.set('decorated', True)
         if (args.shmpath):
-            win.invoke('connect', [args.shmpath])
+            FollowerClaw(win, "video").connect_raw(args.shmpath)
         else:
-            win.invoke('connect-quid', [cam.id(), 'video'])
+            win.try_connect(cam)
 
     # interactive mode
     shot.subscribe("last_image", print_image_name)

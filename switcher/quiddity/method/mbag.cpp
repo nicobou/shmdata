@@ -22,14 +22,15 @@
 namespace switcher {
 namespace quiddity {
 namespace method {
-MBag::MBag(InfoTree::ptr tree,
+MBag::MBag(logger::Logger* logger,
+           InfoTree::ptr tree,
            on_tree_grafted_cb_t on_tree_grafted_cb,
            on_tree_pruned_cb_t on_tree_pruned_cb,
            on_method_created_cb_t on_method_created,
            on_method_removed_cb_t on_method_removed,
            on_method_enabled_cb_t on_method_enabled,
            on_method_disabled_cb_t on_method_disabled)
-    : logger(spdlog::get("switcher")),
+    : logger_(logger),
       tree_(tree),
       on_tree_grafted_cb_(on_tree_grafted_cb),
       on_tree_pruned_cb_(on_tree_pruned_cb),

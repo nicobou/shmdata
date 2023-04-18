@@ -156,7 +156,7 @@ void VRPNSource::on_loading(InfoTree::ptr&& tree) {
  */
 bool VRPNSource::start() {
   if (host_.empty()) {
-    LOGGER_INFO(this->logger, "ERROR: Host is required.");
+    sw_error("Host is required.");
     return false;
   }
 
@@ -167,7 +167,7 @@ bool VRPNSource::start() {
   shmDataWriter_ = std::make_unique<shmdata::Writer>(
       this, claw_.get_shmpath_from_writer_label("vrpn"), 1, "application/vrpn");
   if (!shmDataWriter_.get()) {
-    LOGGER_INFO(this->logger, "ERROR: VRPN source failed to initialize its shmdata");
+    sw_error("VRPN source failed to initialize its shmdata");
     shmDataWriter_.reset(nullptr);
     return false;
   }
@@ -175,7 +175,7 @@ bool VRPNSource::start() {
   // Create the connection and check its "okay-ness"
   connection_ = std::make_unique<VRPNClientConnection>(host_ + ":" + std::to_string(port_));
   if (!connection_->raw()->doing_okay()) {
-    LOGGER_ERROR(this->logger, "VRPN source connection is not doing okay (whatever that means).");
+    sw_error("VRPN source connection is not doing okay (whatever that means).");
     return false;
   }
 
@@ -192,7 +192,7 @@ bool VRPNSource::start() {
   loopTask_ = std::make_unique<PeriodicTask<>>([this]() { this->loop(); },
                                                std::chrono::milliseconds(vrpnLoopInterval));
 
-  LOGGER_DEBUG(this->logger, "Started VRPN source connection");
+  sw_debug("Started VRPN source connection");
 
   return true;
 }
@@ -201,7 +201,7 @@ bool VRPNSource::start() {
  * @thread switcher
  */
 bool VRPNSource::stop() {
-  LOGGER_DEBUG(this->logger, "Stopping VRPN source connection");
+  sw_debug("Stopping VRPN source connection");
 
   loopTask_.reset(nullptr);
 
@@ -233,11 +233,11 @@ void VRPNSource::loop() {
 #ifdef DEBUG
   // Whatever that means
   if (!connection_->raw()->doing_okay()) {
-    LOGGER_DEBUG(this->logger, "VRPN source connection is not doing okay.");
+    sw_debug("VRPN source connection is not doing okay.");
   }
 
   if (!connection_->raw()->connected()) {
-    LOGGER_DEBUG(this->logger, "VRPN source disconnected.");
+    sw_debug("VRPN source disconnected.");
   }
 #endif
 
@@ -458,19 +458,18 @@ int VRPNSource::handleMessage(void* userData, vrpn_HANDLERPARAM p) {
 
   // DEBUG
   if (context->debug_) {
-    LOGGER_DEBUG(context->logger,
-                 "VRPNSource >>> Sender: {} Type: {} Length: {} Payload: {}",
-                 senderName,
-                 typeName,
-                 std::to_string(buffer.size()),
-                 std::to_string(p.payload_len));
+    context->sw_debug("VRPNSource >>> Sender: {} Type: {} Length: {} Payload: {}",
+                      senderName,
+                      typeName,
+                      std::to_string(buffer.size()),
+                      std::to_string(p.payload_len));
 
     std::stringstream ss;
     ss << "VRPNSource >>> ";
     for (auto const& value : buffer) {
       ss << std::hex << std::setfill('0') << std::setw(2) << (int)value << " ";
     }
-    LOGGER_DEBUG(context->logger, ss.str());
+    context->sw_debug(ss.str());
   }
 
   // WRITE TO SHMDATA

@@ -39,7 +39,7 @@ int main() {
   manager->quids<MPtr(&quiddity::Container::register_removal_cb)>(
       [&](auto) { ++create_remove_counter; });
   auto qrox =
-      manager->quids<MPtr(&quiddity::Container::create)>("signal", "signal-quiddity", nullptr);
+      manager->quids<MPtr(&quiddity::Container::create)>("signal-quid", "signal-quiddity", nullptr);
   auto qsig = qrox.get();
   assert(qsig);
 

@@ -21,19 +21,19 @@ kind_list = sw.list_kinds()
 assert 0 < len(kind_list)
 
 # load custom kinds (bundles)
-description = '''{
+description = {
     "bundle": {
-        "testBundle" : {
-            "pipeline" : "dummy name=Test",
-            "doc" : {
-                "long_name" : "Test",
-                "category" : "test",
-                "tags" : "writer",
-                "description" : "Test"
+        "testBundle": {
+            "pipeline": "property-quid name=Test",
+            "doc": {
+                "long_name": "Test",
+                "category": "test",
+                "tags": "writer",
+                "description": "Test"
             }
         }
     }
-}'''
+}
 
 sw.load_bundles(description)
 kinds = sw.list_kinds()

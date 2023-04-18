@@ -1,0 +1,5 @@
+nvidia-cuda-toolkit
+nvidia-dkms-515
+nvidia-driver-515
+nvidia-kernel-common-515
+libnvidia-encode-515

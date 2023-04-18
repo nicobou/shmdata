@@ -22,21 +22,24 @@
 
 #include <shmdata/abstract-logger.hpp>
 
+#include "switcher/logger/logger.hpp"
+
 namespace switcher {
 namespace shmdata {
 
 class SwitcherLogger : public ::shmdata::AbstractLogger {
  public:
-  std::shared_ptr<spdlog::logger> logger;
-  SwitcherLogger() : logger(spdlog::get("switcher")) {}
+  SwitcherLogger(logger::Logger* logger) : logger_(logger) {}
+  SwitcherLogger() = delete;
 
  private:
-  void on_error(std::string&& str) final { LOGGER_ERROR(this->logger, str); }
-  void on_critical(std::string&& str) final { LOGGER_CRITICAL(this->logger, str); }
-  void on_warning(std::string&& str) final { LOGGER_WARN(this->logger, str); }
-  void on_message(std::string&& str) final { LOGGER_INFO(this->logger, str); }
-  void on_info(std::string&& str) final { LOGGER_INFO(this->logger, str); }
-  void on_debug(std::string&& str) final { LOGGER_DEBUG(this->logger, str); }
+  const logger::Logger* logger_;
+  void on_error(std::string&& str) final { logger_->sw_error(str); }
+  void on_critical(std::string&& str) final { logger_->sw_critical(str); }
+  void on_warning(std::string&& str) final { logger_->sw_warning(str); }
+  void on_message(std::string&& str) final { logger_->sw_trace(str); }
+  void on_info(std::string&& str) final { logger_->sw_info(str); }
+  void on_debug(std::string&& str) final { logger_->sw_debug(str); }
 };
 
 }  // namespace shmdata

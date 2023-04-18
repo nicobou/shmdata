@@ -181,8 +181,7 @@ bool AudioCodec::start(const std::string& shmpath, const std::string& shmpath_en
       [this](const std::string& caps) {
         if (!this->has_enough_channels(caps)) {
           // FIXME: To do in can_sink_caps of audioenc when destination caps are implemented.
-          LOGGER_WARN(quid_->logger,
-                      "audio codec does not support the number of channels connected to it.");
+          quid_->sw_warning("audio codec does not support the number of channels connected to it.");
         }
       });
   make_bin();
@@ -232,13 +231,13 @@ bool AudioCodec::has_enough_channels(const std::string& str_caps) {
 
   GstStructure* s = gst_caps_get_structure(caps, 0);
   if (nullptr == s) {
-    LOGGER_WARN(quid_->logger, "Cannot get structure from caps (audioenc)");
+    quid_->sw_warning("Cannot get structure from caps (audioenc)");
     return false;
   }
 
   gint channels = 0;
   if (!gst_structure_get_int(s, "channels", &channels)) {
-    LOGGER_WARN(quid_->logger, "Cannot get channels number from shmdata description (audioenc)");
+    quid_->sw_warning("Cannot get channels number from shmdata description (audioenc)");
     return false;
   }
 

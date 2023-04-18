@@ -1,83 +1,86 @@
-image: docker:18
-
-services:
-  - docker:18.09-dind
-
 variables:
-  BUILD_DIR: /opt/switcher
-  CONTAINER_TAG_PREFIX: $CI_REGISTRY/sat-metalab/switcher:deps
+  SHMDATA_VERSION: '1.3.74'
   CTEST_OUTPUT_ON_FAILURE: '1'
   GIT_SUBMODULE_STRATEGY: recursive
+  PACKAGE_REGISTRY_URL: "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/releases"
+  CMAKE_PLUGINS_OPTIONS: '-DPLUGIN_AV=OFF -DPLUGIN_CRASHTEST=OFF -DPLUGIN_CROPPER=OFF -DPLUGIN_EXECUTOR=OFF -DPLUGIN_GLFW=OFF -DPLUGIN_JACK=OFF -DPLUGIN_LADSPA=OFF -DPLUGIN_MIDI=OFF -DPLUGIN_NVENC=OFF -DPLUGIN_OSC=OFF -DPLUGIN_PROTOCOL_MAPPER=OFF -DPLUGIN_PULSE=OFF -DPLUGIN_RESAMPLE=OFF -DPLUGIN_RTMP=OFF -DPLUGIN_SIP=OFF -DPLUGIN_SYSTEMUSAGE=OFF -DPLUGIN_TIMECODE=OFF -DPLUGIN_V4L2=OFF -DPLUGIN_VIDEO_SNAPSHOT=OFF -DPLUGIN_VNC=OFF -DPLUGIN_VRPN=OFF -DPLUGIN_WATCHER=OFF -DPLUGIN_WEBRTC=OFF'
 
 stages:
-  - deps
-  - build
   - test
   - coverage
-  - deploy
+  - package
+  - upload
+  - release
 
-Docker -- Dependency Image:
-  stage: deps
-  image: docker:18-git
-  script:
-    - git diff HEAD:wrappers/switcherio/requirements.txt origin/develop:wrappers/switcherio/requirements.txt --quiet && git diff HEAD:deps origin/develop:deps --quiet && echo "New docker image build is not required" && exit 0
-    - docker login -u ${CI_REGISTRY_USER} -p ${CI_REGISTRY_PASSWORD} ${CI_REGISTRY}
-    - docker build -t $CONTAINER_TAG_PREFIX-ubuntu2004 -f dockerfiles/Dockerfile-deps-Ubuntu-20.04 --target build .
-    - docker push $CONTAINER_TAG_PREFIX-ubuntu2004
-  except:
-    - develop
-    - master
-
-Build -- Ubuntu 20.04:
-  stage: build
-  image: $CONTAINER_TAG_PREFIX-ubuntu2004
-  script:
-    - cmake -B build -DENABLE_GPL="ON" -DCMAKE_BUILD_TYPE="Release"
-    - make -sC build -j`nproc`
-  except:
-    - develop
-    - master
-  artifacts:
-    paths:
-      - build
-
-Test -- Ubuntu 20.04:
+Test Ubuntu 20.04:
   stage: test
-  image: $CONTAINER_TAG_PREFIX-ubuntu2004
+  image: ubuntu:20.04
   script:
-    - apt-key del 7fa2af80 && apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub
-    - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y xvfb
-    - make install -sC build && ldconfig
-    - pulseaudio --start
-    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make test -sC build
+    - DEBIAN_FRONTEND=noninteractive apt update -y
+    - DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends git cmake build-essential libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev python3-dev wget ca-certificates
+    - wget https://gitlab.com/api/v4/projects/42406192/packages/generic/releases/${SHMDATA_VERSION}/ubuntu20.04_shmdata-dev_${SHMDATA_VERSION}_amd64.deb
+    - dpkg -i ubuntu20.04_shmdata-dev_${SHMDATA_VERSION}_amd64.deb
+    - DEBIAN_FRONTEND=noninteractive apt install -y -qq $(cat deps/apt-build-ubuntu-20.04) $(cat deps/apt-runtime-ubuntu-20.04)
+    - pip3 install -r deps/pip3-ubuntu20.04
+    - mkdir build20.04 && cd build20.04
+    - cmake -DENABLE_GPL="ON" ${CMAKE_PLUGINS_OPTIONS} -DCMAKE_BUILD_TYPE="Release" ..
+    - make -j`nproc` install
+    - ldconfig
+    - make test
+  except:
+    - develop
+    - master
+    
+Test Ubuntu 22.04:
+  stage: test
+  image: ubuntu:22.04
+  script:
+    - DEBIAN_FRONTEND=noninteractive apt update -y
+    - DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends git cmake build-essential libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev python3-dev wget ca-certificates
+    - wget https://gitlab.com/api/v4/projects/42406192/packages/generic/releases/${SHMDATA_VERSION}/ubuntu22.04_shmdata-dev_${SHMDATA_VERSION}_amd64.deb
+    - dpkg -i ubuntu22.04_shmdata-dev_${SHMDATA_VERSION}_amd64.deb
+    - DEBIAN_FRONTEND=noninteractive apt install -y -qq $(cat deps/apt-build-ubuntu-22.04) $(cat deps/apt-runtime-ubuntu-22.04)
+    - pip3 install -r deps/pip3-ubuntu22.04
+    - mkdir build22.04 && cd build22.04
+    - cmake -DENABLE_GPL="ON" ${CMAKE_PLUGINS_OPTIONS} -DCMAKE_BUILD_TYPE="Release" ..
+    - make -j`nproc` install
+    - ldconfig
+    - make test
   except:
     - develop
     - master
 
-# Package
-Test -- Package:
+Test Ubuntu 23.04:
   stage: test
-  image: $CONTAINER_TAG_PREFIX-ubuntu2004
+  image: ubuntu:23.04
   script:
-    - cmake -B build -DENABLE_GPL=ON -DCMAKE_BUILD_TYPE="Release"
-    - apt-key del 7fa2af80 && apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub
-    - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y xvfb
-    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make package_source_test -sC build
-  only:
+    - DEBIAN_FRONTEND=noninteractive apt update -y
+    - DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends git cmake build-essential libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev python3-dev wget ca-certificates
+    - wget https://gitlab.com/api/v4/projects/42406192/packages/generic/releases/${SHMDATA_VERSION}/ubuntu23.04_shmdata-dev_${SHMDATA_VERSION}_amd64.deb
+    - dpkg -i ubuntu23.04_shmdata-dev_${SHMDATA_VERSION}_amd64.deb
+    - DEBIAN_FRONTEND=noninteractive apt install -y -qq $(cat deps/apt-build-ubuntu-23.04) $(cat deps/apt-runtime-ubuntu-23.04)
+    - mkdir build23.04 && cd build23.04
+    - cmake -DENABLE_GPL="ON" ${CMAKE_PLUGINS_OPTIONS} -DCMAKE_BUILD_TYPE="Release" ..
+    - make -j`nproc` install
+    - ldconfig
+    - make test
+  except:
     - develop
-    - test-switcher-ci
+    - master
 
-Coverage -- Package:
+Coverage -- Ubuntu 22.04:
   stage: coverage
-  image: $CONTAINER_TAG_PREFIX-ubuntu2004
+  image: ubuntu:22.04
   script:
-    - apt-key del 7fa2af80 && apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/3bf863cc.pub
-    - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y lcov zip xvfb
+    - DEBIAN_FRONTEND=noninteractive apt update -y && apt install -y lcov zip
+    - DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends git cmake build-essential libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev python3-dev wget ca-certificates
+    - wget https://gitlab.com/api/v4/projects/42406192/packages/generic/releases/${SHMDATA_VERSION}/ubuntu22.04_shmdata-dev_${SHMDATA_VERSION}_amd64.deb
+    - dpkg -i ubuntu22.04_shmdata-dev_${SHMDATA_VERSION}_amd64.deb
+    - DEBIAN_FRONTEND=noninteractive apt install -y -qq $(cat deps/apt-build-ubuntu-22.04) $(cat deps/apt-runtime-ubuntu-22.04)
     - rm -rf build && mkdir build && cd build
-    - cmake -DTEST_COVERAGE=ON -DENABLE_GPL=ON ..
+    - cmake -DTEST_COVERAGE=ON -DENABLE_GPL=ON ${CMAKE_PLUGINS_OPTIONS} ..
     - make -j`nproc` && make install && ldconfig
-    - pulseaudio --start
-    - xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' make check_coverage
+    - make check_coverage
     - zip -r coverage.zip coverage
     - mv coverage.zip ../
   artifacts:
@@ -86,23 +89,133 @@ Coverage -- Package:
     - "coverage.zip"
   only:
     - develop
-    - test-switcher-ci
 
-# Debian Package
-Debian -- Package:
-  stage: deploy
-  image: $CONTAINER_TAG_PREFIX-ubuntu2004
+Debian Package Ubuntu 20.04:
+  stage: package
+  image: ubuntu:20.04
+  rules:
+    - if: $CI_COMMIT_TAG  # Run this job when a tag is created
   script: 
     - DEBIAN_FRONTEND=noninteractive apt update -y
+    - DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends file doxygen graphviz
+    - DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends git cmake build-essential libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev python3-dev wget ca-certificates
+    - wget https://gitlab.com/api/v4/projects/42406192/packages/generic/releases/${SHMDATA_VERSION}/ubuntu20.04_shmdata-dev_${SHMDATA_VERSION}_amd64.deb
+    - dpkg -i ubuntu20.04_shmdata-dev_${SHMDATA_VERSION}_amd64.deb
+    - DEBIAN_FRONTEND=noninteractive apt install -y -qq $(cat deps/apt-build-ubuntu-20.04) $(cat deps/apt-runtime-ubuntu-20.04)
+    - mkdir -p release-files/
+    - pushd .
     - rm -rf build && mkdir build && cd build
-    - cmake -DENABLE_GPL=ON -DCMAKE_INSTALL_PREFIX=/usr ..
+    - cmake -DCMAKE_INSTALL_PREFIX=/usr -DENABLE_GPL="ON" ${CMAKE_PLUGINS_OPTIONS} -DCMAKE_BUILD_TYPE="Debug" ..
+    - make doc
+    - make install
     - make -j`nproc` package
-    - mv *.deb ../switcher_ubuntu20.04_latest_amd64.deb
+    - make uninstall
+    - |
+      for i in switcher-dbg*.deb; do cp $i ../release-files/ubuntu20.04_$i; done
+    - popd
+    - rm -rf build && mkdir build && cd build
+    - cmake  -DCMAKE_INSTALL_PREFIX=/usr -DENABLE_GPL="ON" ${CMAKE_PLUGINS_OPTIONS} -DCMAKE_BUILD_TYPE="Release" ..
+    - make doc
+    - make install
+    - make -j`nproc` package
+    - |
+      for i in switcher-lib*.deb switcher-dev*.deb; do cp $i ../release-files/ubuntu20.04_$i; done
   artifacts:
-    name: "switcher_package_${CI_BUILD_REF_NAME}"
     paths:
-    - switcher_ubuntu20.04_latest_amd64.deb
-  only:
-    - master
-    - test-switcher-ci
+    - release-files/
 
+Debian Package Ubuntu 22.04:
+  stage: package
+  image: ubuntu:22.04
+  rules:
+    - if: $CI_COMMIT_TAG  # Run this job when a tag is created
+  script: 
+    - DEBIAN_FRONTEND=noninteractive apt update -y
+    - DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends file doxygen graphviz
+    - DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends git cmake build-essential libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev python3-dev wget ca-certificates
+    - wget https://gitlab.com/api/v4/projects/42406192/packages/generic/releases/${SHMDATA_VERSION}/ubuntu22.04_shmdata-dev_${SHMDATA_VERSION}_amd64.deb
+    - dpkg -i ubuntu22.04_shmdata-dev_${SHMDATA_VERSION}_amd64.deb
+    - DEBIAN_FRONTEND=noninteractive apt install -y -qq $(cat deps/apt-build-ubuntu-22.04) $(cat deps/apt-runtime-ubuntu-22.04)
+    - mkdir -p release-files/
+    - pushd .
+    - rm -rf build && mkdir build && cd build
+    - cmake -DCMAKE_INSTALL_PREFIX=/usr -DENABLE_GPL="ON" ${CMAKE_PLUGINS_OPTIONS} -DCMAKE_BUILD_TYPE="Debug" ..
+    - make doc
+    - make install
+    - make -j`nproc` package
+    - make uninstall
+    - |
+      for i in switcher-dbg*.deb; do cp $i ../release-files/ubuntu22.04_$i; done
+    - popd
+    - rm -rf build && mkdir build && cd build
+    - cmake  -DCMAKE_INSTALL_PREFIX=/usr -DENABLE_GPL="ON" ${CMAKE_PLUGINS_OPTIONS} -DCMAKE_BUILD_TYPE="Release" ..
+    - make doc
+    - make install
+    - make -j`nproc` package
+    - |
+      for i in switcher-lib*.deb switcher-dev*.deb; do cp $i ../release-files/ubuntu22.04_$i; done
+  artifacts:
+    paths:
+    - release-files/
+
+Debian Package Ubuntu 23.04:
+  stage: package
+  image: ubuntu:23.04
+  rules:
+    - if: $CI_COMMIT_TAG  # Run this job when a tag is created
+  script: 
+    - DEBIAN_FRONTEND=noninteractive apt update -y
+    - DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends file doxygen graphviz
+    - DEBIAN_FRONTEND=noninteractive apt install -y --no-install-recommends git cmake build-essential libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev python3-dev wget ca-certificates
+    - wget https://gitlab.com/api/v4/projects/42406192/packages/generic/releases/${SHMDATA_VERSION}/ubuntu23.04_shmdata-dev_${SHMDATA_VERSION}_amd64.deb
+    - dpkg -i ubuntu23.04_shmdata-dev_${SHMDATA_VERSION}_amd64.deb
+    - DEBIAN_FRONTEND=noninteractive apt install -y -qq $(cat deps/apt-build-ubuntu-23.04) $(cat deps/apt-runtime-ubuntu-23.04)
+    - mkdir -p release-files/
+    - pushd .
+    - rm -rf build && mkdir build && cd build
+    - cmake -DCMAKE_INSTALL_PREFIX=/usr -DENABLE_GPL="ON" ${CMAKE_PLUGINS_OPTIONS} -DCMAKE_BUILD_TYPE="Debug" ..
+    - make doc
+    - make install
+    - make -j`nproc` package
+    - make uninstall
+    - |
+      for i in switcher-dbg*.deb; do cp $i ../release-files/ubuntu23.04_$i; done
+    - popd
+    - rm -rf build && mkdir build && cd build
+    - cmake -DCMAKE_INSTALL_PREFIX=/usr -DENABLE_GPL="ON" ${CMAKE_PLUGINS_OPTIONS} -DCMAKE_BUILD_TYPE="Release" ..
+    - make doc
+    - make install
+    - make -j`nproc` package
+    - |
+      for i in switcher-lib*.deb switcher-dev*.deb; do cp $i ../release-files/ubuntu23.04_$i; done
+  artifacts:
+    paths:
+    - release-files/
+
+#
+# Gitlab release
+#
+Gitlab release upload:
+  stage: upload
+  image: curlimages/curl:latest
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    - |
+      for i in $(ls release-files/); do curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file release-files/${i} "${PACKAGE_REGISTRY_URL}/${CI_COMMIT_TAG}/${i}"; done
+
+
+Gitlab release:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    - |
+      release-cli create --name "Release $CI_COMMIT_TAG" --tag-name $CI_COMMIT_TAG \
+        --description LAST_RELEASE.md \
+        $(\
+          for i in $(ls release-files/); do \
+            echo --assets-link  "{\"name\":\"${i}\",\"url\":\"${PACKAGE_REGISTRY_URL}/${CI_COMMIT_TAG}/${i}\",\"link_type\":\"package\"}" ;\
+          done \
+         )

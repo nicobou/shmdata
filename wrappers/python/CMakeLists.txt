@@ -12,14 +12,26 @@ if (WITH_PYTHON)
   add_compile_options(${PYTHON_CFLAGS})
   add_compile_options("-Wno-missing-field-initializers")
 
+  # PYQUID_SCRIPTS can be configured using -DPYQUID_SCRIPTS=/path/to/pyquid/scripts in the cmake command line
+  set(PYQUID_SCRIPTS ${CMAKE_INSTALL_PREFIX}/${SWITCHER_LIBRARY}/pyquid)
+  set(PYQUID_SCRIPTS_LOCAL ${CMAKE_CURRENT_SOURCE_DIR})
+
+  # compile time definition to locate pyquid scripts for interpreted types
+  add_compile_definitions(PYQUID_SCRIPTS_DIR="${PYQUID_SCRIPTS}")
+  add_compile_definitions(PYQUID_SCRIPTS_DIR_LOCAL="${PYQUID_SCRIPTS_LOCAL}")
+
+
   add_library(pyquid SHARED
     pyfclaw.cpp
     pyinfotree.cpp
     pyquid.cpp
     pyquiddity.cpp
+    pyquiddities.cpp
     pysession.cpp
     pyswitch.cpp
+    pylogger.cpp
     pywclaw.cpp
+    pybundle.cpp
   )
 
   set_target_properties(pyquid PROPERTIES PREFIX "")
@@ -34,31 +46,37 @@ if (WITH_PYTHON)
     PRIVATE ${PYTHON_LIBRARIES}
   )
 
+
   # COMPUTE INSTALL PATH FOR PYQUID
   execute_process(COMMAND ${PYTHON_EXECUTABLE} -c "import sysconfig; print(sysconfig.get_config_var('DESTSHARED'))" OUTPUT_VARIABLE DESTSHARED OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-  # INSTALL
-  install(TARGETS pyquid LIBRARY DESTINATION ${DESTSHARED})
+  # Install library
+  install(TARGETS pyquid LIBRARY DESTINATION ${DESTSHARED} COMPONENT lib)
+  # Install library for the 'dev' cmake component
+  install(TARGETS pyquid LIBRARY DESTINATION ${DESTSHARED} COMPONENT dev)
+  # Install library for the 'dev' cmake component
+  install(TARGETS pyquid LIBRARY DESTINATION ${DESTSHARED} COMPONENT dbg)
+
+  # install python files
+  install(FILES signals.py props.py bundles.py
+    DESTINATION ${SWITCHER_LIBRARY}/pyquid
+    COMPONENT lib)
+  # install python files  for the 'dev' cmake component
+  install(FILES signals.py props.py bundles.py
+    DESTINATION ${SWITCHER_LIBRARY}/pyquid
+    COMPONENT dev)
+  # install python files  for the 'dev' cmake component
+  install(FILES signals.py props.py bundles.py
+    DESTINATION ${SWITCHER_LIBRARY}/pyquid
+    COMPONENT dbg)
 
   # ADD EXAMPLE TESTS
-  add_test(pyquid_basic ${CMAKE_CURRENT_SOURCE_DIR}/examples/01-basic.py)
-  add_test(pyquid_introspection ${CMAKE_CURRENT_SOURCE_DIR}/examples/02-introspection.py)
-  add_test(pyquid_infotree ${CMAKE_CURRENT_SOURCE_DIR}/examples/03-infotree.py)
-  add_test(pyquid_signal ${CMAKE_CURRENT_SOURCE_DIR}/examples/04-signal.py)
-  add_test(pyquid_save ${CMAKE_CURRENT_SOURCE_DIR}/examples/05-save.py)
-  add_test(pyquid_property_sub ${CMAKE_CURRENT_SOURCE_DIR}/examples/06-subscribe-to-property.py)
-  add_test(pyquid_invoke_async ${CMAKE_CURRENT_SOURCE_DIR}/examples/07-invoke-async.py)
-  add_test(pyquid_quid_infotree_stress ${CMAKE_CURRENT_SOURCE_DIR}/examples/08-quid-infotree-stress.py)
-  add_test(pyquid_uri_in_video_window ${CMAKE_CURRENT_SOURCE_DIR}/examples/09-uri-in-video-window.py)
-  add_test(pyquid_quid_conf_and_two_jack_servers ${CMAKE_CURRENT_SOURCE_DIR}/examples/10-quid-conf-and-two-jack-servers.py)
-  add_test(pyquid_switcher_signals ${CMAKE_CURRENT_SOURCE_DIR}/examples/11-switcher-signals.py)
-  add_test(pyquid_switcher_session ${CMAKE_CURRENT_SOURCE_DIR}/examples/12-switcher-session.py)
-  add_test(pyquid_shmdata_connection ${CMAKE_CURRENT_SOURCE_DIR}/examples/13-shmdata-connection.py)
-  add_test(pyquid_shmdata_dynamic_claws ${CMAKE_CURRENT_SOURCE_DIR}/examples/14-shmdata-dynamic-claws.py)
-  add_test(pyquid_user_tree_signal ${CMAKE_CURRENT_SOURCE_DIR}/examples/15-signal-user-tree.py)
+  file(GLOB EXAMPLE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/examples/*.py")
+  list(FILTER EXAMPLE_FILES EXCLUDE REGEX "16-register-sip")
 
-  # ADD UNIT TESTS
-  add_test(NAME pyquid_unittest
-           COMMAND ${PYTHON_EXECUTABLE} -m unittest
-           WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  foreach(EXAMPLE_FILE ${EXAMPLE_FILES})
+    get_filename_component(EXAMPLE_NAME ${EXAMPLE_FILE} NAME_WE)
+    add_test(pyquid_${EXAMPLE_NAME} ${EXAMPLE_FILE})
+  endforeach()
+
 endif ()

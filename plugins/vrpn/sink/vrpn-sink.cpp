@@ -186,7 +186,7 @@ bool VRPNSink::createAnalogDeviceMethod(const std::string& deviceName) {
  */
 bool VRPNSink::createAnalogDevice(const std::string& deviceName) {
   if (deviceName.empty()) {
-    LOGGER_INFO(this->logger, "ERROR: Device name is required.");
+    sw_info("ERROR: Device name is required.");
     return false;
   }
 
@@ -196,7 +196,7 @@ bool VRPNSink::createAnalogDevice(const std::string& deviceName) {
   // Check if we already have a device of the same name + type
   std::string deviceId = deviceName + "-analog";
   if (getAnalogDevice(deviceId) != nullptr) {
-    LOGGER_ERROR(this->logger, "A device of the same type exists with that name");
+    sw_error("A device of the same type exists with that name");
     return false;
   }
 
@@ -343,7 +343,7 @@ bool VRPNSink::createButtonDeviceMethod(const std::string& deviceName) {
  */
 bool VRPNSink::createButtonDevice(const std::string& deviceName) {
   if (deviceName.empty()) {
-    LOGGER_ERROR(this->logger, "Device name is required");
+    sw_error("Device name is required");
     return false;
   }
 
@@ -353,7 +353,7 @@ bool VRPNSink::createButtonDevice(const std::string& deviceName) {
   // Check if we already have a device of the same name + type
   std::string deviceId = deviceName + "-button";
   if (getButtonDevice(deviceId) != nullptr) {
-    LOGGER_ERROR(this->logger, "A device of the same type exists with that name");
+    sw_error("A device of the same type exists with that name");
     return false;
   }
 
@@ -499,7 +499,7 @@ void VRPNSink::onShmReaderData(void* data, size_t size) {
     for (int i = 0; i < (int)size; ++i) {
       ss << std::hex << std::setfill('0') << std::setw(2) << (int)d[i] << " ";
     }
-    LOGGER_DEBUG(this->logger, ss.str());
+    sw_debug(ss.str());
   }
 
   // BUFFER
@@ -550,7 +550,7 @@ bool VRPNSink::start() {
 
   connection_ = std::make_unique<VRPNServerConnection>(port_);
   if (!connection_->raw()->doing_okay()) {
-    LOGGER_ERROR(this->logger, "VRPN sink connection is not doing okay.");
+    sw_error("VRPN sink connection is not doing okay.");
     return false;
   }
 
@@ -571,7 +571,7 @@ bool VRPNSink::start() {
   loopTask_ = std::make_unique<PeriodicTask<>>([this]() { this->loop(); },
                                                std::chrono::milliseconds(vrpnLoopInterval));
 
-  LOGGER_DEBUG(this->logger, "Started VRPN sink server");
+  sw_debug("Started VRPN sink server");
 
   return true;
 }
@@ -580,7 +580,7 @@ bool VRPNSink::start() {
  * @thread switcher
  */
 bool VRPNSink::stop() {
-  LOGGER_DEBUG(this->logger, "Stopping VRPN sink server");
+  sw_debug("Stopping VRPN sink server");
 
   loopTask_.reset(nullptr);
 
@@ -624,7 +624,7 @@ void VRPNSink::loop() {
   std::lock_guard<std::mutex> _(vrpnMutex_);
 
   if (!connection_->raw()->doing_okay()) {
-    LOGGER_WARN(this->logger, "VRPN sink connection is not doing okay.");
+    sw_warning("VRPN sink connection is not doing okay.");
   }
   connection_->raw()->mainloop();
   for (auto& device : devices_) {

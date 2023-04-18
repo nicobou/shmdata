@@ -38,14 +38,14 @@ PJICEStreamTrans::PJICEStreamTrans(pj_ice_strans_cfg& ice_cfg,
                                          this,       /* user data */
                                          &icecb,     /* callback */
                                          &icest_)) { /* instance ptr */
-    LOGGER_WARN(SIPPlugin::this_->logger, "error when creating ICE");
+    SIPPlugin::this_->sw_warning("error when creating ICE");
     return;
   }
   std::unique_lock<std::mutex> lock(cand_ready_mtx_);
   while (!cand_ready_)
     if (cand_ready_cv_.wait_for(lock, std::chrono::seconds(3)) == std::cv_status::timeout) return;
   if (PJ_SUCCESS != pj_ice_strans_init_ice(icest_, role, nullptr, nullptr)) {
-    LOGGER_WARN(SIPPlugin::this_->logger, "error during ICE initialization");
+    SIPPlugin::this_->sw_warning("error during ICE initialization");
     return;
   }
   // done
@@ -56,7 +56,7 @@ PJICEStreamTrans::~PJICEStreamTrans() {
   if (nullptr != icest_) {
     if (pj_ice_strans_has_sess(icest_)) {
       if (PJ_SUCCESS != pj_ice_strans_stop_ice(icest_))
-        LOGGER_WARN(SIPPlugin::this_->logger, "issue when stoping ICE session");
+        SIPPlugin::this_->sw_warning("issue when stoping ICE session");
     }
     pj_ice_strans_destroy(icest_);
   }
@@ -89,9 +89,8 @@ void PJICEStreamTrans::cb_on_ice_complete(pj_ice_strans* ice_st,
                             ? "initialization"
                             : (op == PJ_ICE_STRANS_OP_NEGOTIATION ? "negotiation" : "unknown_op"));
 
-  LOGGER_DEBUG(SIPPlugin::this_->logger,
-               "ICE state {}",
-               std::string(pj_ice_strans_state_name(pj_ice_strans_get_state(ice_st))));
+  SIPPlugin::this_->sw_debug(
+      "ICE state {}", std::string(pj_ice_strans_state_name(pj_ice_strans_get_state(ice_st))));
 
   PJICEStreamTrans* context = static_cast<PJICEStreamTrans*>(pj_ice_strans_get_user_data(ice_st));
   if (op == PJ_ICE_STRANS_OP_INIT) {
@@ -101,12 +100,11 @@ void PJICEStreamTrans::cb_on_ice_complete(pj_ice_strans* ice_st,
   }
 
   if (status == PJ_SUCCESS) {
-    LOGGER_DEBUG(SIPPlugin::this_->logger, "ICE {} successful", std::string(opname));
+    SIPPlugin::this_->sw_debug("ICE {} successful", std::string(opname));
   } else {
     char errmsg[PJ_ERR_MSG_SIZE];
     pj_strerror(status, errmsg, sizeof(errmsg));
-    LOGGER_WARN(
-        SIPPlugin::this_->logger, "ICE {} failed: {}", std::string(opname), std::string(errmsg));
+    SIPPlugin::this_->sw_warning("ICE {} failed: {}", std::string(opname), std::string(errmsg));
     // pj_ice_strans_destroy(ice_st);
     // icest_ = NULL;
   }
@@ -135,14 +133,14 @@ std::vector<std::vector<std::string>> PJICEStreamTrans::get_components() {
 
     /* Get default candidate for the component */
     if (PJ_SUCCESS != pj_ice_strans_get_def_cand(icest_, comp + 1, &cand[0])) {
-      LOGGER_WARN(SIPPlugin::this_->logger, "issue with pj_ice_strans_get_def_cand");
+      SIPPlugin::this_->sw_warning("issue with pj_ice_strans_get_def_cand");
       return res;
     }
 
     /* Enumerate all candidates for this component */
     cand_cnt = PJ_ARRAY_SIZE(cand);
     if (PJ_SUCCESS != pj_ice_strans_enum_cands(icest_, comp + 1, &cand_cnt, cand)) {
-      LOGGER_WARN(SIPPlugin::this_->logger, "issue with pj_ice_strans_enum_cands");
+      SIPPlugin::this_->sw_warning("issue with pj_ice_strans_enum_cands");
       return res;
     }
     /* And encode the candidates as SDP */
@@ -166,7 +164,7 @@ std::vector<pj_uint16_t> PJICEStreamTrans::get_first_candidate_ports() {
     pj_ice_sess_cand cand[PJ_ICE_ST_MAX_CAND];
     /* Get default candidate for the component */
     if (PJ_SUCCESS != pj_ice_strans_get_def_cand(icest_, comp + 1, &cand[0])) {
-      LOGGER_WARN(SIPPlugin::this_->logger, "issue with pj_ice_strans_get_def_cand");
+      SIPPlugin::this_->sw_warning("issue with pj_ice_strans_get_def_cand");
       return res;
     }
     res.emplace_back(pj_sockaddr_get_port(&cand[0].addr));
@@ -177,7 +175,7 @@ std::vector<pj_uint16_t> PJICEStreamTrans::get_first_candidate_ports() {
 std::string PJICEStreamTrans::get_first_candidate_host() {
   pj_ice_sess_cand cand[PJ_ICE_ST_MAX_CAND];
   if (PJ_SUCCESS != pj_ice_strans_get_def_cand(icest_, 1, &cand[0])) {
-    LOGGER_WARN(SIPPlugin::this_->logger, "issue with {}", std::string(__FUNCTION__));
+    SIPPlugin::this_->sw_warning("issue with {}", std::string(__FUNCTION__));
     return std::string();
   }
   char addr_buf[128];
@@ -202,7 +200,7 @@ bool PJICEStreamTrans::start_nego(const pj_str_t* rem_ufrag,
   if (PJ_SUCCESS != status) {
     char errmsg[PJ_ERR_MSG_SIZE];
     pj_strerror(status, errmsg, sizeof(errmsg));
-    LOGGER_WARN(SIPPlugin::this_->logger, "ICE negociation issue: {}", std::string(errmsg));
+    SIPPlugin::this_->sw_warning("ICE negociation issue: {}", std::string(errmsg));
     return false;
   }
   return true;

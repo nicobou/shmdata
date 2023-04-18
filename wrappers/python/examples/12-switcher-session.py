@@ -39,9 +39,9 @@ assert sw.session.copy("session2", "session3.json") is True
 session_files = sw.session.list()
 assert isinstance(session_files, list) and len(session_files) >= 3
 
-# read session file, parse it and load it into switcher's current state
-assert sw.session.read("session1")
-assert sw.session.read("session2.json")
+# load session file, parse it and load it into switcher's current state
+assert sw.session.load("session1")
+assert sw.session.load("session2.json")
 
 # remove test session files
 assert sw.session.remove("session1")
@@ -59,7 +59,7 @@ assert "s3.json" in sw.session.list()
 assert sw.session.copy('s3', '../s4')
 assert "s4.json" in sw.session.list()
 assert sw.session.remove('s3')
-assert sw.session.read('../s4')
+assert sw.session.load('../s4')
 assert sw.session.remove('s4')
 
 exit(0)

@@ -71,6 +71,7 @@ class VideoTestSource : public Quiddity, public quiddity::Startable {
       3};                                 //!< frameratedefault to 30 fps
   property::prop_id_t framerates_id_;
   property::Selection<> formats_;
+  const std::string cDefaultPixelFormat{"I420"};
   property::prop_id_t formats_id_;
   gst::UGstElem videotestsrc_{"videotestsrc"};
   gst::UGstElem capsfilter_{"capsfilter"};
