@@ -16,7 +16,9 @@
 * Marie-Eve Dumas
 * Pascale Stark
 * Jerome Berthelin
+* vlnk
 * Thomas Piquet
 * Rostom Mesli
 * Patrick Keroulas
 * Marc Lavallée
+* Guillaume Riou

@@ -2,6 +2,22 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+switcher 3.2.2 (2023-04-18)
+---------------------------
+
+New features:
+* Deb package in gitlab ci with plugins
+
+Bug fixes:
+* Pyquid: fix segfault when Switcher is created without a name
+* Fix the prune API in swIO and add tests on top of this API
+* Quick fix the issues with executor specs
+
+Improvement:
+* Fix/log must not be singleton
+* Stop sending poly aftertouch on midi sinc start
+* Fix links in readme
+
 switcher 3.2.0 (2022-11-17)
 ---------------------------
 This is an official release in the 3.2 stable series.
