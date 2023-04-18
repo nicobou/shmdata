@@ -71,9 +71,12 @@ if (PLUGIN_JACK)
     # INSTALL
 
     install(TARGETS switchershmtojack switcherjacktoshm switcherjackserver LIBRARY DESTINATION ${SWITCHER_LIBRARY}/plugins)
-    install(TARGETS shmdata2jack DESTINATION bin
+    install(DIRECTORY .
+      DESTINATION bin
+      FILES_MATCHING PATTERN "shmdata2jack"
       PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
       GROUP_EXECUTE GROUP_READ
-      WORLD_EXECUTE WORLD_READ)
+      WORLD_EXECUTE WORLD_READ
+      )
 
 endif ()
