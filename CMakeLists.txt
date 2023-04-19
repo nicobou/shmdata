@@ -143,7 +143,6 @@ link_libraries(
     dl
     pthread
     stdc++fs
-    uuid
     spdlog::spdlog
 )
 
