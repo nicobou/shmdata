@@ -47,6 +47,7 @@ class Pipeliner {
   Pipeliner& operator=(const Pipeliner&) = delete;
 
   GstElement* get_pipeline();
+  GMainContext* get_main_context() const;
   void play(gboolean play);
   bool seek(gdouble position_in_ms);
   bool seek_key_frame(gdouble position_in_ms);

@@ -104,6 +104,8 @@ bool Pipeliner::seek_key_frame(gdouble position_in_ms) {
 
 GstElement* Pipeliner::get_pipeline() { return gst_pipeline_->get_pipeline(); }
 
+GMainContext* Pipeliner::get_main_context() const { return main_loop_->get_main_context(); }
+
 GstBusSyncReply Pipeliner::on_gst_error(GstMessage* msg) {
   if (GST_MESSAGE_TYPE(msg) != GST_MESSAGE_ERROR) return GST_BUS_PASS;
   gchar* debug = nullptr;
