@@ -107,6 +107,11 @@ class Log : public SafeBoolIdiom {
    * Maximum number of files for the rotating log.
    */
   static const size_t cMaxFiles = 100;
+  /**
+   * Maximum size for the rotating log, in MB.
+   */
+  static const size_t cMaxSize = 100;
+
 };
 }  // namespace logger
 }  // namespace switcher

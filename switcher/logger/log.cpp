@@ -67,7 +67,9 @@ Log::Log(const std::string& logger_name, switcher::Configuration* conf, bool deb
 
   size_t max_size = conf->get_value(".logs.max_size");
   if (!max_size) {
-    max_size = 1048576 * 100;  // 100MB
+    max_size = 1048576 * cMaxSize;
+  } else if (max_size > cMaxSize) {
+        max_size = 1048576 * cMaxSize;
   } else {
     max_size = 1048576 * max_size;
   }
