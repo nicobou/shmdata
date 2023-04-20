@@ -59,8 +59,12 @@ if (WITH_GST)
       LIBRARY DESTINATION ${GST_PLUGINS_DIR}
       COMPONENT lib)
 
-        install(TARGETS gstshmdata
+    install(TARGETS gstshmdata
       LIBRARY DESTINATION ${GST_PLUGINS_DIR}
       COMPONENT dev)
+
+    install(TARGETS gstshmdata
+      LIBRARY DESTINATION ${GST_PLUGINS_DIR}
+      COMPONENT dbg)
 
 endif ()
