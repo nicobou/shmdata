@@ -41,6 +41,13 @@ class Pipeliner {
   Pipeliner(Pipe::on_msg_async_cb_t on_msg_async_cb,
             Pipe::on_msg_sync_cb_t on_msg_sync_cb,
             on_error_cb_t on_error_cb);
+  /* use an existing main context instead of creating its own*/
+  Pipeliner(GMainContext* context);
+  // if a context is null, the Pipeliner will create one
+  Pipeliner(Pipe::on_msg_async_cb_t on_msg_async_cb,
+            Pipe::on_msg_sync_cb_t on_msg_sync_cb,
+            on_error_cb_t on_error_cb,
+            GMainContext* context);
   Pipeliner() = delete;
   virtual ~Pipeliner();
   Pipeliner(const Pipeliner&) = delete;
@@ -69,6 +76,7 @@ class Pipeliner {
   std::mutex watch_mutex_{};
   std::condition_variable cond_watch_{};
   std::unique_ptr<GlibMainLoop> main_loop_;
+  GMainContext* context_{nullptr};
   std::unique_ptr<Pipe> gst_pipeline_;
 };
 

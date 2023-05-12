@@ -33,15 +33,26 @@ namespace gst {
 Pipeliner::Pipeliner(Pipe::on_msg_async_cb_t on_msg_async_cb, Pipe::on_msg_sync_cb_t on_msg_sync_cb)
     : Pipeliner(on_msg_async_cb, on_msg_sync_cb, nullptr) {}
 
+
+Pipeliner::Pipeliner(GMainContext* context) :
+    Pipeliner(nullptr, nullptr, nullptr, context) {}
+    
 Pipeliner::Pipeliner(Pipe::on_msg_async_cb_t on_msg_async_cb,
                      Pipe::on_msg_sync_cb_t on_msg_sync_cb,
                      on_error_cb_t on_error_cb)
+    : Pipeliner(on_msg_async_cb, on_msg_sync_cb, on_error_cb, nullptr) {}
+
+Pipeliner::Pipeliner(Pipe::on_msg_async_cb_t on_msg_async_cb,
+                     Pipe::on_msg_sync_cb_t on_msg_sync_cb,
+                     on_error_cb_t on_error_cb,
+                     GMainContext* context)
     : on_msg_async_cb_(on_msg_async_cb),
       on_msg_sync_cb_(on_msg_sync_cb),
       on_error_cb_(on_error_cb),
-      main_loop_(std::make_unique<GlibMainLoop>()),
+      main_loop_(context ? nullptr : std::make_unique<GlibMainLoop>()),
+      context_(context ? context : main_loop_->get_main_context()),
       gst_pipeline_(std::make_unique<Pipe>(
-          main_loop_->get_main_context(), &Pipeliner::bus_sync_handler, this
+          context_, &Pipeliner::bus_sync_handler, this
           // [this](GstMessage *msg){
           //   if(this->on_msg_async_cb_)
           //     this->on_msg_async_cb_(msg);
@@ -62,7 +73,7 @@ Pipeliner::Pipeliner(Pipe::on_msg_async_cb_t on_msg_async_cb,
   }
 
   gst::utils::g_idle_add_full_with_context(
-      main_loop_->get_main_context(), G_PRIORITY_DEFAULT_IDLE, push_thread_context, this, nullptr);
+      context_, G_PRIORITY_DEFAULT_IDLE, push_thread_context, this, nullptr);
 }
 
 Pipeliner::~Pipeliner() {
@@ -75,7 +86,7 @@ Pipeliner::~Pipeliner() {
 
 gboolean Pipeliner::push_thread_context(gpointer user_data) {
   auto context = static_cast<Pipeliner*>(user_data);
-  g_main_context_push_thread_default(context->main_loop_->get_main_context());
+  g_main_context_push_thread_default(context->context_);
 
   std::unique_lock<std::mutex> lock(context->watch_mutex_);
   auto bus = gst_pipeline_get_bus(GST_PIPELINE(context->get_pipeline()));
@@ -104,7 +115,7 @@ bool Pipeliner::seek_key_frame(gdouble position_in_ms) {
 
 GstElement* Pipeliner::get_pipeline() { return gst_pipeline_->get_pipeline(); }
 
-GMainContext* Pipeliner::get_main_context() const { return main_loop_->get_main_context(); }
+GMainContext* Pipeliner::get_main_context() const { return context_; }
 
 GstBusSyncReply Pipeliner::on_gst_error(GstMessage* msg) {
   if (GST_MESSAGE_TYPE(msg) != GST_MESSAGE_ERROR) return GST_BUS_PASS;
@@ -121,7 +132,7 @@ GstBusSyncReply Pipeliner::on_gst_error(GstMessage* msg) {
   if (nullptr != gsrc) {
     // removing command in order to get it invoked once
     g_object_set_data(G_OBJECT(msg->src), "on-error-gsource", nullptr);
-    gsrc->attach(main_loop_->get_main_context());
+    gsrc->attach(context_);
   }
   if (on_error_cb_) on_error_cb_(GST_MESSAGE_SRC(msg), error);
   return GST_BUS_DROP;
