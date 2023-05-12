@@ -19,114 +19,108 @@
 
 #include "./log.hpp"
 
-#include <unistd.h>  // use of getgid()
 #include <spdlog/sinks/rotating_file_sink.h>
 #include <spdlog/spdlog.h>
+#include <unistd.h>  // use of getgid()
 
 namespace switcher {
 namespace logger {
 
-std::string Log::make_logger_pattern(const std::string& name, const std::string& uuid) {
-  return "%Y-%m-%d %H:%M:%S.%e|" + name + "|" + uuid + "|%P|%t|%^%l%$: %v|%s:%#";
+std::string Log::make_logger_pattern(const std::string& name) {
+  // pattern is "date time | Switcher name | colored log level: message  
+  auto pattern = std::string("%Y-%m-%d %H:%M:%S.%e|" + name + "|%^%l%$: %v");
+#ifdef DEBUG
+  // add filename and line number when Switcher is compiled in "Debug" mode
+  pattern = pattern + "|%s:%#";
+#endif
+  return pattern;
 }
 
-std::string Log::make_uuid() const {
-  // declare structure to hold uuid in binary representation
-  uuid_t binary_uuid;
-  // generate a random binary uuid
-  uuid_generate_random(binary_uuid);
-  // declare variable to hold uuid in characters representation
-  char uuid_chars[36];
-  // convert uuid binary to character representation
-  uuid_unparse_lower(binary_uuid, uuid_chars);
-  // cast char array to string
-  return std::string(uuid_chars);
+Log::Log(const std::string& logger_name, switcher::Configuration* conf, bool debug)
+    : filepath_(conf->get_value(".logs.filepath")),
+      logger_(spdlog::get(logger_name)),
+      debug_(debug) {
+  if (logger_) {
+    logger_->warn("A logger named {} already exists, reusing existing session", logger_name);
+    is_valid_ = false;
+    return;
+  }
+
+  // init console sink
+  auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+
+  // init rotating file sink
+  if (filepath_.empty()) {
+    filepath_ = std::string(get_default_log_path());
+  }
+  // configure log file path
+  conf->set_value(".logs.filepath", filepath_);
+
+  size_t max_files = conf->get_value(".logs.max_files");
+  if (!max_files) {
+    max_files = 3;
+  }
+  if (max_files > cMaxFiles) {
+    max_files = cMaxFiles;
+  }
+  conf->set_value(".logs.max_files", max_files);
+
+  size_t max_size = conf->get_value(".logs.max_size");
+  if (!max_size) {
+    max_size = 1048576 * cMaxSize;
+  } else if (max_size > cMaxSize) {
+        max_size = 1048576 * cMaxSize;
+  } else {
+    max_size = 1048576 * max_size;
+  }
+  conf->set_value(".logs.max_size", max_size);
+
+  auto file_sink =
+      std::make_shared<spdlog::sinks::rotating_file_sink_mt>(filepath_, max_size, max_files);
+
+  // sinks init list to construct logger
+  spdlog::sinks_init_list sinks{console_sink, file_sink};
+
+  // init logger from sinks
+  logger_ = std::make_shared<spdlog::logger>(logger_name, sinks);
+
+  // compute pattern string
+  logger_->set_pattern(make_logger_pattern(logger_name));
+
+  // register logger so that it can be accessed globally
+  spdlog::register_logger(logger_);
+
+  // set log level
+  const std::string level_name = conf->get_value(".logs.log_level");
+  conf->set_value(".logs.log_level", set_log_level(level_name));
 }
 
-    Log::Log(const std::string& logger_name, switcher::Configuration* conf, bool debug)
-      : filepath_(conf->get_value(".logs.filepath")),
-	uuid_(make_uuid()),
-	logger_(spdlog::get(logger_name)),
-	debug_(debug) {
-      if (logger_) {
-        logger_->warn("A logger named {} already exists, reusing existing session", logger_name);
-        is_valid_ = false;
-	return;
-      }
-    
-      // init console sink
-      auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
-    
-      // init rotating file sink
-      if (filepath_.empty()) {
-	filepath_ = std::string(get_default_log_path());
-      }
-      // configure log file path
-      conf->set_value(".logs.filepath", filepath_);
+std::string Log::set_log_level(const std::string& level_name) {
+  auto level = spdlog::level::from_str(level_name);
 
-      size_t max_files = conf->get_value(".logs.max_files");
-      if (!max_files) {
-	max_files = 3;
-      }
-      if (max_files > cMaxFiles) {
-        max_files = cMaxFiles;
-      }
-      conf->set_value(".logs.max_files", max_files);
-    
-      size_t max_size = conf->get_value(".logs.max_size");
-      if (!max_size) {
-	max_size = 1048576 * 100;  // 100MB
-      } else {
-	max_size = 1048576 * max_size;
-      }
-      conf->set_value(".logs.max_size", max_size);
-    
-      auto file_sink =
-	std::make_shared<spdlog::sinks::rotating_file_sink_mt>(filepath_, max_size, max_files);
-    
-      // sinks init list to construct logger
-      spdlog::sinks_init_list sinks{console_sink, file_sink};
-    
-      // init logger from sinks
-      logger_ = std::make_shared<spdlog::logger>(logger_name, sinks);
-    
-      // compute pattern string
-      logger_->set_pattern(make_logger_pattern(logger_name, uuid_));
-    
-      // register logger so that it can be accessed globally
-      spdlog::register_logger(logger_);
-    
-      // set log level
-      const std::string level_name = conf->get_value(".logs.log_level");
-      conf->set_value(".logs.log_level", set_log_level(level_name));
-    }
-  
-    std::string Log::set_log_level(const std::string& level_name) {
-      auto level = spdlog::level::from_str(level_name);
+  // debug takes priority over configured log level
+  if (debug_ && level > spdlog::level::debug) {
+    logger_->debug("Debug level forced for the logger named {}", logger_->name());
+    logger_->set_level(spdlog::level::debug);
+    return "debug";
+  } else {
+    logger_->set_level(level);
+  }
+  return level_name;
+}
 
-      // debug takes priority over configured log level
-      if (debug_ && level > spdlog::level::debug) {
-        logger_->debug("Debug level forced for the logger named {}", logger_->name());
-        logger_->set_level(spdlog::level::debug);
-	return "debug";
-      } else {
-	logger_->set_level(level);
-      }
-      return level_name;
-    }
+std::shared_ptr<spdlog::logger> Log::get_logger() { return logger_; }
 
-    std::shared_ptr<spdlog::logger> Log::get_logger() { return logger_; }
+fs::path Log::get_default_log_path() {
+  if (getgid()) {
+    const auto xsh_env = std::getenv("XDG_STATE_HOME");
+    const auto xsh_default_path = fs::path(std::getenv("HOME")) / ".local" / "state";
+    const auto xsh_dir = fs::path(xsh_env ? std::string(xsh_env) : std::string(xsh_default_path));
+    return xsh_dir / "switcher" / "logs" / "switcher.log";
+  } else {  // running as root, use default log file path
+    return "/var/log/switcher/switcher.log";
+  }
+}
 
-    fs::path Log::get_default_log_path() {
-      if (getgid()) {
-	const auto xsh_env = std::getenv("XDG_STATE_HOME");
-	const auto xsh_default_path = fs::path(std::getenv("HOME")) / ".local" / "state";
-	const auto xsh_dir = fs::path(xsh_env ? std::string(xsh_env) : std::string(xsh_default_path));
-	return xsh_dir / "switcher" / "logs" / "switcher.log";
-      } else {  // running as root, use default log file path
-	return "/var/log/switcher/switcher.log";
-      }
-    }
-
-    }  // namespace logger
-    }  // namespace switcher
+}  // namespace logger
+}  // namespace switcher

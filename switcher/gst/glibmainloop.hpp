@@ -38,11 +38,16 @@ class GlibMainLoop {
   GlibMainLoop& operator=(const GlibMainLoop&) = delete;
 
   GMainContext* get_main_context();
-
+  bool invoke_in_main_loop(std::function<void()> fun);
+  
  private:
   GMainContext* main_context_{nullptr};
   GMainLoop* mainloop_{nullptr};
   ThreadedWrapper<> main_loop_{};
+  std::mutex funs_mutex_{};
+  std::vector<std::function<void()>> funs_{};
+
+  static int invoke_in_main_loop_cb(void* self);
 };
 }  // namespace gst
 }  // namespace switcher

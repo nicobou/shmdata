@@ -41,5 +41,29 @@ GlibMainLoop::~GlibMainLoop() {
   });
 }
 
+int GlibMainLoop::invoke_in_main_loop_cb(void* self) {
+  auto context = static_cast<GlibMainLoop*>(self);
+  {
+    std::scoped_lock lock(context->funs_mutex_);
+    for (const auto& fun: context->funs_) {
+      fun();
+    }
+    context->funs_.clear();
+  }
+  return FALSE;  // The source must be removed
+}
+
+bool GlibMainLoop::invoke_in_main_loop(std::function<void()> fun) {
+  {
+    std::scoped_lock lock(funs_mutex_);
+    funs_.push_back(fun);
+  }
+  GSource *source = g_idle_source_new();
+  g_source_set_callback(source, invoke_in_main_loop_cb, this, nullptr);
+  g_source_attach(source, main_context_);
+  g_source_unref(source);
+  return true;
+}
+
 }  // namespace gst
 }  // namespace switcher

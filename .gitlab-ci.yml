@@ -77,6 +77,7 @@ Coverage -- Ubuntu 22.04:
     - wget https://gitlab.com/api/v4/projects/42406192/packages/generic/releases/${SHMDATA_VERSION}/ubuntu22.04_shmdata-dev_${SHMDATA_VERSION}_amd64.deb
     - dpkg -i ubuntu22.04_shmdata-dev_${SHMDATA_VERSION}_amd64.deb
     - DEBIAN_FRONTEND=noninteractive apt install -y -qq $(cat deps/apt-build-ubuntu-22.04) $(cat deps/apt-runtime-ubuntu-22.04)
+    - pip3 install -r deps/pip3-ubuntu22.04
     - rm -rf build && mkdir build && cd build
     - cmake -DTEST_COVERAGE=ON -DENABLE_GPL=ON ${CMAKE_PLUGINS_OPTIONS} ..
     - make -j`nproc` && make install && ldconfig

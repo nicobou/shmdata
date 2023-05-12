@@ -9,7 +9,7 @@ project(Switcher)
 set(SWITCHER_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(SWITCHER_VERSION_MAJOR 3)
 set(SWITCHER_VERSION_MINOR 2)
-set(SWITCHER_VERSION_PATCH 2)
+set(SWITCHER_VERSION_PATCH 4)
 set(SWITCHER_VERSION_STRING ${SWITCHER_VERSION_MAJOR}.${SWITCHER_VERSION_MINOR}.${SWITCHER_VERSION_PATCH})
 set(SWITCHER_API_VERSION ${SWITCHER_VERSION_MAJOR}.${SWITCHER_VERSION_MINOR})
 set(SWITCHER_LIBRARY switcher-${SWITCHER_API_VERSION})
@@ -69,11 +69,13 @@ set(CPACK_COMPONENT_LIB_DESCRIPTION "Switcher with tools, python and libraries")
 set(CPACK_COMPONENT_DEV_DISPLAY_NAME "Switcher development files")
 set(CPACK_COMPONENT_DEV_DESCRIPTION "Switcher with includes, pkg-config and libraries")
 set(CPACK_DEBIAN_DEV_PACKAGE_REPLACES lib)
+set(CPACK_DEBIAN_DEV_PACKAGE_DEPENDS "libgstreamer1.0-dev, libjson-glib-dev, libspdlog-dev, libsamplerate0-dev, libfmt-dev")
 
 # CPack - Debug
 set(CPACK_COMPONENT_DBG_DISPLAY_NAME "Switcher development files with debug symbols")
 set(CPACK_COMPONENT_DBG_DESCRIPTION "Switcher with includes, pkg-config and libraries with debug symbols")
 set(CPACK_DEBIAN_DBG_PACKAGE_REPLACES lib dev)
+set(CPACK_DEBIAN_DBG_PACKAGE_DEPENDS "libgstreamer1.0-dev, libjson-glib-dev, libspdlog-dev, libsamplerate0-dev, libfmt-dev")
 
 # CPack - Source
 set(CPACK_SOURCE_IGNORE_FILES "/\.hooks/;${CMAKE_SOURCE_DIR}/build;${CMAKE_SOURCE_DIR}/html/;${CMAKE_SOURCE_DIR}/scripts/;.git/;${CPACK_SOURCE_IGNORE_FILES}")
@@ -143,7 +145,6 @@ link_libraries(
     dl
     pthread
     stdc++fs
-    uuid
     spdlog::spdlog
 )
 

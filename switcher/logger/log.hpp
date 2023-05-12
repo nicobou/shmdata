@@ -22,7 +22,6 @@
 
 #include <filesystem>
 #include <spdlog/sinks/stdout_color_sinks.h>
-#include <uuid/uuid.h>
 
 #include "switcher/utils/safe-bool-idiom.hpp"
 #include "switcher/configuration/configuration.hpp"
@@ -67,12 +66,6 @@ class Log : public SafeBoolIdiom {
   std::string filepath_{};
 
   /**
-   * @brief Universally unique identifier for the log session
-   * @details A universally unique identifier is a 128-bit label used for information in computer
-   * systems.
-   */
-  const std::string uuid_;
-  /**
    * @brief A shared pointer to a registered logger
    * @details When `making` the Switcher instance, a logger is initialized and outputs only to the
    * console until the instance is configured. Once the instance can check for `logs` settings, the
@@ -91,12 +84,6 @@ class Log : public SafeBoolIdiom {
   bool is_valid_{true};
 
   /**
-   * @brief Generate a universally unique identifier (uuid)
-   * @return A string that contains the generated uuid
-   */
-  std::string make_uuid() const;
-
-  /**
    * @brief SafeBoolIdiom implementation
    * @detail tells if the Log instance has initialized correctly
    **/
@@ -106,10 +93,9 @@ class Log : public SafeBoolIdiom {
    * @brief generate the spdlogger pattern for the logs
    *
    * @param the logger name
-   * @param the uuid identifier for this logging session
    * @return the string pattern in spdlogger format
    **/
-  static std::string make_logger_pattern(const std::string& name, const std::string& uuid);
+  static std::string make_logger_pattern(const std::string& name);
 
   /**
    * Gets the default path of the log file
@@ -121,6 +107,11 @@ class Log : public SafeBoolIdiom {
    * Maximum number of files for the rotating log.
    */
   static const size_t cMaxFiles = 100;
+  /**
+   * Maximum size for the rotating log, in MB.
+   */
+  static const size_t cMaxSize = 100;
+
 };
 }  // namespace logger
 }  // namespace switcher

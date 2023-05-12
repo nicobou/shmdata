@@ -1,16 +1,16 @@
-switcher 3.2.2 (2023-04-18)
+switcher 3.2.4 (2023-05-11)
 ---------------------------
 
 New features:
-* Deb package in gitlab ci with plugins
+* enable pipeliner running with an existing maincontext
+* add get_main_context to pipeliner
+* add invoke_in_main_loop in GlibMainLoop
+* add debian dev and dgb package dependencies to other dev packages
+* fix coverage ci stage
 
-Bug fixes:
-* Pyquid: fix segfault when Switcher is created without a name
-* Fix the prune API in swIO and add tests on top of this API
-* Quick fix the issues with executor specs
+Bug fix:
+* enable log max size and set it to 100MB
 
 Improvement:
-* Fix/log must not be singleton
-* Stop sending poly aftertouch on midi sinc start
-* Fix links in readme
+* simplification of switcher log line and removal of log only dependency to uuid
 
