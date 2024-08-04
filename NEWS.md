@@ -2,6 +2,11 @@ NEWS
 ====
 Here you will find a high level list of new features and bugfixes for each releases. 
 
+shmdata 1.3.76 (2024-08-04)
+---------------------------
+
+* Warning about repo moved to Sh4lt, a fork with improved features
+
 shmdata 1.3.74 (2023-04-11)
 ---------------------------
 
