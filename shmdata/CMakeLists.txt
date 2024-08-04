@@ -48,13 +48,17 @@ if (UNIX)
     include(FindPkgConfig QUIET)
     if (PKG_CONFIG_FOUND)
         configure_file("shmdata.pc.in" "shmdata-${SHMDATA_API_VERSION}.pc" @ONLY)
+        # Install Pkg-config file for the 'lib' package
+        install(FILES "${CMAKE_CURRENT_BINARY_DIR}/shmdata-${SHMDATA_API_VERSION}.pc"
+          COMPONENT lib
+          DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig")
         # Install Pkg-config file for the 'dev' package
         install(FILES "${CMAKE_CURRENT_BINARY_DIR}/shmdata-${SHMDATA_API_VERSION}.pc"
           COMPONENT dev
           DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig")
-        # Install Pkg-config file for the 'lib' package
+        # Install Pkg-config file for the 'dbg' package
         install(FILES "${CMAKE_CURRENT_BINARY_DIR}/shmdata-${SHMDATA_API_VERSION}.pc"
-          COMPONENT lib
+          COMPONENT dbg
           DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig")
     endif ()
 endif ()
@@ -68,17 +72,26 @@ install(TARGETS ${SHMDATA_LIBRARY}
     LIBRARY DESTINATION lib
     COMPONENT dev)
 
+install(TARGETS ${SHMDATA_LIBRARY}
+    LIBRARY DESTINATION lib
+    COMPONENT dbg)
+
 # install static library
 install(TARGETS ${SHMDATA_LIBRARY}_static
     ARCHIVE DESTINATION lib
-    COMPONENT lib)
+    COMPONENT dev)
 
 install(TARGETS ${SHMDATA_LIBRARY}_static
     ARCHIVE DESTINATION lib
-    COMPONENT dev)
+    COMPONENT dbg)
 
 # install headers
 install(FILES ${HEADER_INCLUDES}
     DESTINATION include/shmdata-${SHMDATA_API_VERSION}/shmdata
     COMPONENT dev
+    )
+
+install(FILES ${HEADER_INCLUDES}
+    DESTINATION include/shmdata-${SHMDATA_API_VERSION}/shmdata
+    COMPONENT dbg
     )

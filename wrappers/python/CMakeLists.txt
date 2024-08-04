@@ -45,6 +45,10 @@ if (WITH_PYTHON)
       LIBRARY DESTINATION ${PYTHON_DIST_PACKAGES}
       COMPONENT dev)
 
+    install(TARGETS pyshmdata
+      LIBRARY DESTINATION ${PYTHON_DIST_PACKAGES}
+      COMPONENT dbg)
+
     # Test
     add_test(pyshmdata_basic python3 ${CMAKE_CURRENT_SOURCE_DIR}/example.py)
     set_tests_properties(pyshmdata_basic PROPERTIES ENVIRONMENT "PYTHONPATH=${CMAKE_CURRENT_BINARY_DIR}")

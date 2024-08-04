@@ -24,6 +24,12 @@ if (WITH_SDFLOW)
         COMPONENT dev
         )
 
+    install(TARGETS sdflow
+        RUNTIME
+        DESTINATION bin
+        COMPONENT dbg
+        )
+
 endif ()
 
 # SDCrash
@@ -44,6 +50,12 @@ if (WITH_SDCRASH)
         RUNTIME
         DESTINATION bin
         COMPONENT dev
+        )
+
+    install(TARGETS sdcrash
+        RUNTIME
+        DESTINATION bin
+        COMPONENT dbg
         )
 
 endif ()

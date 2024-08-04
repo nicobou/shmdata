@@ -101,13 +101,13 @@ Debian Package Ubuntu 20.04:
     - make doc
     - make package
     - |
-      for i in shmdata-dev*.deb; do cp $i ../release-files/ubuntu20.04_$i; done
+      for i in shmdata-dbg*.deb; do cp $i ../release-files/ubuntu20.04_$i; done
     - popd
     - rm -rf build && mkdir build && cd build
     - cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release ..
     - make package
     - |
-      for i in shmdata-lib*.deb; do cp $i ../release-files/ubuntu20.04_$i; done
+      for i in shmdata-lib*.deb shmdata-dev*.deb; do cp $i ../release-files/ubuntu20.04_$i; done
   artifacts:
     paths:
     - release-files/
@@ -129,13 +129,13 @@ Debian Package Ubuntu 22.04:
     - make doc
     - make package
     - |
-      for i in shmdata-dev*.deb; do cp $i ../release-files/ubuntu22.04_$i; done
+      for i in shmdata-dbg*.deb; do cp $i ../release-files/ubuntu22.04_$i; done
     - popd
     - rm -rf build && mkdir build && cd build
     - cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release ..
     - make package
     - |
-      for i in shmdata-lib*.deb; do cp $i ../release-files/ubuntu22.04_$i; done
+      for i in shmdata-lib*.deb shmdata-dev*.deb; do cp $i ../release-files/ubuntu22.04_$i; done
   artifacts:
     paths:
     - release-files/
@@ -157,13 +157,13 @@ Debian Package Ubuntu 23.04:
     - make doc
     - make package
     - |
-      for i in shmdata-dev*.deb; do cp $i ../release-files/ubuntu23.04_$i; done
+      for i in shmdata-dbg*.deb; do cp $i ../release-files/ubuntu23.04_$i; done
     - popd
     - rm -rf build && mkdir build && cd build
     - cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release ..
     - make package
     - |
-      for i in shmdata-lib*.deb; do cp $i ../release-files/ubuntu23.04_$i; done
+      for i in shmdata-lib*.deb shmdata-dev*.deb; do cp $i ../release-files/ubuntu23.04_$i; done
   artifacts:
     paths:
     - release-files/

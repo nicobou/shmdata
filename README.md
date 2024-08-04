@@ -1,3 +1,7 @@
+> [!WARNING]
+> This repository is no longer maintained. An improved version of Shmdata is available with [Sh4lt](https://gitlab.com/sh4lt/sh4lt/). Sh4lt is a Shmdata fork with added timecode, improved data description, added monitoring API, and added writer retrieval through "label" and "group" instead of a raw socket file path.
+> Note that a Shmdata repository may still be active [here](https://gitlab.com/sat-mtl/tools/shmdata)
+
 Shmdata, a library to share any flows of data frames between processes 
 ======================================================================
 

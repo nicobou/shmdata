@@ -10,7 +10,7 @@ project(shmdata)
 set(SHMDATA_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(SHMDATA_VERSION_MAJOR 1)
 set(SHMDATA_VERSION_MINOR 3)
-set(SHMDATA_VERSION_PATCH 74)
+set(SHMDATA_VERSION_PATCH 76)
 set(SHMDATA_VERSION_STRING ${SHMDATA_VERSION_MAJOR}.${SHMDATA_VERSION_MINOR}.${SHMDATA_VERSION_PATCH})
 set(SHMDATA_API_VERSION ${SHMDATA_VERSION_MAJOR}.${SHMDATA_VERSION_MINOR})
 set(SHMDATA_LIBRARY shmdata-${SHMDATA_API_VERSION})
@@ -66,7 +66,7 @@ set(CPACK_PACKAGE_VERSION_MINOR "${SHMDATA_VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${SHMDATA_VERSION_PATCH}")
 set(CPACK_GENERATOR DEB)
 set(CPACK_SOURCE_GENERATOR TGZ)
-set(CPACK_COMPONENTS_ALL lib dev)
+set(CPACK_COMPONENTS_ALL lib dev dbg)
 
 # CPack - Debian Package
 set(CPACK_DEB_COMPONENT_INSTALL ON)
@@ -92,10 +92,15 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/README.md ${CMAKE_CURRENT_SOURCE_DIR}/
 set(CPACK_COMPONENT_LIB_DISPLAY_NAME "Shmdata libraries")
 set(CPACK_COMPONENT_LIB_DESCRIPTION "Shared libraries, monitoring tool (sdflow) and GStreamer elements")
 
-# CPack - Includes
+# CPack - Development
 set(CPACK_COMPONENT_DEV_DISPLAY_NAME "Shmdata development files and documentation")
-set(CPACK_COMPONENT_DEV_DESCRIPTION "C++ Headers, utils and libraries with debug symbols")
-set(CPACK_DEBIAN_DEV_PACKAGE_REPLACES lib) # <- because debug symbols are added
+set(CPACK_COMPONENT_DEV_DESCRIPTION "C++ Headers, utils and libraries")
+set(CPACK_DEBIAN_DEV_PACKAGE_REPLACES lib)
+
+# CPack - Debug
+set(CPACK_COMPONENT_DBG_DISPLAY_NAME "Shmdata development files and documentation")
+set(CPACK_COMPONENT_DBG_DESCRIPTION "C++ Headers, utils and libraries with debug symbols")
+set(CPACK_DEBIAN_DBG_PACKAGE_REPLACES lib dev)
 
 # CPack - Source
 set(CPACK_SOURCE_IGNORE_FILES "/\.hooks/;/build/;/html/;${CPACK_SOURCE_IGNORE_FILES}")
@@ -170,7 +175,10 @@ if (DOXYGEN_FOUND)
         DESTINATION  share/doc/${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}/html/
         COMPONENT dev
         )
-
+    install(DIRECTORY ${CMAKE_SOURCE_DIR}/html/
+        DESTINATION  share/doc/${CPACK_PACKAGE_NAME}-${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}/html/
+        COMPONENT dbg
+        )
 endif ()
 
 # Uninstall
